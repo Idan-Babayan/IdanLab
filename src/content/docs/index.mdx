@@ -1,0 +1,35 @@
+---
+title: Idan's Cyber Lab
+description: CTF writeups, machine walkthroughs and security notes
+template: splash
+hero:
+  tagline: A cyber security student breaking machines, learning as I go, and documenting the journey. 
+  actions:
+    - text: Explore Writeups
+      link: /hackthebox/
+      icon: right-arrow
+      variant: primary
+    - text: GitHub
+      link: https://github.com/Idan-Babayan
+      icon: external
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## What's Inside
+
+<CardGrid>
+  <Card title="HackTheBox" icon="laptop">
+    Retired HTB machines with full breakdowns of my methodology, tools used and what I learned.
+  </Card>
+  <Card title="VulnHub" icon="puzzle">
+    Offline vulnerable VMs - great practice without needing a subscription.
+  </Card>
+  <Card title="PicoCTF" icon="rocket">
+    CTF challenges covering web, crypto, forensics, reversing and more.
+  </Card>
+  <Card title="OverTheWire" icon="terminal">
+    Wargame writeups from Bandit basics to more advanced challenges.
+  </Card>
+</CardGrid>
+
