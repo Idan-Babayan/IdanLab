@@ -1,5 +1,5 @@
 ---
-title: HackTheBox
+title: HackTheBox - Introduction
 tableOfContents: false
 ---
 

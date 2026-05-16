@@ -1,5 +1,5 @@
 ---
-title: OverTheWire
+title: OverTheWire - Introduction
 tableOfContents: false
 ---
 
