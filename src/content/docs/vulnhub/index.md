@@ -1,5 +1,5 @@
 ---
-title: VulnHub
+title: VulnHub - Introduction
 tableOfContents: false
 ---
 
