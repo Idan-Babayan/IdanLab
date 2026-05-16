@@ -98,8 +98,8 @@ description: Python command injection via Searchor 2.4.0, privilege escalation t
 
 **🟥 Key findings**
 
-- **Port 80 -** Apache Web Server
-- **Port 22** - SSH
+- <strong><span class="port-label">Port 80</span> -</strong> Apache Web Server
+- <strong><span class="port-label">Port 22</span></strong> - SSH
 
 ---
 
@@ -298,18 +298,16 @@ Searching around in Github we found that version has a vulnerability
 
 ---
 
-### Task 1
+<details>
+<summary><span class="task-title">Task 1</span> — Submit User Flag</summary>
 
 - Submit User Flag
     
-    <aside>
-    💡
-    
-    2d742121744d37137177a940d19195e3
-    
-    </aside>
-    
+:::tip
+💡 2d742121744d37137177a940d19195e3
+:::
 
+</details>
 ---
 
 ## Privilege Escalation
@@ -550,15 +548,15 @@ This indicates that the program relies on a **relative path execution** for `ful
 </details>
     
 
-### Task 2
+<details>
+<summary><span class="task-title">Task 2</span> — Submit Root Flag</summary>
 
 - Submit Root Flag
     
-    <aside>
-    💡 
-    3527d47d75482a5285afe6b132750aba
-    
-    </aside>
-    
+:::tip
+💡 3527d47d75482a5285afe6b132750aba
+:::
+
+</details>
 
 ---
