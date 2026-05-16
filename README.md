@@ -1,49 +1,71 @@
-# Starlight Starter Kit: Basics
+# 👨‍💻 Cybersecurity Portfolio — Starlight + Astro
 
-[![Built with Starlight](https://astro.badg.es/v2/built-with-starlight/tiny.svg)](https://starlight.astro.build)
+This is my personal cybersecurity-focused portfolio and documentation site, built with **Astro + Starlight** and deployed via **Cloudflare Pages**.
 
-```
-npm create astro@latest -- --template starlight
-```
+The goal of this project is to document what I’m learning in cybersecurity, capture hands-on labs and CTF writeups, and gradually build a structured knowledge base as I improve.
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+I’m actively learning as I go — experimenting with tools, breaking things, fixing things, and writing everything down to reinforce understanding.
 
-## 🚀 Project Structure
+---
 
-Inside of your Astro + Starlight project, you'll see the following folders and files:
+## 🔐 What this site contains
 
-```
-.
-├── public/
-├── src/
-│   ├── assets/
-│   ├── content/
-│   │   └── docs/
-│   └── content.config.ts
-├── astro.config.mjs
-├── package.json
-└── tsconfig.json
-```
+- CTF writeups (Hack The Box, TryHackMe, etc.)
+- Cybersecurity notes and concepts
+- Tools and techniques I’m learning
+- Practical experiments in pentesting / security research
+- Personal documentation of my learning journey
 
-Starlight looks for `.md` or `.mdx` files in the `src/content/docs/` directory. Each file is exposed as a route based on its file name.
+---
 
-Images can be added to `src/assets/` and embedded in Markdown with a relative link.
+## 🚀 Tech Stack
 
-Static assets, like favicons, can be placed in the `public/` directory.
+- Astro (static site framework)
+- Starlight (documentation theme)
+- GitHub (version control + CI/CD)
+- Cloudflare Pages (deployment + hosting)
+
+---
+
+## 🧠 Philosophy
+
+This project is built around one idea:
+
+> *“Learn by breaking things, document everything, improve continuously.”*
+
+Cybersecurity is a constantly evolving field, and this site is my way of tracking that growth in public.
+
+---
+
+## 📁 Project Structure
+
+Inside the project you’ll find:
+src/content/docs/ → Main documentation (Markdown / MDX)
+public/ → Static files images & media
+astro.config.mjs → Site configuration
+
+
+Each Markdown file becomes a page automatically based on its file name.
+
+---
 
 ## 🧞 Commands
 
-All commands are run from the root of the project, from a terminal:
+| Command | Action |
+|--------|--------|
+| `npm install` | Install dependencies |
+| `npm run dev` | Start local dev server |
+| `npm run build` | Build production site |
+| `npm run preview` | Preview production build |
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+---
 
-## 👀 Want to learn more?
+## 🌐 Live Site
 
-Check out [Starlight’s docs](https://starlight.astro.build/), read [the Astro documentation](https://docs.astro.build), or jump into the [Astro Discord server](https://astro.build/chat).
+👉 https://idanstudio.click
+
+---
+
+## 📌 Notes
+
+This project is constantly evolving. Content may be incomplete or reorganized frequently as I learn and refine my understanding of cybersecurity topics.
