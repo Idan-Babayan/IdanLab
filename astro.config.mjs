@@ -6,6 +6,7 @@ export default defineConfig({
   integrations: [
     starlight({
       title: "Idan's Cyber Lab",
+      customCss: ['./src/styles/custom.css'],
       description: 'CTF Writeups, Machine Walkthroughs & Security Notes By Idan Babayan',
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/Idan-Babayan' },
@@ -31,3 +32,5 @@ export default defineConfig({
     }),
   ],
 });
+
+

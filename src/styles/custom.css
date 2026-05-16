@@ -1,0 +1,80 @@
+/* ══════════════════════════════════════════════
+   Idan's Cyber Lab — Custom Starlight Styles
+   ══════════════════════════════════════════════ */
+
+/* ── CSS variables (light / dark) ── */
+:root {
+  --color-task-title:  #7c4b1e;   /* brown  */
+  --color-port-label:  #c92a2a;   /* red    */
+}
+
+[data-theme="dark"] {
+  --color-task-title:  #e0a878;   /* warm light brown */
+  --color-port-label:  #ff8787;   /* softer red       */
+}
+
+
+/* ── Task titles ── */
+/*  Applied by the script to ### Task N headings
+    via <span class="task-title">Task 1</span>      */
+.task-title {
+  color: var(--color-task-title);
+  font-weight: 600;
+}
+
+
+/* ── Port labels ── */
+/*  Applied by the script to **Port 80 -** patterns
+    via <span class="port-label">Port 80</span>     */
+.port-label {
+  color: var(--color-port-label);
+}
+
+
+/* ── Callout / aside blocks (:::tip) ── */
+/*  Makes the callout background more distinct
+    so it stands out from surrounding text         */
+.starlight-aside--tip {
+  background-color: color-mix(in srgb, var(--sl-color-green) 8%, transparent);
+  border-left-width: 3px;
+  border-radius: 4px;
+  padding: 0.8rem 1rem;
+}
+
+[data-theme="dark"] .starlight-aside--tip {
+  background-color: color-mix(in srgb, var(--sl-color-green) 12%, transparent);
+}
+
+
+/* ── Toggle / details blocks ── */
+/*  Subtle border so toggles don't look bare       */
+details {
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  margin: 0.5rem 0;
+}
+
+details[open] {
+  border-color: var(--sl-color-gray-4);
+}
+
+details > summary {
+  cursor: pointer;
+  font-weight: 500;
+  padding: 0.25rem 0;
+  list-style: none;
+  user-select: none;
+}
+
+details > summary::before {
+  content: "▶  ";
+  font-size: 0.65em;
+  opacity: 0.6;
+  transition: transform 0.15s ease;
+  display: inline-block;
+}
+
+details[open] > summary::before {
+  transform: rotate(90deg);
+}
