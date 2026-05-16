@@ -10,7 +10,7 @@ I’m actively learning as I go — experimenting with tools, breaking things, f
 
 ## 🔐 What this site contains
 
-- CTF writeups (Hack The Box, TryHackMe, etc.)
+- CTF writeups (HackTheBox, PicoCTF, Vulnhub & Other challenges)
 - Cybersecurity notes and concepts
 - Tools and techniques I’m learning
 - Practical experiments in pentesting / security research
@@ -40,10 +40,9 @@ Cybersecurity is a constantly evolving field, and this site is my way of trackin
 ## 📁 Project Structure
 
 Inside the project you’ll find:
-src/content/docs/ → Main documentation (Markdown / MDX)
-public/ → Static files images & media
-astro.config.mjs → Site configuration
-
+- src/content/docs/ → Main documentation (Markdown / MDX)
+- public/ → Static files images & media
+- astro.config.mjs → Site configuration
 
 Each Markdown file becomes a page automatically based on its file name.
 
