@@ -201,26 +201,29 @@ html[data-theme="dark"] .os-windows { color: #60a5fa; }
 /* ── Stats row ───────────────────────────────── */
 
 .home-stats {
-  display: flex;
-  justify-content: center;
-  gap: 2.5rem;
-  flex-wrap: wrap;
-  margin: 2rem 0 3rem;
+  display: grid;
+  grid-auto-flow: column;          /* fill down rows, then next column */
+  grid-template-rows: auto auto;   /* row 1 = numbers, row 2 = labels */
+  gap: 0.4rem 3rem;
+  align-items: end;                /* numbers sit on a common baseline */
+  justify-items: center;
+  width: fit-content;
+  margin: 2rem auto 3rem;          /* auto = centered */
+  padding: 1.5rem 2.5rem;
+  border-radius: 14px;
+  background: var(--home-panel-bg);
 }
 
+/* display:contents lets num + label join the parent grid directly,
+   so all numbers land in row 1 and all labels in row 2 — always aligned */
 .stat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: contents;
 }
 
 .stat-num {
   font-size: 2.6rem;
   font-weight: 800;
-  height: 3rem;                 /* fixed height aligns all labels */
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
+  line-height: 1;
   color: #9fef00;
   font-family: var(--__sl-font-mono, monospace);
 }
@@ -230,7 +233,6 @@ html[data-theme="dark"] .os-windows { color: #60a5fa; }
   text-transform: uppercase;
   letter-spacing: 0.08em;
   opacity: 0.7;
-  margin-top: 0.35rem;
 }
 
 
@@ -280,8 +282,8 @@ html[data-theme="dark"] .os-windows { color: #60a5fa; }
 /* Per-platform accent on hover */
 .pf-htb:hover  { border-color: #9fef00; box-shadow: 0 8px 24px -8px rgba(159,239,0,.4); }
 .pf-vh:hover   { border-color: #ef4444; box-shadow: 0 8px 24px -8px rgba(239,68,68,.4); }
-.pf-pico:hover { border-color: #3b82f6; box-shadow: 0 8px 24px -8px rgba(59,130,246,.4); }
-.pf-otw:hover  { border-color: #f97316; box-shadow: 0 8px 24px -8px rgba(249,115,22,.4); }
+.pf-pico:hover { border-color: #d946ef; box-shadow: 0 8px 24px -8px rgba(217,70,239,.4); }
+.pf-otw:hover  { border-color: #eab308; box-shadow: 0 8px 24px -8px rgba(234,179,8,.4); }
 
 
 /* ── Approach flow ───────────────────────────── */
@@ -370,7 +372,7 @@ html[data-theme="light"] .hero h1 {
 
 /* Panel background variable (subtle, theme-aware) */
 :root {
-  --home-panel-bg: rgba(0, 0, 0, 0.15);
+  --home-panel-bg: rgba(0, 0, 0, 0.04);
 }
 html[data-theme="dark"] {
   --home-panel-bg: rgba(255, 255, 255, 0.03);
@@ -394,34 +396,92 @@ html[data-theme="light"] body:has(.home-stats) {
     radial-gradient(circle at 70% 88%, rgba(168, 85, 247, 0.05), transparent 42%);
 }
 
-/* Wrap the stats row in a subtle panel */
-.home-stats {
-  padding: 1.5rem 2.5rem;
-  border-radius: 14px;
-  background: var(--home-panel-bg);
-  width: fit-content;
-  margin-left: auto;
-  margin-right: auto;
+
+
+
+/* ══════════════════════════════════════════════
+   ABOUT PAGE — hero header (text + image side by side)
+   ══════════════════════════════════════════════ */
+
+.about-header {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.about-intro-text {
+  flex: 1;
+}
+
+/* Kill the default top-margin on the first paragraph so it aligns with image */
+.about-intro-text > :first-child {
+  margin-top: 0;
+}
+
+.about-hero-img {
+  width: 150px;
+  height: 150px;
+  flex-shrink: 0;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.3));
+}
+
+@media (max-width: 640px) {
+  .about-header {
+    flex-direction: column-reverse;
+    text-align: center;
+    gap: 1rem;
+  }
+  .about-hero-img {
+    width: 120px;
+    height: 120px;
+  }
 }
 
 
 /* ══════════════════════════════════════════════
-   ABOUT PAGE — hero image
+   PLATFORM INTRO PAGES — section landing headers
    ══════════════════════════════════════════════ */
 
-.about-hero-img {
-  width: 140px;
-  height: 140px;
-  object-fit: contain;
-  float: right;
-  margin: 0 0 1rem 1.5rem;
-  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.3));
+.platform-intro {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  border-radius: 14px;
+  margin: 0.5rem 0 1.5rem;
+  border: 1px solid var(--sl-color-gray-5);
+  background: var(--home-panel-bg);
 }
 
-@media (max-width: 600px) {
-  .about-hero-img {
-    float: none;
-    display: block;
-    margin: 0 auto 1.5rem;
-  }
+.pi-icon {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+}
+
+.pi-tagline {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0 0 0.4rem;
+  color: var(--sl-color-white);
+}
+
+.pi-meta {
+  margin: 0;
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+/* Left accent bar per platform */
+.pi-htb  { border-left: 4px solid #9fef00; }
+.pi-vh   { border-left: 4px solid #ef4444; }
+.pi-pico { border-left: 4px solid #d946ef; }
+.pi-otw  { border-left: 4px solid #eab308; }
+
+@media (max-width: 540px) {
+  .platform-intro { flex-direction: column; text-align: center; }
+  .pi-meta { justify-content: center; }
 }
