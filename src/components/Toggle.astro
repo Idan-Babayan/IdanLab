@@ -1,0 +1,18 @@
+---
+// src/components/Toggle.astro
+//
+// In MDX files, code fences inside this component's slot are fully
+// processed by Astro so syntax highlighting should work correctly.
+
+interface Props {
+  label: string;  // accepts plain text or HTML string
+}
+const { label } = Astro.props;
+---
+
+<details>
+  <summary set:html={label}></summary>
+  <div class="toggle-body">
+    <slot />
+  </div>
+</details>

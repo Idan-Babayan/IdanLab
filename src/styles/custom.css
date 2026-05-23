@@ -2,79 +2,426 @@
    Idan's Cyber Lab — Custom Starlight Styles
    ══════════════════════════════════════════════ */
 
-/* ── CSS variables (light / dark) ── */
-:root {
-  --color-task-title:  #7c4b1e;   /* brown  */
-  --color-port-label:  #c92a2a;   /* red    */
-}
 
-[data-theme="dark"] {
-  --color-task-title:  #e0a878;   /* warm light brown */
-  --color-port-label:  #ff8787;   /* softer red       */
+/* ── Brighter body text in dark mode ─────────── */
+
+html[data-theme="dark"] {
+  --sl-color-text: #e6edf3;
 }
 
 
-/* ── Task titles ── */
-/*  Applied by the script to ### Task N headings
-    via <span class="task-title">Task 1</span>      */
+/* ── Task title headings (Notion brown) ──────── */
+/* Notion-accurate: light #9f6b53, dark #ba856f   */
+
 .task-title {
-  color: var(--color-task-title);
-  font-weight: 600;
+  font-weight: 700;
+}
+
+html[data-theme="light"] .task-title {
+  color: #9f6b53 !important;
+}
+
+html[data-theme="dark"] .task-title {
+  color: #ba856f !important;
 }
 
 
-/* ── Port labels ── */
-/*  Applied by the script to **Port 80 -** patterns
-    via <span class="port-label">Port 80</span>     */
-.port-label {
-  color: var(--color-port-label);
+/* ── Port labels (red) ───────────────────────── */
+
+html[data-theme="light"] .port-label {
+  color: #c92a2a !important;
+}
+
+html[data-theme="dark"] .port-label {
+  color: #ff8787 !important;
 }
 
 
-/* ── Callout / aside blocks (:::tip) ── */
-/*  Makes the callout background more distinct
-    so it stands out from surrounding text         */
-.starlight-aside--tip {
-  background-color: color-mix(in srgb, var(--sl-color-green) 8%, transparent);
-  border-left-width: 3px;
-  border-radius: 4px;
-  padding: 0.8rem 1rem;
+/* ── Inline code color (matches Notion red) ──── */
+
+html[data-theme="light"] :not(pre) > code {
+  color: #c92a2a;
 }
 
-[data-theme="dark"] .starlight-aside--tip {
-  background-color: color-mix(in srgb, var(--sl-color-green) 12%, transparent);
+html[data-theme="dark"] :not(pre) > code {
+  color: #ff8787;
 }
 
 
-/* ── Toggle / details blocks ── */
-/*  Subtle border so toggles don't look bare       */
+/* ── Machine metadata badges row ─────────────── */
+
+.machine-meta {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+
+/* ── Toggle / details blocks ─────────────────── */
+
 details {
   border: 1px solid var(--sl-color-gray-5);
   border-radius: 6px;
-  padding: 0.5rem 0.75rem;
+  padding: 0.4rem 0.75rem;
   margin: 0.5rem 0;
 }
 
-details[open] {
+html[data-theme="dark"] details {
   border-color: var(--sl-color-gray-4);
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+html[data-theme="light"] details {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+details[open] {
+  border-color: var(--sl-color-accent);
 }
 
 details > summary {
   cursor: pointer;
   font-weight: 500;
-  padding: 0.25rem 0;
+  padding: 0.3rem 0;
   list-style: none;
   user-select: none;
 }
 
+details > summary::marker,
+details > summary::-webkit-details-marker {
+  display: none;
+}
+
 details > summary::before {
-  content: "▶  ";
+  content: "▶ ";
   font-size: 0.65em;
-  opacity: 0.6;
-  transition: transform 0.15s ease;
+  opacity: 0.5;
   display: inline-block;
+  transition: transform 0.15s ease;
+  margin-right: 0.2rem;
 }
 
 details[open] > summary::before {
   transform: rotate(90deg);
+}
+
+.toggle-body {
+  padding-top: 0.5rem;
+}
+
+
+/* ── Answer callouts (:::tip[Answer]) ────────── */
+
+.starlight-aside--tip {
+  border-left-width: 3px;
+  border-radius: 4px;
+}
+
+html[data-theme="dark"] .starlight-aside--tip {
+  background-color: rgba(50, 200, 100, 0.08);
+}
+
+html[data-theme="light"] .starlight-aside--tip {
+  background-color: rgba(50, 180, 80, 0.07);
+}
+
+
+/* ── Custom metadata badges (distinct colors) ── */
+
+.meta-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+  line-height: 1.4;
+}
+
+/* Platforms — cool/distinct hues (never green, to avoid Easy clash) */
+.platform-hackthebox  { background: rgba(59,130,246,.15);  color: #2563eb; border-color: rgba(59,130,246,.35); }
+.platform-vulnhub     { background: rgba(6,182,212,.15);   color: #0891b2; border-color: rgba(6,182,212,.35); }
+.platform-picoctf     { background: rgba(139,92,246,.15);  color: #7c3aed; border-color: rgba(139,92,246,.35); }
+.platform-overthewire { background: rgba(249,115,22,.15);  color: #ea580c; border-color: rgba(249,115,22,.35); }
+
+/* Difficulty — traffic-light semantics */
+.difficulty-easy   { background: rgba(34,197,94,.15);  color: #16a34a; border-color: rgba(34,197,94,.35); }
+.difficulty-medium { background: rgba(245,158,11,.15); color: #d97706; border-color: rgba(245,158,11,.35); }
+.difficulty-hard   { background: rgba(239,68,68,.15);  color: #dc2626; border-color: rgba(239,68,68,.35); }
+.difficulty-misc   { background: rgba(100,116,139,.15);color: #64748b; border-color: rgba(100,116,139,.35); }
+
+/* OS — neutral slate */
+.os-linux   { background: rgba(100,116,139,.12); color: #475569; border-color: rgba(100,116,139,.3); }
+.os-windows { background: rgba(37,99,235,.12);   color: #2563eb; border-color: rgba(37,99,235,.3); }
+
+/* Brighter badge text in dark mode */
+html[data-theme="dark"] .platform-hackthebox  { color: #60a5fa; }
+html[data-theme="dark"] .platform-vulnhub     { color: #22d3ee; }
+html[data-theme="dark"] .platform-picoctf     { color: #a78bfa; }
+html[data-theme="dark"] .platform-overthewire { color: #fb923c; }
+html[data-theme="dark"] .difficulty-easy   { color: #4ade80; }
+html[data-theme="dark"] .difficulty-medium { color: #fbbf24; }
+html[data-theme="dark"] .difficulty-hard   { color: #f87171; }
+html[data-theme="dark"] .difficulty-misc   { color: #94a3b8; }
+html[data-theme="dark"] .os-linux   { color: #cbd5e1; }
+html[data-theme="dark"] .os-windows { color: #60a5fa; }
+
+
+/* ══════════════════════════════════════════════
+   HOMEPAGE — hacker aesthetic
+   ══════════════════════════════════════════════ */
+
+/* Hero glow behind the splash */
+.hero {
+  position: relative;
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: -20% -10% auto -10%;
+  height: 380px;
+  background: radial-gradient(circle at 50% 0%,
+              rgba(159, 239, 0, 0.12), transparent 60%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Hero title accent */
+.hero h1 {
+  background: linear-gradient(135deg, var(--sl-color-white), #9fef00);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+
+/* ── Stats row ───────────────────────────────── */
+
+.home-stats {
+  display: flex;
+  justify-content: center;
+  gap: 2.5rem;
+  flex-wrap: wrap;
+  margin: 2rem 0 3rem;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-num {
+  font-size: 2.6rem;
+  font-weight: 800;
+  height: 3rem;                 /* fixed height aligns all labels */
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  color: #9fef00;
+  font-family: var(--__sl-font-mono, monospace);
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.7;
+  margin-top: 0.35rem;
+}
+
+
+/* ── Platform cards ──────────────────────────── */
+
+.platform-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.platform-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1.25rem;
+  border-radius: 12px;
+  border: 1px solid var(--sl-color-gray-5);
+  background: var(--sl-color-black);
+  text-decoration: none !important;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.platform-card:hover {
+  transform: translateY(-4px);
+}
+
+.pf-icon-img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+}
+
+.pf-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--sl-color-white);
+}
+
+.pf-desc {
+  font-size: 0.85rem;
+  opacity: 0.7;
+  color: var(--sl-color-text);
+}
+
+/* Per-platform accent on hover */
+.pf-htb:hover  { border-color: #9fef00; box-shadow: 0 8px 24px -8px rgba(159,239,0,.4); }
+.pf-vh:hover   { border-color: #ef4444; box-shadow: 0 8px 24px -8px rgba(239,68,68,.4); }
+.pf-pico:hover { border-color: #3b82f6; box-shadow: 0 8px 24px -8px rgba(59,130,246,.4); }
+.pf-otw:hover  { border-color: #f97316; box-shadow: 0 8px 24px -8px rgba(249,115,22,.4); }
+
+
+/* ── Approach flow ───────────────────────────── */
+
+.approach-flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin: 1.5rem 0;
+  padding: 1.25rem;
+  border-radius: 12px;
+  background: var(--home-panel-bg);
+}
+
+.approach-step {
+  padding: 0.6rem 1.1rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border: 1px solid transparent;
+}
+
+.step-recon      { background: rgba(59,130,246,.15);  color: #60a5fa; border-color: rgba(59,130,246,.4); }
+.step-foothold   { background: rgba(168,85,247,.15);  color: #c084fc; border-color: rgba(168,85,247,.4); }
+.step-escalation { background: rgba(245,158,11,.15);  color: #fbbf24; border-color: rgba(245,158,11,.4); }
+.step-reflection { background: rgba(34,197,94,.15);   color: #4ade80; border-color: rgba(34,197,94,.4); }
+
+.approach-arrow {
+  font-size: 1.3rem;
+  opacity: 0.4;
+}
+
+/* Light mode adjustments for platform cards */
+html[data-theme="light"] .platform-card {
+  background: var(--sl-color-gray-7);
+}
+html[data-theme="light"] .stat-num,
+html[data-theme="light"] .hero h1 {
+  color: #4d7c00;
+}
+html[data-theme="light"] .hero h1 {
+  background: linear-gradient(135deg, var(--sl-color-black), #4d7c00);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+
+/* ══════════════════════════════════════════════
+   ABOUT PAGE — colored card accents
+   ══════════════════════════════════════════════ */
+
+/* Give the skill cards colored top borders + hover lift */
+.sl-markdown-content .card {
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  border-top: 3px solid var(--sl-color-accent);
+}
+
+.sl-markdown-content .card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px -10px rgba(0,0,0,0.4);
+}
+
+/* Cycle accent colors across cards for variety */
+.sl-markdown-content .card:nth-child(6n+1) { border-top-color: #3b82f6; }
+.sl-markdown-content .card:nth-child(6n+2) { border-top-color: #a855f7; }
+.sl-markdown-content .card:nth-child(6n+3) { border-top-color: #f59e0b; }
+.sl-markdown-content .card:nth-child(6n+4) { border-top-color: #06b6d4; }
+.sl-markdown-content .card:nth-child(6n+5) { border-top-color: #22c55e; }
+.sl-markdown-content .card:nth-child(6n+6) { border-top-color: #ef4444; }
+
+/* Card icons inherit the accent */
+.sl-markdown-content .card:nth-child(6n+1) .icon { color: #3b82f6; }
+.sl-markdown-content .card:nth-child(6n+2) .icon { color: #a855f7; }
+.sl-markdown-content .card:nth-child(6n+3) .icon { color: #f59e0b; }
+.sl-markdown-content .card:nth-child(6n+4) .icon { color: #06b6d4; }
+.sl-markdown-content .card:nth-child(6n+5) .icon { color: #22c55e; }
+.sl-markdown-content .card:nth-child(6n+6) .icon { color: #ef4444; }
+
+
+/* ══════════════════════════════════════════════
+   COLOR & DEPTH — reduce monotone
+   ══════════════════════════════════════════════ */
+
+/* Panel background variable (subtle, theme-aware) */
+:root {
+  --home-panel-bg: rgba(0, 0, 0, 0.15);
+}
+html[data-theme="dark"] {
+  --home-panel-bg: rgba(255, 255, 255, 0.03);
+}
+
+/* Layered color glows across the whole homepage — kills the flat look */
+body:has(.home-stats) {
+  background-image:
+    radial-gradient(circle at 12% 8%,  rgba(159, 239, 0, 0.07), transparent 38%),
+    radial-gradient(circle at 88% 22%, rgba(59, 130, 246, 0.07), transparent 40%),
+    radial-gradient(circle at 70% 88%, rgba(168, 85, 247, 0.06), transparent 42%),
+    radial-gradient(circle at 25% 95%, rgba(249, 115, 22, 0.05), transparent 40%);
+  background-attachment: fixed;
+}
+
+/* Softer light mode — off-white with faint warmth instead of harsh white */
+html[data-theme="light"] body:has(.home-stats) {
+  background-image:
+    radial-gradient(circle at 12% 8%,  rgba(77, 124, 0, 0.06), transparent 38%),
+    radial-gradient(circle at 88% 22%, rgba(59, 130, 246, 0.05), transparent 40%),
+    radial-gradient(circle at 70% 88%, rgba(168, 85, 247, 0.05), transparent 42%);
+}
+
+/* Wrap the stats row in a subtle panel */
+.home-stats {
+  padding: 1.5rem 2.5rem;
+  border-radius: 14px;
+  background: var(--home-panel-bg);
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+
+/* ══════════════════════════════════════════════
+   ABOUT PAGE — hero image
+   ══════════════════════════════════════════════ */
+
+.about-hero-img {
+  width: 140px;
+  height: 140px;
+  object-fit: contain;
+  float: right;
+  margin: 0 0 1rem 1.5rem;
+  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.3));
+}
+
+@media (max-width: 600px) {
+  .about-hero-img {
+    float: none;
+    display: block;
+    margin: 0 auto 1.5rem;
+  }
 }

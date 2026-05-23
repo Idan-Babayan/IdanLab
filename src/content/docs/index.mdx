@@ -1,35 +1,74 @@
 ---
 title: Idan's Cyber Lab
-description: CTF writeups, machine walkthroughs and security notes
+description: CTF Writeups, Machine Walkthroughs & Security Notes by Idan Babayan
 template: splash
 hero:
-  tagline: A cyber security student breaking machines, learning as I go, and documenting the journey. 
+  tagline: Breaking machines, learning as I go, and documenting every step of the journey.
   actions:
     - text: Explore Writeups
       link: /hackthebox/
       icon: right-arrow
       variant: primary
+    - text: About Me
+      link: /about/
+      icon: information
+      variant: secondary
     - text: GitHub
       link: https://github.com/Idan-Babayan
       icon: external
+      variant: minimal
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+<div class="home-stats">
+  <div class="stat">
+    <span class="stat-num">4</span>
+    <span class="stat-label">Platforms</span>
+  </div>
+  <div class="stat">
+    <span class="stat-num">50+</span>
+    <span class="stat-label">Writeups</span>
+  </div>
+  <div class="stat">
+    <span class="stat-num">∞</span>
+    <span class="stat-label">Curiosity</span>
+  </div>
+</div>
 
-## What's Inside
+## Pick Your Poison
 
-<CardGrid>
-  <Card title="HackTheBox" icon="laptop">
-    Retired HTB machines with full breakdowns of my methodology, tools used and what I learned.
-  </Card>
-  <Card title="VulnHub" icon="puzzle">
-    Offline vulnerable VMs - great practice without needing a subscription.
-  </Card>
-  <Card title="PicoCTF" icon="rocket">
-    CTF challenges covering web, crypto, forensics, reversing and more.
-  </Card>
-  <Card title="OverTheWire" icon="terminal">
-    Wargame writeups from Bandit basics to more advanced challenges.
-  </Card>
-</CardGrid>
+<div class="platform-grid">
+  <a href="/hackthebox/" class="platform-card pf-htb">
+    <img src="/icons/htb.svg" alt="" class="pf-icon-img" />
+    <span class="pf-name">HackTheBox</span>
+    <span class="pf-desc">Retired machines, full methodology breakdowns</span>
+  </a>
+  <a href="/vulnhub/" class="platform-card pf-vh">
+    <img src="/icons/vulnhub.svg" alt="" class="pf-icon-img" />
+    <span class="pf-name">VulnHub</span>
+    <span class="pf-desc">Offline vulnerable VMs in my home lab</span>
+  </a>
+  <a href="/picoctf/" class="platform-card pf-pico">
+    <img src="/icons/picoctf.svg" alt="" class="pf-icon-img" />
+    <span class="pf-name">PicoCTF</span>
+    <span class="pf-desc">Web, crypto, forensics & reversing</span>
+  </a>
+  <a href="/overthewire/" class="platform-card pf-otw">
+    <img src="/icons/overthewire.svg" alt="" class="pf-icon-img" />
+    <span class="pf-name">OverTheWire</span>
+    <span class="pf-desc">Wargames & Linux fundamentals</span>
+  </a>
+</div>
 
+## How I Work
+
+<div class="approach-flow">
+  <div class="approach-step step-recon">Recon</div>
+  <div class="approach-arrow">→</div>
+  <div class="approach-step step-foothold">Foothold</div>
+  <div class="approach-arrow">→</div>
+  <div class="approach-step step-escalation">Escalation</div>
+  <div class="approach-arrow">→</div>
+  <div class="approach-step step-reflection">Reflection</div>
+</div>
+
+Every writeup follows the same loop — no skipped steps, no hand-waving. Just the real process, including the dead ends and the lessons that came from them.
