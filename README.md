@@ -1,10 +1,10 @@
-# 👨‍💻 Cybersecurity Portfolio — Starlight + Astro
+# 👨‍💻 Cybersecurity Portfolio - Starlight + Astro
 
 This is my personal cybersecurity-focused portfolio and documentation site, built with **Astro + Starlight** and deployed via **Cloudflare Pages**.
 
 The goal of this project is to document what I’m learning in cybersecurity, capture hands-on labs and CTF writeups, and gradually build a structured knowledge base as I improve.
 
-I’m actively learning as I go — experimenting with tools, breaking things, fixing things, and writing everything down to reinforce understanding.
+I’m actively learning as I go - experimenting with tools, breaking things, fixing things, and writing everything down to reinforce understanding.
 
 ---
 
@@ -40,11 +40,11 @@ Cybersecurity is a constantly evolving field, and this site is my way of trackin
 ## 📁 Project Structure
 
 Inside the project you’ll find:
-- src/content/docs/ → Main documentation (Markdown / MDX)
+- src/content/docs/ → Main documentation - MDX
 - public/ → Static files images & media
 - astro.config.mjs → Site configuration
 
-Each Markdown file becomes a page automatically based on its file name.
+Each MDX file becomes a page automatically based on its file name.
 
 ---
 
@@ -68,3 +68,8 @@ Each Markdown file becomes a page automatically based on its file name.
 ## 📌 Notes
 
 This project is constantly evolving. Content may be incomplete or reorganized frequently as I learn and refine my understanding of cybersecurity topics.
+
+### Contact   
+
+Feel free to reach out: 
+📧 [contact@idanstudio.click](mailto:contact@idanstudio.click)
