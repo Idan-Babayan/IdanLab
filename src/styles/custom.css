@@ -294,18 +294,23 @@ html[data-theme="dark"] .os-windows { color: #60a5fa; }
   justify-content: center;
   gap: 0.6rem;
   flex-wrap: wrap;
-  margin: 1.5rem 0;
-  padding: 1.25rem;
+  margin: 1.5rem auto;
+  padding: 1.25rem 1.5rem;
   border-radius: 12px;
   background: var(--home-panel-bg);
+  width: fit-content;
+  max-width: 100%;
 }
 
 .approach-step {
-  padding: 0.6rem 1.1rem;
+  padding: 0.5rem 1.1rem;
   border-radius: 999px;
   font-weight: 600;
   font-size: 0.95rem;
   border: 1px solid transparent;
+  min-width: 120px;
+  text-align: center;
+  line-height: 1.5;
 }
 
 .step-recon      { background: rgba(59,130,246,.15);  color: #60a5fa; border-color: rgba(59,130,246,.4); }
