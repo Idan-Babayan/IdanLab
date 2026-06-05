@@ -1,0 +1,485 @@
+---
+// src/pages/about.astro
+// Standalone About page — matches the homepage design system.
+// Theme toggle is synced with Starlight via the shared `starlight-theme`
+// localStorage key. Defaults to dark on every device; light is opt-in.
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About — Idan's Cyber Lab</title>
+  <meta name="description" content="Idan Babayan: cybersecurity student, CTF player, and offensive security enthusiast documenting the journey from recon to root." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <!-- Default dark on every device. Only an explicit stored 'light' choice overrides. Shares Starlight's key. -->
+  <script is:inline>
+    (() => {
+      const stored = typeof localStorage !== 'undefined' && localStorage.getItem('starlight-theme');
+      document.documentElement.dataset.theme = stored === 'light' ? 'light' : 'dark';
+    })();
+  </script>
+</head>
+<body>
+
+<!-- NAV HUD -->
+<div class="hud">
+  <a class="hud-home" href="/">◂ IDAN.STUDIO <span class="hud-sub">// CYBER LAB</span></a>
+  <nav class="hud-nav">
+    <a href="/hackthebox/">Writeups</a>
+    <a href="/about/" class="active">About</a>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle light or dark theme">
+      <svg class="ico ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      <svg class="ico ico-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </button>
+  </nav>
+</div>
+
+<!-- HERO -->
+<section class="about-hero">
+  <canvas id="constellation"></canvas>
+  <div class="wrap about-hero-inner">
+    <div class="about-hero-text">
+      <div class="eyebrow reveal">// whoami</div>
+      <h1 class="headline reveal">Hi, I'm <span class="decode" data-word="Idan">Idan</span>.</h1>
+      <p class="sub reveal">
+        A 26-year-old cybersecurity enthusiast who fell hard for offensive security and never looked back.
+        This site is my <b>lab notebook made public</b>, a growing collection of machine walkthroughs,
+        CTF solutions, and the things I learn breaking (and understanding) systems.
+      </p>
+    </div>
+    <img src="/ethical-hacking.png" alt="" class="about-portrait reveal" loading="lazy" decoding="async" />
+  </div>
+</section>
+
+<!-- APPROACH -->
+<section class="sec wrap">
+  <div class="sec-label reveal">// Philosophy</div>
+  <h2 class="sec-title reveal">How I approach things</h2>
+  <p class="prose reveal">
+    Every machine I solve follows the same loop: <b>recon, foothold, escalation, reflection.</b>
+    The writeups here aren't just "type these commands." They document my actual thought process,
+    the dead ends, and what each box taught me.
+  </p>
+  <blockquote class="pullquote reveal">
+    I don't just want to know <em>what</em> the exploit is. I want to know <em>why</em> it works,
+    what the defender missed, and how I'd catch it next time.
+  </blockquote>
+  <p class="prose reveal">
+    If a so-called "easy" box humbled me, I'll say so. That's how you actually get better.
+  </p>
+</section>
+
+<!-- SKILLS -->
+<section class="sec wrap">
+  <div class="sec-label reveal">// Capabilities</div>
+  <h2 class="sec-title reveal">What I work with</h2>
+  <div class="skill-grid">
+    <div class="skill-card accent-cyan reveal" data-tilt>
+      <span class="glare"></span>
+      <svg class="skill-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18"/></svg>
+      <h3>Web Security</h3>
+      <p>SQL injection, XSS, authentication flaws, and the logic bugs that hide in plain sight.</p>
+    </div>
+    <div class="skill-card accent-magenta reveal" data-tilt>
+      <span class="glare"></span>
+      <svg class="skill-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="7" y="7" width="10" height="10" rx="1"/><path d="M10 2v3M14 2v3M10 19v3M14 19v3M2 10h3M2 14h3M19 10h3M19 14h3"/></svg>
+      <h3>Reverse Engineering</h3>
+      <p>Binary analysis, understanding what a program really does beneath the surface.</p>
+    </div>
+    <div class="skill-card accent-lime reveal" data-tilt>
+      <span class="glare"></span>
+      <svg class="skill-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 21h4v-4h4v-4h4V9h4V5"/><path d="M14 5h5v5"/></svg>
+      <h3>Privilege Escalation</h3>
+      <p>Linux and Windows privesc: misconfigurations, relative paths, and overlooked permissions.</p>
+    </div>
+    <div class="skill-card accent-amber reveal" data-tilt>
+      <span class="glare"></span>
+      <svg class="skill-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <h3>OSINT &amp; Recon</h3>
+      <p>Mapping an attack surface before touching it. Information is the first foothold.</p>
+    </div>
+    <div class="skill-card accent-purple reveal" data-tilt>
+      <span class="glare"></span>
+      <svg class="skill-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      <h3>Cryptography</h3>
+      <p>Breaking weak implementations and understanding the math that protects (or fails) us.</p>
+    </div>
+    <div class="skill-card accent-red reveal" data-tilt>
+      <span class="glare"></span>
+      <svg class="skill-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m5 8 4 4-4 4M12 16h7"/><rect x="2" y="3" width="20" height="18" rx="2"/></svg>
+      <h3>Tooling &amp; Scripting</h3>
+      <p>Kali Linux daily-driver, Python and Bash for automating the boring parts.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PRACTICE -->
+<section class="sec wrap">
+  <div class="sec-label reveal">// Proving Grounds</div>
+  <h2 class="sec-title reveal">Where I practice</h2>
+  <p class="prose reveal">Everything here happens in <b>legal, controlled environments</b>: CTF competitions, intentionally vulnerable labs, and personal VMs.</p>
+  <div class="practice-grid">
+    <a href="/hackthebox/" class="practice accent-lime reveal" data-tilt><span class="glare"></span><img src="/icons/htb.svg" alt="" data-zoom-off /><div><strong>HackTheBox</strong><span>Retired machines, full methodology breakdowns.</span></div></a>
+    <a href="/vulnhub/" class="practice accent-red reveal" data-tilt><span class="glare"></span><img src="/icons/vulnhub.svg" alt="" data-zoom-off /><div><strong>VulnHub</strong><span>Offline vulnerable VMs in my home lab.</span></div></a>
+    <a href="/picoctf/" class="practice accent-purple reveal" data-tilt><span class="glare"></span><img src="/icons/picoctf.svg" alt="" data-zoom-off /><div><strong>PicoCTF</strong><span>Where I built my CTF fundamentals.</span></div></a>
+    <a href="/overthewire/" class="practice accent-amber reveal" data-tilt><span class="glare"></span><img src="/icons/overthewire.svg" alt="" data-zoom-off /><div><strong>OverTheWire</strong><span>Wargames that taught me more Linux than any course.</span></div></a>
+  </div>
+</section>
+
+<!-- HEADED -->
+<section class="sec wrap">
+  <div class="sec-label reveal">// Trajectory</div>
+  <h2 class="sec-title reveal">Where I'm headed</h2>
+  <div class="headed-panel reveal">
+    <p class="headed-main">I'm actively sharpening my skills toward my first role in security: pentesting, red teaming, or anywhere I get to break things for the right reasons.</p>
+    <p class="headed-em">I learn fast, I document everything, and I genuinely love this work.</p>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="wrap footcta reveal">
+  <div class="sec-label" style="justify-content:center;">// Contact</div>
+  <h2>Let's <span class="accent">connect</span>.</h2>
+  <p class="foot-sub">Hiring, collaborating, or just want to talk shop? My inbox is open, and so is my code. I'm always happy to meet others in the field.</p>
+  <div class="cta-row" style="justify-content:center;">
+    <a href="https://github.com/Idan-Babayan" class="btn btn-primary" data-magnetic>
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.2.8-.5v-1.7c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.6.8.5A11.5 11.5 0 0 0 23.5 12C23.5 5.7 18.3.5 12 .5z"/></svg>
+      GitHub
+    </a>
+    <button class="btn btn-ghost" data-magnetic type="button" data-copy="contact@idanstudio.click">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="m3 6 9 6.5L21 6"/></svg>
+      <span class="btn-label">contact@idanstudio.click</span>
+    </button>
+  </div>
+</section>
+
+<footer class="footbar">
+  <div class="wrap footbar-inner">
+    <span>© 2026 Idan Babayan</span>
+    <span class="foot-live"><span class="dot"></span> idanstudio.click</span>
+    <span>Built with Astro</span>
+  </div>
+</footer>
+
+<style is:global>
+  :root {
+    --ink: #07090a; --ink-2: #0d1113;
+    --panel: rgba(255,255,255,.025); --panel-brd: rgba(255,255,255,.08);
+    --text: #e9f1ee; --muted: #79857f;
+    --lime: #b6ff3c; --cyan: #41efff; --magenta: #ff4d9d;
+    --btn-primary-text: #06251a;
+    /* Background-glow hues — kept separate from text accents so each theme
+       can have its own atmospheric palette without hurting contrast. */
+    --glow-1: #41efff; --glow-2: #b6ff3c; --glow-3: #ff4d9d;
+    --display: 'Syne', sans-serif; --mono: 'JetBrains Mono', monospace;
+  }
+  /* LIGHT THEME — warm paper, darkened accents for contrast, soft pastel glows */
+  html[data-theme="light"] {
+    --ink: #ece9e0; --ink-2: #f7f5ee;
+    --panel: rgba(0,0,0,.03); --panel-brd: rgba(0,0,0,.12);
+    --text: #12181a; --muted: #586460;
+    --lime: #4d7c0f; --cyan: #0b7e92; --magenta: #c41d6f;
+    --btn-primary-text: #f6f4ec;
+    --glow-1: #7cc9ff; --glow-2: #a9dd6a; --glow-3: #ff9ec9;
+  }
+  /* Theme-aware accents (used by skill + practice cards) */
+  .accent-cyan    { --accent: #41efff; }
+  .accent-magenta { --accent: #ff4d9d; }
+  .accent-lime    { --accent: #b6ff3c; }
+  .accent-amber   { --accent: #ffc23d; }
+  .accent-purple  { --accent: #d96bff; }
+  .accent-red     { --accent: #ff5c5c; }
+  html[data-theme="light"] .accent-cyan    { --accent: #0b8ca0; }
+  html[data-theme="light"] .accent-magenta { --accent: #c41d6f; }
+  html[data-theme="light"] .accent-lime    { --accent: #5a8f12; }
+  html[data-theme="light"] .accent-amber   { --accent: #a86f04; }
+  html[data-theme="light"] .accent-purple  { --accent: #8b3dc4; }
+  html[data-theme="light"] .accent-red     { --accent: #d12f2f; }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--ink); color: var(--text); font-family: var(--mono);
+    overflow-x: hidden; line-height: 1.6; -webkit-font-smoothing: antialiased; transition: background .3s, color .3s; }
+  body::after {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 9999; opacity: .035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  html[data-theme="light"] body::after { opacity: .02; }
+  /* DARK glows: subtle neon washes */
+  body::before {
+    content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none; transition: background .3s;
+    background:
+      radial-gradient(55vw 45vh at 12% 0%, color-mix(in oklab, var(--glow-1) 12%, transparent), transparent 70%),
+      radial-gradient(50vw 45vh at 92% 12%, color-mix(in oklab, var(--glow-2) 11%, transparent), transparent 70%),
+      radial-gradient(55vw 50vh at 60% 100%, color-mix(in oklab, var(--glow-3) 8%, transparent), transparent 70%);
+  }
+  /* LIGHT glows: stronger soft-pastel washes so the atmosphere survives on paper */
+  html[data-theme="light"] body::before {
+    background:
+      radial-gradient(55vw 45vh at 12% 0%, color-mix(in oklab, var(--glow-1) 48%, transparent), transparent 72%),
+      radial-gradient(50vw 45vh at 92% 12%, color-mix(in oklab, var(--glow-2) 44%, transparent), transparent 72%),
+      radial-gradient(55vw 50vh at 60% 100%, color-mix(in oklab, var(--glow-3) 34%, transparent), transparent 72%);
+  }
+  .wrap { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; }
+
+  /* NAV HUD */
+  .hud { position: relative; z-index: 5; display: flex; align-items: center; justify-content: space-between;
+    max-width: 1100px; margin: 0 auto; padding: 1rem 1.5rem; border-bottom: 1px solid var(--panel-brd);
+    font-family: var(--mono); font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; }
+  .hud-home { color: var(--text); text-decoration: none; transition: color .2s; }
+  .hud-home:hover { color: var(--lime); }
+  .hud-sub { color: var(--muted); }
+  .hud-nav { display: flex; gap: 1.4rem; align-items: center; }
+  .hud-nav a { color: var(--muted); text-decoration: none; transition: color .2s; }
+  .hud-nav a:hover, .hud-nav a.active { color: var(--lime); }
+  .theme-toggle { background: none; border: none; cursor: pointer; color: var(--muted); display: inline-flex;
+    padding: 0; transition: color .2s; }
+  .theme-toggle:hover { color: var(--lime); }
+  .theme-toggle .ico { width: 16px; height: 16px; }
+  html[data-theme="dark"] .ico-moon { display: none; }
+  html[data-theme="light"] .ico-sun { display: none; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--lime);
+    box-shadow: 0 0 10px var(--lime); animation: pulse 1.8s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.35;transform:scale(.8)} }
+
+  /* HERO */
+  .about-hero { position: relative; padding: 4rem 0 3rem; min-height: 56vh; display: flex; align-items: center; }
+  #constellation { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; }
+  .about-hero-inner { position: relative; z-index: 2; display: flex; align-items: center; gap: 3rem; }
+  .about-hero-text { flex: 1; }
+  .about-portrait { width: 200px; height: 200px; object-fit: contain; flex-shrink: 0; border-radius: 18px;
+    filter: drop-shadow(0 10px 30px rgba(0,0,0,.4)); }
+
+  .eyebrow { font-family: var(--mono); font-size: .8rem; letter-spacing: .35em; text-transform: uppercase;
+    color: var(--lime); margin-bottom: 1.3rem; display: flex; align-items: center; gap: .8rem; }
+  .eyebrow::before { content:""; width: 40px; height: 1px; background: var(--lime); display:inline-block; }
+  h1.headline { font-family: var(--display); font-weight: 800; font-size: clamp(2.4rem, 6vw, 4.6rem);
+    line-height: 1; letter-spacing: -.02em; margin-bottom: 1.5rem; }
+  .headline .decode { color: var(--lime); }
+  .sub { font-size: clamp(.95rem, 1.3vw, 1.08rem); color: var(--muted); max-width: 54ch; line-height: 1.75; }
+  .sub b { color: var(--text); font-weight: 500; }
+
+  /* SECTIONS */
+  .sec { padding: 4.5rem 0; position: relative; }
+  .sec-label { font-family: var(--mono); font-size: .75rem; letter-spacing: .3em; text-transform: uppercase;
+    color: var(--cyan); margin-bottom: .8rem; display: flex; }
+  .sec-title { font-family: var(--display); font-weight: 700; font-size: clamp(1.7rem, 3.5vw, 2.6rem);
+    letter-spacing: -.01em; margin-bottom: 2rem; }
+  .prose { color: var(--muted); max-width: 64ch; line-height: 1.8; margin-bottom: 1.3rem; font-size: .98rem; }
+  .prose b { color: var(--text); font-weight: 600; }
+
+  .pullquote { border-left: 3px solid var(--lime); padding: .6rem 0 .6rem 1.5rem; margin: 1.8rem 0;
+    font-family: var(--display); font-weight: 600; font-size: clamp(1.15rem, 2vw, 1.5rem);
+    line-height: 1.45; color: var(--text); max-width: 60ch; }
+  .pullquote em { color: var(--lime); font-style: italic; }
+
+  /* SKILLS */
+  .skill-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap: 1.1rem; }
+  .skill-card { position: relative; background: var(--ink-2); border: 1px solid var(--panel-brd);
+    border-radius: 16px; padding: 1.75rem; transform-style: preserve-3d;
+    transition: transform .12s ease, border-color .3s; overflow: hidden; will-change: transform; }
+  .skill-card:hover { border-color: var(--accent); }
+  .skill-card .glare { position: absolute; inset: 0; opacity: 0; transition: opacity .3s; pointer-events: none;
+    background: radial-gradient(circle at var(--mx,50%) var(--my,50%), color-mix(in oklab, var(--accent) 20%, transparent), transparent 45%); }
+  .skill-card:hover .glare { opacity: 1; }
+  .skill-icon { width: 30px; height: 30px; color: var(--accent); margin-bottom: 1rem; transform: translateZ(30px); }
+  .skill-card h3 { font-family: var(--display); font-weight: 700; font-size: 1.2rem; margin-bottom: .5rem; transform: translateZ(25px); }
+  .skill-card p { color: var(--muted); font-size: .88rem; line-height: 1.6; transform: translateZ(15px); }
+
+  /* PRACTICE — now with the same 3D tilt + glare as the homepage cards */
+  .practice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap: 1rem; margin-top: 1.5rem; }
+  .practice { position: relative; display: flex; align-items: center; gap: 1rem; padding: 1.25rem 1.4rem; border-radius: 14px;
+    background: var(--ink-2); border: 1px solid var(--panel-brd); text-decoration: none; color: var(--text);
+    transform-style: preserve-3d; transition: transform .12s ease, border-color .3s; overflow: hidden; will-change: transform; }
+  .practice:hover { border-color: var(--accent); }
+  .practice .glare { position: absolute; inset: 0; opacity: 0; transition: opacity .3s; pointer-events: none;
+    background: radial-gradient(circle at var(--mx,50%) var(--my,50%), color-mix(in oklab, var(--accent) 22%, transparent), transparent 50%); }
+  .practice:hover .glare { opacity: 1; }
+  .practice img { width: 40px; height: 40px; flex-shrink: 0; transform: translateZ(28px); }
+  .practice div { transform: translateZ(18px); }
+  .practice strong { font-family: var(--display); font-size: 1.05rem; display: block; }
+  .practice span { color: var(--muted); font-size: .82rem; }
+
+  /* HEADED — wide, balanced two-column panel */
+  .headed-panel { display: grid; grid-template-columns: 1.5fr 1fr; gap: 2.5rem; align-items: center;
+    background: var(--ink-2); border: 1px solid var(--panel-brd); border-left: 3px solid var(--lime);
+    border-radius: 16px; padding: 2.5rem 3rem; }
+  .headed-main { color: var(--muted); line-height: 1.8; font-size: 1.05rem; }
+  .headed-em { font-family: var(--display); font-weight: 700; color: var(--lime);
+    font-size: clamp(1.2rem, 1.9vw, 1.55rem); line-height: 1.4; }
+
+  /* BUTTONS */
+  .cta-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .btn { position: relative; font-family: var(--mono); font-weight: 500; font-size: .9rem; letter-spacing: .03em;
+    padding: .95rem 1.7rem; border-radius: 10px; cursor: pointer; text-decoration: none;
+    display: inline-flex; align-items: center; gap: .6rem;
+    transition: transform .15s ease, box-shadow .25s ease, border-color .25s; will-change: transform; }
+  .btn-primary { background: var(--lime); color: var(--btn-primary-text); }
+  .btn-primary:hover { box-shadow: 0 10px 40px -8px var(--lime); }
+  .btn-ghost { background: var(--panel); color: var(--text); border: 1px solid var(--panel-brd); }
+  .btn-ghost:hover { border-color: var(--cyan); box-shadow: 0 10px 40px -12px var(--cyan); }
+
+  /* CONTACT + FOOTER */
+  .footcta { text-align: center; padding: 6rem 0 4rem; }
+  .footcta h2 { font-family: var(--display); font-weight: 800; font-size: clamp(2rem,5vw,3.2rem); letter-spacing:-.02em; margin-bottom: 1.2rem; }
+  .footcta .accent { color: var(--lime); }
+  .foot-sub { color: var(--muted); max-width: 46ch; margin: 0 auto 2.5rem; font-size: .95rem; line-height: 1.7; }
+  .footbar { border-top: 1px solid var(--panel-brd); padding: 1.5rem 0; position: relative; z-index: 1; }
+  .footbar-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;
+    font-family: var(--mono); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .foot-live { display: flex; align-items: center; gap: .5rem; }
+
+  /* REVEAL */
+  .reveal { opacity: 0; transform: translateY(28px);
+    transition: opacity .8s cubic-bezier(.2,.7,.2,1), transform .8s cubic-bezier(.2,.7,.2,1); }
+  .reveal.in { opacity: 1; transform: none; }
+
+  @media (max-width: 780px){
+    .about-hero-inner { flex-direction: column-reverse; text-align: center; gap: 1.5rem; }
+    .eyebrow { justify-content: center; }
+    .sub { margin: 0 auto; }
+    .about-portrait { width: 150px; height: 150px; }
+    .hud-sub { display: none; }
+    .headed-panel { grid-template-columns: 1fr; gap: 1.2rem; padding: 1.75rem 2rem; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .reveal{opacity:1;transform:none;transition:none} .dot{animation:none}
+    body, body::before { transition: none; } * { scroll-behavior: auto; }
+  }
+</style>
+
+<script>
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let refreshCanvasColors = () => {};
+
+  /* Constellation canvas */
+  const cv = document.getElementById('constellation') as HTMLCanvasElement | null;
+  if (cv) {
+    const ctx = cv.getContext('2d')!;
+    let w = 0, h = 0, dpr = 1;
+    let nodes: {x:number,y:number,vx:number,vy:number}[] = [];
+    const mouse = {x:-999,y:-999};
+    let A = '#41efff', B = '#b6ff3c';
+    let nodeA = .5, lineA = .16, mouseA = .38;
+    const readColors = () => {
+      const cs = getComputedStyle(document.documentElement);
+      A = cs.getPropertyValue('--cyan').trim() || '#41efff';
+      B = cs.getPropertyValue('--lime').trim() || '#b6ff3c';
+      // Light mode uses darker line colors on a pale bg, so push the alpha up to stay visible.
+      const light = document.documentElement.dataset.theme === 'light';
+      nodeA = light ? .85 : .5;
+      lineA = light ? .34 : .16;
+      mouseA = light ? .55 : .38;
+    };
+    readColors();
+    refreshCanvasColors = readColors;
+    const size = () => {
+      dpr = Math.min(window.devicePixelRatio||1, 2);
+      w = cv.offsetWidth; h = cv.offsetHeight;
+      cv.width = w*dpr; cv.height = h*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+    };
+    const init = () => {
+      size();
+      const count = Math.min(60, Math.floor(w*h/16000));
+      nodes = Array.from({length:count}, () => ({
+        x: Math.random()*w, y: Math.random()*h, vx:(Math.random()-.5)*.25, vy:(Math.random()-.5)*.25
+      }));
+    };
+    const draw = () => {
+      ctx.clearRect(0,0,w,h);
+      for(let i=0;i<nodes.length;i++){
+        const n = nodes[i]; n.x+=n.vx; n.y+=n.vy;
+        if(n.x<0||n.x>w) n.vx*=-1; if(n.y<0||n.y>h) n.vy*=-1;
+        const dx = mouse.x-n.x, dy = mouse.y-n.y, md = Math.hypot(dx,dy);
+        if(md<140){ n.x += dx*0.004; n.y += dy*0.004; }
+        ctx.beginPath(); ctx.arc(n.x,n.y,1.6,0,7); ctx.fillStyle = A; ctx.globalAlpha=nodeA; ctx.fill();
+        for(let j=i+1;j<nodes.length;j++){
+          const m = nodes[j], d = Math.hypot(n.x-m.x, n.y-m.y);
+          if(d<120){
+            ctx.beginPath(); ctx.moveTo(n.x,n.y); ctx.lineTo(m.x,m.y);
+            ctx.strokeStyle = (i+j)%5===0 ? B : A; ctx.globalAlpha = (1-d/120)*lineA; ctx.lineWidth=.7; ctx.stroke();
+          }
+        }
+        if(md<140){
+          ctx.beginPath(); ctx.moveTo(n.x,n.y); ctx.lineTo(mouse.x,mouse.y);
+          ctx.strokeStyle=B; ctx.globalAlpha=(1-md/140)*mouseA; ctx.lineWidth=.8; ctx.stroke();
+        }
+      }
+      ctx.globalAlpha=1; requestAnimationFrame(draw);
+    };
+    if(!reduce){
+      init(); draw();
+      window.addEventListener('resize', init);
+      const host = cv.parentElement!;
+      host.addEventListener('mousemove', e=>{ const r=cv.getBoundingClientRect(); mouse.x=e.clientX-r.left; mouse.y=e.clientY-r.top; });
+      host.addEventListener('mouseleave', ()=>{ mouse.x=-999; mouse.y=-999; });
+    }
+  }
+
+  /* Theme toggle — writes Starlight's shared key so the choice persists into the writeups */
+  const themeToggle = document.getElementById('themeToggle');
+  themeToggle?.addEventListener('click', ()=>{
+    const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem('starlight-theme', next); } catch(_) {}
+    refreshCanvasColors();
+  });
+
+  /* Text decode */
+  function decode(el: HTMLElement){
+    const target = el.dataset.word!; const chars='!<>-_\\/[]{}=+*^?#01'; let frame=0; const dur=32;
+    const id=setInterval(()=>{
+      el.textContent = target.split('').map((c,i)=> (frame/dur*target.length > i) ? c : chars[Math.floor(Math.random()*chars.length)]).join('');
+      if(frame++>dur){ clearInterval(id); el.textContent=target; }
+    },45);
+  }
+
+  /* Reveal */
+  const io = new IntersectionObserver((ents)=>{
+    ents.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  },{threshold:.15});
+  (document.querySelectorAll('.reveal') as NodeListOf<HTMLElement>).forEach((el,i)=>{ el.style.transitionDelay=(i%4*80)+'ms'; io.observe(el); });
+
+  window.addEventListener('load', ()=>{
+    document.querySelectorAll('.about-hero .reveal').forEach((el,i)=> setTimeout(()=>el.classList.add('in'), 110*i));
+    const d = document.querySelector('.decode') as HTMLElement | null;
+    if(d && !reduce) setTimeout(()=>decode(d), 500); else if(d) d.textContent = d.dataset.word ?? null;
+  });
+
+  /* 3D tilt (skill + practice cards) */
+  if(!reduce) (document.querySelectorAll('[data-tilt]') as NodeListOf<HTMLElement>).forEach(card=>{
+    card.addEventListener('mousemove', e=>{
+      const r = card.getBoundingClientRect();
+      const px=(e.clientX-r.left)/r.width, py=(e.clientY-r.top)/r.height;
+      card.style.transform = `perspective(800px) rotateY(${(px-.5)*8}deg) rotateX(${(.5-py)*8}deg) translateY(-3px)`;
+      card.style.setProperty('--mx', px*100+'%'); card.style.setProperty('--my', py*100+'%');
+    });
+    card.addEventListener('mouseleave', ()=>{ card.style.transform=''; });
+  });
+
+  /* Magnetic buttons */
+  if(!reduce) (document.querySelectorAll('[data-magnetic]') as NodeListOf<HTMLElement>).forEach(b=>{
+    b.addEventListener('mousemove', e=>{ const r=b.getBoundingClientRect();
+      b.style.transform=`translate(${(e.clientX-r.left-r.width/2)*.25}px, ${(e.clientY-r.top-r.height/2)*.35}px)`; });
+    b.addEventListener('mouseleave', ()=> b.style.transform='');
+  });
+
+  /* Click-to-copy email */
+  (document.querySelectorAll('[data-copy]') as NodeListOf<HTMLElement>).forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const val = btn.getAttribute('data-copy') ?? '';
+      try { await navigator.clipboard.writeText(val); } catch(_) {}
+      const lbl = btn.querySelector('.btn-label') as HTMLElement | null;
+      if(!lbl) return;
+      const prev = lbl.textContent;
+      lbl.textContent = 'Copied to clipboard ✓';
+      btn.style.borderColor = 'var(--lime)';
+      setTimeout(()=>{ lbl.textContent = prev; btn.style.borderColor = ''; }, 1600);
+    });
+  });
+</script>
+</body>
+</html>
