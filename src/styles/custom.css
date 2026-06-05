@@ -60,27 +60,29 @@ html[data-theme="dark"] :not(pre) > code {
 
 /* ── Toggle / details blocks ─────────────────── */
 
-details {
+/* Scoped to .sl-markdown-content so these content-Toggle styles never leak onto Starlight's
+   sidebar group <details> (which was boxing every group and breaking the nesting line). */
+.sl-markdown-content details {
   border: 1px solid var(--sl-color-gray-5);
   border-radius: 6px;
   padding: 0.4rem 0.75rem;
   margin: 0.5rem 0;
 }
 
-html[data-theme="dark"] details {
+html[data-theme="dark"] .sl-markdown-content details {
   border-color: var(--sl-color-gray-4);
   background-color: rgba(255, 255, 255, 0.02);
 }
 
-html[data-theme="light"] details {
+html[data-theme="light"] .sl-markdown-content details {
   background-color: rgba(0, 0, 0, 0.02);
 }
 
-details[open] {
+.sl-markdown-content details[open] {
   border-color: var(--sl-color-accent);
 }
 
-details > summary {
+.sl-markdown-content details > summary {
   cursor: pointer;
   font-weight: 500;
   padding: 0.3rem 0;
@@ -88,12 +90,12 @@ details > summary {
   user-select: none;
 }
 
-details > summary::marker,
-details > summary::-webkit-details-marker {
+.sl-markdown-content details > summary::marker,
+.sl-markdown-content details > summary::-webkit-details-marker {
   display: none;
 }
 
-details > summary::before {
+.sl-markdown-content details > summary::before {
   content: "▶ ";
   font-size: 0.65em;
   opacity: 0.5;
@@ -102,7 +104,7 @@ details > summary::before {
   margin-right: 0.2rem;
 }
 
-details[open] > summary::before {
+.sl-markdown-content details[open] > summary::before {
   transform: rotate(90deg);
 }
 
@@ -624,6 +626,60 @@ h1#_top {
   font-weight: 700;
 }
 
+/* ── Sub-heading hierarchy: lime/cyan duotone ladder (h2 > h3 > h4) ──
+   Calm and theme-aware (no motion). The levels are separated by size (the
+   Starlight heading scale), weight, AND color so they never read as monotone.
+   Note: Syne is only loaded at 600/700/800, and h1/h2 already claim 800/700, so
+   h3 and h4 share weight 600; h3 vs h4 is carried hard by color + size instead.
+   Scoped to .sl-markdown-content only, never chrome. */
+
+/* h2: still dominates via size (29px, Starlight scale) + weight (700, set above) + the
+   lime "# " marker. The heading TEXT now keeps the neutral heading color (white dark /
+   ink light) instead of lime, so a page full of h2s no longer floods with lime. The marker
+   carries the accent. h2 stays a normal full-width block (no width:fit-content /
+   inline-block), so its divider spans the whole content column, not the text width. */
+/* Divider lives on the heading WRAPPER, not the h2. Starlight makes the h2 display:inline so
+   it flows on one line with the anchor link, which means an h2 is only as wide as its text;
+   a rule on the h2 would shrink-wrap. The wrapper (.sl-heading-wrapper.level-h2) is the
+   full-width block that owns both the h2 and its anchor, so the rule spans the whole column
+   AND stays out of the inline flow (no anchor wrapping). padding-bottom reserves the gap. */
+.sl-markdown-content .sl-heading-wrapper.level-h2 {
+  position: relative;
+  padding-bottom: 0.4rem;
+}
+.sl-markdown-content .sl-heading-wrapper.level-h2::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 1px;
+  opacity: 0.55;
+  /* lime -> cyan -> fade in one rule. Theme-appropriate cyan via the light override below
+     so it is never a glaring bright cyan on paper. */
+  background: linear-gradient(90deg, var(--sl-color-accent), var(--tp-cyan), transparent);
+}
+:root[data-theme='light'] .sl-markdown-content .sl-heading-wrapper.level-h2::after {
+  background: linear-gradient(90deg, var(--sl-color-accent), var(--tp-cyan-ink), transparent);
+}
+
+/* h3: cyan accent, one clear step down. Lighter weight than h2 and no "#" marker
+   so it differs unmistakably. Cyan is theme-aware via the light override. */
+.sl-markdown-content h3 {
+  color: var(--tp-cyan);
+  font-weight: 600;
+}
+:root[data-theme='light'] .sl-markdown-content h3 {
+  color: var(--tp-cyan-ink);
+}
+
+/* h4: quietest. Muted, smaller (Starlight scale), no marker. The Starlight gray
+   token is theme-aware and stays legible against the page background in both modes. */
+.sl-markdown-content h4 {
+  color: var(--sl-color-gray-2);
+  font-weight: 600;
+}
+
 /* ── Prose links: cyan, lime on hover ── */
 .sl-markdown-content a {
   color: var(--tp-cyan);
@@ -650,11 +706,36 @@ h1#_top {
 }
 .sl-markdown-content blockquote p { margin: 0; }
 
-/* ── Sidebar: active item gets a lime bar + tint ── */
-a[aria-current="page"] {
-  background: color-mix(in oklab, var(--sl-color-accent) 12%, transparent);
-  border-inline-start: 2px solid var(--sl-color-accent);
+/* ── Sidebar: active item — obviously filled accent row, distinct from hover ──
+   Raised tint + 3px bar + explicit accessible label color (accent-high, theme-aware:
+   light olive #2f4d09 on pale sidebar, dark pale-lime #daff9e on ink) so the active
+   label clears WCAG AA in both themes instead of inheriting a faint color. Hover stays
+   Starlight's subtle gray, so active and hover never look alike. Scoped to .sidebar so
+   it never touches the TOC "current heading" link (which uses aria-current="true"). */
+.sidebar a[aria-current="page"] {
+  background: color-mix(in oklab, var(--sl-color-accent) 20%, transparent);
+  border-inline-start: 3px solid var(--sl-color-accent);
   border-radius: 0 6px 6px 0;
+  color: var(--sl-color-accent-high);
+  font-weight: 600;
+}
+/* Light: accent is the darker olive on pale paper, so push the tint up a touch more
+   so the active row reads as filled and does not wash out. */
+:root[data-theme='light'] .sidebar a[aria-current="page"] {
+  background: color-mix(in oklab, var(--sl-color-accent) 24%, transparent);
+}
+
+/* ── Sidebar: recolor Starlight's native nesting guide line ──
+   Starlight already draws the nesting guide as a left border on each nested <li>
+   (nav.sidebar details > ul > li). We do NOT add our own border (that caused a doubled
+   line); we only recolor the native one so it is clearly visible in both themes. Its default
+   light color (~#edeef3) is nearly invisible on the #f1eee5 paper sidebar. Theme-aware
+   neutrals fix that. Top-level <li>s have border-style:none, so the root list stays line-free. */
+nav.sidebar details > ul > li {
+  border-inline-start-color: rgba(255, 255, 255, 0.14);
+}
+:root[data-theme='light'] nav.sidebar details > ul > li {
+  border-inline-start-color: rgba(0, 0, 0, 0.14);
 }
 
 /* ── Reading-progress bar (the #tp-progress element is injected by the
@@ -677,15 +758,28 @@ a[aria-current="page"] {
    Targets only chrome (stable Starlight classes), never .sl-markdown-content body copy.
    Colors use Starlight gray tokens so they stay legible and theme-aware in both modes. */
 
-/* Brand wordmark "Idan.Lab": terminal treatment that rhymes with the homepage HUD.
-   Mixed case (not uppercased) so the dotted wordmark reads as written. Overrides the
-   Syne assignment above via later source order at matching a.site-title specificity. */
+/* Brand wordmark "Idan.Lab": aligned to the writeup article title (h1#_top) so the header
+   wordmark and the page title read as one Syne display type system. Same theme-aware lime
+   gradient text-fill as the h1 (dark: white -> #9fef00; light: #12181a -> #4d7c0f). Weight 700
+   (lighter than the h1's 800, which reads heavy at header size); letter-spacing matches the h1.
+   The "." is part of the text node, so it takes the same gradient as every other glyph. Wins
+   over the earlier mono treatment via the same selector at later source order. */
 a.site-title {
-  font-family: var(--sl-font-mono);
+  font-family: var(--tp-display);
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: -0.01em;
+  background: linear-gradient(135deg, var(--sl-color-white), #9fef00);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
   border-bottom: 1px solid transparent;
   transition: color .15s, border-color .15s, text-shadow .15s;
+}
+:root[data-theme='light'] a.site-title {
+  background: linear-gradient(135deg, #12181a, #4d7c0f);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 a.site-title:hover {
   color: var(--sl-color-accent);
