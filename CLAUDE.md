@@ -95,6 +95,13 @@ The intended authoring flow is: write in Notion → export Markdown → run **`n
 
 ## Git policy
 - Never run `git commit` or `git push` unless I explicitly ask. Edit locally; I commit myself.
+- Only use main and dev branches. No others.
+- Never create/rename branches unless I explicitly ask.
+- Never create PRs unless I explicitly ask.
+- Never commit, push, or run git commands unless I explicitly ask.
+- Never add “Co-Authored-By: Claude” or modify commit authors.
+- Never rewrite git history (rebase, amend, force push) unless I explicitly request it.
+- If a task involves git, ask before doing anything.
 
 ## My rules
 - NO em dashes in any copy (use commas, colons, or parentheses).
