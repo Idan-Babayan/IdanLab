@@ -626,6 +626,7 @@ h1#_top {
   font-weight: 700;
 }
 
+<<<<<<< HEAD
 /* ── Sub-heading hierarchy: lime/cyan duotone ladder (h2 > h3 > h4) ──
    Calm and theme-aware (no motion). The levels are separated by size (the
    Starlight heading scale), weight, AND color so they never read as monotone.
@@ -680,6 +681,8 @@ h1#_top {
   font-weight: 600;
 }
 
+=======
+>>>>>>> 8edfebc (Redesign site: standalone marketing pages + Starlight theme pass)
 /* ── Prose links: cyan, lime on hover ── */
 .sl-markdown-content a {
   color: var(--tp-cyan);
@@ -706,6 +709,7 @@ h1#_top {
 }
 .sl-markdown-content blockquote p { margin: 0; }
 
+<<<<<<< HEAD
 /* ── Sidebar: active item — obviously filled accent row, distinct from hover ──
    Raised tint + 3px bar + explicit accessible label color (accent-high, theme-aware:
    light olive #2f4d09 on pale sidebar, dark pale-lime #daff9e on ink) so the active
@@ -736,6 +740,13 @@ nav.sidebar details > ul > li {
 }
 :root[data-theme='light'] nav.sidebar details > ul > li {
   border-inline-start-color: rgba(0, 0, 0, 0.14);
+=======
+/* ── Sidebar: active item gets a lime bar + tint ── */
+a[aria-current="page"] {
+  background: color-mix(in oklab, var(--sl-color-accent) 12%, transparent);
+  border-inline-start: 2px solid var(--sl-color-accent);
+  border-radius: 0 6px 6px 0;
+>>>>>>> 8edfebc (Redesign site: standalone marketing pages + Starlight theme pass)
 }
 
 /* ── Reading-progress bar (the #tp-progress element is injected by the
@@ -758,6 +769,7 @@ nav.sidebar details > ul > li {
    Targets only chrome (stable Starlight classes), never .sl-markdown-content body copy.
    Colors use Starlight gray tokens so they stay legible and theme-aware in both modes. */
 
+<<<<<<< HEAD
 /* Brand wordmark "Idan.Lab": aligned to the writeup article title (h1#_top) so the header
    wordmark and the page title read as one Syne display type system. Same theme-aware lime
    gradient text-fill as the h1 (dark: white -> #9fef00; light: #12181a -> #4d7c0f). Weight 700
@@ -781,6 +793,18 @@ a.site-title {
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+=======
+/* Brand wordmark "Idan.Lab": terminal treatment that rhymes with the homepage HUD.
+   Mixed case (not uppercased) so the dotted wordmark reads as written. Overrides the
+   Syne assignment above via later source order at matching a.site-title specificity. */
+a.site-title {
+  font-family: var(--sl-font-mono);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid transparent;
+  transition: color .15s, border-color .15s, text-shadow .15s;
+}
+>>>>>>> 8edfebc (Redesign site: standalone marketing pages + Starlight theme pass)
 a.site-title:hover {
   color: var(--sl-color-accent);
   border-bottom-color: var(--sl-color-accent);
