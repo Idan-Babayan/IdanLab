@@ -6,6 +6,16 @@
 
 ---
 
+### 2026-06-06 · Rebrand domain: idanstudio.click -> idanlab.dev
+- Decision: Canonical domain is now https://idanlab.dev. Project name, repo, local folder,
+  and all site copy move from "idanstudio" to "idanlab". idanstudio.click is kept as a 301
+  redirect during transition, then retired.
+- Why: "idanstudio" never fit the identity (Idan.Lab). .click reads cheap for a security
+  portfolio (no SEO penalty, weak trust); .dev signals technical/security and forces HTTPS.
+  idanlab.com, idanlabs.com, idan.com, and idan.dev were all taken; idanlab.dev keeps the
+  Lab brand on a developer TLD. Done now while SEO equity is near zero (cheapest time).
+- Status: Adopted.
+
 ### 2026-06-01 · Canonical platform palette: lime / red / purple / amber
 - **Decision:** Resolve the two competing platform color schemes in favor of the homepage /
   sidebar-dot / about-accent palette: HackTheBox lime, VulnHub red, PicoCTF purple,

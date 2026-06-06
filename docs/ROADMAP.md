@@ -5,6 +5,9 @@
 > Each item: `[area] description — owner-note`. Areas: DESIGN, CONTENT, ENG, PRODUCT.
 
 ## Now (in progress)
+- [ENG] Domain rebrand idanstudio.click -> idanlab.dev. In-repo renames done. Remaining:
+  Pages custom domain, 301 from old domain, Cloudflare email on @idanlab.dev, Search Console
+  + sitemap resubmit, external link updates.
 - [ENG/DESIGN] Deploy the writeup theme pass; verify sidebar colored dots align on the real
   Starlight build (screenshot check). Adjust `nth-child` selectors if needed.
 - [CONTENT] Add flag/answer **spoiler toggle** to `notion_cleaner.py` so `:::tip[Answer]`

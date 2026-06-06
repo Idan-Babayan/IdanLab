@@ -61,7 +61,7 @@ Each MDX file becomes a page automatically based on its file name.
 
 ## 🌐 Live Site
 
-👉 https://idanstudio.click
+👉 https://idanlab.dev
 
 ---
 
@@ -72,4 +72,4 @@ This project is constantly evolving. Content may be incomplete or reorganized fr
 ### Contact   
 
 Feel free to reach out: 
-📧 [contact@idanstudio.click](mailto:contact@idanstudio.click)
+📧 [contact@idanlab.dev](mailto:contact@idanlab.dev)

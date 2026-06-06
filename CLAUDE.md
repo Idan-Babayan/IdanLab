@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-**Idan.Lab** — a personal cybersecurity lab notebook + portfolio ([idanstudio.click](https://idanstudio.click)). It hosts CTF writeups (HackTheBox, VulnHub, PicoCTF, OverTheWire) plus a recruiter-facing profile. Astro + Starlight, static (SSG), deployed on Cloudflare Pages. Content is the product; the design is deliberately high-effort ("Curiosity is my exploit").
+**Idan.Lab** — a personal cybersecurity lab notebook + portfolio ([idanlab.dev](https://idanlab.dev)). It hosts CTF writeups (HackTheBox, VulnHub, PicoCTF, OverTheWire) plus a recruiter-facing profile. Astro + Starlight, static (SSG), deployed on Cloudflare Pages. Content is the product; the design is deliberately high-effort ("Curiosity is my exploit").
 
 ### Source of truth — read `docs/` first
 
@@ -91,7 +91,8 @@ The intended authoring flow is: write in Notion → export Markdown → run **`n
 - **No em dashes in any site copy** — hard rule (the owner reads them as an AI tell). Use commas, colons, or parentheses.
 - TypeScript in `.astro` `<script>` blocks uses explicit assertions (`as HTMLElement | null`, `!`, `?? ''`) to keep a clean type-check; match that style.
 - Real name is fine on the public site.
-- **Deployment:** Cloudflare Pages auto-deploys on push to **`main`** (also at `idanstudio.pages.dev`). Build `npm run build`, output `dist/` (gitignored).
+- **Domain:** the canonical domain is **`idanlab.dev`** (moved from `idanstudio.click`, 2026-06-06; old domain kept as a 301 redirect, then retired). See DECISIONS.
+- **Deployment:** Cloudflare Pages auto-deploys on push to **`main`** (also at `idanlab.pages.dev`). Build `npm run build`, output `dist/` (gitignored).
 
 ## Git policy
 - Never run `git commit` or `git push` unless I explicitly ask. Edit locally; I commit myself.
