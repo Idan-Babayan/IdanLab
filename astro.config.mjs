@@ -5,7 +5,7 @@ import path from 'path';
 import { pluginPrivCommand } from './src/lib/ec-priv-command.mjs';
 
 export default defineConfig({
-  site: 'https://idanstudio.click',
+  site: 'https://idanlab.dev',
 
   vite: {
     resolve: {

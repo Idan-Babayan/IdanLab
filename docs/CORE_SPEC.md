@@ -20,12 +20,12 @@
 
 ## 2. Live Infrastructure
 
-- **Domain:** `idanstudio.click` (registered via AWS Route 53; nameservers delegated to
-  Cloudflare: `tate.ns.cloudflare.com`, `melody.ns.cloudflare.com`).
+- **Domain:** `idanlab.dev` (nameservers delegated to Cloudflare). Old domain
+  `idanstudio.click` is kept as a 301 redirect during transition, then retired.
 - **Hosting:** Cloudflare Pages. Build command `npm run build`, output dir `dist`,
   framework preset Astro.
-- **Repo:** `github.com/Idan-Babayan/idanstudio` (public). Push to `main` → Cloudflare
-  Pages auto-deploys. Also serves at `idanstudio.pages.dev`.
+- **Repo:** `github.com/Idan-Babayan/idanlab` (public). Push to `main` → Cloudflare
+  Pages auto-deploys. Also serves at `idanlab.pages.dev`.
 - **Local dev:** `npm run dev` → `localhost:4321`.
 
 ## 3. Tech Stack (pinned)
@@ -43,7 +43,7 @@
 ## 4. Repository Map
 
 ```
-C:\dev\idanstudio\                    # chosen to avoid Hebrew chars in C:\Users\אידן\
+C:\dev\idanlab\                       # chosen to avoid Hebrew chars in C:\Users\אידן\
 ├─ astro.config.mjs                   # Starlight config: sidebar, fonts(head), EC themes, image-zoom, vite alias
 ├─ src/
 │  ├─ pages/
@@ -123,7 +123,7 @@ carries a leading glowing dot so it never reads as a difficulty pill. (See DECIS
 1. Author writeup in **Notion**, export as Markdown.
 2. Run **`notion_cleaner.py`**:
    ```
-   python notion_cleaner.py "Machine.md" -p hackthebox -d easy -o C:\dev\idanstudio \
+   python notion_cleaner.py "Machine.md" -p hackthebox -d easy -o C:\dev\idanlab \
      --description "..." --os Linux --title "Busqueda"
    ```
    - Args: input; `-p {hackthebox,vulnhub,picoctf,overthewire}`; `-d {easy,medium,hard,misc}`;
@@ -169,7 +169,7 @@ carries a leading glowing dot so it never reads as a difficulty pill. (See DECIS
 
 ## 9. Environment & Tooling
 
-- **Host OS:** Windows. Project at `C:\dev\idanstudio` (avoids Hebrew username path).
+- **Host OS:** Windows. Project at `C:\dev\idanlab` (avoids Hebrew username path).
 - **Kali** lives in a VM for actual security work (never the build host).
 - **Editors/tools:** VS Code (+ Astro extension, optionally Claude Code), GitHub Desktop, Git.
 - `npm config set cache C:\npm-cache`. PowerShell: `Set-ExecutionPolicy RemoteSigned -Scope CurrentUser`.
