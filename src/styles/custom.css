@@ -60,27 +60,29 @@ html[data-theme="dark"] :not(pre) > code {
 
 /* ── Toggle / details blocks ─────────────────── */
 
-details {
+/* Scoped to .sl-markdown-content so these content-Toggle styles never leak onto Starlight's
+   sidebar group <details> (which was boxing every group and breaking the nesting line). */
+.sl-markdown-content details {
   border: 1px solid var(--sl-color-gray-5);
   border-radius: 6px;
   padding: 0.4rem 0.75rem;
   margin: 0.5rem 0;
 }
 
-html[data-theme="dark"] details {
+html[data-theme="dark"] .sl-markdown-content details {
   border-color: var(--sl-color-gray-4);
   background-color: rgba(255, 255, 255, 0.02);
 }
 
-html[data-theme="light"] details {
+html[data-theme="light"] .sl-markdown-content details {
   background-color: rgba(0, 0, 0, 0.02);
 }
 
-details[open] {
+.sl-markdown-content details[open] {
   border-color: var(--sl-color-accent);
 }
 
-details > summary {
+.sl-markdown-content details > summary {
   cursor: pointer;
   font-weight: 500;
   padding: 0.3rem 0;
@@ -88,12 +90,12 @@ details > summary {
   user-select: none;
 }
 
-details > summary::marker,
-details > summary::-webkit-details-marker {
+.sl-markdown-content details > summary::marker,
+.sl-markdown-content details > summary::-webkit-details-marker {
   display: none;
 }
 
-details > summary::before {
+.sl-markdown-content details > summary::before {
   content: "▶ ";
   font-size: 0.65em;
   opacity: 0.5;
@@ -102,7 +104,7 @@ details > summary::before {
   margin-right: 0.2rem;
 }
 
-details[open] > summary::before {
+.sl-markdown-content details[open] > summary::before {
   transform: rotate(90deg);
 }
 
@@ -140,11 +142,28 @@ html[data-theme="light"] .starlight-aside--tip {
   line-height: 1.4;
 }
 
-/* Platforms — cool/distinct hues (never green, to avoid Easy clash) */
-.platform-hackthebox  { background: rgba(59,130,246,.15);  color: #2563eb; border-color: rgba(59,130,246,.35); }
-.platform-vulnhub     { background: rgba(6,182,212,.15);   color: #0891b2; border-color: rgba(6,182,212,.35); }
-.platform-picoctf     { background: rgba(139,92,246,.15);  color: #7c3aed; border-color: rgba(139,92,246,.35); }
-.platform-overthewire { background: rgba(249,115,22,.15);  color: #ea580c; border-color: rgba(249,115,22,.35); }
+/* Platforms: canonical site palette (matches sidebar dots + about-page accents). */
+/* HTB lime now overlaps Easy green, so every platform badge carries a leading glow dot (below). */
+.platform-hackthebox  { background: rgba(132,204,22,.15);  color: #4d7c0f; border-color: rgba(132,204,22,.35); }
+.platform-vulnhub     { background: rgba(239,68,68,.15);   color: #d12f2f; border-color: rgba(239,68,68,.35); }
+.platform-picoctf     { background: rgba(168,85,247,.15);  color: #8b3dc4; border-color: rgba(168,85,247,.35); }
+.platform-overthewire { background: rgba(245,158,11,.15);  color: #a86f04; border-color: rgba(245,158,11,.35); }
+
+/* Leading glowing dot: echoes the sidebar dot so a platform badge never reads as a difficulty pill. */
+/* Uses currentColor so the dot tracks each platform hue and adapts per theme automatically. */
+.platform-hackthebox::before,
+.platform-vulnhub::before,
+.platform-picoctf::before,
+.platform-overthewire::before {
+  content: "";
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  margin-right: 0.4rem;
+  background: currentColor;
+  box-shadow: 0 0 6px currentColor;
+  flex-shrink: 0;
+}
 
 /* Difficulty — traffic-light semantics */
 .difficulty-easy   { background: rgba(34,197,94,.15);  color: #16a34a; border-color: rgba(34,197,94,.35); }
@@ -157,10 +176,10 @@ html[data-theme="light"] .starlight-aside--tip {
 .os-windows { background: rgba(37,99,235,.12);   color: #2563eb; border-color: rgba(37,99,235,.3); }
 
 /* Brighter badge text in dark mode */
-html[data-theme="dark"] .platform-hackthebox  { color: #60a5fa; }
-html[data-theme="dark"] .platform-vulnhub     { color: #22d3ee; }
-html[data-theme="dark"] .platform-picoctf     { color: #a78bfa; }
-html[data-theme="dark"] .platform-overthewire { color: #fb923c; }
+html[data-theme="dark"] .platform-hackthebox  { color: #b6ff3c; }
+html[data-theme="dark"] .platform-vulnhub     { color: #ff5c5c; }
+html[data-theme="dark"] .platform-picoctf     { color: #d96bff; }
+html[data-theme="dark"] .platform-overthewire { color: #ffc23d; }
 html[data-theme="dark"] .difficulty-easy   { color: #4ade80; }
 html[data-theme="dark"] .difficulty-medium { color: #fbbf24; }
 html[data-theme="dark"] .difficulty-hard   { color: #f87171; }
@@ -490,3 +509,381 @@ html[data-theme="light"] body:has(.home-stats) {
   .platform-intro { flex-direction: column; text-align: center; }
   .pi-meta { justify-content: center; }
 }
+
+/* ══════════════════════════════════════════════
+   THEME PASS — align the writeups with the homepage /
+   about "Decrypted" aesthetic.
+   CSS-only: every bit of Starlight functionality
+   (search, sidebar nav, TOC, a11y, the theme toggle)
+   is preserved. Works by overriding Starlight's own
+   design tokens, the framework-blessed way.
+   ══════════════════════════════════════════════ */
+
+/* ── Typography: Syne for display, JetBrains Mono for everything else ── */
+:root {
+  --sl-font: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --sl-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --tp-display: 'Syne', sans-serif;
+  --tp-cyan: #41efff;
+  --tp-cyan-ink: #0b7e92;
+}
+
+/* ── Accent + surfaces — DARK ── */
+:root,
+:root[data-theme='dark'] {
+  --sl-color-accent-low: #20330a;
+  --sl-color-accent: #b6ff3c;
+  --sl-color-accent-high: #daff9e;
+  --sl-color-text-accent: #b6ff3c;
+  --sl-color-bg: #07090a;
+  --sl-color-bg-nav: color-mix(in oklab, #07090a 78%, transparent);
+  --sl-color-bg-sidebar: #0a0e0f;
+  --tp-glow-1: #41efff;
+  --tp-glow-2: #b6ff3c;
+}
+
+/* ── Accent + surfaces — LIGHT (warm paper, darkened accents) ── */
+:root[data-theme='light'] {
+  --sl-color-accent-low: #e0eec4;
+  --sl-color-accent: #4d7c0f;
+  --sl-color-accent-high: #2f4d09;
+  --sl-color-text-accent: #4d7c0f;
+  --sl-color-bg: #ece9e0;
+  --sl-color-bg-nav: color-mix(in oklab, #ece9e0 80%, transparent);
+  --sl-color-bg-sidebar: #f1eee5;
+  --tp-glow-1: #7cc9ff;
+  --tp-glow-2: #a9dd6a;
+  /* Darker cyan-ink for paper: the previous #0b7e92 left prose links and h3 at ~3.9:1
+     (under AA 4.5 for body text). #08697a clears 4.5:1 while staying on-brand teal, not dull.
+     Light-only override; the dark --tp-cyan is unchanged. */
+  --tp-cyan-ink: #08697a;
+}
+
+/* ── Faint atmosphere (fixed + very subtle — reading stays calm) ──
+   Spans the viewport so a low bottom glow can echo the homepage. The two top
+   radials are unchanged: they are anchored to the top with the same offsets,
+   so widening the box from 360px to full height does not move them. */
+body::before {
+  content: "";
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(60vw 300px at 16% -70px, color-mix(in oklab, var(--tp-glow-1) 11%, transparent), transparent 72%),
+    radial-gradient(55vw 280px at 92% -90px, color-mix(in oklab, var(--tp-glow-2) 10%, transparent), transparent 72%),
+    radial-gradient(80vw 360px at 60% 118%, color-mix(in oklab, var(--tp-glow-1) 9%, transparent), color-mix(in oklab, var(--tp-glow-2) 6%, transparent) 55%, transparent 80%);
+}
+:root[data-theme='light'] body::before {
+  /* Top glows already read on paper at 42/40%. The bottom glow needs its own stronger pair
+     (the shared dark 9/6% vanished on #ece9e0), so paper feels atmospheric, not flat white. */
+  background:
+    radial-gradient(60vw 300px at 16% -70px, color-mix(in oklab, var(--tp-glow-1) 42%, transparent), transparent 72%),
+    radial-gradient(55vw 280px at 92% -90px, color-mix(in oklab, var(--tp-glow-2) 40%, transparent), transparent 72%),
+    radial-gradient(80vw 380px at 60% 118%, color-mix(in oklab, var(--tp-glow-2) 34%, transparent), color-mix(in oklab, var(--tp-glow-1) 22%, transparent) 55%, transparent 82%);
+}
+/* Grain reads far less on pale paper than on ink: lift it just enough to add tooth. */
+:root[data-theme='light'] body::after { opacity: .035; }
+
+/* ── Film grain (mirrors the index.astro / about.astro fractalNoise overlay) ──
+   Fixed full-screen texture, non-interactive. Very low opacity so chrome and
+   reading stay legible in both themes. */
+body::after {
+  content: "";
+  position: fixed; inset: 0; pointer-events: none; z-index: 9999; opacity: .035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+/* Light grain opacity is set alongside the light atmosphere block below (lifted to .035). */
+
+/* ── Headings: Syne display ── */
+.sl-markdown-content :is(h1, h2, h3, h4),
+.site-title,
+a.site-title {
+  font-family: var(--tp-display);
+  letter-spacing: -0.01em;
+}
+.sl-markdown-content h1 { font-weight: 800; }
+.sl-markdown-content h2 { font-weight: 700; }
+
+/* ── Hero echo on the page title only (mirrors .hero h1 gradient text-fill) ──
+   Verified against the live Starlight DOM: the writeup title is frontmatter-driven and
+   renders as `h1#_top` OUTSIDE `.sl-markdown-content` (our writeups start the body at h2),
+   so that is the correct, stable hook (it is also the TOC "Overview"/back-to-top anchor).
+   Also given the Syne display face so it truly echoes the hero. h2/h3/h4 stay solid. */
+h1#_top {
+  font-family: var(--tp-display);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  background: linear-gradient(135deg, var(--sl-color-white), #9fef00);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+:root[data-theme='light'] h1#_top {
+  /* Use an explicit dark ink, not var(--sl-color-black): Starlight's black/white tokens
+     invert per theme, so --sl-color-black resolves to WHITE in light mode and would make
+     the start stop invisible on paper. #12181a is the canonical light text color (CORE_SPEC). */
+  background: linear-gradient(135deg, #12181a, #4d7c0f);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Decorative lime # before section headings (purely visual cue) */
+.sl-markdown-content h2::before {
+  content: "# ";
+  color: var(--sl-color-accent);
+  font-family: var(--sl-font-mono);
+  font-weight: 700;
+}
+
+/* ── Sub-heading hierarchy: lime/cyan duotone ladder (h2 > h3 > h4) ──
+   Calm and theme-aware (no motion). The levels are separated by size (the
+   Starlight heading scale), weight, AND color so they never read as monotone.
+   Note: Syne is only loaded at 600/700/800, and h1/h2 already claim 800/700, so
+   h3 and h4 share weight 600; h3 vs h4 is carried hard by color + size instead.
+   Scoped to .sl-markdown-content only, never chrome. */
+
+/* h2: still dominates via size (29px, Starlight scale) + weight (700, set above) + the
+   lime "# " marker. The heading TEXT now keeps the neutral heading color (white dark /
+   ink light) instead of lime, so a page full of h2s no longer floods with lime. The marker
+   carries the accent. h2 stays a normal full-width block (no width:fit-content /
+   inline-block), so its divider spans the whole content column, not the text width. */
+/* Divider lives on the heading WRAPPER, not the h2. Starlight makes the h2 display:inline so
+   it flows on one line with the anchor link, which means an h2 is only as wide as its text;
+   a rule on the h2 would shrink-wrap. The wrapper (.sl-heading-wrapper.level-h2) is the
+   full-width block that owns both the h2 and its anchor, so the rule spans the whole column
+   AND stays out of the inline flow (no anchor wrapping). padding-bottom reserves the gap. */
+.sl-markdown-content .sl-heading-wrapper.level-h2 {
+  position: relative;
+  padding-bottom: 0.4rem;
+}
+.sl-markdown-content .sl-heading-wrapper.level-h2::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 1px;
+  opacity: 0.55;
+  /* lime -> cyan -> fade in one rule. Theme-appropriate cyan via the light override below
+     so it is never a glaring bright cyan on paper. */
+  background: linear-gradient(90deg, var(--sl-color-accent), var(--tp-cyan), transparent);
+}
+:root[data-theme='light'] .sl-markdown-content .sl-heading-wrapper.level-h2::after {
+  background: linear-gradient(90deg, var(--sl-color-accent), var(--tp-cyan-ink), transparent);
+}
+
+/* h3: cyan accent, one clear step down. Lighter weight than h2 and no "#" marker
+   so it differs unmistakably. Cyan is theme-aware via the light override. */
+.sl-markdown-content h3 {
+  color: var(--tp-cyan);
+  font-weight: 600;
+}
+:root[data-theme='light'] .sl-markdown-content h3 {
+  color: var(--tp-cyan-ink);
+}
+
+/* h4: quietest. Muted, smaller (Starlight scale), no marker. The Starlight gray
+   token is theme-aware and stays legible against the page background in both modes. */
+.sl-markdown-content h4 {
+  color: var(--sl-color-gray-2);
+  font-weight: 600;
+}
+
+/* ── Prose links: cyan, lime on hover ── */
+.sl-markdown-content a {
+  color: var(--tp-cyan);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in oklab, var(--tp-cyan) 40%, transparent);
+  transition: color .15s, border-color .15s;
+}
+.sl-markdown-content a:hover {
+  color: var(--sl-color-accent);
+  border-bottom-color: var(--sl-color-accent);
+}
+:root[data-theme='light'] .sl-markdown-content a {
+  color: var(--tp-cyan-ink);
+  border-bottom-color: color-mix(in oklab, var(--tp-cyan-ink) 40%, transparent);
+}
+
+/* ── Lead blockquote (machine description sits here) ── */
+.sl-markdown-content blockquote {
+  border-inline-start: 3px solid var(--sl-color-accent);
+  background: color-mix(in oklab, var(--sl-color-accent) 7%, transparent);
+  border-radius: 0 10px 10px 0;
+  padding: 0.85rem 1.25rem;
+  font-style: normal;
+}
+.sl-markdown-content blockquote p { margin: 0; }
+
+/* ── Sidebar: active item — obviously filled accent row, distinct from hover ──
+   Raised tint + 3px bar + explicit accessible label color (accent-high, theme-aware:
+   light olive #2f4d09 on pale sidebar, dark pale-lime #daff9e on ink) so the active
+   label clears WCAG AA in both themes instead of inheriting a faint color. Hover stays
+   Starlight's subtle gray, so active and hover never look alike. Scoped to .sidebar so
+   it never touches the TOC "current heading" link (which uses aria-current="true"). */
+.sidebar a[aria-current="page"] {
+  background: color-mix(in oklab, var(--sl-color-accent) 20%, transparent);
+  border-inline-start: 3px solid var(--sl-color-accent);
+  border-radius: 0 6px 6px 0;
+  color: var(--sl-color-accent-high);
+  font-weight: 600;
+}
+/* Light: accent is the darker olive on pale paper, so push the tint up a touch more
+   so the active row reads as filled and does not wash out. */
+:root[data-theme='light'] .sidebar a[aria-current="page"] {
+  background: color-mix(in oklab, var(--sl-color-accent) 24%, transparent);
+}
+
+/* ── Sidebar: recolor Starlight's native nesting guide line ──
+   Starlight already draws the nesting guide as a left border on each nested <li>
+   (nav.sidebar details > ul > li). We do NOT add our own border (that caused a doubled
+   line); we only recolor the native one so it is clearly visible in both themes. Its default
+   light color (~#edeef3) is nearly invisible on the #f1eee5 paper sidebar. Theme-aware
+   neutrals fix that. Top-level <li>s have border-style:none, so the root list stays line-free. */
+nav.sidebar details > ul > li {
+  border-inline-start-color: rgba(255, 255, 255, 0.14);
+}
+:root[data-theme='light'] nav.sidebar details > ul > li {
+  border-inline-start-color: rgba(0, 0, 0, 0.14);
+}
+
+/* ── Reading-progress bar (the #tp-progress element is injected by the
+       small script added to astro.config.mjs head) ── */
+#tp-progress {
+  position: fixed; top: 0; left: 0; height: 2px; width: 0; z-index: 1000;
+  background: linear-gradient(90deg, var(--sl-color-accent), var(--tp-cyan));
+  transition: width .08s linear;
+}
+
+/* ── Code blocks: a touch more presence (syntax colors stay from your EC themes) ── */
+.expressive-code { margin: 1.4rem 0; }
+.expressive-code .frame {
+  border-radius: 12px;
+  box-shadow: 0 14px 40px -24px rgba(0, 0, 0, .7);
+}
+
+/* ── Privilege command highlight (.ec-cmd-priv) ──
+   The ec-priv-command Shiki transformer tags literal "sudo" tokens with this class (see
+   astro.config.mjs / src/lib/ec-priv-command.mjs). EC sets each token's color inline per
+   theme, so we override with theme-scoped rules + !important. Brand magenta signals elevated
+   privilege and reads clearly against the blue/green command colors in both themes. */
+html[data-theme="dark"] .ec-cmd-priv,
+html[data-theme="dark"] .ec-cmd-priv span {
+  color: #ff4d9d !important;
+}
+html[data-theme="light"] .ec-cmd-priv,
+html[data-theme="light"] .ec-cmd-priv span {
+  color: #c41d6f !important;
+}
+
+/* ══════════════════════════════════════════════
+   LIGHT-MODE DEPTH — parity with the dark theme
+   Dark gets depth free from its near-black surfaces; on paper the same panels read flat.
+   These light-only rules add subtle borders + soft warm shadows + tints so code frames,
+   the lead blockquote, and the sidebar separate from the page. Reading stays calm; no motion.
+   Canonical dark token values are untouched (every rule is scoped to data-theme='light').
+   ══════════════════════════════════════════════ */
+
+/* Code frames: a hairline border + a soft warm shadow (the base shadow is tuned for ink and
+   barely reads on paper). Gives the block a clear edge against #ece9e0. */
+:root[data-theme='light'] .expressive-code .frame {
+  border: 1px solid rgba(60, 50, 30, 0.14);
+  box-shadow: 0 8px 24px -16px rgba(60, 50, 30, 0.45), 0 1px 2px rgba(60, 50, 30, 0.06);
+}
+
+/* Lead blockquote: stronger tint + accent-tinted border + soft shadow so it lifts off paper
+   (the shared 7% tint is nearly invisible on #ece9e0). */
+:root[data-theme='light'] .sl-markdown-content blockquote {
+  background: color-mix(in oklab, var(--sl-color-accent) 12%, #f4f1e8);
+  border-inline-start-color: var(--sl-color-accent);
+  box-shadow: 0 6px 20px -14px rgba(60, 50, 30, 0.4);
+}
+
+/* Sidebar: give the rail a subtle edge + soft shadow so the nav reads as a distinct panel,
+   not the same flat sheet as the content column. */
+:root[data-theme='light'] nav.sidebar {
+  border-inline-end: 1px solid rgba(60, 50, 30, 0.12);
+  box-shadow: inset -12px 0 24px -24px rgba(60, 50, 30, 0.35);
+}
+
+/* ── Header + footer chrome: homepage HUD feel ──
+   Mono, uppercase, letter-spaced to mirror index.astro .hud / .footbar.
+   Targets only chrome (stable Starlight classes), never .sl-markdown-content body copy.
+   Colors use Starlight gray tokens so they stay legible and theme-aware in both modes. */
+
+/* Brand wordmark "Idan.Lab": aligned to the writeup article title (h1#_top) so the header
+   wordmark and the page title read as one Syne display type system. Same theme-aware lime
+   gradient text-fill as the h1 (dark: white -> #9fef00; light: #12181a -> #4d7c0f). Weight 700
+   (lighter than the h1's 800, which reads heavy at header size); letter-spacing matches the h1.
+   The "." is part of the text node, so it takes the same gradient as every other glyph. Wins
+   over the earlier mono treatment via the same selector at later source order. */
+a.site-title {
+  font-family: var(--tp-display);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  background: linear-gradient(135deg, var(--sl-color-white), #9fef00);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  border-bottom: 1px solid transparent;
+  transition: color .15s, border-color .15s, text-shadow .15s;
+}
+:root[data-theme='light'] a.site-title {
+  background: linear-gradient(135deg, #12181a, #4d7c0f);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+a.site-title:hover {
+  color: var(--sl-color-accent);
+  border-bottom-color: var(--sl-color-accent);
+  text-shadow: 0 0 8px color-mix(in oklab, var(--sl-color-accent) 45%, transparent);
+}
+
+/* Secondary footer chrome: meta row (last updated / edit link) + prev/next eyebrow labels. */
+footer .meta,
+.pagination-links a {
+  font-family: var(--sl-font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+  color: var(--sl-color-gray-3);
+}
+
+/* Pagination destination name stays readable: real casing, full-contrast text color. */
+.pagination-links a .link-title {
+  text-transform: none;
+  letter-spacing: -0.01em;
+  font-size: 1rem;
+  color: var(--sl-color-white);
+}
+
+/* ── Sidebar category markers — clean colored circles (replaces emojis) ──
+   Top-level order: About · HackTheBox · VulnHub · PicoCTF · OverTheWire.
+   About is targeted by its attrs class; platforms by position.
+   If you REORDER the sidebar, update the nth-child numbers (2=HTB … 5=OTW). */
+ul.top-level > li > details > summary .group-label::before,
+.sb-about::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-inline-end: 0.6rem;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+.sb-about::before                                                        { background: #41efff; box-shadow: 0 0 7px rgba(65,239,255,.55); }
+ul.top-level > li:nth-child(2) > details > summary .group-label::before  { background: #b6ff3c; box-shadow: 0 0 7px rgba(182,255,60,.55); }  /* HackTheBox */
+ul.top-level > li:nth-child(3) > details > summary .group-label::before  { background: #ff5c5c; box-shadow: 0 0 7px rgba(255,92,92,.55); }   /* VulnHub */
+ul.top-level > li:nth-child(4) > details > summary .group-label::before  { background: #d96bff; box-shadow: 0 0 7px rgba(217,107,255,.55); } /* PicoCTF */
+ul.top-level > li:nth-child(5) > details > summary .group-label::before  { background: #ffc23d; box-shadow: 0 0 7px rgba(255,194,61,.55); }  /* OverTheWire */
+
+/* ── ALTERNATIVE: real platform logos instead of circles ──
+   To use your actual SVGs from /public/icons instead of the dots,
+   comment out the four platform color rules just above, then
+   uncomment the block below. (About keeps its cyan dot.)
+ul.top-level > li:nth-child(2) > details > summary .group-label::before  { width:18px; height:18px; border-radius:0; box-shadow:none; background:url('/icons/htb.svg')         center/contain no-repeat; }
+ul.top-level > li:nth-child(3) > details > summary .group-label::before  { width:18px; height:18px; border-radius:0; box-shadow:none; background:url('/icons/vulnhub.svg')     center/contain no-repeat; }
+ul.top-level > li:nth-child(4) > details > summary .group-label::before  { width:18px; height:18px; border-radius:0; box-shadow:none; background:url('/icons/picoctf.svg')     center/contain no-repeat; }
+ul.top-level > li:nth-child(5) > details > summary .group-label::before  { width:18px; height:18px; border-radius:0; box-shadow:none; background:url('/icons/overthewire.svg')  center/contain no-repeat; }
+*/
