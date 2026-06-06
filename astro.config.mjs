@@ -2,6 +2,7 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import starlightImageZoom from 'starlight-image-zoom';
 import path from 'path';
+import { pluginPrivCommand } from './src/lib/ec-priv-command.mjs';
 
 export default defineConfig({
   site: 'https://idanstudio.click',
@@ -17,8 +18,16 @@ export default defineConfig({
   integrations: [
     starlight({
       expressiveCode: {
-        // higher-contrast tokens. catppuccin-latte kept for light: legible and well differentiated.
-        themes: ['github-dark', 'catppuccin-latte'],
+        // Chosen by A/B on the busiest bash command lines (Busqueda writeup), not corpus-wide
+        // counts: a real command line only exercises a couple of token scopes. tokyo-night is the
+        // only-tier dark theme that gives command / flag / IP three distinct colors (github-dark
+        // collapsed command+flag+path into one band of blues). one-light separates command vs flag
+        // on every command line (catppuccin-latte merged them). Both pass WCAG AA on their code bg.
+        themes: ['tokyo-night', 'one-light'],
+        // Tag privilege commands (sudo, ...) with .ec-cmd-priv so custom.css can color them
+        // distinctly. Implemented as an EC plugin because EC 0.42 rejects Shiki DOM-transformer
+        // hooks (span/etc). See src/lib/ec-priv-command.mjs for the mechanism + rationale.
+        plugins: [pluginPrivCommand()],
       },
       plugins: [starlightImageZoom()],
       head: [
