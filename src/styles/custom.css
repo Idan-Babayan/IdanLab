@@ -75,7 +75,11 @@ html[data-theme="dark"] .sl-markdown-content details {
 }
 
 html[data-theme="light"] .sl-markdown-content details {
-  background-color: rgba(0, 0, 0, 0.02);
+  /* A faintly raised warm panel (lighter than the #ece9e0 page) with a hairline border and a
+     soft shadow, so a Toggle reads as a card lifting off the paper instead of a flat box. */
+  background-color: #f4f1e8;
+  border-color: rgba(60, 50, 30, 0.16);
+  box-shadow: 0 4px 14px -12px rgba(60, 50, 30, 0.4);
 }
 
 .sl-markdown-content details[open] {
@@ -186,6 +190,20 @@ html[data-theme="dark"] .difficulty-hard   { color: #f87171; }
 html[data-theme="dark"] .difficulty-misc   { color: #94a3b8; }
 html[data-theme="dark"] .os-linux   { color: #cbd5e1; }
 html[data-theme="dark"] .os-windows { color: #60a5fa; }
+
+/* Light badge polish: paper needs a firmer fill + edge than the shared 15%/35% tint, which
+   washes out on #ece9e0. Light-only background + border overrides (dark fills/borders are
+   unchanged); the vivid AA text inks set on the base rules carry through. */
+:root[data-theme="light"] .platform-hackthebox  { background: rgba(132,204,22,.22); border-color: rgba(132,204,22,.55); }
+:root[data-theme="light"] .platform-vulnhub     { background: rgba(239,68,68,.20);  border-color: rgba(239,68,68,.55); }
+:root[data-theme="light"] .platform-picoctf     { background: rgba(168,85,247,.20); border-color: rgba(168,85,247,.55); }
+:root[data-theme="light"] .platform-overthewire { background: rgba(245,158,11,.22); border-color: rgba(245,158,11,.55); }
+:root[data-theme="light"] .difficulty-easy   { background: rgba(34,197,94,.22);   border-color: rgba(34,197,94,.55); }
+:root[data-theme="light"] .difficulty-medium { background: rgba(245,158,11,.22);  border-color: rgba(245,158,11,.55); }
+:root[data-theme="light"] .difficulty-hard   { background: rgba(239,68,68,.20);   border-color: rgba(239,68,68,.55); }
+:root[data-theme="light"] .difficulty-misc   { background: rgba(100,116,139,.20); border-color: rgba(100,116,139,.5); }
+:root[data-theme="light"] .os-linux   { background: rgba(100,116,139,.18); border-color: rgba(100,116,139,.45); }
+:root[data-theme="light"] .os-windows { background: rgba(37,99,235,.16);   border-color: rgba(37,99,235,.45); }
 
 
 /* ══════════════════════════════════════════════
@@ -578,12 +596,15 @@ body::before {
     radial-gradient(80vw 360px at 60% 118%, color-mix(in oklab, var(--tp-glow-1) 9%, transparent), color-mix(in oklab, var(--tp-glow-2) 6%, transparent) 55%, transparent 80%);
 }
 :root[data-theme='light'] body::before {
-  /* Top glows already read on paper at 42/40%. The bottom glow needs its own stronger pair
-     (the shared dark 9/6% vanished on #ece9e0), so paper feels atmospheric, not flat white. */
+  /* Calmed for reading. The two top radials stay present but drop from 42/40% to a quieter
+     24/22%, so paper still feels atmospheric near the header without hazing. The bottom wash
+     is the part that sat under the text column: it is pushed lower (128%), shortened, dropped
+     to 13%, and warmed to the green glow only (the blue --tp-glow-1 is removed) so it reads as
+     a faint warm horizon, not a blue smudge behind body copy. */
   background:
-    radial-gradient(60vw 300px at 16% -70px, color-mix(in oklab, var(--tp-glow-1) 42%, transparent), transparent 72%),
-    radial-gradient(55vw 280px at 92% -90px, color-mix(in oklab, var(--tp-glow-2) 40%, transparent), transparent 72%),
-    radial-gradient(80vw 380px at 60% 118%, color-mix(in oklab, var(--tp-glow-2) 34%, transparent), color-mix(in oklab, var(--tp-glow-1) 22%, transparent) 55%, transparent 82%);
+    radial-gradient(58vw 280px at 16% -70px, color-mix(in oklab, var(--tp-glow-1) 24%, transparent), transparent 72%),
+    radial-gradient(52vw 260px at 92% -90px, color-mix(in oklab, var(--tp-glow-2) 22%, transparent), transparent 72%),
+    radial-gradient(70vw 300px at 60% 128%, color-mix(in oklab, var(--tp-glow-2) 13%, transparent), transparent 78%);
 }
 /* Grain reads far less on pale paper than on ink: lift it just enough to add tooth. */
 :root[data-theme='light'] body::after { opacity: .035; }
@@ -762,6 +783,12 @@ nav.sidebar details > ul > li {
   background: linear-gradient(90deg, var(--sl-color-accent), var(--tp-cyan));
   transition: width .08s linear;
 }
+/* Light gets its own paper-appropriate duotone (lime-ink to cyan-ink). Dark is untouched and
+   stays lime -> cyan. The thin bar is decorative, so these darkened tones can be vivid; the
+   :root[data-theme='light'] + #id selector outranks the base rule only in light. */
+:root[data-theme='light'] #tp-progress {
+  background: linear-gradient(90deg, #4d7c0f, #0b7e92);
+}
 
 /* ── Code blocks: a touch more presence (syntax colors stay from your EC themes) ── */
 .expressive-code { margin: 1.4rem 0; }
@@ -812,6 +839,12 @@ html[data-theme="light"] .ec-cmd-priv span {
 :root[data-theme='light'] nav.sidebar {
   border-inline-end: 1px solid rgba(60, 50, 30, 0.12);
   box-shadow: inset -12px 0 24px -24px rgba(60, 50, 30, 0.35);
+}
+
+/* Decorative accent (NOT body text): the lime "#" before each h2 can run a touch more
+   saturated than the AA-constrained text accent, to add life on paper. Light-only. */
+:root[data-theme='light'] .sl-markdown-content h2::before {
+  color: #5a8f12;
 }
 
 /* ── Header + footer chrome: homepage HUD feel ──
