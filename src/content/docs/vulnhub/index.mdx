@@ -1,20 +1,9 @@
 ---
 title: VulnHub
 description: VulnHub VM walkthroughs, offline vulnerable machines tackled in my home lab.
+tableOfContents: false
 ---
 
-import { Badge } from '@astrojs/starlight/components';
+import PlatformIndex from '@components/PlatformIndex.astro';
 
-<div class="platform-intro pi-vh">
-  <img src="/icons/vulnhub.svg" alt="" class="pi-icon" data-zoom-off />
-  <div>
-    <p class="pi-tagline">Vulnerable VMs, pulled apart in my home lab.</p>
-    <p class="pi-meta"><Badge text="Offline Labs" variant="danger" /> <Badge text="Boot2Root" variant="note" /></p>
-  </div>
-</div>
-
-VulnHub hosts downloadable vulnerable virtual machines you run entirely offline. I spin these up in my home lab to practice full attack chains without touching anything I shouldn't.
-
-These writeups cover boot2root challenges: getting from a fresh VM boot all the way to root, documenting the enumeration, exploitation, and escalation along the way.
-
-Browse the machines in the sidebar. 👈
+<PlatformIndex platform="vulnhub" />
