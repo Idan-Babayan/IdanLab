@@ -1,0 +1,5 @@
+# you're reading the robots file. curious.
+# most people never look here. the ones who do tend to find things.
+# try /secret
+
+Sitemap: https://idanlab.dev/sitemap-index.xml
