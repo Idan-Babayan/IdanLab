@@ -1,20 +1,9 @@
 ---
 title: OverTheWire
 description: OverTheWire wargame writeups, Linux fundamentals and security concepts, level by level.
+tableOfContents: false
 ---
 
-import { Badge } from '@astrojs/starlight/components';
+import PlatformIndex from '@components/PlatformIndex.astro';
 
-<div class="platform-intro pi-otw">
-  <img src="/icons/overthewire.svg" alt="" class="pi-icon" data-zoom-off />
-  <div>
-    <p class="pi-tagline">Wargames that taught me Linux the hard way.</p>
-    <p class="pi-meta"><Badge text="Linux" variant="caution" /> <Badge text="Wargames" variant="note" /></p>
-  </div>
-</div>
-
-OverTheWire offers SSH-based wargames that teach security concepts through hands-on levels. Bandit alone taught me more practical Linux than any course. Each level is a small puzzle that builds real command-line fluency.
-
-These writeups document my path through the levels: the command, why it works, and the concept it's quietly teaching.
-
-Browse the levels in the sidebar. 👈
+<PlatformIndex platform="overthewire" />

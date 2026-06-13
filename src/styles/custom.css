@@ -465,49 +465,55 @@ html[data-theme="light"] body:has(.home-stats) {
 
 
 /* ══════════════════════════════════════════════
-   PLATFORM INTRO PAGES — section landing headers
+   PLATFORM INDEX PAGES — animated hero + writeup grid
+   (src/components/PlatformIndex.astro + WriteupCard.astro)
+   The components own their visuals via scoped styles; these
+   global rules cover the shared reveal infra, the per-platform
+   accent token, and the Starlight-chrome overrides a scoped
+   component style cannot reach.
    ══════════════════════════════════════════════ */
 
-.platform-intro {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  padding: 1.5rem;
-  border-radius: 14px;
-  margin: 0.5rem 0 1.5rem;
-  border: 1px solid var(--sl-color-gray-5);
-  background: var(--home-panel-bg);
+/* Per-platform accent token, theme-aware. Any index element tagged .pf-{platform}
+   (the PlatformIndex root and every WriteupCard) inherits it, so a future mixed
+   /writeups grid colors each card with no extra wiring. Darkened variants on paper
+   keep contrast (aligned with the .platform-* badge inks). */
+.pf-hackthebox  { --pf-accent: #b6ff3c; }
+.pf-vulnhub     { --pf-accent: #ff5c5c; }
+.pf-picoctf     { --pf-accent: #d96bff; }
+.pf-overthewire { --pf-accent: #ffc23d; }
+:root[data-theme='light'] .pf-hackthebox  { --pf-accent: #4d7c0f; }
+:root[data-theme='light'] .pf-vulnhub     { --pf-accent: #d12f2f; }
+:root[data-theme='light'] .pf-picoctf     { --pf-accent: #8b3dc4; }
+:root[data-theme='light'] .pf-overthewire { --pf-accent: #a86f04; }
+
+/* Scroll-reveal infra (shared by hero + cards; the component script toggles .in).
+   Same easing as index.astro / about.astro so the motion feels identical. */
+.pi-index .reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.8s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.pi-index .reveal.in {
+  opacity: 1;
+  transform: none;
 }
 
-.pi-icon {
-  width: 64px;
-  height: 64px;
-  flex-shrink: 0;
+/* These pages render their own visual hero, so hide Starlight's frontmatter-driven
+   page title (kept for the browser tab + SEO) to avoid a duplicate heading, and widen
+   the content column so the grid is not cramped (TOC is off via frontmatter). */
+body:has(.pi-index) h1#_top {
+  display: none;
+}
+body:has(.pi-index) {
+  --sl-content-width: 60rem;
 }
 
-.pi-tagline {
-  font-size: 1.2rem;
-  font-weight: 700;
-  margin: 0 0 0.4rem;
-  color: var(--sl-color-white);
-}
-
-.pi-meta {
-  margin: 0;
-  display: flex;
-  gap: 0.4rem;
-  flex-wrap: wrap;
-}
-
-/* Left accent bar per platform */
-.pi-htb  { border-left: 4px solid #9fef00; }
-.pi-vh   { border-left: 4px solid #ef4444; }
-.pi-pico { border-left: 4px solid #d946ef; }
-.pi-otw  { border-left: 4px solid #eab308; }
-
-@media (max-width: 540px) {
-  .platform-intro { flex-direction: column; text-align: center; }
-  .pi-meta { justify-content: center; }
+@media (prefers-reduced-motion: reduce) {
+  .pi-index .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }
 
 /* ══════════════════════════════════════════════
@@ -672,34 +678,37 @@ h1#_top {
 }
 
 /* h3: cyan accent, one clear step down. Lighter weight than h2 and no "#" marker
-   so it differs unmistakably. Cyan is theme-aware via the light override. */
-.sl-markdown-content h3 {
+   so it differs unmistakably. Cyan is theme-aware via the light override.
+   The :not(:where(.not-content *)) guard mirrors Starlight's own prose rules: components
+   rendered inside docs (e.g. PlatformIndex/WriteupCard) opt out with class="not-content",
+   and these prose styles must respect that too. :where() adds zero specificity. */
+.sl-markdown-content h3:not(:where(.not-content *)) {
   color: var(--tp-cyan);
   font-weight: 600;
 }
-:root[data-theme='light'] .sl-markdown-content h3 {
+:root[data-theme='light'] .sl-markdown-content h3:not(:where(.not-content *)) {
   color: var(--tp-cyan-ink);
 }
 
 /* h4: quietest. Muted, smaller (Starlight scale), no marker. The Starlight gray
    token is theme-aware and stays legible against the page background in both modes. */
-.sl-markdown-content h4 {
+.sl-markdown-content h4:not(:where(.not-content *)) {
   color: var(--sl-color-gray-2);
   font-weight: 600;
 }
 
-/* ── Prose links: cyan, lime on hover ── */
-.sl-markdown-content a {
+/* ── Prose links: cyan, lime on hover (guarded off .not-content subtrees, see h3 note) ── */
+.sl-markdown-content a:not(:where(.not-content *)) {
   color: var(--tp-cyan);
   text-decoration: none;
   border-bottom: 1px solid color-mix(in oklab, var(--tp-cyan) 40%, transparent);
   transition: color .15s, border-color .15s;
 }
-.sl-markdown-content a:hover {
+.sl-markdown-content a:not(:where(.not-content *)):hover {
   color: var(--sl-color-accent);
   border-bottom-color: var(--sl-color-accent);
 }
-:root[data-theme='light'] .sl-markdown-content a {
+:root[data-theme='light'] .sl-markdown-content a:not(:where(.not-content *)) {
   color: var(--tp-cyan-ink);
   border-bottom-color: color-mix(in oklab, var(--tp-cyan-ink) 40%, transparent);
 }
@@ -887,3 +896,16 @@ ul.top-level > li:nth-child(3) > details > summary .group-label::before  { width
 ul.top-level > li:nth-child(4) > details > summary .group-label::before  { width:18px; height:18px; border-radius:0; box-shadow:none; background:url('/icons/picoctf.svg')     center/contain no-repeat; }
 ul.top-level > li:nth-child(5) > details > summary .group-label::before  { width:18px; height:18px; border-radius:0; box-shadow:none; background:url('/icons/overthewire.svg')  center/contain no-repeat; }
 */
+
+
+/* ── Loot callout: captured creds / intel ─────── */
+.sl-markdown-content .loot {
+  border: 1px solid color-mix(in oklab, var(--tp-cyan) 35%, transparent);
+  border-left: 3px solid var(--tp-cyan);
+  border-radius: 0 10px 10px 0;
+  background: color-mix(in oklab, var(--tp-cyan) 6%, transparent);
+  padding: 0.75rem 1.1rem;
+  margin: 1.2rem 0;
+}
+.sl-markdown-content .loot > :first-child { margin-top: 0; }
+.sl-markdown-content .loot > :last-child  { margin-bottom: 0; }
