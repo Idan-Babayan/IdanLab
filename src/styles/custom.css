@@ -191,19 +191,35 @@ html[data-theme="dark"] .difficulty-misc   { color: #94a3b8; }
 html[data-theme="dark"] .os-linux   { color: #cbd5e1; }
 html[data-theme="dark"] .os-windows { color: #60a5fa; }
 
-/* Light badge polish: paper needs a firmer fill + edge than the shared 15%/35% tint, which
-   washes out on #ece9e0. Light-only background + border overrides (dark fills/borders are
-   unchanged); the vivid AA text inks set on the base rules carry through. */
-:root[data-theme="light"] .platform-hackthebox  { background: rgba(132,204,22,.22); border-color: rgba(132,204,22,.55); }
-:root[data-theme="light"] .platform-vulnhub     { background: rgba(239,68,68,.20);  border-color: rgba(239,68,68,.55); }
-:root[data-theme="light"] .platform-picoctf     { background: rgba(168,85,247,.20); border-color: rgba(168,85,247,.55); }
-:root[data-theme="light"] .platform-overthewire { background: rgba(245,158,11,.22); border-color: rgba(245,158,11,.55); }
-:root[data-theme="light"] .difficulty-easy   { background: rgba(34,197,94,.22);   border-color: rgba(34,197,94,.55); }
-:root[data-theme="light"] .difficulty-medium { background: rgba(245,158,11,.22);  border-color: rgba(245,158,11,.55); }
-:root[data-theme="light"] .difficulty-hard   { background: rgba(239,68,68,.20);   border-color: rgba(239,68,68,.55); }
-:root[data-theme="light"] .difficulty-misc   { background: rgba(100,116,139,.20); border-color: rgba(100,116,139,.5); }
-:root[data-theme="light"] .os-linux   { background: rgba(100,116,139,.18); border-color: rgba(100,116,139,.45); }
-:root[data-theme="light"] .os-windows { background: rgba(37,99,235,.16);   border-color: rgba(37,99,235,.45); }
+/* Light badge polish (risograph): confident flat fills + solid edges so pills read as deliberate
+   color on paper, not faint tint. Fills are raised and borders firmed; the vivid AA text inks set
+   on the base rules carry through (verified to keep WCAG AA on the bolder fills). Dark fills and
+   borders are untouched. */
+/* Each rule pairs a bold flat fill + firm border with a DEEP, saturated text ink. The deep inks
+   are the price of AA: a bright hue cannot clear 4.5:1 on a light same-hue fill, so the text goes
+   deep (still clearly its color) while the dot + border + fill carry the vivid energy. All ten are
+   verified at or above 4.5:1 on their own fill. */
+:root[data-theme="light"] .platform-hackthebox  { background: rgba(132,204,22,.26); border-color: rgba(132,204,22,.7); color: #3a5e08; }
+:root[data-theme="light"] .platform-vulnhub     { background: rgba(239,68,68,.22);  border-color: rgba(239,68,68,.7);  color: #9e1515; }
+:root[data-theme="light"] .platform-picoctf     { background: rgba(168,85,247,.22); border-color: rgba(168,85,247,.7); color: #6a28a0; }
+:root[data-theme="light"] .platform-overthewire { background: rgba(245,158,11,.26); border-color: rgba(245,158,11,.7); color: #855300; }
+:root[data-theme="light"] .difficulty-easy   { background: rgba(34,197,94,.24);   border-color: rgba(34,197,94,.7);  color: #125c2a; }
+:root[data-theme="light"] .difficulty-medium { background: rgba(245,158,11,.26);  border-color: rgba(245,158,11,.7); color: #855300; }
+:root[data-theme="light"] .difficulty-hard   { background: rgba(239,68,68,.22);   border-color: rgba(239,68,68,.7);  color: #9e1515; }
+:root[data-theme="light"] .difficulty-misc   { background: rgba(100,116,139,.22); border-color: rgba(100,116,139,.6); color: #3f4c5e; }
+:root[data-theme="light"] .os-linux   { background: rgba(100,116,139,.2);  border-color: rgba(100,116,139,.55); color: #3f4c5e; }
+:root[data-theme="light"] .os-windows { background: rgba(37,99,235,.18);   border-color: rgba(37,99,235,.55); color: #1f4bc4; }
+
+/* Crisp platform dot on paper: drop the glow (it smudges on light) for a clean solid dot, and use
+   a vivid hue decoupled from the AA text ink so the dot reads boldly. Dark dots keep their glow. */
+:root[data-theme="light"] .platform-hackthebox::before,
+:root[data-theme="light"] .platform-vulnhub::before,
+:root[data-theme="light"] .platform-picoctf::before,
+:root[data-theme="light"] .platform-overthewire::before { box-shadow: none; }
+:root[data-theme="light"] .platform-hackthebox::before  { background: var(--tp-deco-lime); }
+:root[data-theme="light"] .platform-vulnhub::before     { background: #e23b2e; }
+:root[data-theme="light"] .platform-picoctf::before     { background: #a64bf0; }
+:root[data-theme="light"] .platform-overthewire::before { background: #ed8f00; }
 
 
 /* ══════════════════════════════════════════════
@@ -581,6 +597,17 @@ body:has(.pi-index) {
      (under AA 4.5 for body text). #08697a clears 4.5:1 while staying on-brand teal, not dull.
      Light-only override; the dark --tp-cyan is unchanged. */
   --tp-cyan-ink: #08697a;
+  /* Editorial ink: a crisp near-black on warm paper. Starlight's default light text is a
+     grayish slate (~#353841); a true near-black lifts the paper-and-ink contrast to a premium,
+     intentional feel (about 15:1 on #ece9e0). Body text only; colored inks below are unchanged. */
+  --sl-color-text: #1a1815;
+  /* Decorative accent palette (NON-text only): vivid riso-bold hues for dots, fills, the heading
+     marker, the h2 rule, the sidebar active bar, and panel accents. These read boldly on paper.
+     The darkened text inks (#4d7c0f / #08697a / #c41d6f) stay reserved for colored BODY text and
+     keep WCAG AA; these vivid tones never carry text. */
+  --tp-deco-lime: #6fae00;
+  --tp-deco-cyan: #0a9ec2;
+  --tp-deco-magenta: #e01f76;
 }
 
 /* ── Faint atmosphere (fixed + very subtle — reading stays calm) ──
@@ -596,15 +623,18 @@ body::before {
     radial-gradient(80vw 360px at 60% 118%, color-mix(in oklab, var(--tp-glow-1) 9%, transparent), color-mix(in oklab, var(--tp-glow-2) 6%, transparent) 55%, transparent 80%);
 }
 :root[data-theme='light'] body::before {
-  /* Calmed for reading. The two top radials stay present but drop from 42/40% to a quieter
-     24/22%, so paper still feels atmospheric near the header without hazing. The bottom wash
-     is the part that sat under the text column: it is pushed lower (128%), shortened, dropped
-     to 13%, and warmed to the green glow only (the blue --tp-glow-1 is removed) so it reads as
-     a faint warm horizon, not a blue smudge behind body copy. */
-  background:
-    radial-gradient(58vw 280px at 16% -70px, color-mix(in oklab, var(--tp-glow-1) 24%, transparent), transparent 72%),
-    radial-gradient(52vw 260px at 92% -90px, color-mix(in oklab, var(--tp-glow-2) 22%, transparent), transparent 72%),
-    radial-gradient(70vw 300px at 60% 128%, color-mix(in oklab, var(--tp-glow-2) 13%, transparent), transparent 78%);
+  /* Structure as texture: light swaps glow-as-atmosphere for a faint warm technical dot-grid,
+     for an engineering / risograph-paper feel. The dots are low-contrast warm ink (6%) on a 22px
+     pitch, sitting behind the reading column, so they read as paper structure, not noise, and
+     never lower body-text contrast. One minimal warm glow stays at the very top for a little
+     life. Static (no motion), so it is inherently prefers-reduced-motion safe. */
+  background-color: transparent;
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(60, 50, 30, 0.06) 1px, transparent 1.6px),
+    radial-gradient(60vw 220px at 50% -90px, color-mix(in oklab, var(--tp-glow-2) 12%, transparent), transparent 72%);
+  background-size: 22px 22px, 100% 100%;
+  background-repeat: repeat, no-repeat;
+  background-position: 0 0, center top;
 }
 /* Grain reads far less on pale paper than on ink: lift it just enough to add tooth. */
 :root[data-theme='light'] body::after { opacity: .035; }
@@ -695,7 +725,10 @@ h1#_top {
   background: linear-gradient(90deg, var(--sl-color-accent), var(--tp-cyan), transparent);
 }
 :root[data-theme='light'] .sl-markdown-content .sl-heading-wrapper.level-h2::after {
-  background: linear-gradient(90deg, var(--sl-color-accent), var(--tp-cyan-ink), transparent);
+  /* Decorative rule (no text): vivid deco duotone on paper, lifted opacity so it reads as a
+     confident risograph underline rather than a faint hairline. */
+  background: linear-gradient(90deg, var(--tp-deco-lime), var(--tp-deco-cyan), transparent);
+  opacity: 0.72;
 }
 
 /* h3: cyan accent, one clear step down. Lighter weight than h2 and no "#" marker
@@ -757,10 +790,12 @@ h1#_top {
   color: var(--sl-color-accent-high);
   font-weight: 600;
 }
-/* Light: accent is the darker olive on pale paper, so push the tint up a touch more
-   so the active row reads as filled and does not wash out. */
+/* Light: the active row gets a vivid deco-lime bar + a lime-tinted fill (both decorative), while
+   the label color stays --sl-color-accent-high (#2f4d09) from the base rule, so the TEXT remains
+   AA. The bar is the confident risograph accent; the fill keeps the row reading as filled. */
 :root[data-theme='light'] .sidebar a[aria-current="page"] {
-  background: color-mix(in oklab, var(--sl-color-accent) 24%, transparent);
+  background: color-mix(in oklab, var(--tp-deco-lime) 20%, transparent);
+  border-inline-start-color: var(--tp-deco-lime);
 }
 
 /* ── Sidebar: recolor Starlight's native nesting guide line ──
@@ -775,6 +810,29 @@ nav.sidebar details > ul > li {
 :root[data-theme='light'] nav.sidebar details > ul > li {
   border-inline-start-color: rgba(0, 0, 0, 0.14);
 }
+
+/* ── Sidebar: trim the rail width so it gives the content column more room ──
+   Starlight's default --sl-sidebar-width (18.75rem) reads wide once the rows are taller;
+   17rem keeps every label on one line (HackTheBox, OverTheWire fit) while handing ~1.75rem
+   back to the article. Theme-agnostic Starlight token; nothing else needs to change. */
+:root {
+  --sl-sidebar-width: 17rem;
+}
+
+/* ── Sidebar: taller rows so a sparse rail feels fuller (sidebar nav only) ──
+   Starlight links/summaries ship a compact ~0.3em vertical padding; raise the per-item
+   block padding and line-height so each row has more presence and a bigger touch target.
+   Padding (not <li> margin) carries the height so the continuous nesting-guide line, the
+   active pill, and the per-platform dots all still align. Never touches the article. */
+nav.sidebar a,
+nav.sidebar summary {
+  padding-block: 0.55rem;
+  line-height: 1.5;
+}
+/* Group labels get the SAME taller padding as the links above (matching treatment so the
+   hierarchy stays balanced). The font size is left at Starlight's default on purpose: bumping
+   it pushed the longer names (HackTheBox, OverTheWire) onto a second line in the narrow mobile
+   drawer, which read as clunky. Fullness comes from the row padding, not a larger glyph. */
 
 /* ── Reading-progress bar (the #tp-progress element is injected by the
        small script added to astro.config.mjs head) ── */
@@ -826,12 +884,17 @@ html[data-theme="light"] .ec-cmd-priv span {
   box-shadow: 0 8px 24px -16px rgba(60, 50, 30, 0.45), 0 1px 2px rgba(60, 50, 30, 0.06);
 }
 
-/* Lead blockquote: stronger tint + accent-tinted border + soft shadow so it lifts off paper
-   (the shared 7% tint is nearly invisible on #ece9e0). */
+/* Lead blockquote: a calm warm-paper card (subtle olive tint kept light so the body text on it
+   stays AA), but the left bar is the vivid deco-lime panel accent. */
 :root[data-theme='light'] .sl-markdown-content blockquote {
   background: color-mix(in oklab, var(--sl-color-accent) 12%, #f4f1e8);
-  border-inline-start-color: var(--sl-color-accent);
+  border-inline-start-color: var(--tp-deco-lime);
   box-shadow: 0 6px 20px -14px rgba(60, 50, 30, 0.4);
+}
+/* Open Toggle panels: vivid deco-lime edge (decorative, no text on it) so the active panel reads
+   as a confident card on paper. Base details[open] uses --sl-color-accent for both themes. */
+:root[data-theme='light'] .sl-markdown-content details[open] {
+  border-color: var(--tp-deco-lime);
 }
 
 /* Sidebar: give the rail a subtle edge + soft shadow so the nav reads as a distinct panel,
@@ -841,10 +904,10 @@ html[data-theme="light"] .ec-cmd-priv span {
   box-shadow: inset -12px 0 24px -24px rgba(60, 50, 30, 0.35);
 }
 
-/* Decorative accent (NOT body text): the lime "#" before each h2 can run a touch more
-   saturated than the AA-constrained text accent, to add life on paper. Light-only. */
+/* Decorative accent (NOT body text): the lime "#" before each h2 runs the vivid deco-lime on
+   paper, bolder than the AA text ink, for a confident risograph marker. Light-only. */
 :root[data-theme='light'] .sl-markdown-content h2::before {
-  color: #5a8f12;
+  color: var(--tp-deco-lime);
 }
 
 /* ── Header + footer chrome: homepage HUD feel ──
