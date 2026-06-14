@@ -613,7 +613,6 @@ body:has(.pi-index) {
      keep WCAG AA; these vivid tones never carry text. */
   --tp-deco-lime: #6fae00;
   --tp-deco-cyan: #0a9ec2;
-  --tp-deco-magenta: #e01f76;
 }
 
 /* ── Faint atmosphere (fixed + very subtle — reading stays calm) ──
