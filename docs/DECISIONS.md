@@ -45,8 +45,8 @@
   AA-safe inks. A risograph title-misregistration (offset colored ghost on the page title) was tried
   and REJECTED (looked bad).
 - **Why:** Light should be premium on paper terms, not a dimmed copy of dark's neon. The title
-  effect did not read well, so it was reverted (the only leftover is an unused `--tp-deco-magenta`
-  token).
+  effect did not read well, so it was reverted (its only leftover, an unused `--tp-deco-magenta`
+  token, was removed 2026-06-14).
 - **Status:** Adopted (committed). Title effect: rejected.
 
 ### 2026-06-14 · Hidden easter-egg trail (themed 404 + /secret terminal)

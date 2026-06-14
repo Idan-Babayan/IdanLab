@@ -53,5 +53,3 @@
   command (e.g. `ls: cannot access`) can be mis-tagged. Rare; documented in `ec-priv-command.mjs`
   (EC 0.42 exposes no token scopes, so strings/comments cannot be skipped by scope).
 - [ENG] `notion_cleaner.py` is documented (CORE_SPEC §7) but NOT committed to the repo.
-- [DESIGN] Unused `--tp-deco-magenta` token left in `custom.css` after the rejected risograph title
-  effect. Harmless; remove when convenient.
