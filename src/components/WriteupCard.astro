@@ -1,6 +1,6 @@
 ---
 /**
- * WriteupCard — presentational writeup card (props only, no data fetching).
+ * WriteupCard: presentational writeup card (props only, no data fetching).
  *
  * Reusable: PlatformIndex feeds it per-platform writeups today; a future global
  * /writeups index (path 3) can reuse it verbatim by passing `showPlatform` so the
@@ -111,8 +111,11 @@ const cleanTags: string[] = (tags ?? []).filter((t) => typeof t === 'string' && 
 		transition: transform 0.12s ease, border-color 0.3s ease;
 		overflow: hidden;
 		will-change: transform;
-		/* Per-platform accent (global .pf-* sets --pf-accent, theme-aware). */
+		/* Per-platform accent (global .pf-* sets --pf-accent, theme-aware) is the lead, used on
+		   the bar / glare / hover (card identity). The universal cyan secondary is the duotone
+		   partner, used on the small eyebrow + the "Read writeup" affordance. */
 		--accent: var(--pf-accent, var(--sl-color-accent));
+		--accent-2: var(--pf-accent-2, var(--tp-cyan));
 	}
 	/* Light mode: warm paper card with a soft lift so it does not read flat. */
 	html[data-theme='light'] .wc-card {
@@ -153,7 +156,7 @@ const cleanTags: string[] = (tags ?? []).filter((t) => typeof t === 'string' && 
 		font-size: 0.7rem;
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
-		color: color-mix(in oklab, var(--sl-color-text) 55%, transparent);
+		color: var(--accent-2);
 		display: flex;
 		align-items: center;
 		gap: 0.45rem;
@@ -217,7 +220,7 @@ const cleanTags: string[] = (tags ?? []).filter((t) => typeof t === 'string' && 
 		font-family: var(--sl-font-mono);
 		font-size: 0.78rem;
 		letter-spacing: 0.04em;
-		color: var(--accent);
+		color: var(--accent-2);
 		margin-top: 1.1rem;
 		display: inline-flex;
 		align-items: center;

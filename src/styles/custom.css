@@ -520,6 +520,12 @@ html[data-theme="light"] body:has(.home-stats) {
 :root[data-theme='light'] .pf-picoctf     { --pf-accent: #8b3dc4; }
 :root[data-theme='light'] .pf-overthewire { --pf-accent: #a86f04; }
 
+/* Universal SECONDARY accent (cyan) for the platform-index duotone. The platform color
+   stays the lead; this complements all four (none of which are cyan). Theme-aware: bright
+   cyan on ink, darkened cyan-ink on paper (both clear AA for the small text that uses it). */
+:root { --pf-accent-2: var(--tp-cyan); }
+:root[data-theme='light'] { --pf-accent-2: var(--tp-cyan-ink); }
+
 /* Scroll-reveal infra (shared by hero + cards; the component script toggles .in).
    Same easing as index.astro / about.astro so the motion feels identical. */
 .pi-index .reveal {
@@ -855,11 +861,16 @@ nav.sidebar summary {
   box-shadow: 0 14px 40px -24px rgba(0, 0, 0, .7);
 }
 
-/* ── Privilege command highlight (.ec-cmd-priv) ──
-   The ec-priv-command Shiki transformer tags literal "sudo" tokens with this class (see
-   astro.config.mjs / src/lib/ec-priv-command.mjs). EC sets each token's color inline per
-   theme, so we override with theme-scoped rules + !important. Brand magenta signals elevated
-   privilege and reads clearly against the blue/green command colors in both themes. */
+/* ── Command highlight by category (.ec-cmd-*) ──
+   The ec-priv-command plugin tags command words by semantic category (see
+   astro.config.mjs / src/lib/ec-priv-command.mjs). EC sets each token's color inline per theme,
+   so we override with theme-scoped rules + !important. Four categories, four colors, mutually
+   distinct and distinct from the theme's own token colors, each WCAG AA on the code background:
+     privilege  magenta (vivid)  sudo / su / doas
+     recon      gold    (vivid)  nmap, gobuster, ...
+     network    cyan    (vivid)  nc, curl, ssh, ...
+     inspect    slate-lavender (QUIET, low saturation) ls, cat, id, ...
+   Privilege (sudo) is unchanged. */
 html[data-theme="dark"] .ec-cmd-priv,
 html[data-theme="dark"] .ec-cmd-priv span {
   color: #ff4d9d !important;
@@ -867,6 +878,37 @@ html[data-theme="dark"] .ec-cmd-priv span {
 html[data-theme="light"] .ec-cmd-priv,
 html[data-theme="light"] .ec-cmd-priv span {
   color: #c41d6f !important;
+}
+/* Recon / enumeration: warm gold, an "attention" signal. Lime is rejected (too close to the
+   theme green used for commands). The hue is theme-tuned to stay clear of the theme's amber/orange
+   tokens: a vivid yellow-gold on ink (separates cleanly from the muted tan flags), and a burnt
+   orange-gold on paper (a dark yellow would collide with the brown amber, so it shifts toward
+   orange while staying warm and AA). */
+html[data-theme="dark"] .ec-cmd-recon,
+html[data-theme="dark"] .ec-cmd-recon span {
+  color: #ffd60a !important;
+}
+html[data-theme="light"] .ec-cmd-recon,
+html[data-theme="light"] .ec-cmd-recon span {
+  color: #b34900 !important;
+}
+/* Network / shell / transfer: cyan (brand connection feel). */
+html[data-theme="dark"] .ec-cmd-net,
+html[data-theme="dark"] .ec-cmd-net span {
+  color: #41efff !important;
+}
+html[data-theme="light"] .ec-cmd-net,
+html[data-theme="light"] .ec-cmd-net span {
+  color: #08697a !important;
+}
+/* Local inspection: quiet, low-saturation slate-lavender so frequent commands stay calm. */
+html[data-theme="dark"] .ec-cmd-inspect,
+html[data-theme="dark"] .ec-cmd-inspect span {
+  color: #a6a0c8 !important;
+}
+html[data-theme="light"] .ec-cmd-inspect,
+html[data-theme="light"] .ec-cmd-inspect span {
+  color: #6a6488 !important;
 }
 
 /* ══════════════════════════════════════════════

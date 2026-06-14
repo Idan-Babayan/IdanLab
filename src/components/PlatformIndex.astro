@@ -1,6 +1,6 @@
 ---
 /**
- * PlatformIndex — data + layout for a platform landing page.
+ * PlatformIndex: data + layout for a platform landing page.
  *
  * Takes a `platform` prop, pulls that platform's writeups from the `docs`
  * collection (excluding the index page itself), derives DIFFICULTY from the
@@ -92,7 +92,6 @@ const counts: Record<Difficulty, number> = { easy: 0, medium: 0, hard: 0, misc: 
 for (const c of cards) counts[c.difficulty]++;
 
 const present: Difficulty[] = DIFF_ORDER.filter((d) => counts[d] > 0);
-const breakdown: string = present.map((d) => `${counts[d]} ${d}`).join(' · '); // middot, not em dash
 // A single difficulty group makes the rail pointless; only show it with 2+.
 const showFilter: boolean = present.length > 1;
 const isEmpty: boolean = total === 0;
@@ -117,7 +116,16 @@ const isEmpty: boolean = total === 0;
 							<div class="pi-num" data-count={total}>0</div>
 							<div class="pi-lbl">{total === 1 ? 'Writeup' : 'Writeups'}</div>
 						</div>
-						{breakdown && <div class="pi-breakdown">{breakdown}</div>}
+						{present.length > 0 && (
+							<div class="pi-breakdown">
+								{present.map((d, i) => (
+									<>
+										{i > 0 && <span class="pi-bd-sep" aria-hidden="true">·</span>}
+										<span class={`pi-bd-${d}`}>{counts[d]} {d}</span>
+									</>
+								))}
+							</div>
+						)}
 					</div>
 				)}
 			</div>
@@ -166,7 +174,9 @@ const isEmpty: boolean = total === 0;
 <style>
 	.pi-index {
 		position: relative;
+		/* Platform color leads; universal cyan secondary is the duotone partner (theme-aware). */
 		--accent: var(--pf-accent, var(--sl-color-accent));
+		--accent-2: var(--pf-accent-2, var(--tp-cyan));
 	}
 
 	/* ── HERO ── */
@@ -181,10 +191,16 @@ const isEmpty: boolean = total === 0;
 		height: 360px;
 		z-index: 0;
 		pointer-events: none;
-		background: radial-gradient(58% 100% at 22% 0%, color-mix(in oklab, var(--accent) 22%, transparent), transparent 70%);
+		/* Duotone wash: the platform color leads on the left, a softer cyan pool on the right,
+		   so the atmosphere is never one flat hue. */
+		background:
+			radial-gradient(52% 100% at 20% 0%, color-mix(in oklab, var(--accent) 22%, transparent), transparent 70%),
+			radial-gradient(46% 90% at 80% 8%, color-mix(in oklab, var(--accent-2) 13%, transparent), transparent 72%);
 	}
 	html[data-theme='light'] .pi-glow {
-		background: radial-gradient(58% 100% at 22% 0%, color-mix(in oklab, var(--accent) 32%, transparent), transparent 72%);
+		background:
+			radial-gradient(52% 100% at 20% 0%, color-mix(in oklab, var(--accent) 32%, transparent), transparent 72%),
+			radial-gradient(46% 90% at 80% 8%, color-mix(in oklab, var(--accent-2) 18%, transparent), transparent 74%);
 	}
 	.pi-hero-inner {
 		position: relative;
@@ -257,20 +273,38 @@ const isEmpty: boolean = total === 0;
 		color: var(--accent);
 		font-variant-numeric: tabular-nums;
 	}
+	/* Secondary stat label uses the cyan secondary (the big number stays the platform color). */
 	.pi-lbl {
 		font-family: var(--sl-font-mono);
 		font-size: 0.68rem;
 		letter-spacing: 0.2em;
 		text-transform: uppercase;
-		color: color-mix(in oklab, var(--sl-color-text) 55%, transparent);
+		color: var(--accent-2);
 	}
 	.pi-breakdown {
 		align-self: center;
 		font-family: var(--sl-font-mono);
 		font-size: 0.8rem;
 		letter-spacing: 0.02em;
-		color: color-mix(in oklab, var(--sl-color-text) 60%, transparent);
+		display: inline-flex;
+		align-items: baseline;
+		gap: 0.1rem;
+		flex-wrap: wrap;
 	}
+	/* Each segment carries its DIFFICULTY color, so the breakdown adds informative variety
+	   rather than more of the lead hue. Theme-aware, AA on the page background. */
+	.pi-bd-sep {
+		color: color-mix(in oklab, var(--sl-color-text) 38%, transparent);
+		margin: 0 0.4rem;
+	}
+	.pi-bd-easy { color: #4ade80; }
+	.pi-bd-medium { color: #fbbf24; }
+	.pi-bd-hard { color: #f87171; }
+	.pi-bd-misc { color: #94a3b8; }
+	html[data-theme='light'] .pi-bd-easy { color: #15723a; }
+	html[data-theme='light'] .pi-bd-medium { color: #8a5600; }
+	html[data-theme='light'] .pi-bd-hard { color: #b01818; }
+	html[data-theme='light'] .pi-bd-misc { color: #475569; }
 
 	/* ── LOGO ── */
 	.pi-logo-wrap {
@@ -329,10 +363,12 @@ const isEmpty: boolean = total === 0;
 	.pi-pill:hover {
 		transform: translateY(-1px);
 	}
+	/* Active pill keeps its own difficulty tint, but the selected INDICATOR is the cyan
+	   secondary (a ring + soft glow) so the current filter stands out regardless of its hue. */
 	.pi-pill.is-active {
 		font-weight: 700;
-		background: color-mix(in oklab, var(--pill) 26%, transparent);
-		box-shadow: 0 0 0 1px var(--pill) inset, 0 6px 18px -8px var(--pill);
+		background: color-mix(in oklab, var(--pill) 22%, transparent);
+		box-shadow: 0 0 0 2px var(--accent-2), 0 6px 18px -8px var(--accent-2);
 	}
 
 	/* ── GRID ── */
@@ -406,7 +442,7 @@ const isEmpty: boolean = total === 0;
 		}, 45);
 	}
 
-	/* Count up (cubic ease-out, 1400ms) — verbatim from the homepage. */
+	/* Count up (cubic ease-out, 1400ms): verbatim from the homepage. */
 	function countUp(el: HTMLElement) {
 		const text = el.dataset.text;
 		if (text) {
@@ -427,7 +463,7 @@ const isEmpty: boolean = total === 0;
 		requestAnimationFrame(step);
 	}
 
-	/* Scroll-reveal stagger via IntersectionObserver — same threshold + delay as the homepage.
+	/* Scroll-reveal stagger via IntersectionObserver: same threshold + delay as the homepage.
 	   Hero reveals are handled on load below, so they are observed but skipped here. */
 	const io = new IntersectionObserver(
 		(ents) => {
@@ -458,7 +494,7 @@ const isEmpty: boolean = total === 0;
 		else if (d) d.textContent = d.dataset.word ?? '';
 	});
 
-	/* 3D tilt + cursor glare — verbatim from the homepage (perspective 800, +/-10deg). */
+	/* 3D tilt + cursor glare: verbatim from the homepage (perspective 800, +/-10deg). */
 	if (!reduce)
 		(document.querySelectorAll('.pi-index [data-tilt]') as NodeListOf<HTMLElement>).forEach((card) => {
 			card.addEventListener('mousemove', (e) => {
@@ -474,7 +510,7 @@ const isEmpty: boolean = total === 0;
 			});
 		});
 
-	/* Filter rail — client-side show/hide. Generic: a pill carries data-filter-key
+	/* Filter rail: client-side show/hide. Generic: a pill carries data-filter-key
 	   (the card data-* dimension) + data-filter (the value), so the same code can later
 	   filter by platform or topic. Cards expose data-difficulty / data-platform / data-tags. */
 	const pills = Array.from(document.querySelectorAll('.pi-pill')) as HTMLElement[];
