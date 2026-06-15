@@ -40,9 +40,9 @@ const SUDO_CONTENT = new Set(['sudo']);
 // future tool is a one-line edit. su / doas reuse the existing privilege class/color.
 const CATEGORIES = [
   { cls: 'ec-cmd-priv', commands: ['su', 'doas'] },
-  { cls: 'ec-cmd-recon', commands: ['nmap', 'gobuster', 'ffuf', 'feroxbuster', 'nikto', 'enum4linux', 'smbclient'] },
+  { cls: 'ec-cmd-recon', commands: ['nmap', 'gobuster', 'ffuf', 'feroxbuster', 'nikto', 'whatweb', 'enum4linux', 'smbclient'] },
   { cls: 'ec-cmd-net', commands: ['nc', 'ncat', 'netcat', 'penelope', 'socat', 'curl', 'wget', 'ssh', 'chisel'] },
-  { cls: 'ec-cmd-inspect', commands: ['ls', 'cat', 'whoami', 'id', 'find', 'grep', 'pwd'] },
+  { cls: 'ec-cmd-inspect', commands: ['ls', 'cd', 'cat', 'echo', 'whoami', 'id', 'find', 'grep', 'pwd', 'ping'] },
 ];
 const COMMAND_POS_CLASS = new Map();
 for (const { cls, commands } of CATEGORIES) for (const c of commands) COMMAND_POS_CLASS.set(c, cls);
