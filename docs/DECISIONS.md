@@ -6,6 +6,119 @@
 
 ---
 
+### 2026-06-15 · Command-highlight palette rebuilt on a principled OKLCH basis (+ bold weight)
+- **Decision:** Redesign the `.ec-cmd-*` palette in OKLCH, measured against the rendered code bg
+  (tokyo-night `#1a1b26` / one-light `#fafafa`), separating the three channels: (1) LIGHTNESS uniform
+  per theme (dark `L 0.745`, light `L 0.43`) so all categories share one brightness and each clears
+  **WCAG 7:1 (AAA)**, measured; (2) HUE = category, kept off the theme's string/keyword/function hues
+  (privilege magenta, recon gold `h95`, network cyan `h200`, inspect warm-sand `h60`); (3) CHROMA =
+  loud vs quiet, so recon/network are vivid and inspect is LOW chroma at the SAME L/contrast. Final
+  values: recon `oklch(0.745 0.153 95)`/`oklch(0.43 0.088 95)`, network `oklch(0.745 0.126 200)`/
+  `oklch(0.43 0.073 200)`, inspect `oklch(0.745 0.045 60)`/`oklch(0.5 0.045 60)`. Also added a second
+  channel: every recognized command is `font-weight:700` (incl. sudo, weight only). Inspect set: ls, cd,
+  cat, echo, whoami, id, find, grep, pwd, ping; recon also includes whatweb.
+- **Why:** The old inspect color was near-invisible because it had been quieted by dropping CONTRAST;
+  the fix is to drop CHROMA instead and hold lightness/contrast uniform with the vivid set. Working in
+  OKLCH makes loudness (chroma) and legibility (contrast) independent, so "quiet" no longer means
+  "dim." Bold gives a weight channel so the command word pops without relying on color alone. Verified
+  in-browser in both themes: computed colors match the shipped `oklch()` values, browser-measured
+  contrast matches the design math (recon 7.56/7.72, net 7.96/7.45, inspect 7.45 dark / 5.8 light), and
+  command-position detection leaves command OUTPUT untagged. Light inspect is the one deliberate
+  exception to uniform-L: lightened to `oklch(0.5 0.045 60)` (~5.8:1, still AA) at owner request because
+  the darker uniform brown read too heavy on paper; the quiet-via-chroma intent is unchanged.
+- **Constraint honored / tradeoff:** sudo's COLOR is the immovable anchor and is NOT recolored, so it
+  sits at ~5.5:1 (dark) / ~5.4:1 (light), just under the 7:1 the redesigned categories meet. "All four
+  at sudo's lightness AND all ≥7:1" is physically impossible without recoloring sudo, so the 7:1 floor
+  applies to the three redesigned categories and sudo keeps its hue/color (gaining only bold). Light
+  vivid chroma is gamut-limited at `L 0.43` (warm/teal hues cannot be both dark and saturated on white),
+  so light reads more muted than dark; this is the honest cost of the 7:1 floor on a paper bg.
+- **Status:** Adopted. Supersedes the color values in the 2026-06-14 command-highlighting entry below
+  (its mechanism + category structure still stand). Colors live in `custom.css` only (`oklch()` +
+  `!important`); command-list additions (`cd`, `echo`, `ping` to inspect; `whatweb` to recon) are in
+  `ec-priv-command.mjs`.
+
+### 2026-06-14 · Code-block command highlighting by semantic category
+- **Decision:** Extend the EC command-tagging plugin (`ec-priv-command.mjs`) from sudo-only to four
+  categories colored by signal value: privilege (magenta; sudo/su/doas), recon (gold/orange; nmap,
+  gobuster, ffuf, feroxbuster, nikto, enum4linux, smbclient), network (cyan; nc/ncat/netcat,
+  penelope, socat, curl, wget, ssh, chisel), inspect (quiet lavender; ls, cat, whoami, id, find,
+  grep, pwd). Match in command position (first word after a prompt / sudo / `|` `&&` `;`); sudo keeps
+  its exact content-match path and color. Command lists are one-line-extendable.
+- **Why:** One color per category (not per command) communicates intent and avoids monochrome code.
+  Command-position avoids tagging the same short word where it appears in command OUTPUT. Recon is
+  gold not lime because lime is too close to the theme command-green; recon hue is theme-tuned
+  (gold on ink, burnt-orange on paper) to clear the theme amber. All four are WCAG AA on the code bg
+  and mutually distinct in both themes.
+- **Status:** Adopted; implementation UNCOMMITTED in the working tree (see ROADMAP). Residual risk:
+  an output line whose first word is exactly a listed command can be mis-tagged (rare).
+
+### 2026-06-14 · Platform-index duotone: platform color + universal cyan secondary
+- **Decision:** On the platform index, the platform color leads and a universal cyan secondary
+  (`--pf-accent-2`: `#41efff` dark, `#08697a` light) is the duotone partner. Cyan on the stat label,
+  card eyebrow, and "Read writeup" affordance; difficulty colors on the stat breakdown; cyan ring on
+  the active filter pill; platform color stays on the name, count-up number, and card accent bar.
+- **Why:** Single-color platforms read monochrome (worst on HackTheBox: green on green). Cyan is not
+  any of the four platform hues, so it complements all. Keeps the platform color clearly the lead.
+- **Status:** Adopted; UNCOMMITTED in the working tree (see ROADMAP).
+
+### 2026-06-14 · Sidebar: taller rows + 17rem width
+- **Decision:** Increase sidebar link/summary block padding + line-height (fuller rail, bigger touch
+  targets) and trim `--sl-sidebar-width` to `17rem` (from 18.75rem). Padding, not `<li>` margins, so
+  the active pill, nesting guide line, and platform dots stay aligned.
+- **Why:** Sparse sections looked half-empty and the default rail felt too wide. Owner picked 17rem
+  after trying 16 / 16.5 (16 felt too narrow).
+- **Status:** Adopted (committed).
+
+### 2026-06-14 · Light-mode art-direction: paper-native "risograph"
+- **Decision:** Give light its own identity (dark untouched, all rules `[data-theme='light']`):
+  near-black editorial ink, a faint warm technical dot-grid behind content (replacing the bottom
+  glow), a vivid decorative accent palette for non-text use, and crisp flat badges with deepened
+  AA-safe inks. A risograph title-misregistration (offset colored ghost on the page title) was tried
+  and REJECTED (looked bad).
+- **Why:** Light should be premium on paper terms, not a dimmed copy of dark's neon. The title
+  effect did not read well, so it was reverted (its only leftover, an unused `--tp-deco-magenta`
+  token, was removed 2026-06-14).
+- **Status:** Adopted (committed). Title effect: rejected.
+
+### 2026-06-14 · Hidden easter-egg trail (themed 404 + /secret terminal)
+- **Decision:** A four-step trail, all inside Starlight: a themed 404 (`404.mdx`, splash template +
+  hero, Starlight slug-404 override) with a breadcrumb to `/robots.txt`; the robots.txt comment
+  points to `/secret`; `/secret` (hidden from nav, `pagefind:false`, noindex) hosts a from-scratch,
+  zero-dependency vanilla-TS terminal (`SecretTerminal.astro`) with help/whoami/ls/cat/sudo/random
+  (+ surprise/roll)/flag/clear; `flag` reveals `flag{curiosity_is_my_exploit}` + a recruiter note.
+- **Why:** Personality feature; built in Starlight so it inherits theme/fonts/toggle. Terminal is
+  zero-dependency per spec. `random` builds its writeup list at build time from `getCollection`.
+- **Status:** Adopted (committed). Konami + styled console greeting included on `/secret`.
+
+### 2026-06-14 · robots.txt managed in-repo (public/robots.txt)
+- **Decision:** Owner chose to keep `robots.txt` in the repo at `public/robots.txt` (overriding the
+  earlier "Cloudflare-managed, out of repo" stance). It currently contains only the easter-egg
+  breadcrumb comment + a `Sitemap:` line.
+- **Why:** Owner's call; simpler to version the breadcrumb with the site.
+- **Status:** Adopted, with a caveat: on deploy this file is served as `/robots.txt` and may
+  override the Cloudflare-managed bot disallows / Content-Signals. Must add the full managed content
+  before relying on it (see ROADMAP open issues).
+
+### 2026-06-14 · Platform index pages: PlatformIndex + WriteupCard components
+- **Decision:** Replace each platform's static `.platform-intro` header with reusable Starlight-
+  embedded components: `PlatformIndex` (data: filters `getCollection('docs')` to the platform,
+  derives difficulty from the entry id path, renders an animated hero + difficulty filter rail +
+  grid) and `WriteupCard` (presentational, `showPlatform` prop off here, on for a future global
+  `/writeups` index). Each `{platform}/index.mdx` is now minimal frontmatter + `<PlatformIndex/>`.
+  `content.config.ts` gains optional `os`/`tags` (forward-compatible; omitted gracefully today).
+- **Why:** Make the landings showcase writeups with the homepage WOW, reusing one card for path 3
+  (global index) without forking Starlight. Starlight lowercases doc URLs, so card hrefs use
+  `entry.id.toLowerCase()`.
+- **Status:** Adopted (committed).
+
+### 2026-06-14 · Git hygiene: no Claude attribution; trailer scrubbed from history
+- **Decision:** Never add "Co-Authored-By: Claude" or "Generated with Claude Code" to commits or PR
+  bodies. Removed the trailer from two existing commits via history rewrite (force-pushed `dev` +
+  `main`; only messages changed, trees identical). Commits are authored as `Idan-Babayan`.
+- **Why:** Owner's hard rule (the attribution is unwanted noise on his own repo); extends the no-em-
+  dash-style "AI tell" stance. Done while the repo is solo so a force-push is safe.
+- **Status:** Adopted (hard rule).
+
 ### 2026-06-06 · Rebrand domain: idanstudio.click -> idanlab.dev
 - Decision: Canonical domain is now https://idanlab.dev. Project name, repo, local folder,
   and all site copy move from "idanstudio" to "idanlab". idanstudio.click is kept as a 301

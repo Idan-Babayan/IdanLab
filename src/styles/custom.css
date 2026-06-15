@@ -75,7 +75,11 @@ html[data-theme="dark"] .sl-markdown-content details {
 }
 
 html[data-theme="light"] .sl-markdown-content details {
-  background-color: rgba(0, 0, 0, 0.02);
+  /* A faintly raised warm panel (lighter than the #ece9e0 page) with a hairline border and a
+     soft shadow, so a Toggle reads as a card lifting off the paper instead of a flat box. */
+  background-color: #f4f1e8;
+  border-color: rgba(60, 50, 30, 0.16);
+  box-shadow: 0 4px 14px -12px rgba(60, 50, 30, 0.4);
 }
 
 .sl-markdown-content details[open] {
@@ -186,6 +190,36 @@ html[data-theme="dark"] .difficulty-hard   { color: #f87171; }
 html[data-theme="dark"] .difficulty-misc   { color: #94a3b8; }
 html[data-theme="dark"] .os-linux   { color: #cbd5e1; }
 html[data-theme="dark"] .os-windows { color: #60a5fa; }
+
+/* Light badge polish (risograph): confident flat fills + solid edges so pills read as deliberate
+   color on paper, not faint tint. Fills are raised and borders firmed; the vivid AA text inks set
+   on the base rules carry through (verified to keep WCAG AA on the bolder fills). Dark fills and
+   borders are untouched. */
+/* Each rule pairs a bold flat fill + firm border with a DEEP, saturated text ink. The deep inks
+   are the price of AA: a bright hue cannot clear 4.5:1 on a light same-hue fill, so the text goes
+   deep (still clearly its color) while the dot + border + fill carry the vivid energy. All ten are
+   verified at or above 4.5:1 on their own fill. */
+:root[data-theme="light"] .platform-hackthebox  { background: rgba(132,204,22,.26); border-color: rgba(132,204,22,.7); color: #3a5e08; }
+:root[data-theme="light"] .platform-vulnhub     { background: rgba(239,68,68,.22);  border-color: rgba(239,68,68,.7);  color: #9e1515; }
+:root[data-theme="light"] .platform-picoctf     { background: rgba(168,85,247,.22); border-color: rgba(168,85,247,.7); color: #6a28a0; }
+:root[data-theme="light"] .platform-overthewire { background: rgba(245,158,11,.26); border-color: rgba(245,158,11,.7); color: #855300; }
+:root[data-theme="light"] .difficulty-easy   { background: rgba(34,197,94,.24);   border-color: rgba(34,197,94,.7);  color: #125c2a; }
+:root[data-theme="light"] .difficulty-medium { background: rgba(245,158,11,.26);  border-color: rgba(245,158,11,.7); color: #855300; }
+:root[data-theme="light"] .difficulty-hard   { background: rgba(239,68,68,.22);   border-color: rgba(239,68,68,.7);  color: #9e1515; }
+:root[data-theme="light"] .difficulty-misc   { background: rgba(100,116,139,.22); border-color: rgba(100,116,139,.6); color: #3f4c5e; }
+:root[data-theme="light"] .os-linux   { background: rgba(100,116,139,.2);  border-color: rgba(100,116,139,.55); color: #3f4c5e; }
+:root[data-theme="light"] .os-windows { background: rgba(37,99,235,.18);   border-color: rgba(37,99,235,.55); color: #1f4bc4; }
+
+/* Crisp platform dot on paper: drop the glow (it smudges on light) for a clean solid dot, and use
+   a vivid hue decoupled from the AA text ink so the dot reads boldly. Dark dots keep their glow. */
+:root[data-theme="light"] .platform-hackthebox::before,
+:root[data-theme="light"] .platform-vulnhub::before,
+:root[data-theme="light"] .platform-picoctf::before,
+:root[data-theme="light"] .platform-overthewire::before { box-shadow: none; }
+:root[data-theme="light"] .platform-hackthebox::before  { background: var(--tp-deco-lime); }
+:root[data-theme="light"] .platform-vulnhub::before     { background: #e23b2e; }
+:root[data-theme="light"] .platform-picoctf::before     { background: #a64bf0; }
+:root[data-theme="light"] .platform-overthewire::before { background: #ed8f00; }
 
 
 /* ══════════════════════════════════════════════
@@ -465,49 +499,61 @@ html[data-theme="light"] body:has(.home-stats) {
 
 
 /* ══════════════════════════════════════════════
-   PLATFORM INTRO PAGES — section landing headers
+   PLATFORM INDEX PAGES — animated hero + writeup grid
+   (src/components/PlatformIndex.astro + WriteupCard.astro)
+   The components own their visuals via scoped styles; these
+   global rules cover the shared reveal infra, the per-platform
+   accent token, and the Starlight-chrome overrides a scoped
+   component style cannot reach.
    ══════════════════════════════════════════════ */
 
-.platform-intro {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  padding: 1.5rem;
-  border-radius: 14px;
-  margin: 0.5rem 0 1.5rem;
-  border: 1px solid var(--sl-color-gray-5);
-  background: var(--home-panel-bg);
+/* Per-platform accent token, theme-aware. Any index element tagged .pf-{platform}
+   (the PlatformIndex root and every WriteupCard) inherits it, so a future mixed
+   /writeups grid colors each card with no extra wiring. Darkened variants on paper
+   keep contrast (aligned with the .platform-* badge inks). */
+.pf-hackthebox  { --pf-accent: #b6ff3c; }
+.pf-vulnhub     { --pf-accent: #ff5c5c; }
+.pf-picoctf     { --pf-accent: #d96bff; }
+.pf-overthewire { --pf-accent: #ffc23d; }
+:root[data-theme='light'] .pf-hackthebox  { --pf-accent: #4d7c0f; }
+:root[data-theme='light'] .pf-vulnhub     { --pf-accent: #d12f2f; }
+:root[data-theme='light'] .pf-picoctf     { --pf-accent: #8b3dc4; }
+:root[data-theme='light'] .pf-overthewire { --pf-accent: #a86f04; }
+
+/* Universal SECONDARY accent (cyan) for the platform-index duotone. The platform color
+   stays the lead; this complements all four (none of which are cyan). Theme-aware: bright
+   cyan on ink, darkened cyan-ink on paper (both clear AA for the small text that uses it). */
+:root { --pf-accent-2: var(--tp-cyan); }
+:root[data-theme='light'] { --pf-accent-2: var(--tp-cyan-ink); }
+
+/* Scroll-reveal infra (shared by hero + cards; the component script toggles .in).
+   Same easing as index.astro / about.astro so the motion feels identical. */
+.pi-index .reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.8s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.pi-index .reveal.in {
+  opacity: 1;
+  transform: none;
 }
 
-.pi-icon {
-  width: 64px;
-  height: 64px;
-  flex-shrink: 0;
+/* These pages render their own visual hero, so hide Starlight's frontmatter-driven
+   page title (kept for the browser tab + SEO) to avoid a duplicate heading, and widen
+   the content column so the grid is not cramped (TOC is off via frontmatter). */
+body:has(.pi-index) h1#_top {
+  display: none;
+}
+body:has(.pi-index) {
+  --sl-content-width: 60rem;
 }
 
-.pi-tagline {
-  font-size: 1.2rem;
-  font-weight: 700;
-  margin: 0 0 0.4rem;
-  color: var(--sl-color-white);
-}
-
-.pi-meta {
-  margin: 0;
-  display: flex;
-  gap: 0.4rem;
-  flex-wrap: wrap;
-}
-
-/* Left accent bar per platform */
-.pi-htb  { border-left: 4px solid #9fef00; }
-.pi-vh   { border-left: 4px solid #ef4444; }
-.pi-pico { border-left: 4px solid #d946ef; }
-.pi-otw  { border-left: 4px solid #eab308; }
-
-@media (max-width: 540px) {
-  .platform-intro { flex-direction: column; text-align: center; }
-  .pi-meta { justify-content: center; }
+@media (prefers-reduced-motion: reduce) {
+  .pi-index .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }
 
 /* ══════════════════════════════════════════════
@@ -557,6 +603,16 @@ html[data-theme="light"] body:has(.home-stats) {
      (under AA 4.5 for body text). #08697a clears 4.5:1 while staying on-brand teal, not dull.
      Light-only override; the dark --tp-cyan is unchanged. */
   --tp-cyan-ink: #08697a;
+  /* Editorial ink: a crisp near-black on warm paper. Starlight's default light text is a
+     grayish slate (~#353841); a true near-black lifts the paper-and-ink contrast to a premium,
+     intentional feel (about 15:1 on #ece9e0). Body text only; colored inks below are unchanged. */
+  --sl-color-text: #1a1815;
+  /* Decorative accent palette (NON-text only): vivid riso-bold hues for dots, fills, the heading
+     marker, the h2 rule, the sidebar active bar, and panel accents. These read boldly on paper.
+     The darkened text inks (#4d7c0f / #08697a / #c41d6f) stay reserved for colored BODY text and
+     keep WCAG AA; these vivid tones never carry text. */
+  --tp-deco-lime: #6fae00;
+  --tp-deco-cyan: #0a9ec2;
 }
 
 /* ── Faint atmosphere (fixed + very subtle — reading stays calm) ──
@@ -572,12 +628,18 @@ body::before {
     radial-gradient(80vw 360px at 60% 118%, color-mix(in oklab, var(--tp-glow-1) 9%, transparent), color-mix(in oklab, var(--tp-glow-2) 6%, transparent) 55%, transparent 80%);
 }
 :root[data-theme='light'] body::before {
-  /* Top glows already read on paper at 42/40%. The bottom glow needs its own stronger pair
-     (the shared dark 9/6% vanished on #ece9e0), so paper feels atmospheric, not flat white. */
-  background:
-    radial-gradient(60vw 300px at 16% -70px, color-mix(in oklab, var(--tp-glow-1) 42%, transparent), transparent 72%),
-    radial-gradient(55vw 280px at 92% -90px, color-mix(in oklab, var(--tp-glow-2) 40%, transparent), transparent 72%),
-    radial-gradient(80vw 380px at 60% 118%, color-mix(in oklab, var(--tp-glow-2) 34%, transparent), color-mix(in oklab, var(--tp-glow-1) 22%, transparent) 55%, transparent 82%);
+  /* Structure as texture: light swaps glow-as-atmosphere for a faint warm technical dot-grid,
+     for an engineering / risograph-paper feel. The dots are low-contrast warm ink (6%) on a 22px
+     pitch, sitting behind the reading column, so they read as paper structure, not noise, and
+     never lower body-text contrast. One minimal warm glow stays at the very top for a little
+     life. Static (no motion), so it is inherently prefers-reduced-motion safe. */
+  background-color: transparent;
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(60, 50, 30, 0.06) 1px, transparent 1.6px),
+    radial-gradient(60vw 220px at 50% -90px, color-mix(in oklab, var(--tp-glow-2) 12%, transparent), transparent 72%);
+  background-size: 22px 22px, 100% 100%;
+  background-repeat: repeat, no-repeat;
+  background-position: 0 0, center top;
 }
 /* Grain reads far less on pale paper than on ink: lift it just enough to add tooth. */
 :root[data-theme='light'] body::after { opacity: .035; }
@@ -668,38 +730,44 @@ h1#_top {
   background: linear-gradient(90deg, var(--sl-color-accent), var(--tp-cyan), transparent);
 }
 :root[data-theme='light'] .sl-markdown-content .sl-heading-wrapper.level-h2::after {
-  background: linear-gradient(90deg, var(--sl-color-accent), var(--tp-cyan-ink), transparent);
+  /* Decorative rule (no text): vivid deco duotone on paper, lifted opacity so it reads as a
+     confident risograph underline rather than a faint hairline. */
+  background: linear-gradient(90deg, var(--tp-deco-lime), var(--tp-deco-cyan), transparent);
+  opacity: 0.72;
 }
 
 /* h3: cyan accent, one clear step down. Lighter weight than h2 and no "#" marker
-   so it differs unmistakably. Cyan is theme-aware via the light override. */
-.sl-markdown-content h3 {
+   so it differs unmistakably. Cyan is theme-aware via the light override.
+   The :not(:where(.not-content *)) guard mirrors Starlight's own prose rules: components
+   rendered inside docs (e.g. PlatformIndex/WriteupCard) opt out with class="not-content",
+   and these prose styles must respect that too. :where() adds zero specificity. */
+.sl-markdown-content h3:not(:where(.not-content *)) {
   color: var(--tp-cyan);
   font-weight: 600;
 }
-:root[data-theme='light'] .sl-markdown-content h3 {
+:root[data-theme='light'] .sl-markdown-content h3:not(:where(.not-content *)) {
   color: var(--tp-cyan-ink);
 }
 
 /* h4: quietest. Muted, smaller (Starlight scale), no marker. The Starlight gray
    token is theme-aware and stays legible against the page background in both modes. */
-.sl-markdown-content h4 {
+.sl-markdown-content h4:not(:where(.not-content *)) {
   color: var(--sl-color-gray-2);
   font-weight: 600;
 }
 
-/* ── Prose links: cyan, lime on hover ── */
-.sl-markdown-content a {
+/* ── Prose links: cyan, lime on hover (guarded off .not-content subtrees, see h3 note) ── */
+.sl-markdown-content a:not(:where(.not-content *)) {
   color: var(--tp-cyan);
   text-decoration: none;
   border-bottom: 1px solid color-mix(in oklab, var(--tp-cyan) 40%, transparent);
   transition: color .15s, border-color .15s;
 }
-.sl-markdown-content a:hover {
+.sl-markdown-content a:not(:where(.not-content *)):hover {
   color: var(--sl-color-accent);
   border-bottom-color: var(--sl-color-accent);
 }
-:root[data-theme='light'] .sl-markdown-content a {
+:root[data-theme='light'] .sl-markdown-content a:not(:where(.not-content *)) {
   color: var(--tp-cyan-ink);
   border-bottom-color: color-mix(in oklab, var(--tp-cyan-ink) 40%, transparent);
 }
@@ -727,10 +795,12 @@ h1#_top {
   color: var(--sl-color-accent-high);
   font-weight: 600;
 }
-/* Light: accent is the darker olive on pale paper, so push the tint up a touch more
-   so the active row reads as filled and does not wash out. */
+/* Light: the active row gets a vivid deco-lime bar + a lime-tinted fill (both decorative), while
+   the label color stays --sl-color-accent-high (#2f4d09) from the base rule, so the TEXT remains
+   AA. The bar is the confident risograph accent; the fill keeps the row reading as filled. */
 :root[data-theme='light'] .sidebar a[aria-current="page"] {
-  background: color-mix(in oklab, var(--sl-color-accent) 24%, transparent);
+  background: color-mix(in oklab, var(--tp-deco-lime) 20%, transparent);
+  border-inline-start-color: var(--tp-deco-lime);
 }
 
 /* ── Sidebar: recolor Starlight's native nesting guide line ──
@@ -746,12 +816,41 @@ nav.sidebar details > ul > li {
   border-inline-start-color: rgba(0, 0, 0, 0.14);
 }
 
+/* ── Sidebar: trim the rail width so it gives the content column more room ──
+   Starlight's default --sl-sidebar-width (18.75rem) reads wide once the rows are taller;
+   17rem keeps every label on one line (HackTheBox, OverTheWire fit) while handing ~1.75rem
+   back to the article. Theme-agnostic Starlight token; nothing else needs to change. */
+:root {
+  --sl-sidebar-width: 17rem;
+}
+
+/* ── Sidebar: taller rows so a sparse rail feels fuller (sidebar nav only) ──
+   Starlight links/summaries ship a compact ~0.3em vertical padding; raise the per-item
+   block padding and line-height so each row has more presence and a bigger touch target.
+   Padding (not <li> margin) carries the height so the continuous nesting-guide line, the
+   active pill, and the per-platform dots all still align. Never touches the article. */
+nav.sidebar a,
+nav.sidebar summary {
+  padding-block: 0.55rem;
+  line-height: 1.5;
+}
+/* Group labels get the SAME taller padding as the links above (matching treatment so the
+   hierarchy stays balanced). The font size is left at Starlight's default on purpose: bumping
+   it pushed the longer names (HackTheBox, OverTheWire) onto a second line in the narrow mobile
+   drawer, which read as clunky. Fullness comes from the row padding, not a larger glyph. */
+
 /* ── Reading-progress bar (the #tp-progress element is injected by the
        small script added to astro.config.mjs head) ── */
 #tp-progress {
   position: fixed; top: 0; left: 0; height: 2px; width: 0; z-index: 1000;
   background: linear-gradient(90deg, var(--sl-color-accent), var(--tp-cyan));
   transition: width .08s linear;
+}
+/* Light gets its own paper-appropriate duotone (lime-ink to cyan-ink). Dark is untouched and
+   stays lime -> cyan. The thin bar is decorative, so these darkened tones can be vivid; the
+   :root[data-theme='light'] + #id selector outranks the base rule only in light. */
+:root[data-theme='light'] #tp-progress {
+  background: linear-gradient(90deg, #4d7c0f, #0b7e92);
 }
 
 /* ── Code blocks: a touch more presence (syntax colors stay from your EC themes) ── */
@@ -761,11 +860,25 @@ nav.sidebar details > ul > li {
   box-shadow: 0 14px 40px -24px rgba(0, 0, 0, .7);
 }
 
-/* ── Privilege command highlight (.ec-cmd-priv) ──
-   The ec-priv-command Shiki transformer tags literal "sudo" tokens with this class (see
-   astro.config.mjs / src/lib/ec-priv-command.mjs). EC sets each token's color inline per
-   theme, so we override with theme-scoped rules + !important. Brand magenta signals elevated
-   privilege and reads clearly against the blue/green command colors in both themes. */
+/* ── Command highlight by category (.ec-cmd-*) ──
+   The ec-priv-command plugin tags command words by semantic category (see
+   astro.config.mjs / src/lib/ec-priv-command.mjs). EC sets each token color inline per theme, so
+   we override with theme-scoped rules + !important.
+
+   Palette designed in OKLCH (perceptual lightness / chroma / hue), measured against the rendered
+   code background (tokyo-night #1a1b26 on dark, one-light #fafafa on light):
+     - LIGHTNESS is uniform per theme (dark L 0.745, light L 0.43), so the categories read at one
+       brightness. Every redesigned category clears WCAG 7:1 on its code bg (measured): dark
+       recon 7.56 / net 7.96 / inspect 7.45; light recon 7.72 / net 7.45 / inspect 7.88.
+     - HUE separates categories and stays clear of the theme's string / keyword / function token
+       hues: privilege magenta (sudo, kept exactly), recon gold (h95), network cyan (h200),
+       inspect warm-sand (h60, ~145 deg off the theme's cool neutral text so it reads as a tint).
+     - CHROMA (not lightness) carries loud vs quiet: recon + network are vivid (high C); inspect
+       is LOW C at the SAME L/contrast, so it stays calm without going dim. That is the fix for the
+       previously near-invisible inspect color (it had been quieted by dropping CONTRAST instead).
+   Privilege/sudo COLOR is the fixed anchor and is untouched (it sits at ~5.5:1 dark / ~5.4:1 light,
+   just under the 7:1 the redesigned set meets, by design). Every recognized command also goes bold
+   (weight channel below), so a command pops by weight while color only signals category. */
 html[data-theme="dark"] .ec-cmd-priv,
 html[data-theme="dark"] .ec-cmd-priv span {
   color: #ff4d9d !important;
@@ -773,6 +886,45 @@ html[data-theme="dark"] .ec-cmd-priv span {
 html[data-theme="light"] .ec-cmd-priv,
 html[data-theme="light"] .ec-cmd-priv span {
   color: #c41d6f !important;
+}
+/* Recon / enumeration: vivid gold, an "attention" signal (nmap, gobuster, ...). */
+html[data-theme="dark"] .ec-cmd-recon,
+html[data-theme="dark"] .ec-cmd-recon span {
+  color: oklch(0.745 0.153 95) !important;
+}
+html[data-theme="light"] .ec-cmd-recon,
+html[data-theme="light"] .ec-cmd-recon span {
+  color: oklch(0.43 0.088 95) !important;
+}
+/* Network / shell / transfer: vivid cyan, brand connection feel (nc, curl, ssh, ...). */
+html[data-theme="dark"] .ec-cmd-net,
+html[data-theme="dark"] .ec-cmd-net span {
+  color: oklch(0.745 0.126 200) !important;
+}
+html[data-theme="light"] .ec-cmd-net,
+html[data-theme="light"] .ec-cmd-net span {
+  color: oklch(0.43 0.073 200) !important;
+}
+/* Local inspection (ls, cd, cat, echo, ping, whoami, id, ...): low-chroma warm sand. Dark sits at the
+   vivid set's L/contrast (quiet via chroma, not contrast). Light is intentionally a touch lighter than
+   the vivid set (owner preference: the darker brown read too heavy); it stays AA on paper (~5.8:1) and
+   distinct from the cool neutral text. */
+html[data-theme="dark"] .ec-cmd-inspect,
+html[data-theme="dark"] .ec-cmd-inspect span {
+  color: oklch(0.745 0.045 60) !important;
+}
+html[data-theme="light"] .ec-cmd-inspect,
+html[data-theme="light"] .ec-cmd-inspect span {
+  color: oklch(0.5 0.045 60) !important;
+}
+/* Weight channel: every recognized command is bold in both themes (all four categories, sudo
+   included). Color signals the category; weight signals "this token is the command." This is a
+   weight-only addition for sudo, so sudo's color stays exactly as the anchor above. */
+.ec-cmd-priv, .ec-cmd-priv span,
+.ec-cmd-recon, .ec-cmd-recon span,
+.ec-cmd-net, .ec-cmd-net span,
+.ec-cmd-inspect, .ec-cmd-inspect span {
+  font-weight: 700 !important;
 }
 
 /* ══════════════════════════════════════════════
@@ -790,12 +942,17 @@ html[data-theme="light"] .ec-cmd-priv span {
   box-shadow: 0 8px 24px -16px rgba(60, 50, 30, 0.45), 0 1px 2px rgba(60, 50, 30, 0.06);
 }
 
-/* Lead blockquote: stronger tint + accent-tinted border + soft shadow so it lifts off paper
-   (the shared 7% tint is nearly invisible on #ece9e0). */
+/* Lead blockquote: a calm warm-paper card (subtle olive tint kept light so the body text on it
+   stays AA), but the left bar is the vivid deco-lime panel accent. */
 :root[data-theme='light'] .sl-markdown-content blockquote {
   background: color-mix(in oklab, var(--sl-color-accent) 12%, #f4f1e8);
-  border-inline-start-color: var(--sl-color-accent);
+  border-inline-start-color: var(--tp-deco-lime);
   box-shadow: 0 6px 20px -14px rgba(60, 50, 30, 0.4);
+}
+/* Open Toggle panels: vivid deco-lime edge (decorative, no text on it) so the active panel reads
+   as a confident card on paper. Base details[open] uses --sl-color-accent for both themes. */
+:root[data-theme='light'] .sl-markdown-content details[open] {
+  border-color: var(--tp-deco-lime);
 }
 
 /* Sidebar: give the rail a subtle edge + soft shadow so the nav reads as a distinct panel,
@@ -803,6 +960,12 @@ html[data-theme="light"] .ec-cmd-priv span {
 :root[data-theme='light'] nav.sidebar {
   border-inline-end: 1px solid rgba(60, 50, 30, 0.12);
   box-shadow: inset -12px 0 24px -24px rgba(60, 50, 30, 0.35);
+}
+
+/* Decorative accent (NOT body text): the lime "#" before each h2 runs the vivid deco-lime on
+   paper, bolder than the AA text ink, for a confident risograph marker. Light-only. */
+:root[data-theme='light'] .sl-markdown-content h2::before {
+  color: var(--tp-deco-lime);
 }
 
 /* ── Header + footer chrome: homepage HUD feel ──
@@ -887,3 +1050,16 @@ ul.top-level > li:nth-child(3) > details > summary .group-label::before  { width
 ul.top-level > li:nth-child(4) > details > summary .group-label::before  { width:18px; height:18px; border-radius:0; box-shadow:none; background:url('/icons/picoctf.svg')     center/contain no-repeat; }
 ul.top-level > li:nth-child(5) > details > summary .group-label::before  { width:18px; height:18px; border-radius:0; box-shadow:none; background:url('/icons/overthewire.svg')  center/contain no-repeat; }
 */
+
+
+/* ── Loot callout: captured creds / intel ─────── */
+.sl-markdown-content .loot {
+  border: 1px solid color-mix(in oklab, var(--tp-cyan) 35%, transparent);
+  border-left: 3px solid var(--tp-cyan);
+  border-radius: 0 10px 10px 0;
+  background: color-mix(in oklab, var(--tp-cyan) 6%, transparent);
+  padding: 0.75rem 1.1rem;
+  margin: 1.2rem 0;
+}
+.sl-markdown-content .loot > :first-child { margin-top: 0; }
+.sl-markdown-content .loot > :last-child  { margin-bottom: 0; }

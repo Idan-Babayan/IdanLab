@@ -1,20 +1,9 @@
 ---
 title: HackTheBox
 description: My HackTheBox machine writeups, full methodology breakdowns from recon to root.
+tableOfContents: false
 ---
 
-import { Badge } from '@astrojs/starlight/components';
+import PlatformIndex from '@components/PlatformIndex.astro';
 
-<div class="platform-intro pi-htb">
-  <img src="/icons/htb.svg" alt="" class="pi-icon" data-zoom-off />
-  <div>
-    <p class="pi-tagline">Retired machines, owned and documented.</p>
-    <p class="pi-meta"><Badge text="Penetration Testing" variant="success" /> <Badge text="Real-World Scenarios" variant="note" /></p>
-  </div>
-</div>
-
-HackTheBox is where I spend most of my time. These are full walkthroughs of retired machines: every step from initial reconnaissance to the root flag, including the enumeration that mattered and the rabbit holes that didn't.
-
-Each writeup follows my standard loop: **recon → foothold → privilege escalation → reflection.** I document the actual process, not a sanitized highlight reel.
-
-Browse the machines by difficulty in the sidebar. 👈
+<PlatformIndex platform="hackthebox" />
