@@ -862,14 +862,23 @@ nav.sidebar summary {
 
 /* ── Command highlight by category (.ec-cmd-*) ──
    The ec-priv-command plugin tags command words by semantic category (see
-   astro.config.mjs / src/lib/ec-priv-command.mjs). EC sets each token's color inline per theme,
-   so we override with theme-scoped rules + !important. Four categories, four colors, mutually
-   distinct and distinct from the theme's own token colors, each WCAG AA on the code background:
-     privilege  magenta (vivid)  sudo / su / doas
-     recon      gold    (vivid)  nmap, gobuster, ...
-     network    cyan    (vivid)  nc, curl, ssh, ...
-     inspect    slate-lavender (QUIET, low saturation) ls, cat, id, ...
-   Privilege (sudo) is unchanged. */
+   astro.config.mjs / src/lib/ec-priv-command.mjs). EC sets each token color inline per theme, so
+   we override with theme-scoped rules + !important.
+
+   Palette designed in OKLCH (perceptual lightness / chroma / hue), measured against the rendered
+   code background (tokyo-night #1a1b26 on dark, one-light #fafafa on light):
+     - LIGHTNESS is uniform per theme (dark L 0.745, light L 0.43), so the categories read at one
+       brightness. Every redesigned category clears WCAG 7:1 on its code bg (measured): dark
+       recon 7.56 / net 7.96 / inspect 7.45; light recon 7.72 / net 7.45 / inspect 7.88.
+     - HUE separates categories and stays clear of the theme's string / keyword / function token
+       hues: privilege magenta (sudo, kept exactly), recon gold (h95), network cyan (h200),
+       inspect warm-sand (h60, ~145 deg off the theme's cool neutral text so it reads as a tint).
+     - CHROMA (not lightness) carries loud vs quiet: recon + network are vivid (high C); inspect
+       is LOW C at the SAME L/contrast, so it stays calm without going dim. That is the fix for the
+       previously near-invisible inspect color (it had been quieted by dropping CONTRAST instead).
+   Privilege/sudo COLOR is the fixed anchor and is untouched (it sits at ~5.5:1 dark / ~5.4:1 light,
+   just under the 7:1 the redesigned set meets, by design). Every recognized command also goes bold
+   (weight channel below), so a command pops by weight while color only signals category. */
 html[data-theme="dark"] .ec-cmd-priv,
 html[data-theme="dark"] .ec-cmd-priv span {
   color: #ff4d9d !important;
@@ -878,36 +887,44 @@ html[data-theme="light"] .ec-cmd-priv,
 html[data-theme="light"] .ec-cmd-priv span {
   color: #c41d6f !important;
 }
-/* Recon / enumeration: warm gold, an "attention" signal. Lime is rejected (too close to the
-   theme green used for commands). The hue is theme-tuned to stay clear of the theme's amber/orange
-   tokens: a vivid yellow-gold on ink (separates cleanly from the muted tan flags), and a burnt
-   orange-gold on paper (a dark yellow would collide with the brown amber, so it shifts toward
-   orange while staying warm and AA). */
+/* Recon / enumeration: vivid gold, an "attention" signal (nmap, gobuster, ...). */
 html[data-theme="dark"] .ec-cmd-recon,
 html[data-theme="dark"] .ec-cmd-recon span {
-  color: #ffd60a !important;
+  color: oklch(0.745 0.153 95) !important;
 }
 html[data-theme="light"] .ec-cmd-recon,
 html[data-theme="light"] .ec-cmd-recon span {
-  color: #b34900 !important;
+  color: oklch(0.43 0.088 95) !important;
 }
-/* Network / shell / transfer: cyan (brand connection feel). */
+/* Network / shell / transfer: vivid cyan, brand connection feel (nc, curl, ssh, ...). */
 html[data-theme="dark"] .ec-cmd-net,
 html[data-theme="dark"] .ec-cmd-net span {
-  color: #41efff !important;
+  color: oklch(0.745 0.126 200) !important;
 }
 html[data-theme="light"] .ec-cmd-net,
 html[data-theme="light"] .ec-cmd-net span {
-  color: #08697a !important;
+  color: oklch(0.43 0.073 200) !important;
 }
-/* Local inspection: quiet, low-saturation slate-lavender so frequent commands stay calm. */
+/* Local inspection (ls, cd, cat, echo, ping, whoami, id, ...): low-chroma warm sand. Dark sits at the
+   vivid set's L/contrast (quiet via chroma, not contrast). Light is intentionally a touch lighter than
+   the vivid set (owner preference: the darker brown read too heavy); it stays AA on paper (~5.8:1) and
+   distinct from the cool neutral text. */
 html[data-theme="dark"] .ec-cmd-inspect,
 html[data-theme="dark"] .ec-cmd-inspect span {
-  color: #a6a0c8 !important;
+  color: oklch(0.745 0.045 60) !important;
 }
 html[data-theme="light"] .ec-cmd-inspect,
 html[data-theme="light"] .ec-cmd-inspect span {
-  color: #6a6488 !important;
+  color: oklch(0.5 0.045 60) !important;
+}
+/* Weight channel: every recognized command is bold in both themes (all four categories, sudo
+   included). Color signals the category; weight signals "this token is the command." This is a
+   weight-only addition for sudo, so sudo's color stays exactly as the anchor above. */
+.ec-cmd-priv, .ec-cmd-priv span,
+.ec-cmd-recon, .ec-cmd-recon span,
+.ec-cmd-net, .ec-cmd-net span,
+.ec-cmd-inspect, .ec-cmd-inspect span {
+  font-weight: 700 !important;
 }
 
 /* ══════════════════════════════════════════════

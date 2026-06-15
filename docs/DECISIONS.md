@@ -6,6 +6,37 @@
 
 ---
 
+### 2026-06-15 · Command-highlight palette rebuilt on a principled OKLCH basis (+ bold weight)
+- **Decision:** Redesign the `.ec-cmd-*` palette in OKLCH, measured against the rendered code bg
+  (tokyo-night `#1a1b26` / one-light `#fafafa`), separating the three channels: (1) LIGHTNESS uniform
+  per theme (dark `L 0.745`, light `L 0.43`) so all categories share one brightness and each clears
+  **WCAG 7:1 (AAA)**, measured; (2) HUE = category, kept off the theme's string/keyword/function hues
+  (privilege magenta, recon gold `h95`, network cyan `h200`, inspect warm-sand `h60`); (3) CHROMA =
+  loud vs quiet, so recon/network are vivid and inspect is LOW chroma at the SAME L/contrast. Final
+  values: recon `oklch(0.745 0.153 95)`/`oklch(0.43 0.088 95)`, network `oklch(0.745 0.126 200)`/
+  `oklch(0.43 0.073 200)`, inspect `oklch(0.745 0.045 60)`/`oklch(0.5 0.045 60)`. Also added a second
+  channel: every recognized command is `font-weight:700` (incl. sudo, weight only). Inspect set: ls, cd,
+  cat, echo, whoami, id, find, grep, pwd, ping; recon also includes whatweb.
+- **Why:** The old inspect color was near-invisible because it had been quieted by dropping CONTRAST;
+  the fix is to drop CHROMA instead and hold lightness/contrast uniform with the vivid set. Working in
+  OKLCH makes loudness (chroma) and legibility (contrast) independent, so "quiet" no longer means
+  "dim." Bold gives a weight channel so the command word pops without relying on color alone. Verified
+  in-browser in both themes: computed colors match the shipped `oklch()` values, browser-measured
+  contrast matches the design math (recon 7.56/7.72, net 7.96/7.45, inspect 7.45 dark / 5.8 light), and
+  command-position detection leaves command OUTPUT untagged. Light inspect is the one deliberate
+  exception to uniform-L: lightened to `oklch(0.5 0.045 60)` (~5.8:1, still AA) at owner request because
+  the darker uniform brown read too heavy on paper; the quiet-via-chroma intent is unchanged.
+- **Constraint honored / tradeoff:** sudo's COLOR is the immovable anchor and is NOT recolored, so it
+  sits at ~5.5:1 (dark) / ~5.4:1 (light), just under the 7:1 the redesigned categories meet. "All four
+  at sudo's lightness AND all ≥7:1" is physically impossible without recoloring sudo, so the 7:1 floor
+  applies to the three redesigned categories and sudo keeps its hue/color (gaining only bold). Light
+  vivid chroma is gamut-limited at `L 0.43` (warm/teal hues cannot be both dark and saturated on white),
+  so light reads more muted than dark; this is the honest cost of the 7:1 floor on a paper bg.
+- **Status:** Adopted. Supersedes the color values in the 2026-06-14 command-highlighting entry below
+  (its mechanism + category structure still stand). Colors live in `custom.css` only (`oklch()` +
+  `!important`); command-list additions (`cd`, `echo`, `ping` to inspect; `whatweb` to recon) are in
+  `ec-priv-command.mjs`.
+
 ### 2026-06-14 · Code-block command highlighting by semantic category
 - **Decision:** Extend the EC command-tagging plugin (`ec-priv-command.mjs`) from sudo-only to four
   categories colored by signal value: privilege (magenta; sudo/su/doas), recon (gold/orange; nmap,

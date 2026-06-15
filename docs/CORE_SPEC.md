@@ -169,13 +169,29 @@ label + card eyebrow + "Read writeup" affordance are cyan, the count-up number +
 the platform color, the stat breakdown segments are colored by difficulty, and the filter active
 pill uses a cyan ring.
 
-### Code-block command highlighting (by category, UNCOMMITTED, see ROADMAP)
+### Code-block command highlighting (by category, OKLCH palette)
 `ec-priv-command.mjs` tags command words by semantic category, colored in `custom.css` (theme-aware,
-`!important`, all WCAG AA on the code bg, mutually distinct):
-- privilege `.ec-cmd-priv` magenta (`#ff4d9d`/`#c41d6f`): sudo, su, doas. **sudo unchanged.**
-- recon `.ec-cmd-recon` gold/orange (`#ffd60a`/`#b34900`): nmap, gobuster, ffuf, feroxbuster, nikto, enum4linux, smbclient.
-- network `.ec-cmd-net` cyan (`#41efff`/`#08697a`): nc, ncat, netcat, penelope, socat, curl, wget, ssh, chisel.
-- inspect `.ec-cmd-inspect` quiet lavender (`#a6a0c8`/`#6a6488`): ls, cat, whoami, id, find, grep, pwd.
+`!important`). The palette is designed in OKLCH and measured against the rendered code bg
+(tokyo-night `#1a1b26` dark, one-light `#fafafa` light), separating the three perceptual channels:
+- **Lightness = contrast (uniform):** one target L per theme (dark `L 0.745`, light `L 0.43`) so all
+  categories read at one brightness. Measured: dark recon 7.56 / net 7.96 / inspect 7.45 (all AAA);
+  light recon 7.72 / net 7.45 (AAA). **Exception:** light inspect is deliberately lightened to `L 0.50`
+  (~5.8:1, still AA) per owner preference, because the darker uniform brown read too heavy on paper.
+- **Hue = category** (kept clear of the theme's string/keyword/function token hues): privilege magenta,
+  recon gold `h95`, network cyan `h200`, inspect warm-sand `h60` (~145 deg off the theme's cool neutral
+  text, so the near-neutral inspect still reads as a distinct tint).
+- **Chroma = loud vs quiet** (NOT lightness): recon + network vivid (high C); inspect LOW C at the same
+  L/contrast, so it is calm without going dim. This fixed the previously near-invisible inspect color
+  (it had been quieted by dropping CONTRAST instead of chroma).
+- Values: privilege `.ec-cmd-priv` `#ff4d9d`/`#c41d6f` (sudo, su, doas). recon `.ec-cmd-recon`
+  `oklch(0.745 0.153 95)`/`oklch(0.43 0.088 95)` (nmap, gobuster, ffuf, feroxbuster, nikto, whatweb,
+  enum4linux, smbclient). network `.ec-cmd-net` `oklch(0.745 0.126 200)`/`oklch(0.43 0.073 200)`
+  (nc, ncat, netcat, penelope, socat, curl, wget, ssh, chisel). inspect `.ec-cmd-inspect`
+  `oklch(0.745 0.045 60)`/`oklch(0.5 0.045 60)` (ls, cd, cat, echo, whoami, id, find, grep, pwd, ping).
+- **Weight channel:** every recognized command is `font-weight:700`, so a command pops by weight while
+  color only signals category. **sudo's COLOR is the fixed anchor (unchanged); it gains bold only** and
+  sits at ~5.5:1 dark / ~5.4:1 light (just under the 7:1 the redesigned set meets, by design, because
+  it must not be recolored).
 - Mechanism: command-position detection (first word after prompt / `sudo` / `|` `&&` `;`); sudo stays
   content-matched. Command lists are one-line-extendable. Residual risk: an output line whose first
   word is exactly a listed command (rare) can be mis-tagged.
