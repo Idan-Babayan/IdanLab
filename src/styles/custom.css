@@ -112,6 +112,27 @@ html[data-theme="light"] .sl-markdown-content details {
   transform: rotate(90deg);
 }
 
+/* Toggle titles use the normal foreground text color (no cyan), so cyan stays reserved for links.
+   The disclosure chevron stays dim (the ::before above). Inline <code> in a summary keeps its red
+   code color so a command, tool, or path still pops. Flag toggles are the deliberate exception
+   (lime accent), handled by the :has() rule below. */
+html[data-theme="dark"] .sl-markdown-content details > summary code {
+  color: #ff8787;
+}
+html[data-theme="light"] .sl-markdown-content details > summary code {
+  color: #c92a2a;
+}
+
+/* Flag reveal is the one toggle that keeps a pop. Flag toggles carry the .toggle-flag class (set by
+   Toggle's `flag` prop); their summary (lime flag icon + label) takes the lime accent via currentColor.
+   Dark uses the lime accent token; light uses a readable darker lime. */
+html[data-theme="dark"] .sl-markdown-content details.toggle-flag > summary {
+  color: var(--sl-color-accent);
+}
+html[data-theme="light"] .sl-markdown-content details.toggle-flag > summary {
+  color: #4d7c0f;
+}
+
 .toggle-body {
   padding-top: 0.5rem;
 }
@@ -860,6 +881,19 @@ nav.sidebar summary {
   box-shadow: 0 14px 40px -24px rgba(0, 0, 0, .7);
 }
 
+/* EC line highlights ({n}): emphasis must stay NEUTRAL (no callout hue) so a highlighted line never
+   impersonates a callout. Override the two EC mark variables to a hueless treatment: a faint
+   grayscale wash plus a dim neutral left edge (pure white-alpha on ink, pure dark-alpha on paper).
+   No amber, gold, cyan, purple, green, or red. Subtle in both themes; the highlight stays. */
+html[data-theme="dark"] .expressive-code .ec-line.mark {
+  --ec-tm-markBg: rgba(255, 255, 255, 0.06);
+  --ec-tm-markBrdCol: rgba(255, 255, 255, 0.32);
+}
+html[data-theme="light"] .expressive-code .ec-line.mark {
+  --ec-tm-markBg: rgba(20, 22, 27, 0.05);
+  --ec-tm-markBrdCol: rgba(20, 22, 27, 0.34);
+}
+
 /* ── Command highlight by category (.ec-cmd-*) ──
    The ec-priv-command plugin tags command words by semantic category (see
    astro.config.mjs / src/lib/ec-priv-command.mjs). EC sets each token color inline per theme, so
@@ -1063,3 +1097,54 @@ ul.top-level > li:nth-child(5) > details > summary .group-label::before  { width
 }
 .sl-markdown-content .loot > :first-child { margin-top: 0; }
 .sl-markdown-content .loot > :last-child  { margin-bottom: 0; }
+
+
+/* ── Tagged callouts (.cl + Callout.astro) ─────────────────────────────────────
+   A reusable callout: a 3px accent left border, a faint accent-tinted background, and a header row
+   of icon + UPPERCASE label in the accent color. Each type sets --acc. Light mode keeps the colored
+   border, lifts the tint so it reads on paper, and swaps the icon + label to a darker ink for
+   legibility. Body text uses the normal content color. Scoped to .sl-markdown-content. */
+.sl-markdown-content .cl {
+  border-left: 3px solid var(--acc);
+  background: color-mix(in oklab, var(--acc) 8%, transparent);
+  border-radius: 0 9px 9px 0;
+  padding: 0.7rem 1.05rem;
+  margin: 1.2rem 0;
+}
+.sl-markdown-content .cl-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 0.45rem;
+  color: var(--cl-ink, var(--acc));
+}
+.sl-markdown-content .cl-icon {
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+}
+.sl-markdown-content .cl-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.sl-markdown-content .cl > :last-child { margin-bottom: 0; }
+
+/* Per-type accent (border + icon + label), dark mode. */
+.sl-markdown-content .cl-recon   { --acc: #41efff; }
+.sl-markdown-content .cl-loot    { --acc: #ffc23d; }
+.sl-markdown-content .cl-intel   { --acc: #d96bff; }
+.sl-markdown-content .cl-defense { --acc: #22c55e; }
+.sl-markdown-content .cl-vuln    { --acc: #ff5c5c; }
+
+/* Light mode: colored border kept, tint lifted a touch so it reads on the warm paper, and the icon
+   + label color switched to a darker ink so they clear contrast on a light surface. */
+html[data-theme="light"] .sl-markdown-content .cl {
+  background: color-mix(in oklab, var(--acc) 11%, transparent);
+}
+html[data-theme="light"] .sl-markdown-content .cl-recon   { --cl-ink: #096577; }
+html[data-theme="light"] .sl-markdown-content .cl-loot    { --cl-ink: #946a00; }
+html[data-theme="light"] .sl-markdown-content .cl-intel   { --cl-ink: #7a27b3; }
+html[data-theme="light"] .sl-markdown-content .cl-defense { --cl-ink: #15803d; }
+html[data-theme="light"] .sl-markdown-content .cl-vuln    { --cl-ink: #c92a2a; }
