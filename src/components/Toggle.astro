@@ -5,12 +5,13 @@
 // processed by Astro so syntax highlighting should work correctly.
 
 interface Props {
-  label: string;  // accepts plain text or HTML string
+  label: string;        // accepts plain text or HTML string
+  flag?: boolean;       // flag-reveal toggle: adds .toggle-flag for the lime accent (see custom.css)
 }
-const { label } = Astro.props;
+const { label, flag = false } = Astro.props;
 ---
 
-<details>
+<details class={flag ? 'toggle-flag' : undefined}>
   <summary set:html={label}></summary>
   <div class="toggle-body">
     <slot />
