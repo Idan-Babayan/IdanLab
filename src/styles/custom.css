@@ -123,14 +123,34 @@ html[data-theme="light"] .sl-markdown-content details > summary code {
   color: #c92a2a;
 }
 
-/* Flag reveal is the one toggle that keeps a pop. Flag toggles carry the .toggle-flag class (set by
-   Toggle's `flag` prop); their summary (lime flag icon + label) takes the lime accent via currentColor.
-   Dark uses the lime accent token; light uses a readable darker lime. */
+/* Flag reveal is the prize of the writeup, so it is the one toggle that keeps a pop. Flag toggles
+   carry the .toggle-flag class (Toggle's `flag` prop). Single-line layout: the summary is a flex row
+   so the inline flag icon sits beside the label. (Starlight renders content <svg> as display:block,
+   which otherwise dropped the icon onto its own line and wrapped the title.) The svg gets a fixed 1em
+   box and flex-shrink:0 so it never collapses or wraps off. The disclosure ::before marker is kept,
+   its margin zeroed so the flex gap spaces all three items evenly. */
+.sl-markdown-content details.toggle-flag > summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0.4rem;
+}
+.sl-markdown-content details.toggle-flag > summary::before {
+  margin-right: 0;
+}
+.sl-markdown-content details.toggle-flag > summary svg {
+  flex-shrink: 0;
+  width: 1em;
+  height: 1em;
+}
+/* Treasure gold: theme-aware and WCAG AA on the toggle panel (dark 12:1 on the near-black panel,
+   light 5.2:1 on the warm paper panel), distinct from the functional lime/cyan/magenta accents. The
+   flag svg uses fill:currentColor, so the icon and label share this gold ("this is the prize"). */
 html[data-theme="dark"] .sl-markdown-content details.toggle-flag > summary {
-  color: var(--sl-color-accent);
+  color: #ffc23d;
 }
 html[data-theme="light"] .sl-markdown-content details.toggle-flag > summary {
-  color: #4d7c0f;
+  color: #835e00;
 }
 
 .toggle-body {
@@ -879,19 +899,6 @@ nav.sidebar summary {
 .expressive-code .frame {
   border-radius: 12px;
   box-shadow: 0 14px 40px -24px rgba(0, 0, 0, .7);
-}
-
-/* EC line highlights ({n}): emphasis must stay NEUTRAL (no callout hue) so a highlighted line never
-   impersonates a callout. Override the two EC mark variables to a hueless treatment: a faint
-   grayscale wash plus a dim neutral left edge (pure white-alpha on ink, pure dark-alpha on paper).
-   No amber, gold, cyan, purple, green, or red. Subtle in both themes; the highlight stays. */
-html[data-theme="dark"] .expressive-code .ec-line.mark {
-  --ec-tm-markBg: rgba(255, 255, 255, 0.06);
-  --ec-tm-markBrdCol: rgba(255, 255, 255, 0.32);
-}
-html[data-theme="light"] .expressive-code .ec-line.mark {
-  --ec-tm-markBg: rgba(20, 22, 27, 0.05);
-  --ec-tm-markBrdCol: rgba(20, 22, 27, 0.34);
 }
 
 /* ── Command highlight by category (.ec-cmd-*) ──
