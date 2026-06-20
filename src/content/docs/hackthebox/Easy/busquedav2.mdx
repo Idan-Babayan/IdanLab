@@ -264,7 +264,7 @@ A `.git` folder inside the web root is a gift: its config may hold the remote's 
 
 <Toggle label="Reading remote credentials <code>.git/config</code>">
 
-```bash frame="code" title="Bash" {8}
+```bash frame="code" title="Bash"
 svc@busqueda:/var/www/app/.git$ cat config
 [core]
  repositoryformatversion = 0
@@ -304,7 +304,7 @@ With the password in hand, `sudo -l` is the fast path.
 
 <Toggle label="Where can svc act as root? <code>sudo -l</code>">
 
-```bash frame="code" title="Bash" {7}
+```bash frame="code" title="Bash"
 svc@busqueda:/var/www/app/.git$ sudo -l
 [sudo] password for svc:
 Matching Defaults entries for svc on busqueda:
@@ -379,7 +379,7 @@ svc@busqueda:~$ sudo /usr/bin/python3 /opt/scripts/system-checkup.py docker-insp
 
 The `administrator` scripts repo in Gitea shows the source of `system-checkup.py`. The `full-checkup` action is the weak point: it runs a helper script by a relative path.
 
-```python frame="code" title="Python" {3}
+```python frame="code" title="Python"
 elif action == 'full-checkup':
     try:
         arg_list = ['./full-checkup.sh']
