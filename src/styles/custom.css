@@ -25,6 +25,49 @@ html[data-theme="dark"] .task-title {
   color: #ba856f !important;
 }
 
+/* ── Flag loot system: User Flag / Root Flag read as one gold signal ───────────────────────────
+   Three states share the gold: the body heading (below), the reveal toggle (see .toggle-flag in the
+   Toggle section), and the TOC entry (below). All pull the theme-aware --flag-gold token.
+
+   DEPENDENCY: the flag headings reuse .task-title (shared with real Task headings like "Task 1"), so
+   there is no dedicated .flag-title yet. A .flag-title emitted by the content pipeline would be the
+   clean hook; until then these target the deterministic Starlight slug ids (#user-flag / #root-flag).
+   The id outranks the .task-title !important brown, and --flag-gold is theme-aware, so one rule
+   covers both themes. */
+#user-flag .task-title,
+#root-flag .task-title {
+  color: var(--flag-gold) !important;
+}
+/* Gold flag icon: the project's flag SVG as a mask, so background-color (the gold) fills the shape.
+   Mask, not an emoji, and not a glow. Body heading only. */
+#user-flag .task-title::before,
+#root-flag .task-title::before {
+  content: "";
+  display: inline-block;
+  width: 0.85em;
+  height: 0.85em;
+  margin-right: 0.4em;
+  vertical-align: -0.06em;
+  background-color: var(--flag-gold);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* Flag TOC entries: the gold identity in the right "On this page" column, others keep the green
+   active accent. Targeted by their deterministic anchors; this is unlayered so it overrides
+   Starlight's layered a[aria-current] green. A persistent muted gold makes the loot scannable at a
+   glance; full gold on hover and when current. */
+.right-sidebar-panel a[href="#user-flag"],
+.right-sidebar-panel a[href="#root-flag"] {
+  color: color-mix(in oklab, var(--flag-gold) 70%, var(--sl-color-gray-3));
+}
+.right-sidebar-panel a[href="#user-flag"]:hover,
+.right-sidebar-panel a[href="#root-flag"]:hover,
+.right-sidebar-panel a[href="#user-flag"][aria-current="true"],
+.right-sidebar-panel a[href="#root-flag"][aria-current="true"] {
+  color: var(--flag-gold);
+}
+
 
 /* ── Port labels (red) ───────────────────────── */
 
@@ -143,14 +186,11 @@ html[data-theme="light"] .sl-markdown-content details > summary code {
   width: 1em;
   height: 1em;
 }
-/* Treasure gold: theme-aware and WCAG AA on the toggle panel (dark 12:1 on the near-black panel,
-   light 5.2:1 on the warm paper panel), distinct from the functional lime/cyan/magenta accents. The
-   flag svg uses fill:currentColor, so the icon and label share this gold ("this is the prize"). */
-html[data-theme="dark"] .sl-markdown-content details.toggle-flag > summary {
-  color: #ffc23d;
-}
-html[data-theme="light"] .sl-markdown-content details.toggle-flag > summary {
-  color: #835e00;
+/* Treasure gold via the shared --flag-gold token, so the toggle, the flag heading, and the flag TOC
+   entry read as one system. Theme-aware and WCAG AA on the toggle panel; the flag svg uses
+   fill:currentColor, so the icon and label share this gold ("this is the prize"). */
+.sl-markdown-content details.toggle-flag > summary {
+  color: var(--flag-gold);
 }
 
 .toggle-body {
@@ -622,6 +662,9 @@ body:has(.pi-index) {
   --sl-color-accent: #b6ff3c;
   --sl-color-accent-high: #daff9e;
   --sl-color-text-accent: #b6ff3c;
+  /* Flag loot gold: one signal for the User Flag / Root Flag heading, reveal toggle, and TOC entry.
+     Theme-aware; AA in both themes (12.4:1 on ink, 4.85:1 on paper). */
+  --flag-gold: #ffc23d;
   --sl-color-bg: #07090a;
   --sl-color-bg-nav: color-mix(in oklab, #07090a 78%, transparent);
   --sl-color-bg-sidebar: #0a0e0f;
@@ -635,6 +678,7 @@ body:has(.pi-index) {
   --sl-color-accent: #4d7c0f;
   --sl-color-accent-high: #2f4d09;
   --sl-color-text-accent: #4d7c0f;
+  --flag-gold: #835e00;
   --sl-color-bg: #ece9e0;
   --sl-color-bg-nav: color-mix(in oklab, #ece9e0 80%, transparent);
   --sl-color-bg-sidebar: #f1eee5;
