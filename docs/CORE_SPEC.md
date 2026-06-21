@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-06-14.
+> Last updated: 2026-06-20.
 
 ---
 
@@ -50,7 +50,7 @@
 
 ```
 C:\dev\idanlab\                       # chosen to avoid Hebrew chars in C:\Users\אידן\
-├─ astro.config.mjs                   # Starlight config: site, sidebar, fonts(head), EC themes + pluginPrivCommand, reading-progress head script, image-zoom, vite alias
+├─ astro.config.mjs                   # Starlight config: site, sidebar, fonts(head), EC themes + pluginPrivCommand, reading-progress head script, image-zoom, vite alias, components override (PageSidebar)
 ├─ src/
 │  ├─ content.config.ts               # docs collection (docsLoader + docsSchema), extended with optional os/tags
 │  ├─ pages/
@@ -63,11 +63,15 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in C:\Users
 │  │  ├─ 404.mdx                      # themed 404 (template: splash + hero), renders <NotFound/>; Starlight slug-404 override
 │  │  └─ secret.mdx                   # hidden /secret (splash, pagefind:false, noindex), renders <SecretTerminal/>
 │  ├─ components/
-│  │  ├─ Toggle.astro                 # <details> wrapper; renders MDX (incl. code) inside slot
+│  │  ├─ Toggle.astro                 # <details class="toggle"> wrapper; flag prop adds .toggle-flag; renders MDX (incl. code) in slot
+│  │  ├─ ToggleAll.astro              # Expand/Collapse-all control (vanilla TS, scroll-anchored); injected via PageSidebar override
+│  │  ├─ Callout.astro                # icon-based tagged callout (recon/loot/intel/vuln/defense); .cl styles in custom.css
 │  │  ├─ WriteupCard.astro            # presentational writeup card (props only, reusable for a future /writeups index)
 │  │  ├─ PlatformIndex.astro          # data + hero + difficulty filter + WriteupCard grid; ported homepage effects
 │  │  ├─ NotFound.astro               # 404 breadcrumb body (nudges to /robots.txt)
-│  │  └─ SecretTerminal.astro         # from-scratch, zero-dependency vanilla-TS fake terminal
+│  │  ├─ SecretTerminal.astro         # from-scratch, zero-dependency vanilla-TS fake terminal
+│  │  └─ overrides/
+│  │     └─ PageSidebar.astro         # additive Starlight override: renders <Default/> then <ToggleAll/> at the bottom of the right TOC
 │  ├─ lib/
 │  │  └─ ec-priv-command.mjs          # EC plugin: tags command words by category (priv/recon/net/inspect)
 │  └─ styles/
@@ -135,7 +139,10 @@ Two surfaces, deliberately different:
   Toggle, `:::tip` admonition, metadata badges, sidebar dots.
 - Content-embedded (in `src/components/`): `PlatformIndex` (animated hero + difficulty filter rail
   + writeup-card grid; reuses the homepage effects), `WriteupCard` (presentational, `showPlatform`
-  prop for a future mixed grid), `NotFound` (404 body), `SecretTerminal` (vanilla-TS terminal).
+  prop for a future mixed grid), `Callout` (icon-based tagged callout, used in writeup bodies),
+  `NotFound` (404 body), `SecretTerminal` (vanilla-TS terminal).
+- Chrome (Starlight override): `ToggleAll` (Expand/Collapse-all control) auto-injected into the right
+  "On this page" sidebar by `overrides/PageSidebar.astro` (renders `<Default/>` then the control).
 
 ### Starlight Component Overrides
 - Starlight Component Overrides: Additive Starlight component overrides are an approved architectural pattern alongside `custom.css` and custom components.
@@ -168,7 +175,7 @@ Taller rows via larger block padding + line-height on `nav.sidebar a, nav.sideba
 (fuller rail, better touch targets; no `<li>` margins, so the active pill / nesting guide / dots
 stay aligned). Width trimmed via `--sl-sidebar-width: 17rem` (from Starlight's 18.75rem).
 
-### Platform-index duotone (UNCOMMITTED, see ROADMAP)
+### Platform-index duotone
 On the platform index each platform reads as its color (lead) plus a universal cyan secondary
 (`--pf-accent-2`: `#41efff` dark, `#08697a` light): hero glow is a platform+cyan duotone, the stat
 label + card eyebrow + "Read writeup" affordance are cyan, the count-up number + accent bar stay
@@ -201,6 +208,30 @@ pill uses a cyan ring.
 - Mechanism: command-position detection (first word after prompt / `sudo` / `|` `&&` `;`); sudo stays
   content-matched. Command lists are one-line-extendable. Residual risk: an output line whose first
   word is exactly a listed command (rare) can be mis-tagged.
+- Note: EC `{n}` line highlights are currently unused (dropped from busquedav2) and have no custom
+  marked-line styling; if reintroduced, EC's default blue marked line would need restyling.
+
+### Tagged callouts (icon-based, `Callout.astro` + `.cl*` in custom.css)
+Five semantic writeup callouts, each a 3px accent left border + faint tint + a header (icon + UPPERCASE
+label), theme-aware (vivid border, light-mode ink swap on icon/label): recon (cyan, magnifier), loot
+(amber, padlock), intel (violet, information), vuln (red, warning), defense (green, an inline shield SVG
+since Starlight has no shield). Icons via Starlight's `<Icon>`. Authored as `<Callout type="...">` in MDX.
+
+### Flag loot gold (User Flag / Root Flag)
+One gold signal across the flag's three states via the `--flag-gold` token (`#ffc23d` dark / `#835e00`
+light, AA both): the body heading (gold, with a flag-SVG mask icon; replaces the brown `.task-title`),
+the reveal toggle (`.toggle-flag`), and the right TOC entry (muted gold at rest, full gold on
+hover/current; other TOC entries keep the green `--sl-color-text-accent`). Flag headings have no dedicated
+class yet, so the CSS targets the slug ids `#user-flag` / `#root-flag` (interim; a `.flag-title` from the
+pipeline is the clean hook). See DECISIONS 2026-06-20.
+
+### Expand/Collapse-all control (`ToggleAll.astro`)
+A dependency-free control auto-injected at the bottom of the right TOC via `overrides/PageSidebar.astro`
+(additive override, renders `<Default/>`; wired in `astro.config.mjs` `components`). Bordered pill (gray +
+cyan hover), set apart by a gap + a `--sl-color-hairline` divider, desktop-only, self-hides when a page
+has no toggles. Acts on `.sl-markdown-content details.toggle:not(.toggle-flag)` (skips flags, code, nav).
+Preserves reading position: anchors on the current heading and corrects scroll synchronously, with native
+`overflow-anchor` suppressed for the operation (see DECISIONS; ROADMAP has the unverified few-pixel shift).
 
 ## 7. Content Pipeline (Notion → site)
 

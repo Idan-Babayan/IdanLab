@@ -6,24 +6,72 @@
 
 ---
 
-### 2026-06-20 · ToggleAll control: placement, auto-injection, and scroll anchoring
-- **Decision:** The ToggleAll control (expand/collapse all content toggles) is injected into the right
-  "On this page" sidebar via a Starlight PageSidebar component override that renders `<Default />` and,
-  AFTER it, `<ToggleAll />`. So it sits at the BOTTOM of the TOC column as a de-emphasized tertiary
-  utility (small, muted gray, light weight, a thin top divider), not competing with the TOC links. It
-  is desktop-only (hidden below Starlight's lg breakpoint, where the right sidebar collapses to the
-  mobile dropdown), follows scroll (the right sidebar is `position:fixed`), and appears automatically on
-  every page that has content toggles, hiding itself elsewhere.
-- **Scroll anchoring:** expand/collapse preserves reading position. Before mutating, it records the
-  viewport top of the nearest content heading (h2/h3) at or just above the viewport; after mutating it
-  re-measures and `window.scrollBy`s by the difference (instant), so that heading stays visually fixed
-  and the page does not teleport. Falls back to the topmost visible content element, or no correction.
-- **Other:** per-page model (each page's control acts only on its own toggles; a cross-page global
-  control is meaningless on a static multi-page site, so it was rejected). Expand-all excludes flag
-  toggles (`details.toggle:not(.toggle-flag)`) so it never reveals spoiler-gated flags. Built from
-  scratch, dependency-free, official override API (no component fork). No need to add `<ToggleAll />` to
-  individual writeups; the override covers every writeup with toggles.
+### 2026-06-20 · Flag loot gold: one signal for User/Root Flag (heading, toggle, TOC)
+- **Decision:** Unify the User Flag / Root Flag concept into a single theme-aware gold via a `--flag-gold`
+  token (`#ffc23d` dark / `#835e00` light, AA in both). It colors the body heading (replacing the brown
+  `.task-title`, with a flag-SVG mask icon as `::before`), the reveal toggle (`.toggle-flag`, refactored
+  to the token), and the right TOC entry (muted gold at rest for scannability, full gold on hover/current;
+  other TOC entries keep the green `--sl-color-text-accent`). custom.css only; no glow or motion.
+- **Why:** the concept previously read as three different colors (brown heading, gold toggle, green TOC);
+  one gold makes it scan as the writeup's prize.
+- **Dependency / interim:** flag headings have no dedicated class (they reuse `.task-title`, shared with
+  real Task headings), so they are targeted by the deterministic slug ids `#user-flag` / `#root-flag`. A
+  `.flag-title` (and a flag-toggle hook) from the pipeline is the clean fix (see ROADMAP).
+- **Status:** Adopted. Optional Root-vs-User hierarchy (part 4) deferred: the toggle icon is content-lane
+  (flag SVG hardcoded in the MDX label), so a CSS-only Root crown/richer-gold would desync from its toggle.
+
+### 2026-06-20 · Icon-based tagged callouts (Callout.astro)
+- **Decision:** A presentational `Callout.astro` renders `<aside class="cl cl-{type}">` with a header
+  (icon + UPPERCASE label) and a slot. Five types: recon (cyan, magnifier), loot (amber, padlock), intel
+  (violet, information), vuln (red, warning), defense (green, inline shield SVG since Starlight has none).
+  Icons via Starlight's `<Icon>`; colors/border/tint in `custom.css` (`.cl*`), theme-aware (vivid border +
+  faint tint, light-mode ink swap for icon/label). Replaced an earlier bracket-tag version.
+- **Why:** semantic, scannable writeup callouts (recon/loot/intel/vuln/defense) without forking Starlight
+  admonitions. Applied to `busquedav2.mdx` (the design testbed).
 - **Status:** Adopted.
+
+### 2026-06-20 · busquedav2: drop EC line highlights; remove marked-line CSS
+- **Decision:** Remove all `{n}` line-highlight markers from `busquedav2.mdx` and delete the custom EC
+  marked-line restyle from `custom.css`. The marked line had been restyled (amber, then a neutral
+  grayscale) to stop EC's default blue reading as a callout; the owner then chose to drop highlights
+  entirely, so the restyle is gone (nothing is marked).
+- **Why:** the highlights were not earning their weight; removing them is cleaner than styling them.
+- **Status:** Adopted (busquedav2). The `notion_cleaner.py` line-highlight convention is now unused; if
+  reintroduced, EC's default marked-line color would need restyling again.
+
+### 2026-06-20 · Homepage pipeline: Reflection phase reads muted violet
+- **Decision:** The 4th "How I work" pipeline phase title (`.phase:nth-child(4) .pt`, Reflection) is
+  `#b294d4` (soft muted violet, PicoCTF-purple family) instead of `var(--text)` white. `index.astro` only.
+- **Why:** white blended into the body text; a muted violet completes the cyan/magenta/lime trio while
+  reading as the calm final phase. Restrained, dark-only page.
+- **Status:** Adopted.
+
+### 2026-06-20 · Marketing pages declare /favicon.svg
+- **Decision:** `index.astro` and `about.astro` add `<link rel="icon" href="/favicon.svg" type="image/svg+xml">`.
+- **Why:** they had no favicon link, so browsers auto-requested `/favicon.ico` (a dev `[router]` warning);
+  there is no `favicon.ico` in the repo (only `favicon.svg`). Declaring the SVG stops the fallback request
+  and gives the marketing pages a favicon. (Starlight content pages already reference it.)
+- **Status:** Adopted.
+
+### 2026-06-20 · ToggleAll control: sidebar placement, scroll anchoring, native-anchor fix
+- **Decision:** A dependency-free "Expand all / Collapse all" control (vanilla TS, `ToggleAll.astro`) is
+  injected at the BOTTOM of the right "On this page" column via an additive Starlight `PageSidebar`
+  override that renders `<Default />` then `<ToggleAll />` (official API, no fork; wired in
+  `astro.config.mjs` `components`). It targets `.sl-markdown-content details.toggle:not(.toggle-flag)`
+  (Toggle gained a stable `.toggle` class), so it never touches sidebar/nav/code or spoiler flags.
+  Self-hides when a page has no toggles; desktop-only (`sl-hidden lg:sl-block`; the right sidebar is
+  `position:fixed`, so it follows scroll). Per-page model (a cross-page global was rejected).
+- **Look:** the original bordered pill (neutral gray text + border, cyan accent on hover/focus). An
+  earlier de-emphasized treatment (small/dim/light) was tried and REVERTED. Separated from the TOC by a
+  2.5rem gap plus a subtle `--sl-color-hairline` divider (a hard divider had read as a list separator).
+- **Scroll anchoring (no teleport):** before mutating, record the current heading's
+  `getBoundingClientRect().top`; set `.open`; re-measure; `window.scrollBy(0, delta)` synchronously (same
+  task). To kill a few-pixel reversible shift, native scroll anchoring is suppressed (`overflow-anchor:none`
+  on `document.documentElement`) for just the operation and restored next frame (rAF), so the manual
+  correction is the sole corrector. A `behavior:'instant'` attempt was tried and REVERTED (wrong cause).
+- **Status:** Adopted. Anchoring verified (drift 0) in headless; the few-pixel shift is not reproducible
+  in headless Chromium (known false negative), so visual confirmation of that shift fix is pending on the
+  owner's real browsers (Chrome/Edge/Opera GX). See ROADMAP open issues.
 
 ### 2026-06-15 · Command-highlight palette rebuilt on a principled OKLCH basis (+ bold weight)
 - **Decision:** Redesign the `.ec-cmd-*` palette in OKLCH, measured against the rendered code bg
@@ -68,8 +116,8 @@
   gold not lime because lime is too close to the theme command-green; recon hue is theme-tuned
   (gold on ink, burnt-orange on paper) to clear the theme amber. All four are WCAG AA on the code bg
   and mutually distinct in both themes.
-- **Status:** Adopted; implementation UNCOMMITTED in the working tree (see ROADMAP). Residual risk:
-  an output line whose first word is exactly a listed command can be mis-tagged (rare).
+- **Status:** Adopted and committed/pushed (superseded by the 2026-06-15 OKLCH entry above). Residual
+  risk: an output line whose first word is exactly a listed command can be mis-tagged (rare).
 
 ### 2026-06-14 · Platform-index duotone: platform color + universal cyan secondary
 - **Decision:** On the platform index, the platform color leads and a universal cyan secondary
@@ -78,7 +126,7 @@
   the active filter pill; platform color stays on the name, count-up number, and card accent bar.
 - **Why:** Single-color platforms read monochrome (worst on HackTheBox: green on green). Cyan is not
   any of the four platform hues, so it complements all. Keeps the platform color clearly the lead.
-- **Status:** Adopted; UNCOMMITTED in the working tree (see ROADMAP).
+- **Status:** Adopted and committed/pushed to `dev`.
 
 ### 2026-06-14 · Sidebar: taller rows + 17rem width
 - **Decision:** Increase sidebar link/summary block padding + line-height (fuller rail, bigger touch
