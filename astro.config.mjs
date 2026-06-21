@@ -39,6 +39,11 @@ export default defineConfig({
       ],
       title: "Idan.Lab",
       customCss: ['./src/styles/custom.css'],
+      // Additive override: render the default right "On this page" sidebar and add the ToggleAll
+      // control at the top (see src/components/overrides/PageSidebar.astro). Default TOC preserved.
+      components: {
+        PageSidebar: './src/components/overrides/PageSidebar.astro',
+      },
       description: 'CTF Writeups, Machine Walkthroughs & Security Notes By Idan Babayan',
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/Idan-Babayan' },

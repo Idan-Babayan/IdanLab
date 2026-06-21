@@ -6,6 +6,25 @@
 
 ---
 
+### 2026-06-20 · ToggleAll control: placement, auto-injection, and scroll anchoring
+- **Decision:** The ToggleAll control (expand/collapse all content toggles) is injected into the right
+  "On this page" sidebar via a Starlight PageSidebar component override that renders `<Default />` and,
+  AFTER it, `<ToggleAll />`. So it sits at the BOTTOM of the TOC column as a de-emphasized tertiary
+  utility (small, muted gray, light weight, a thin top divider), not competing with the TOC links. It
+  is desktop-only (hidden below Starlight's lg breakpoint, where the right sidebar collapses to the
+  mobile dropdown), follows scroll (the right sidebar is `position:fixed`), and appears automatically on
+  every page that has content toggles, hiding itself elsewhere.
+- **Scroll anchoring:** expand/collapse preserves reading position. Before mutating, it records the
+  viewport top of the nearest content heading (h2/h3) at or just above the viewport; after mutating it
+  re-measures and `window.scrollBy`s by the difference (instant), so that heading stays visually fixed
+  and the page does not teleport. Falls back to the topmost visible content element, or no correction.
+- **Other:** per-page model (each page's control acts only on its own toggles; a cross-page global
+  control is meaningless on a static multi-page site, so it was rejected). Expand-all excludes flag
+  toggles (`details.toggle:not(.toggle-flag)`) so it never reveals spoiler-gated flags. Built from
+  scratch, dependency-free, official override API (no component fork). No need to add `<ToggleAll />` to
+  individual writeups; the override covers every writeup with toggles.
+- **Status:** Adopted.
+
 ### 2026-06-15 · Command-highlight palette rebuilt on a principled OKLCH basis (+ bold weight)
 - **Decision:** Redesign the `.ec-cmd-*` palette in OKLCH, measured against the rendered code bg
   (tokyo-night `#1a1b26` / one-light `#fafafa`), separating the three channels: (1) LIGHTNESS uniform

@@ -11,7 +11,7 @@ interface Props {
 const { label, flag = false } = Astro.props;
 ---
 
-<details class={flag ? 'toggle-flag' : undefined}>
+<details class:list={['toggle', { 'toggle-flag': flag }]}>
   <summary set:html={label}></summary>
   <div class="toggle-body">
     <slot />

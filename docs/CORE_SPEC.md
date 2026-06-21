@@ -137,6 +137,12 @@ Two surfaces, deliberately different:
   + writeup-card grid; reuses the homepage effects), `WriteupCard` (presentational, `showPlatform`
   prop for a future mixed grid), `NotFound` (404 body), `SecretTerminal` (vanilla-TS terminal).
 
+### Starlight Component Overrides
+- Starlight Component Overrides: Additive Starlight component overrides are an approved architectural pattern alongside `custom.css` and custom components.
+- Override Strategy: Overrides should wrap and render `<Default />` (or the upstream component) and layer behavior, styling, or markup on top rather than copying or replacing upstream implementations.
+- No Forking by Default Forking, duplicating, or fully replacing Starlight components is discouraged and should only be considered when the desired result cannot be achieved through an additive override.
+- User Approval Required: Introducing a new Starlight component override is a structural architectural change and should be proposed and approved by the user before implementation.
+
 ### Platform palette (canonical, unified 2026-06-01)
 One palette everywhere: HTB **lime**, VulnHub **red**, PicoCTF **purple**, OTW **amber** (used by
 homepage cards, sidebar dots, about-page accents, and writeup badges). The old badge set (blue /
