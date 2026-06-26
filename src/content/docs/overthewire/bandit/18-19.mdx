@@ -1,0 +1,37 @@
+---
+title: Bandit 18 → 19
+description: "OverTheWire Bandit 18 to 19: a hostile bashrc logs you out, so run the read command non-interactively over ssh."
+sidebar:
+  label: "18 → 19"
+  order: 18
+---
+
+import Toggle from '@components/Toggle.astro';
+
+<div class="machine-meta">
+  <span class="meta-badge platform-overthewire">OverTheWire</span>
+  <span class="meta-badge os-linux">Linux</span>
+</div>
+
+> Goal: read the readme even though .bashrc closes any interactive login immediately.
+
+## Approach
+
+Pass the command as the final argument to ssh, so it runs without ever opening an interactive shell.
+
+```bash frame="code" title="bandit18@bandit"
+$ ssh bandit18@bandit.labs.overthewire.org -p 2220 cat readme
+The password you are looking for is: <password>
+```
+
+## Why it works
+
+An interactive login sources .bashrc, and this one exits at once, so a normal session dies before you can type. Supplying a command as the last ssh argument runs it through a non-interactive shell that skips the interactive rc and returns the output directly.
+
+<Toggle label="Reveal password" class="spoiler-toggle">
+
+```text frame="code"
+cGWpMaKXVwDUNgPAVJbWYuGHVn9zl3j8
+```
+
+</Toggle>

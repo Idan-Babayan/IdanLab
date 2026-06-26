@@ -1,0 +1,35 @@
+---
+title: Bandit 7 → 8
+description: "OverTheWire Bandit 7 to 8: pull one line out of a large text file with grep."
+sidebar:
+  label: "7 → 8"
+  order: 7
+---
+
+import Toggle from '@components/Toggle.astro';
+
+<div class="machine-meta">
+  <span class="meta-badge platform-overthewire">OverTheWire</span>
+  <span class="meta-badge os-linux">Linux</span>
+</div>
+
+> Goal: find the password sitting next to the word millionth in a large data file.
+
+## Approach
+
+```bash frame="code" title="bandit7@bandit"
+bandit7@bandit:~$ grep millionth data.txt
+millionth	<password>
+```
+
+## Why it works
+
+grep scans the file line by line and prints those matching the pattern, so a single keyword extracts its record from a file of millions of lines without ever reading the whole thing yourself.
+
+<Toggle label="Reveal password" class="spoiler-toggle">
+
+```text frame="code"
+dfwvzFQi4mU0wfNbFOe9RoWskMLg7eEc
+```
+
+</Toggle>

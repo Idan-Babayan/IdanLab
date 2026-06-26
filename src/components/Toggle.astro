@@ -7,11 +7,12 @@
 interface Props {
   label: string;        // accepts plain text or HTML string
   flag?: boolean;       // flag-reveal toggle: adds .toggle-flag for the lime accent (see custom.css)
+  class?: string;       // optional extra class (e.g. spoiler-toggle); layered on top of .toggle
 }
-const { label, flag = false } = Astro.props;
+const { label, flag = false, class: className } = Astro.props;
 ---
 
-<details class:list={['toggle', { 'toggle-flag': flag }]}>
+<details class:list={['toggle', { 'toggle-flag': flag }, className]}>
   <summary set:html={label}></summary>
   <div class="toggle-body">
     <slot />

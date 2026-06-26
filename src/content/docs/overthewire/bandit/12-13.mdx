@@ -1,0 +1,111 @@
+---
+title: Bandit 12 → 13
+description: "OverTheWire Bandit 12 to 13: reverse an xxd hexdump, then peel repeated gzip, bzip2 and tar layers to recover the password."
+sidebar:
+  label: "12 → 13"
+  order: 12
+---
+
+import Toggle from '@components/Toggle.astro';
+import { Steps } from '@astrojs/starlight/components';
+
+<div class="machine-meta">
+  <span class="meta-badge platform-overthewire">OverTheWire</span>
+  <span class="meta-badge os-linux">Linux</span>
+</div>
+
+> Goal: recover the password from data.txt, a hexdump of a file that was compressed many times over.
+
+## Approach
+
+data.txt is a hexdump. Reverse it back to raw bytes, then repeatedly let file name the compression format, rename to match, and decompress, until file finally reports plain text. Work in a temp directory you own.
+
+<Steps>
+
+1. Copy the dump somewhere writable and reverse the hex back to bytes.
+
+   ```bash frame="code" title="bandit12@bandit"
+   bandit12@bandit:~$ mktemp -d
+   /tmp/tmp.WwgYxQHtYe
+   bandit12@bandit:~$ cd /tmp/tmp.WwgYxQHtYe
+   bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ cp ~/data.txt data.txt
+   bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ xxd -r data.txt compressed
+   ```
+
+2. Run the same loop for each layer: detect, rename to the matching extension, decompress. tar archives extract to a new filename, so follow whatever appears.
+
+   ```bash frame="code" title="bandit12@bandit"
+   bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ file compressed
+   compressed: gzip compressed data
+   bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ mv compressed compressed.gz && gzip -d compressed.gz
+
+   bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ file compressed
+   compressed: bzip2 compressed data
+   bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ mv compressed compressed.bz2 && bzip2 -d compressed.bz2
+
+   bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ file compressed
+   compressed: POSIX tar archive (GNU)
+   bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ mv compressed compressed.tar && tar -xf compressed.tar
+   # ... keep going on the extracted files (tar, then bzip2, then tar, then gzip) ...
+   ```
+
+3. When file finally says ASCII text, read it.
+
+   ```bash frame="code" title="bandit12@bandit"
+   bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ file data8
+   data8: ASCII text
+   bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ cat data8
+   The password you are looking for is: <password>
+   ```
+
+</Steps>
+
+## Why it works
+
+Compression formats are recognised by header magic bytes, not by file extension, which is why file re-detects the type at every stage. The data was packed in alternating layers (gzip, bzip2 and tar in turn), so you peel them in reverse: detect, rename to match, decompress, repeat until plain text falls out.
+
+<Toggle label="Full session log">
+
+```bash frame="code" title="bandit12@bandit"
+bandit12@bandit:~$ mktemp -d
+/tmp/tmp.WwgYxQHtYe
+bandit12@bandit:~$ cd /tmp/tmp.WwgYxQHtYe
+bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ cp -d /home/bandit12/data.txt .
+bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ mv data.txt hexdump_data
+bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ xxd -r hexdump_data compressed_data
+bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ mv compressed_data compressed_data.gz
+bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ gzip -d compressed_data.gz
+bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ mv compressed_data compressed_data.bz2
+bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ bzip2 -d compressed_data.bz2
+bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ mv compressed_data compressed_data.gz
+bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ gzip -d compressed_data.gz
+bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ file compressed_data
+compressed_data: POSIX tar archive (GNU)
+bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ mv compressed_data compressed_data.tar
+bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ tar -xf compressed_data.tar
+bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ file data5.bin
+data5.bin: POSIX tar archive (GNU)
+bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ tar -xf data5.bin
+bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ file data6.bin
+data6.bin: bzip2 compressed data, block size = 900k
+bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ bzip2 -d data6.bin
+bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ file data6.bin.out
+data6.bin.out: POSIX tar archive (GNU)
+bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ tar -xf data6.bin.out
+bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ file data8.bin
+data8.bin: gzip compressed data, was "data9.bin"
+bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ mv data8.bin data8.gz
+bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ gunzip -d data8.gz
+bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ cat data8
+The password you are looking for is: <password>
+```
+
+</Toggle>
+
+<Toggle label="Reveal password" class="spoiler-toggle">
+
+```text frame="code"
+FO5dwFsc0cbaIiH0h8J2eUks2vdTDwAn
+```
+
+</Toggle>

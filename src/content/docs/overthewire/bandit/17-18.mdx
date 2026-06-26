@@ -1,0 +1,38 @@
+---
+title: Bandit 17 → 18
+description: "OverTheWire Bandit 17 to 18: diff two near-identical password files to find the changed line."
+sidebar:
+  label: "17 → 18"
+  order: 17
+---
+
+import Toggle from '@components/Toggle.astro';
+
+<div class="machine-meta">
+  <span class="meta-badge platform-overthewire">OverTheWire</span>
+  <span class="meta-badge os-linux">Linux</span>
+</div>
+
+> Goal: find the one line that differs between passwords.old and passwords.new.
+
+## Approach
+
+```bash frame="code" title="bandit17@bandit"
+bandit17@bandit:~$ diff passwords.old passwords.new
+42c42
+< Vhc9EKhF5JOIiQsrq2hjyvDaALKaGKCh
+---
+> <password>
+```
+
+## Why it works
+
+diff reports only the lines that changed between two otherwise identical files, with the less-than side marking the old line and the greater-than side the new. The new password is the single changed entry.
+
+<Toggle label="Reveal password" class="spoiler-toggle">
+
+```text frame="code"
+x2gLTTjFwMOhQ8oWNbMN362QKxfRqGlO
+```
+
+</Toggle>

@@ -1,0 +1,36 @@
+---
+title: Bandit
+description: "OverTheWire Bandit: 34 SSH levels teaching Linux, shell, networking, encoding and crypto fundamentals, one level per page."
+sidebar:
+  label: Overview
+  order: -1
+---
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+> Bandit teaches Linux and shell fundamentals across 34 SSH levels, each level hands you the password to the next.
+
+## Connecting
+
+Every level lives on the same host. Log in as bandit0 with the public password bandit0, solve the level to recover the next password, then log in as bandit1, and so on up the chain.
+
+```bash frame="code" title="ssh"
+# Level 0 starting credentials (public)
+ssh bandit0@bandit.labs.overthewire.org -p 2220
+# password: bandit0
+```
+
+## Learning path
+
+The arc runs from basic file handling to network services, privilege tricks, and git internals. Pick up wherever you are; each card opens the first level of that phase, and the sidebar carries you through the rest.
+
+<CardGrid>
+  <LinkCard title="Files and the shell" href="/overthewire/bandit/0-1" description="Levels 0 to 4: reading files, awkward dash and space filenames, hidden files, file type detection" />
+  <LinkCard title="Finding and filtering" href="/overthewire/bandit/5-6" description="Levels 5 to 9: find by size and owner, grep, sort and uniq, strings on a binary" />
+  <LinkCard title="Encoding and compression" href="/overthewire/bandit/10-11" description="Levels 10 to 12: base64, ROT13, layered gzip bzip2 and tar" />
+  <LinkCard title="Keys, sockets and TLS" href="/overthewire/bandit/13-14" description="Levels 13 to 17: SSH private keys, raw TCP with nc, TLS with openssl, port and service discovery with nmap" />
+  <LinkCard title="Shells, setuid and cron" href="/overthewire/bandit/18-19" description="Levels 18 to 24: bashrc tricks, setuid binaries, cron jobs, brute forcing a pin over a socket" />
+  <LinkCard title="Editor escapes and git" href="/overthewire/bandit/25-26" description="Levels 25 to 33: more and vim escapes, git internals, the final shell" />
+</CardGrid>
+
+Work through every level in the sidebar.

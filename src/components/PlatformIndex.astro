@@ -18,8 +18,16 @@ import WriteupCard from './WriteupCard.astro';
 
 interface Props {
 	platform: string;
+	/**
+	 * 'writeups' (default): cards are individual writeup pages, grouped by difficulty.
+	 * 'wargames': cards are the platform's wargames (each sub-hub index page, e.g.
+	 * overthewire/bandit), each linking to its hub. Levels live in the sidebar, never
+	 * listed here, so the landing stays bounded as a wargame's level count grows.
+	 */
+	mode?: 'writeups' | 'wargames';
 }
-const { platform } = Astro.props;
+const { platform, mode = 'writeups' } = Astro.props;
+const isWargames: boolean = mode === 'wargames';
 
 type Difficulty = 'easy' | 'medium' | 'hard' | 'misc';
 const DIFF_ORDER: readonly Difficulty[] = ['easy', 'medium', 'hard', 'misc'];
@@ -62,38 +70,62 @@ function difficultyOf(entry: Entry): Difficulty {
 
 const all = await getCollection('docs');
 
-// Only this platform's writeups. The index page's id is exactly `{platform}`
+// Everything under this platform. The platform index page's id is exactly `{platform}`
 // (no trailing segment), so `startsWith('{platform}/')` excludes it cleanly.
 const entries: Entry[] = all.filter((e) => e.id.startsWith(`${platform}/`));
 
-const cards: CardModel[] = entries
-	.map((e): CardModel => {
-		const difficulty = difficultyOf(e);
-		return {
-			// Starlight lowercases doc URLs even though entry ids preserve folder casing
-			// (e.g. id `hackthebox/Easy/busqueda` -> URL /hackthebox/easy/busqueda/).
+// WARGAME cards (mode="wargames"): a wargame's hub is the index page one segment under the
+// platform, e.g. `overthewire/bandit`. Levels (`overthewire/bandit/0-1`) carry an extra
+// segment and are deliberately excluded, they are reached via the sidebar, never listed here.
+interface WargameModel {
+	href: string;
+	title: string;
+	description?: string;
+}
+const wargames: WargameModel[] = isWargames
+	? entries
+		.filter((e) => e.id.split('/').length === 2)
+		.map((e): WargameModel => ({
 			href: `/${e.id.toLowerCase()}/`,
 			title: e.data.title,
 			description: e.data.description,
-			difficulty,
-			os: e.data.os,
-			tags: e.data.tags,
-		};
-	})
-	.sort((a, b) => {
-		const d = DIFF_RANK[a.difficulty] - DIFF_RANK[b.difficulty];
-		return d !== 0 ? d : a.title.localeCompare(b.title);
-	});
+		}))
+		.sort((a, b) => a.title.localeCompare(b.title))
+	: [];
 
-const total: number = cards.length;
+// WRITEUP cards (default mode): individual writeup pages, grouped by difficulty. Empty in
+// wargames mode so the per-level pages never render as a card wall.
+const cards: CardModel[] = isWargames
+	? []
+	: entries
+		.map((e): CardModel => {
+			const difficulty = difficultyOf(e);
+			return {
+				// Starlight lowercases doc URLs even though entry ids preserve folder casing
+				// (e.g. id `hackthebox/Easy/busqueda` -> URL /hackthebox/easy/busqueda/).
+				href: `/${e.id.toLowerCase()}/`,
+				title: e.data.title,
+				description: e.data.description,
+				difficulty,
+				os: e.data.os,
+				tags: e.data.tags,
+			};
+		})
+		.sort((a, b) => {
+			const d = DIFF_RANK[a.difficulty] - DIFF_RANK[b.difficulty];
+			return d !== 0 ? d : a.title.localeCompare(b.title);
+		});
 
-// Per-difficulty counts, in canonical order, for the breakdown + filter rail.
+const total: number = isWargames ? wargames.length : cards.length;
+
+// Per-difficulty counts, in canonical order, for the breakdown + filter rail (writeups mode only;
+// cards is empty in wargames mode, so these stay zero and the breakdown / rail self-hide).
 const counts: Record<Difficulty, number> = { easy: 0, medium: 0, hard: 0, misc: 0 };
 for (const c of cards) counts[c.difficulty]++;
 
 const present: Difficulty[] = DIFF_ORDER.filter((d) => counts[d] > 0);
-// A single difficulty group makes the rail pointless; only show it with 2+.
-const showFilter: boolean = present.length > 1;
+// A single difficulty group makes the rail pointless; only show it with 2+ (never in wargames mode).
+const showFilter: boolean = !isWargames && present.length > 1;
 const isEmpty: boolean = total === 0;
 ---
 
@@ -114,7 +146,7 @@ const isEmpty: boolean = total === 0;
 					<div class="pi-stats reveal">
 						<div class="pi-stat">
 							<div class="pi-num" data-count={total}>0</div>
-							<div class="pi-lbl">{total === 1 ? 'Writeup' : 'Writeups'}</div>
+							<div class="pi-lbl">{isWargames ? (total === 1 ? 'Wargame' : 'Wargames') : total === 1 ? 'Writeup' : 'Writeups'}</div>
 						</div>
 						{present.length > 0 && (
 							<div class="pi-breakdown">
@@ -155,17 +187,33 @@ const isEmpty: boolean = total === 0;
 			)}
 
 			<div class="pi-grid">
-				{cards.map((c) => (
-					<WriteupCard
-						href={c.href}
-						title={c.title}
-						description={c.description}
-						platform={platform}
-						difficulty={c.difficulty}
-						os={c.os}
-						tags={c.tags}
-					/>
-				))}
+				{isWargames
+					? wargames.map((wg) => (
+						<a
+							href={wg.href}
+							class="pi-wg-card reveal"
+							data-tilt
+							aria-label={`Enter the ${wg.title} wargame`}
+						>
+							<span class="pi-wg-bar" aria-hidden="true"></span>
+							<span class="pi-wg-glare" aria-hidden="true"></span>
+							<div class="pi-wg-eyebrow">// WARGAME</div>
+							<h3 class="pi-wg-name">{wg.title}</h3>
+							{wg.description && <p class="pi-wg-desc">{wg.description}</p>}
+							<span class="pi-wg-go">Enter wargame <span class="pi-wg-arrow" aria-hidden="true">-&gt;</span></span>
+						</a>
+					))
+					: cards.map((c) => (
+						<WriteupCard
+							href={c.href}
+							title={c.title}
+							description={c.description}
+							platform={platform}
+							difficulty={c.difficulty}
+							os={c.os}
+							tags={c.tags}
+						/>
+					))}
 			</div>
 		</>
 	)}
@@ -415,6 +463,105 @@ const isEmpty: boolean = total === 0;
 		}
 		.pi-stats {
 			gap: 1.1rem;
+		}
+	}
+
+	/* ── WARGAME CARD (mode="wargames") ──────────────────────────────────────────────
+	   A bounded card linking to a wargame hub. Mirrors the WriteupCard look (accent bar,
+	   cursor glare, 3D tilt) so the landing stays cohesive; tilt, glare, and reveal are driven
+	   by the shared script below via data-tilt + .reveal, the same hooks WriteupCard uses. */
+	.pi-wg-card {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		background: #0d1113;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		border-radius: 16px;
+		padding: 1.6rem 1.5rem;
+		text-decoration: none;
+		color: var(--sl-color-text);
+		transform-style: preserve-3d;
+		transition: transform 0.12s ease, border-color 0.3s ease;
+		overflow: hidden;
+		will-change: transform;
+	}
+	html[data-theme='light'] .pi-wg-card {
+		background: #f7f5ee;
+		border-color: rgba(0, 0, 0, 0.12);
+		box-shadow: 0 8px 24px -16px rgba(60, 50, 30, 0.45);
+	}
+	.pi-wg-card:hover {
+		border-color: var(--accent);
+	}
+	.pi-wg-bar {
+		position: absolute;
+		left: 0;
+		top: 0;
+		bottom: 0;
+		width: 3px;
+		background: var(--accent);
+	}
+	.pi-wg-glare {
+		position: absolute;
+		inset: 0;
+		opacity: 0;
+		transition: opacity 0.3s ease;
+		pointer-events: none;
+		background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), color-mix(in oklab, var(--accent) 22%, transparent), transparent 45%);
+	}
+	.pi-wg-card:hover .pi-wg-glare {
+		opacity: 1;
+	}
+	.pi-wg-eyebrow {
+		font-family: var(--sl-font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		color: var(--accent-2);
+	}
+	.pi-wg-name {
+		font-family: var(--tp-display);
+		font-weight: 700;
+		font-size: 1.4rem;
+		line-height: 1.15;
+		color: var(--sl-color-text);
+		margin: 0.6rem 0 0;
+		transform: translateZ(40px);
+	}
+	.pi-wg-desc {
+		color: color-mix(in oklab, var(--sl-color-text) 62%, transparent);
+		font-size: 0.86rem;
+		line-height: 1.55;
+		margin: 0.85rem 0 0;
+		transform: translateZ(20px);
+	}
+	.pi-wg-go {
+		font-family: var(--sl-font-mono);
+		font-size: 0.78rem;
+		letter-spacing: 0.04em;
+		color: var(--accent-2);
+		margin-top: 1.1rem;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		transform: translateZ(30px);
+	}
+	.pi-wg-arrow {
+		transition: transform 0.2s ease;
+	}
+	.pi-wg-card:hover .pi-wg-arrow {
+		transform: translateX(4px);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.pi-wg-card {
+			transition: none;
+		}
+		.pi-wg-card:hover {
+			transform: none !important;
+		}
+		.pi-wg-arrow,
+		.pi-wg-card:hover .pi-wg-arrow {
+			transition: none;
 		}
 	}
 </style>
