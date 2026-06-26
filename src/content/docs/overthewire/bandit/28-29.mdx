@@ -1,0 +1,45 @@
+---
+title: Bandit 28 → 29
+description: "OverTheWire Bandit 28 to 29: recover a password that was committed then redacted, using git history."
+sidebar:
+  label: "28 → 29"
+  order: 28
+---
+
+import Toggle from '@components/Toggle.astro';
+
+<div class="machine-meta">
+  <span class="meta-badge platform-overthewire">OverTheWire</span>
+  <span class="meta-badge os-linux">Linux</span>
+</div>
+
+> Goal: find the password in an earlier commit of the level's repo, after it was redacted in the latest one.
+
+## Approach
+
+```bash frame="code" title="bandit28@bandit"
+bandit28@bandit:~$ cd "$(mktemp -d)" && git clone ssh://bandit28-git@localhost:2220/home/bandit28-git/repo
+bandit28@bandit:...$ cd repo
+bandit28@bandit:...$ cat README.md
+- username: bandit29
+- password: xxxxxxxxxx
+bandit28@bandit:...$ git log --oneline
+710c14a fix info leak
+68314e0 add missing data
+a158f9a initial commit of README.md
+bandit28@bandit:...$ git show 68314e0:README.md
+- username: bandit29
+- password: <password>
+```
+
+## Why it works
+
+Redacting a value in a later commit does not remove it; every prior version stays in the object history. git log surfaces the "fix info leak" commit, and git show on the commit before it prints the README as it was, password intact. Version control keeps what you delete.
+
+<Toggle label="Reveal password" class="spoiler-toggle">
+
+```text frame="code"
+4pT1t5DENaYuqnqvadYs1oE4QLCdjmJ7
+```
+
+</Toggle>

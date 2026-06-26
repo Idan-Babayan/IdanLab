@@ -54,6 +54,7 @@
   applied: suppress `overflow-anchor` for the operation, restored next frame (DECISIONS 2026-06-20). NOT
   reproducible in headless Chromium (false negative), so the fix is UNVERIFIED visually; owner to confirm
   in a real browser. If a sub-pixel residual remains, it is rounding territory, leave it.
+- Known minor (low priority): few-pixel content shift on bulk expand/collapse (ToggleAll), traced to sub-pixel scroll rounding that scales with correction size; native-anchoring suppression reduced but did not eliminate it. Revisit by confirming overflow-anchor:none is on document.scrollingElement and instrumenting delta vs actual scrollY landing in a real browser.
 - [INFRA] `public/robots.txt` holds ONLY the breadcrumb comment + a `Sitemap:` line. On deploy it is
   served as `/robots.txt` and can override the Cloudflare-managed bot disallows / Content-Signals.
   Add the full managed content (or confirm Cloudflare still appends its block) before relying on it.

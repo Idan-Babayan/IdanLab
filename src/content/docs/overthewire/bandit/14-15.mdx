@@ -1,0 +1,39 @@
+---
+title: Bandit 14 → 15
+description: "OverTheWire Bandit 14 to 15: submit the current password to a local network service to receive the next one."
+sidebar:
+  label: "14 → 15"
+  order: 14
+---
+
+import Toggle from '@components/Toggle.astro';
+
+<div class="machine-meta">
+  <span class="meta-badge platform-overthewire">OverTheWire</span>
+  <span class="meta-badge os-linux">Linux</span>
+</div>
+
+> Goal: send the current level's password to the service on localhost port 30000 to receive the next password.
+
+## Approach
+
+Connect to the port and send the current password; the service replies with the next one.
+
+```bash frame="code" title="bandit14@bandit"
+bandit14@bandit:~$ nc localhost 30000
+<password>
+Correct!
+The password you are looking for is: <password>
+```
+
+## Why it works
+
+The level gates the next secret behind proof you already hold the current one. The service speaks a plain line protocol over a raw TCP socket, so a bare nc (or telnet) is enough to talk to it. No encoding, no TLS.
+
+<Toggle label="Reveal password" class="spoiler-toggle">
+
+```text frame="code"
+8xCjnmgoKbGLhHFAZlGE5Tmu4M2tKJQo
+```
+
+</Toggle>

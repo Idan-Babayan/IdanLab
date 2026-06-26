@@ -1,0 +1,37 @@
+---
+title: Bandit 32 → 33
+description: "OverTheWire Bandit 32 to 33: break out of a shell that uppercases every command by invoking $0."
+sidebar:
+  label: "32 → 33"
+  order: 32
+---
+
+import Toggle from '@components/Toggle.astro';
+
+<div class="machine-meta">
+  <span class="meta-badge platform-overthewire">OverTheWire</span>
+  <span class="meta-badge os-linux">Linux</span>
+</div>
+
+> Goal: escape a shell that converts everything you type to uppercase, then read bandit33's password.
+
+## Approach
+
+```bash frame="code" title="bandit32@bandit"
+WELCOME TO THE UPPERCASE SHELL
+>> $0
+$ cat /etc/bandit_pass/bandit33
+The password you are looking for is: <password>
+```
+
+## Why it works
+
+The wrapper uppercases everything you type, so ls becomes LS and nothing on PATH matches. But $0 expands to the name the current shell was invoked as, and the shell resolves that variable before the uppercasing matters, so running it launches a fresh normal shell. From that prompt commands run unfiltered.
+
+<Toggle label="Reveal password" class="spoiler-toggle">
+
+```text frame="code"
+tQdtbs5D5i2vJwkO8mEyYEyTL8izoeJ0
+```
+
+</Toggle>

@@ -120,7 +120,7 @@ html[data-theme="dark"] .sl-markdown-content details {
 html[data-theme="light"] .sl-markdown-content details {
   /* A faintly raised warm panel (lighter than the #ece9e0 page) with a hairline border and a
      soft shadow, so a Toggle reads as a card lifting off the paper instead of a flat box. */
-  background-color: #f4f1e8;
+  background-color: #f2ede0;
   border-color: rgba(60, 50, 30, 0.16);
   box-shadow: 0 4px 14px -12px rgba(60, 50, 30, 0.4);
 }
@@ -678,7 +678,7 @@ body:has(.pi-index) {
   --sl-color-accent: #4d7c0f;
   --sl-color-accent-high: #2f4d09;
   --sl-color-text-accent: #4d7c0f;
-  --flag-gold: #835e00;
+  --flag-gold: #C6A243;
   --sl-color-bg: #ece9e0;
   --sl-color-bg-nav: color-mix(in oklab, #ece9e0 80%, transparent);
   --sl-color-bg-sidebar: #f1eee5;
@@ -1199,3 +1199,29 @@ html[data-theme="light"] .sl-markdown-content .cl-loot    { --cl-ink: #946a00; }
 html[data-theme="light"] .sl-markdown-content .cl-intel   { --cl-ink: #7a27b3; }
 html[data-theme="light"] .sl-markdown-content .cl-defense { --cl-ink: #15803d; }
 html[data-theme="light"] .sl-markdown-content .cl-vuln    { --cl-ink: #c92a2a; }
+
+
+/* ── Spoiler reveal toggle (OverTheWire amber) ───────────────────────────────
+   A <Toggle class="spoiler-toggle"> for "reveal the answer" controls (e.g. a wargame password).
+   It reuses the base .sl-markdown-content details card and only layers OverTheWire's amber on the
+   border and a compact mono summary, so the reveal reads as the level's payoff without a new
+   component. Theme-aware (amber #ffc23d dark, #a86f04 light, both AA on the toggle panel). The
+   disclosure marker transition is removed so the control is calm under prefers-reduced-motion.
+   Wargame-agnostic: any level page can opt in via the class. */
+.sl-markdown-content details.spoiler-toggle {
+  border-color: rgba(245, 158, 11, 0.45);
+}
+.sl-markdown-content details.spoiler-toggle[open] {
+  border-color: #ffc23d;
+}
+.sl-markdown-content details.spoiler-toggle > summary {
+  color: #ffc23d;
+  font-family: var(--sl-font-mono);
+  font-weight: 700;
+}
+html[data-theme="light"] .sl-markdown-content details.spoiler-toggle > summary {
+  color: #a86f04;
+}
+.sl-markdown-content details.spoiler-toggle > summary::before {
+  transition: none;
+}

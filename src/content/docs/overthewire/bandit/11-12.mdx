@@ -1,0 +1,35 @@
+---
+title: Bandit 11 → 12
+description: "OverTheWire Bandit 11 to 12: undo a ROT13 substitution with tr."
+sidebar:
+  label: "11 → 12"
+  order: 11
+---
+
+import Toggle from '@components/Toggle.astro';
+
+<div class="machine-meta">
+  <span class="meta-badge platform-overthewire">OverTheWire</span>
+  <span class="meta-badge os-linux">Linux</span>
+</div>
+
+> Goal: decode a file where every letter has been rotated 13 places through the alphabet.
+
+## Approach
+
+```bash frame="code" title="bandit11@bandit"
+bandit11@bandit:~$ cat data.txt | tr '[a-zA-Z]' '[n-za-mN-ZA-M]'
+The password you are looking for is: <password>
+```
+
+## Why it works
+
+ROT13 is a fixed Caesar shift of 13 over the 26-letter alphabet. Because 13 is half of 26, applying the same letter-for-letter tr mapping a second time shifts back to the original. It is reversible by design and protects nothing.
+
+<Toggle label="Reveal password" class="spoiler-toggle">
+
+```text frame="code"
+7x16WNeHIi5YkIhWsfFIqoognUTyj9Q4
+```
+
+</Toggle>

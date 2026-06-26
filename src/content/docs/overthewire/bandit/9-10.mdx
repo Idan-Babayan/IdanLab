@@ -1,0 +1,37 @@
+---
+title: Bandit 9 → 10
+description: "OverTheWire Bandit 9 to 10: recover printable text from a binary file with strings, then grep for the marker."
+sidebar:
+  label: "9 → 10"
+  order: 9
+---
+
+import Toggle from '@components/Toggle.astro';
+
+<div class="machine-meta">
+  <span class="meta-badge platform-overthewire">OverTheWire</span>
+  <span class="meta-badge os-linux">Linux</span>
+</div>
+
+> Goal: find the password among the human-readable strings in a mostly binary file, marked by several equals signs.
+
+## Approach
+
+```bash frame="code" title="bandit9@bandit"
+bandit9@bandit:~$ strings data.txt | grep -i '=='
+========== the
+========== passwordb
+U========== <password>
+```
+
+## Why it works
+
+strings walks a binary and emits runs of printable characters above a length threshold, discarding the non-text bytes. That turns an unreadable file into something line tools like grep can filter, here keyed on the marker.
+
+<Toggle label="Reveal password" class="spoiler-toggle">
+
+```text frame="code"
+FGUW5ilLVJrxX9kMYMmlN4MgbpfMiqey
+```
+
+</Toggle>

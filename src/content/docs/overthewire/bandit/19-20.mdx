@@ -1,0 +1,39 @@
+---
+title: Bandit 19 → 20
+description: "OverTheWire Bandit 19 to 20: use a setuid helper to read the next user's password file."
+sidebar:
+  label: "19 → 20"
+  order: 19
+---
+
+import Toggle from '@components/Toggle.astro';
+
+<div class="machine-meta">
+  <span class="meta-badge platform-overthewire">OverTheWire</span>
+  <span class="meta-badge os-linux">Linux</span>
+</div>
+
+> Goal: read bandit20's password using the setuid binary in the home directory.
+
+## Approach
+
+```bash frame="code" title="bandit19@bandit"
+bandit19@bandit:~$ ls -la
+-rwsr-x--- 1 bandit20 bandit19 14884 Jul 28 19:03 bandit20-do
+bandit19@bandit:~$ ./bandit20-do id
+uid=11019(bandit19) gid=11019(bandit19) euid=11020(bandit20) groups=11019(bandit19)
+bandit19@bandit:~$ ./bandit20-do cat /etc/bandit_pass/bandit20
+The password you are looking for is: <password>
+```
+
+## Why it works
+
+The setuid bit (the s in -rwsr-x---) makes the binary run with its owner's identity, here bandit20, no matter who launches it. Access checks use the effective uid, so the helper reads bandit20's password file on your behalf. id confirms euid is bandit20 while your real uid stays bandit19.
+
+<Toggle label="Reveal password" class="spoiler-toggle">
+
+```text frame="code"
+0qXahG8ZjOVMN9Ghs7iOWsCfZyXOUbYO
+```
+
+</Toggle>

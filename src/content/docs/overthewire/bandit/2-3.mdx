@@ -1,0 +1,37 @@
+---
+title: Bandit 2 → 3
+description: "OverTheWire Bandit 2 to 3: read a file whose name contains spaces by quoting or escaping the path."
+sidebar:
+  label: "2 → 3"
+  order: 2
+---
+
+import Toggle from '@components/Toggle.astro';
+
+<div class="machine-meta">
+  <span class="meta-badge platform-overthewire">OverTheWire</span>
+  <span class="meta-badge os-linux">Linux</span>
+</div>
+
+> Goal: read the password from a file whose name contains spaces.
+
+## Approach
+
+```bash frame="code" title="bandit2@bandit"
+bandit2@bandit:~$ ls
+--spaces in this filename--
+bandit2@bandit:~$ cat "./--spaces in this filename--"
+The password you are looking for is: <password>
+```
+
+## Why it works
+
+The shell splits a command line into words on whitespace, so an unquoted name with spaces arrives as several separate arguments. Quoting the whole path (or escaping each space, or tab completing) passes it as one. The leading dashes also need the ./ prefix so the name is not read as an option.
+
+<Toggle label="Reveal password" class="spoiler-toggle">
+
+```text frame="code"
+MNk8KNH3Usiio41PRUEoDFPqfxLPlSmx
+```
+
+</Toggle>

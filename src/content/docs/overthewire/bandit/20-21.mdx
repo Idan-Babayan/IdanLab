@@ -1,0 +1,41 @@
+---
+title: Bandit 20 → 21
+description: "OverTheWire Bandit 20 to 21: serve the current password from a listener so a setuid client returns the next one."
+sidebar:
+  label: "20 → 21"
+  order: 20
+---
+
+import Toggle from '@components/Toggle.astro';
+
+<div class="machine-meta">
+  <span class="meta-badge platform-overthewire">OverTheWire</span>
+  <span class="meta-badge os-linux">Linux</span>
+</div>
+
+> Goal: get the next password from a setuid program that connects to a port and checks what it reads against the current password.
+
+## Approach
+
+Background a one-shot listener that prints the current password, then point the setuid client at that port.
+
+```bash frame="code" title="bandit20@bandit"
+bandit20@bandit:~$ echo "<password>" | nc -lp 1337 &
+[1] 2478116
+bandit20@bandit:~$ ./suconnect 1337
+Read: <password>
+Password matches, sending next password
+The password you are looking for is: <password>
+```
+
+## Why it works
+
+suconnect runs setuid as bandit21 and connects to a port you name, reads one line, and compares it against the current password. On a match it sends back the next one. The backgrounded nc -l listener serves the current password on localhost, so the two ends complete the handshake.
+
+<Toggle label="Reveal password" class="spoiler-toggle">
+
+```text frame="code"
+EeoULMCra2q0dSkYj561DX7s1CpBuOBt
+```
+
+</Toggle>

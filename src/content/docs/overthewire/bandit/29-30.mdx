@@ -1,0 +1,45 @@
+---
+title: Bandit 29 → 30
+description: "OverTheWire Bandit 29 to 30: find a password committed to a non-default git branch."
+sidebar:
+  label: "29 → 30"
+  order: 29
+---
+
+import Toggle from '@components/Toggle.astro';
+
+<div class="machine-meta">
+  <span class="meta-badge platform-overthewire">OverTheWire</span>
+  <span class="meta-badge os-linux">Linux</span>
+</div>
+
+> Goal: find the password that is missing from master but present on another branch.
+
+## Approach
+
+```bash frame="code" title="bandit29@bandit"
+bandit29@bandit:~$ cd "$(mktemp -d)" && git clone ssh://bandit29-git@localhost:2220/home/bandit29-git/repo
+bandit29@bandit:...$ cd repo
+bandit29@bandit:...$ cat README.md
+- password: <no passwords in production!>
+bandit29@bandit:...$ git branch -a
+* master
+  remotes/origin/dev
+  remotes/origin/master
+  remotes/origin/sploits-dev
+bandit29@bandit:...$ git checkout dev
+bandit29@bandit:...$ cat README.md
+- password: <password>
+```
+
+## Why it works
+
+Branches hold divergent copies of the tree. The production branch deliberately omits the secret (no passwords in production), while a development branch still carries it. git branch -a lists every ref including remotes, so checking out the dev branch surfaces the password master never had.
+
+<Toggle label="Reveal password" class="spoiler-toggle">
+
+```text frame="code"
+qp30ex3VLz5MDG1n91YowTv4Q8l7CDZL
+```
+
+</Toggle>
