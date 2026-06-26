@@ -6,6 +6,23 @@
 
 ---
 
+### 2026-06-26 · Truncate embedded private keys in writeups (GitHub push protection)
+- **Decision:** Writeups whose level reward is an SSH/RSA private key (OverTheWire Bandit
+  16->17, and any future key-based level) must NOT commit the full PEM. In the single "Reveal
+  private key" spoiler toggle, keep the `-----BEGIN/END RSA PRIVATE KEY-----` markers plus only
+  the first and last base64 lines, with the middle replaced by an ellipsis note
+  (`... (key truncated; the SSL service returns the full PEM on the box) ...`); mask the key
+  everywhere else on the page.
+- **Why:** GitHub push protection (GH013, "GitHub SSH Private Key") rejects any push that adds a
+  committable private key, even though the Bandit keys are public (they ship with the public
+  wargame). Truncating keeps `dev`/`main` pushable and the secret scanner quiet while the page
+  still shows the key's shape; the real key is always retrievable on the box. Chosen over
+  redact-to-placeholder (loses the shape) and over GitHub's allow-secret URL (never bypass push
+  protection for a real key).
+- **Remediation:** if a push is already blocked and the offending commit is unpushed,
+  `git reset --soft HEAD~1`, truncate, re-commit, push. No shared-history rewrite, no `--allow` bypass.
+- **Status:** Adopted (hard rule). Applied to `bandit/16-17.mdx` (commit ba3c2d5).
+
 ### 2026-06-20 · Flag loot gold: one signal for User/Root Flag (heading, toggle, TOC)
 - **Decision:** Unify the User Flag / Root Flag concept into a single theme-aware gold via a `--flag-gold`
   token (`#ffc23d` dark / `#835e00` light, AA in both). It colors the body heading (replacing the brown
