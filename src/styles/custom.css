@@ -1321,3 +1321,26 @@ html[data-theme="light"] .sl-markdown-content details.spoiler-toggle > summary {
 .sl-markdown-content details.spoiler-toggle > summary::before {
   transition: none;
 }
+
+
+/* === LIGHT SURFACE DEPTH (V3) ================================================
+   Separate light surfaces with subtle warm shadows, NOT by darkening or shifting
+   hue (color barely moves). Page, raised card, and inset code read as distinct
+   layers via shadow. Light only; dark is byte-for-byte unchanged. Supersedes the
+   reverted darken-by-lightness experiment, which failed by dropping code a hard
+   6.7% L; here code stays near its color and the inset shadow does the separating.
+   Two parts committed separately: code (PRIMARY) and cards (SECONDARY, revert-alone).
+
+   V3 part 1 (PRIMARY): code reads as inset. A tiny color step from the quick-fix-2
+   #e8e2d3 to #e6dfd0 (about 1% L) so the INSET SHADOW, not darkness, makes the
+   boundary. The existing warm frame border is kept (rgba(60,50,30,.14)); the QF2
+   drop shadow is swapped for the inset so the block presses in rather than floats.
+   Main code text stays AAA. */
+:root[data-theme='light'] .expressive-code {
+  --ec-frm-edBg: #e6dfd0;
+  --ec-frm-edActTabBg: #e6dfd0;
+}
+:root[data-theme='light'] .expressive-code .frame {
+  box-shadow: inset 0 1px 2px rgba(60, 50, 30, 0.08);
+}
+/* === end LIGHT SURFACE DEPTH (V3) === */
