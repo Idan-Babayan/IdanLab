@@ -47,6 +47,10 @@
 - [DESIGN] Optional flag Root-vs-User hierarchy (Root as the bigger prize, e.g. crown icon or richer
   gold), once the pipeline emits distinct hooks so all three flag states (heading, toggle, TOC) stay in
   sync; not feasible cleanly CSS-only today (toggle icon is content-lane).
+- [DESIGN] Answer-callout (:::tip) accent color: tips currently render purple (the rocket-to-check icon
+  swap on 2026-06-27 kept the inherited tip color). Experiment with a tip accent that better matches the
+  overall theme (e.g. green/teal or a paper-harmonious hue), both themes, CSS-only via the Starlight aside
+  color tokens. Owner wants to try options later.
 
 ## Open bugs / known issues
 - [ENG] ToggleAll few-pixel shift: expand/collapse can leave a small reversible content offset in real

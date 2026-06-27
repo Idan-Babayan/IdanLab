@@ -84,6 +84,9 @@ html[data-theme="dark"] .port-label {
 
 html[data-theme="light"] :not(pre) > code {
   color: #c92a2a;
+  /* Warm the inline-code chip to match the paper: Starlight's default is a cool ~#edeef3 that reads
+     too white/blue here. Kept light so the red code text stays AA (4.6:1). Light only; dark untouched. */
+  background-color: #f3ebda;
 }
 
 html[data-theme="dark"] :not(pre) > code {
@@ -121,13 +124,15 @@ html[data-theme="light"] .sl-markdown-content details {
   /* A faintly raised warm panel (lighter than the #ece9e0 page) with a hairline border and a
      soft shadow, so a Toggle reads as a card lifting off the paper instead of a flat box. */
   background-color: #f2ede0;
-  border-color: rgba(60, 50, 30, 0.16);
+  /* Same warm divider as the structural hairlines (single source of truth); replaces a fainter
+     rgba(60,50,30,0.16) so the Toggle border is clearly visible on paper and consistent. */
+  border-color: var(--tp-divider);
   box-shadow: 0 4px 14px -12px rgba(60, 50, 30, 0.4);
 }
 
-.sl-markdown-content details[open] {
-  border-color: var(--sl-color-accent);
-}
+/* No accent swap on open: a content Toggle keeps the SAME border expanded as closed, so opening it
+   never changes color. Each theme's closed rule above (gray-4 dark, --tp-divider light) already
+   covers [open], so the old lime open edge is simply removed here (and in the light override below). */
 
 .sl-markdown-content details > summary {
   cursor: pointer;
@@ -211,6 +216,25 @@ html[data-theme="dark"] .starlight-aside--tip {
 
 html[data-theme="light"] .starlight-aside--tip {
   background-color: rgba(50, 180, 80, 0.07);
+}
+
+/* Answer callouts are Starlight :::tip asides, whose default icon is a rocket. Swap it for a
+   check-in-circle (reads as answer/solution) with a pure CSS mask, so this stays in the theme-pass
+   lane and the new glyph inherits the tip color in both themes. Note: the .starlight-aside__icon IS
+   the inline <svg> (no separate container), so hide its drawn glyph, then repaint the same 1em box
+   with a currentColor fill masked to the check. Size/alignment follow Starlight's own icon box
+   (1em at font-size 1.333em); flex-shrink:0 keeps the box from collapsing. fill-rule evenodd makes
+   the check read as a clean cutout. */
+.starlight-aside--tip .starlight-aside__icon > * {
+  display: none;
+}
+.starlight-aside--tip .starlight-aside__icon {
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
+  background-color: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 
 
@@ -629,6 +653,14 @@ body:has(.pi-index) {
   --sl-content-width: 60rem;
 }
 
+/* The hidden title (above) leaves Starlight's ContentPanel divider, the border-top that sits
+   correctly UNDER a writeup title, floating as a stray line across the very top of an index page.
+   Remove that one top border on index pages only, both themes. Writeups have no .pi-index, so their
+   under-title line is kept; card and button borders are unaffected (this targets the panel only). */
+body:has(.pi-index) .content-panel + .content-panel {
+  border-top: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .pi-index .reveal {
     opacity: 1;
@@ -682,6 +714,17 @@ body:has(.pi-index) {
   --sl-color-bg: #ece9e0;
   --sl-color-bg-nav: color-mix(in oklab, #ece9e0 80%, transparent);
   --sl-color-bg-sidebar: #f1eee5;
+  /* Warm structural divider (single source of truth). Starlight's light hairline tokens all fall
+     back to --sl-color-gray-6 (hsl(224 20% 94%), a cool near-white) which is nearly invisible on the
+     warm paper bg and the wrong temperature for it. This warm greige is the paper hue dropped in
+     lightness with most of the yellow chroma removed, so it reads as a soft shadow of the paper:
+     clearly NOT gold (it must not compete with the gold loot signal), not a cool screen gray, and
+     not a colored accent. Fed to --sl-color-hairline it fixes every structural hairline at once (content-to-TOC
+     separator, the line under the writeup title, section rules, the markdown --- hr, and the
+     TOC/ToggleAll divider) and is reused for the content Toggle border below. Light only; the dark
+     hairline (~#262831) is untouched. */
+  --tp-divider: #c6c0b4;
+  --sl-color-hairline: var(--tp-divider);
   --tp-glow-1: #7cc9ff;
   --tp-glow-2: #a9dd6a;
   /* Darker cyan-ink for paper: the previous #0b7e92 left prose links and h3 at ~3.9:1
@@ -1020,12 +1063,64 @@ html[data-theme="light"] .ec-cmd-inspect span {
    Canonical dark token values are untouched (every rule is scoped to data-theme='light').
    ══════════════════════════════════════════════ */
 
+/* Warm the light code surface: EC's catppuccin-latte editor bg is #fafafa, a cool white slab on the
+   warm paper. Override the EC editor + tab-bar background vars to a soft warm off-white slightly
+   darker than the page paper (#ece9e0), so a code block reads as a distinct warm panel. Light only;
+   dark (github-dark-dimmed) is untouched. Kept light enough that the catppuccin text stays AA. */
+:root[data-theme='light'] .expressive-code {
+  --ec-frm-edBg: #e8e2d3;
+  --ec-frm-edTabBarBg: #e0d8c6;
+  --ec-frm-edActTabBg: #e8e2d3;
+}
+
 /* Code frames: a hairline border + a soft warm shadow (the base shadow is tuned for ink and
    barely reads on paper). Gives the block a clear edge against #ece9e0. */
 :root[data-theme='light'] .expressive-code .frame {
   border: 1px solid rgba(60, 50, 30, 0.14);
   box-shadow: 0 8px 24px -16px rgba(60, 50, 30, 0.45), 0 1px 2px rgba(60, 50, 30, 0.06);
 }
+
+/* ── Scrollbars ──────────────────────────────────────────────────────────────
+   Starlight ships no scrollbar styling, so the page scroller and the code-block
+   horizontal scroller fall back to the browser default (a cool white bar in light).
+   Theme both, in both engines: WebKit pseudo-elements + Firefox scrollbar-color.
+   Light: warm paper track + warm taupe thumb (clearly not white, the divider-tone
+   family). Dark: a subtle dark channel + muted slate thumb, so the dark look stays
+   undisturbed. The code-block scroller's track matches the code surface so it blends. */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+::-webkit-scrollbar-thumb {
+  border-radius: 8px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Dark: subtle, on-brand (page + default) */
+html[data-theme="dark"] {
+  scrollbar-color: #2e3440 #14161b;
+  scrollbar-width: thin;
+}
+html[data-theme="dark"] ::-webkit-scrollbar-track { background: #14161b; }
+html[data-theme="dark"] ::-webkit-scrollbar-thumb { background-color: #2e3440; }
+html[data-theme="dark"] ::-webkit-scrollbar-thumb:hover { background-color: #3b4252; }
+html[data-theme="dark"] .expressive-code pre { scrollbar-color: #2e3440 #1a1b26; }
+html[data-theme="dark"] .expressive-code pre::-webkit-scrollbar-track { background: #1a1b26; }
+
+/* Light: warm, clearly not white (page + default) */
+html[data-theme="light"] {
+  scrollbar-color: #b3a88f #e4ddcd;
+  scrollbar-width: thin;
+}
+html[data-theme="light"] ::-webkit-scrollbar-track { background: #e4ddcd; }
+html[data-theme="light"] ::-webkit-scrollbar-thumb { background-color: #b3a88f; }
+html[data-theme="light"] ::-webkit-scrollbar-thumb:hover { background-color: #9d9170; }
+html[data-theme="light"] .expressive-code pre { scrollbar-color: #b3a88f #e8e2d3; }
+html[data-theme="light"] .expressive-code pre::-webkit-scrollbar-track { background: #e8e2d3; }
 
 /* Lead blockquote: a calm warm-paper card (subtle olive tint kept light so the body text on it
    stays AA), but the left bar is the vivid deco-lime panel accent. */
@@ -1034,10 +1129,11 @@ html[data-theme="light"] .ec-cmd-inspect span {
   border-inline-start-color: var(--tp-deco-lime);
   box-shadow: 0 6px 20px -14px rgba(60, 50, 30, 0.4);
 }
-/* Open Toggle panels: vivid deco-lime edge (decorative, no text on it) so the active panel reads
-   as a confident card on paper. Base details[open] uses --sl-color-accent for both themes. */
+/* Open content Toggle keeps the closed divider color on paper (no green edge): opening a Toggle must
+   not change its border, and lime/green must not appear here. Uses --tp-divider, the same token the
+   closed Toggle border and the structural hairlines use. */
 :root[data-theme='light'] .sl-markdown-content details[open] {
-  border-color: var(--tp-deco-lime);
+  border-color: var(--tp-divider);
 }
 
 /* Sidebar: give the rail a subtle edge + soft shadow so the nav reads as a distinct panel,
