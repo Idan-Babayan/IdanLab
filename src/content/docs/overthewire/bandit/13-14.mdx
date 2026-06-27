@@ -1,0 +1,40 @@
+---
+title: Bandit 13 → 14
+description: "OverTheWire Bandit 13 to 14: log in with a provided SSH private key, then read the next password from /etc/bandit_pass."
+sidebar:
+  label: "13 → 14"
+  order: 13
+---
+
+import Toggle from '@components/Toggle.astro';
+
+<div class="machine-meta">
+  <span class="meta-badge platform-overthewire">OverTheWire</span>
+  <span class="meta-badge os-linux">Linux</span>
+</div>
+
+> Goal: use the private key in the home directory to log in as bandit14 and read its stored password.
+
+## Approach
+
+There is no password here, only a private key. Use it to authenticate as bandit14, then read that user's password from the system store.
+
+```bash frame="code" title="bandit13@bandit"
+bandit13@bandit:~$ ls
+sshkey.private
+bandit13@bandit:~$ ssh -i sshkey.private bandit14@bandit.labs.overthewire.org -p 2220
+bandit14@bandit:~$ cat /etc/bandit_pass/bandit14
+The password you are looking for is: <password>
+```
+
+## Why it works
+
+Public-key auth proves identity by signing a server challenge with the private key, so no secret crosses the wire; the server only needs the matching public key in authorized_keys. Each level's own password also lives at /etc/bandit_pass/banditN, readable solely by that user, so a shell as bandit14 can read it directly.
+
+<Toggle label="Reveal password" class="spoiler-toggle">
+
+```text frame="code"
+MU4VWeTyJk8ROof1qqmcBPaLh7lDCPvS
+```
+
+</Toggle>

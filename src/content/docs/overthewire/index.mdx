@@ -1,20 +1,15 @@
 ---
 title: OverTheWire
-description: OverTheWire wargame writeups, Linux fundamentals and security concepts, level by level.
+description: "OverTheWire wargames: Linux, shell, and security fundamentals, learned hands-on."
+tableOfContents: false
 ---
 
-import { Badge } from '@astrojs/starlight/components';
+import PlatformIndex from '@components/PlatformIndex.astro';
 
-<div class="platform-intro pi-otw">
-  <img src="/icons/overthewire.svg" alt="" class="pi-icon" data-zoom-off />
-  <div>
-    <p class="pi-tagline">Wargames that taught me Linux the hard way.</p>
-    <p class="pi-meta"><Badge text="Linux" variant="caution" /> <Badge text="Wargames" variant="note" /></p>
-  </div>
-</div>
-
-OverTheWire offers SSH-based wargames that teach security concepts through hands-on levels. Bandit alone taught me more practical Linux than any course. Each level is a small puzzle that builds real command-line fluency.
-
-These writeups document my path through the levels: the command, why it works, and the concept it's quietly teaching.
-
-Browse the levels in the sidebar. 👈
+{/* Wargame landing. PlatformIndex in mode="wargames" derives one card per wargame from the
+    sub-hub index pages (overthewire/{wargame}/index.mdx), each linking to that wargame's hub.
+    Individual levels are never listed here, they live in the sidebar and prev/next pagination.
+    Add a wargame (Natas, Leviathan, Krypton) by creating its overthewire/{wargame}/ folder and
+    hub: it appears here automatically as a sibling card. Once there are enough, group them under
+    category headings (Linux, Web, Crypto, Binary). Do not list levels as cards. */}
+<PlatformIndex platform="overthewire" mode="wargames" />

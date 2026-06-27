@@ -1,0 +1,42 @@
+---
+title: Bandit 21 → 22
+description: "OverTheWire Bandit 21 to 22: read the world-readable file a root cron job writes the password into."
+sidebar:
+  label: "21 → 22"
+  order: 21
+---
+
+import Toggle from '@components/Toggle.astro';
+
+<div class="machine-meta">
+  <span class="meta-badge platform-overthewire">OverTheWire</span>
+  <span class="meta-badge os-linux">Linux</span>
+</div>
+
+> Goal: find the password that a scheduled job copies into a file in /tmp.
+
+## Approach
+
+```bash frame="code" title="bandit21@bandit"
+bandit21@bandit:~$ cat /etc/cron.d/cronjob_bandit22
+@reboot bandit22 /usr/bin/cronjob_bandit22.sh &> /dev/null
+* * * * * bandit22 /usr/bin/cronjob_bandit22.sh &> /dev/null
+bandit21@bandit:~$ cat /usr/bin/cronjob_bandit22.sh
+#!/bin/bash
+chmod 644 /tmp/t7O6lds9S0RqQh9aMcz6ShpAoZKF7fgv
+cat /etc/bandit_pass/bandit22 > /tmp/t7O6lds9S0RqQh9aMcz6ShpAoZKF7fgv
+bandit21@bandit:~$ cat /tmp/t7O6lds9S0RqQh9aMcz6ShpAoZKF7fgv
+The password you are looking for is: <password>
+```
+
+## Why it works
+
+Files in /etc/cron.d declare a job and the user it runs as. This one runs as bandit22 every minute and writes that user's password to a fixed /tmp path with mode 644 (world-readable), so reading the leaked output takes no privileges at all.
+
+<Toggle label="Reveal password" class="spoiler-toggle">
+
+```text frame="code"
+tRae0UfB9v0UzbCdn9cY0gQnds9GF58Q
+```
+
+</Toggle>

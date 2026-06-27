@@ -1,0 +1,38 @@
+---
+title: Bandit 5 → 6
+description: "OverTheWire Bandit 5 to 6: locate a file by its exact byte size with find before reading it."
+sidebar:
+  label: "5 → 6"
+  order: 5
+---
+
+import Toggle from '@components/Toggle.astro';
+
+<div class="machine-meta">
+  <span class="meta-badge platform-overthewire">OverTheWire</span>
+  <span class="meta-badge os-linux">Linux</span>
+</div>
+
+> Goal: find the human-readable password file of exactly 1033 bytes inside the inhere tree.
+
+## Approach
+
+```bash frame="code" title="bandit5@bandit"
+bandit5@bandit:~$ cd inhere/
+bandit5@bandit:~/inhere$ find -type f -size 1033c
+./maybehere07/.file2
+bandit5@bandit:~/inhere$ cat ./maybehere07/.file2
+The password you are looking for is: <password>
+```
+
+## Why it works
+
+find filters on inode metadata before touching contents: -size 1033c matches an exact byte count (c = bytes) and -type f restricts to regular files. Stacking predicates pinpoints one file across a deep directory tree without reading any of them.
+
+<Toggle label="Reveal password" class="spoiler-toggle">
+
+```text frame="code"
+HWasnPhtq9AVKe0dmk45nxy20cvUa6EG
+```
+
+</Toggle>

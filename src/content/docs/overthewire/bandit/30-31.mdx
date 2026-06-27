@@ -1,0 +1,41 @@
+---
+title: Bandit 30 → 31
+description: "OverTheWire Bandit 30 to 31: read a password hidden in a git tag object."
+sidebar:
+  label: "30 → 31"
+  order: 30
+---
+
+import Toggle from '@components/Toggle.astro';
+
+<div class="machine-meta">
+  <span class="meta-badge platform-overthewire">OverTheWire</span>
+  <span class="meta-badge os-linux">Linux</span>
+</div>
+
+> Goal: find the password attached to a tag in the repo, not to any commit on a branch.
+
+## Approach
+
+```bash frame="code" title="bandit30@bandit"
+bandit30@bandit:~$ cd "$(mktemp -d)" && git clone ssh://bandit30-git@localhost:2220/home/bandit30-git/repo
+bandit30@bandit:...$ cd repo
+bandit30@bandit:...$ cat README.md
+just an epmty file... muahaha
+bandit30@bandit:...$ git tag
+secret
+bandit30@bandit:...$ git show secret
+The password you are looking for is: <password>
+```
+
+## Why it works
+
+A tag is a named reference to a git object, separate from the commit and branch graph, so its contents never show up in a normal log or checkout. git tag lists it and git show secret prints what it points at, here the password.
+
+<Toggle label="Reveal password" class="spoiler-toggle">
+
+```text frame="code"
+fb5S2xb7bRyFmAvQYQGEqsbhVyJqhnDy
+```
+
+</Toggle>

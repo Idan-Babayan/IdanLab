@@ -1,0 +1,254 @@
+---
+/**
+ * WriteupCard: presentational writeup card (props only, no data fetching).
+ *
+ * Reusable: PlatformIndex feeds it per-platform writeups today; a future global
+ * /writeups index (path 3) can reuse it verbatim by passing `showPlatform` so the
+ * platform reads on a mixed grid. The card owns no effects: tilt / glare / reveal
+ * are driven by PlatformIndex's script via the data-tilt + .reveal hooks, and the
+ * platform accent comes from the global .pf-* token in custom.css.
+ *
+ * Matches the homepage card WOW: accent bar, cursor glare, 3D tilt, reveal stagger.
+ */
+
+type Difficulty = 'easy' | 'medium' | 'hard' | 'misc';
+
+interface Props {
+	href: string;
+	title: string;
+	description?: string;
+	platform: string;
+	difficulty: Difficulty;
+	/** Optional, frontmatter-driven once the pipeline promotes it. e.g. 'linux' | 'windows'. */
+	os?: string;
+	/** Optional topic chips, frontmatter-driven once the pipeline promotes them. */
+	tags?: string[];
+	/** Show a platform badge (off per-platform; on for a mixed /writeups grid). */
+	showPlatform?: boolean;
+}
+
+const { href, title, description, platform, difficulty, os, tags = [], showPlatform = false } = Astro.props;
+
+const PLATFORM_LABEL: Record<string, string> = {
+	hackthebox: 'HackTheBox',
+	vulnhub: 'VulnHub',
+	picoctf: 'PicoCTF',
+	overthewire: 'OverTheWire',
+};
+const DIFF_LABEL: Record<Difficulty, string> = {
+	easy: 'Easy',
+	medium: 'Medium',
+	hard: 'Hard',
+	misc: 'Misc',
+};
+
+const platformLabel: string = PLATFORM_LABEL[platform] ?? platform;
+const diffLabel: string = DIFF_LABEL[difficulty];
+
+const osLower: string = (os ?? '').toLowerCase();
+const hasOs: boolean = osLower.length > 0;
+// Only linux/windows have dedicated badge palettes in custom.css; anything else
+// falls back to the neutral .meta-badge base shape rather than mislabelling.
+const osClass: string = osLower === 'windows' ? 'os-windows' : osLower === 'linux' ? 'os-linux' : '';
+const osLabel: string = hasOs ? osLower.charAt(0).toUpperCase() + osLower.slice(1) : '';
+
+const cleanTags: string[] = (tags ?? []).filter((t) => typeof t === 'string' && t.trim().length > 0);
+---
+
+<a
+	href={href}
+	class={`wc-card pf-${platform} reveal`}
+	data-tilt
+	data-difficulty={difficulty}
+	data-platform={platform}
+	data-tags={cleanTags.join(',')}
+	aria-label={`Read the ${title} writeup`}
+>
+	<span class="wc-accent-bar"></span>
+	<span class="wc-glare"></span>
+
+	<div class="wc-eyebrow">
+		<span>{diffLabel}</span>
+		{hasOs && <><span class="wc-dot" aria-hidden="true">·</span><span>{osLabel}</span></>}
+	</div>
+
+	<h3 class="wc-name">{title}</h3>
+
+	<div class="wc-badges">
+		<span class={`meta-badge difficulty-${difficulty}`}>{diffLabel}</span>
+		{hasOs && <span class={`meta-badge ${osClass}`}>{osLabel}</span>}
+		{showPlatform && <span class={`meta-badge platform-${platform}`}>{platformLabel}</span>}
+	</div>
+
+	{cleanTags.length > 0 && (
+		<div class="wc-tags">
+			{cleanTags.map((t) => <span class="wc-tag">{t}</span>)}
+		</div>
+	)}
+
+	{description && <p class="wc-desc">{description}</p>}
+
+	<span class="wc-go">Read writeup <span class="wc-arrow" aria-hidden="true">-&gt;</span></span>
+</a>
+
+<style>
+	/* The card renders as an <a> + <h3> inside Starlight's .sl-markdown-content, whose
+	   prose rules (link color/underline, h3 cyan) would tint it. The PlatformIndex root
+	   carries Starlight's `not-content` class, and our custom.css prose rules are guarded
+	   with :not(:where(.not-content *)), so this whole subtree opts out of prose styling
+	   and these component styles apply cleanly (no specificity arms race). */
+	.wc-card {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		background: #0d1113;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		border-radius: 16px;
+		padding: 1.6rem 1.5rem;
+		text-decoration: none;
+		color: var(--sl-color-text);
+		transform-style: preserve-3d;
+		transition: transform 0.12s ease, border-color 0.3s ease;
+		overflow: hidden;
+		will-change: transform;
+		/* Per-platform accent (global .pf-* sets --pf-accent, theme-aware) is the lead, used on
+		   the bar / glare / hover (card identity). The universal cyan secondary is the duotone
+		   partner, used on the small eyebrow + the "Read writeup" affordance. */
+		--accent: var(--pf-accent, var(--sl-color-accent));
+		--accent-2: var(--pf-accent-2, var(--tp-cyan));
+	}
+	/* Light mode: warm paper card with a soft lift so it does not read flat. */
+	html[data-theme='light'] .wc-card {
+		background: #f7f5ee;
+		border-color: rgba(0, 0, 0, 0.12);
+		box-shadow: 0 8px 24px -16px rgba(60, 50, 30, 0.45);
+	}
+	.wc-card:hover {
+		border-color: var(--accent);
+	}
+
+	.wc-accent-bar {
+		position: absolute;
+		left: 0;
+		top: 0;
+		bottom: 0;
+		width: 3px;
+		background: var(--accent);
+	}
+	.wc-glare {
+		position: absolute;
+		inset: 0;
+		opacity: 0;
+		transition: opacity 0.3s ease;
+		pointer-events: none;
+		background: radial-gradient(
+			circle at var(--mx, 50%) var(--my, 50%),
+			color-mix(in oklab, var(--accent) 22%, transparent),
+			transparent 45%
+		);
+	}
+	.wc-card:hover .wc-glare {
+		opacity: 1;
+	}
+
+	.wc-eyebrow {
+		font-family: var(--sl-font-mono);
+		font-size: 0.7rem;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: var(--accent-2);
+		display: flex;
+		align-items: center;
+		gap: 0.45rem;
+	}
+	.wc-dot {
+		opacity: 0.6;
+	}
+
+	/* Card title stays neutral (accent is reserved for the bar / eyebrow / go).
+	   The not-content opt-out (see top of block) keeps the prose h3 rule off it. */
+	.wc-name {
+		font-family: var(--tp-display);
+		font-weight: 700;
+		font-size: 1.3rem;
+		line-height: 1.15;
+		color: var(--sl-color-text);
+		margin: 0.7rem 0 0.85rem;
+		transform: translateZ(40px);
+	}
+
+	.wc-badges {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+		margin: 0;
+		transform: translateZ(20px);
+	}
+
+	.wc-tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+		margin-top: 0.6rem;
+		transform: translateZ(15px);
+	}
+	.wc-tag {
+		font-family: var(--sl-font-mono);
+		font-size: 0.7rem;
+		letter-spacing: 0.04em;
+		padding: 0.1rem 0.55rem;
+		border-radius: 999px;
+		color: color-mix(in oklab, var(--accent) 80%, var(--sl-color-text));
+		border: 1px solid color-mix(in oklab, var(--accent) 35%, transparent);
+		background: color-mix(in oklab, var(--accent) 10%, transparent);
+	}
+
+	.wc-desc {
+		color: color-mix(in oklab, var(--sl-color-text) 62%, transparent);
+		font-size: 0.86rem;
+		line-height: 1.55;
+		margin: 0.9rem 0 0;
+		transform: translateZ(20px);
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+
+	.wc-go {
+		font-family: var(--sl-font-mono);
+		font-size: 0.78rem;
+		letter-spacing: 0.04em;
+		color: var(--accent-2);
+		margin-top: 1.1rem;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		transform: translateZ(30px);
+	}
+	.wc-arrow {
+		transition: transform 0.2s ease;
+	}
+	.wc-card:hover .wc-arrow {
+		transform: translateX(4px);
+	}
+
+	/* Filter hide hook (toggled by PlatformIndex's script). */
+	.wc-card.wc-hidden {
+		display: none !important;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.wc-card {
+			transition: none;
+		}
+		.wc-card:hover {
+			transform: none !important;
+		}
+		.wc-arrow,
+		.wc-card:hover .wc-arrow {
+			transition: none;
+		}
+	}
+</style>

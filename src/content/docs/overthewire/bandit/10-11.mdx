@@ -1,0 +1,35 @@
+---
+title: Bandit 10 → 11
+description: "OverTheWire Bandit 10 to 11: decode a base64-encoded password."
+sidebar:
+  label: "10 → 11"
+  order: 10
+---
+
+import Toggle from '@components/Toggle.astro';
+
+<div class="machine-meta">
+  <span class="meta-badge platform-overthewire">OverTheWire</span>
+  <span class="meta-badge os-linux">Linux</span>
+</div>
+
+> Goal: decode the base64 contents of data.txt.
+
+## Approach
+
+```bash frame="code" title="bandit10@bandit"
+bandit10@bandit:~$ base64 -d data.txt
+The password you are looking for is: <password>
+```
+
+## Why it works
+
+Base64 is a transport encoding that maps arbitrary bytes onto a safe 64-character alphabet so they survive text-only channels. It carries no key, so any decoder reverses it. Encoding is not encryption.
+
+<Toggle label="Reveal password" class="spoiler-toggle">
+
+```text frame="code"
+dtR173fZKb0RRsDFSGsg2RWnpNVj3qRr
+```
+
+</Toggle>

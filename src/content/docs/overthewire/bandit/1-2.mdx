@@ -1,0 +1,37 @@
+---
+title: Bandit 1 → 2
+description: "OverTheWire Bandit 1 to 2: read a file named with a single dash by prefixing the path so the shell does not treat it as an option."
+sidebar:
+  label: "1 → 2"
+  order: 1
+---
+
+import Toggle from '@components/Toggle.astro';
+
+<div class="machine-meta">
+  <span class="meta-badge platform-overthewire">OverTheWire</span>
+  <span class="meta-badge os-linux">Linux</span>
+</div>
+
+> Goal: read the password from a file whose entire name is a single dash.
+
+## Approach
+
+```bash frame="code" title="bandit1@bandit"
+bandit1@bandit:~$ ls
+-
+bandit1@bandit:~$ cat ./-
+The password you are looking for is: <password>
+```
+
+## Why it works
+
+cat reads its filename as an argument, and a token that starts with a dash is parsed as an option before it is ever treated as a path. Giving the name as ./- (or feeding the file through stdin) forces it to be read as a file, not a flag.
+
+<Toggle label="Reveal password" class="spoiler-toggle">
+
+```text frame="code"
+263JGJPfgU6LtdEvgfWU1XP5yac29mFx
+```
+
+</Toggle>
