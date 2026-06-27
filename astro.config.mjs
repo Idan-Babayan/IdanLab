@@ -3,6 +3,7 @@ import starlight from '@astrojs/starlight';
 import starlightImageZoom from 'starlight-image-zoom';
 import path from 'path';
 import { pluginPrivCommand } from './src/lib/ec-priv-command.mjs';
+import rehypeContentImageLoading from './plugins/rehype-content-image-loading.mjs';
 
 export default defineConfig({
   site: 'https://idanlab.dev',
@@ -13,6 +14,12 @@ export default defineConfig({
         '@components': path.resolve('./src/components'),
       }
     }
+  },
+
+  // Content image loading: a rehype pass sets loading/decoding on content <img> (first eager,
+  // rest lazy). Covers raw /public absolute-path images that skip astro:assets. See plugins/.
+  markdown: {
+    rehypePlugins: [rehypeContentImageLoading],
   },
 
   integrations: [
@@ -39,6 +46,11 @@ export default defineConfig({
       ],
       title: "Idan.Lab",
       customCss: ['./src/styles/custom.css'],
+      // Additive override: render the default right "On this page" sidebar and add the ToggleAll
+      // control at the top (see src/components/overrides/PageSidebar.astro). Default TOC preserved.
+      components: {
+        PageSidebar: './src/components/overrides/PageSidebar.astro',
+      },
       description: 'CTF Writeups, Machine Walkthroughs & Security Notes By Idan Babayan',
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/Idan-Babayan' },
@@ -74,7 +86,10 @@ export default defineConfig({
         {
           label: 'OverTheWire',
           collapsed: true,
-          items: [{ autogenerate: { directory: 'overthewire', collapsed: true } }],
+          items: [
+            { label: 'Overview', link: '/overthewire/' },
+            { label: 'Bandit', collapsed: true, items: [{ autogenerate: { directory: 'overthewire/bandit' } }] },
+          ],
         },
       ],
     }),

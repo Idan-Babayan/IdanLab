@@ -1,0 +1,46 @@
+---
+title: Bandit 4 → 5
+description: "OverTheWire Bandit 4 to 5: identify the one human-readable file among ten by classifying each with file."
+sidebar:
+  label: "4 → 5"
+  order: 4
+---
+
+import Toggle from '@components/Toggle.astro';
+
+<div class="machine-meta">
+  <span class="meta-badge platform-overthewire">OverTheWire</span>
+  <span class="meta-badge os-linux">Linux</span>
+</div>
+
+> Goal: find the only human-readable file among ten in the inhere directory.
+
+## Approach
+
+```bash frame="code" title="bandit4@bandit"
+bandit4@bandit:~/inhere$ file ./*
+./-file00: data
+./-file01: data
+./-file02: data
+./-file03: data
+./-file04: data
+./-file05: data
+./-file06: data
+./-file07: ASCII text
+./-file08: data
+./-file09: data
+bandit4@bandit:~/inhere$ cat ./-file07
+The password you are looking for is: <password>
+```
+
+## Why it works
+
+file classifies each input by inspecting its leading magic bytes and content rather than its name, so the one ASCII text file stands out from nine binaries without opening each by hand. The ./ prefix again keeps the dash-led names from reading as options.
+
+<Toggle label="Reveal password" class="spoiler-toggle">
+
+```text frame="code"
+4oQYVPkxZOOEOO5pTW81FB8j8lxXGUQw
+```
+
+</Toggle>

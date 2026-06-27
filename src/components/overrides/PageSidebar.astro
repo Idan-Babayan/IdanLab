@@ -1,0 +1,24 @@
+---
+// src/components/overrides/PageSidebar.astro
+//
+// Additive override of Starlight's right "On this page" sidebar (approved pattern, see CORE_SPEC
+// "Starlight Component Overrides"). It renders Starlight's Default PageSidebar unchanged and adds the
+// ToggleAll control AFTER it, so the control sits at the BOTTOM of the sticky right column as a
+// de-emphasized tertiary utility (below the TOC links in the reading order and visual weight). It
+// follows scroll and appears on every page that has content toggles; ToggleAll self-hides when none.
+//
+// Desktop only: the wrapper uses Starlight's own utilities (sl-hidden / lg:sl-block), so it is hidden
+// below the lg breakpoint where the right sidebar collapses into the mobile "On this page" dropdown.
+// Gated on `toc` so it only appears where the table-of-contents panel itself renders.
+import Default from '@astrojs/starlight/components/PageSidebar.astro';
+import ToggleAll from '@components/ToggleAll.astro';
+---
+
+<Default><slot /></Default>
+{
+  Astro.locals.starlightRoute.toc && (
+    <div class="sl-hidden lg:sl-block toggle-all-sidebar">
+      <ToggleAll />
+    </div>
+  )
+}

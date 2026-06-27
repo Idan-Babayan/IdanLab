@@ -1,0 +1,44 @@
+---
+// src/components/Callout.astro
+//
+// Presentational tagged callout (same spirit as Toggle.astro): a 3px accent left border, a faint
+// accent tint, and a header row of icon + UPPERCASE label in the accent color. All colors live in
+// custom.css (.cl / .cl-<type>). Markdown inside the slot renders, so authors can write inline
+// `code`, lists, and links.
+
+import { Icon } from '@astrojs/starlight/components';
+
+type CalloutType = 'recon' | 'loot' | 'intel' | 'defense' | 'vuln';
+
+interface Props {
+  type: CalloutType;
+  label?: string;
+}
+
+const { type, label } = Astro.props;
+const text: string = label ?? type;
+
+// Starlight has no shield glyph, so defense uses an inline SVG (below). The rest map to Starlight
+// icons. `as const satisfies` keeps the values as literal icon names (assignable to Icon's name
+// prop) while still checking every non-defense type has an entry.
+const ICONS = {
+  recon: 'magnifier',
+  loot: 'padlock',
+  intel: 'information',
+  vuln: 'warning',
+} as const satisfies Record<Exclude<CalloutType, 'defense'>, string>;
+---
+
+<aside class={`cl cl-${type}`}>
+  <p class="cl-header">
+    {type === 'defense' ? (
+      <svg class="cl-icon" viewBox="0 0 24 24" fill="currentColor" width="1em" height="1em" aria-hidden="true">
+        <path d="M12 2 4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm0 2.18 6 2.25v4.66c0 3.96-2.55 7.69-6 8.83-3.45-1.14-6-4.87-6-8.83V6.43l6-2.25z"/>
+      </svg>
+    ) : (
+      <Icon name={ICONS[type]} class="cl-icon" />
+    )}
+    <span class="cl-label">{text}</span>
+  </p>
+  <slot />
+</aside>

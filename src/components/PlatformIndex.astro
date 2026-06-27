@@ -1,0 +1,680 @@
+---
+/**
+ * PlatformIndex: data + layout for a platform landing page.
+ *
+ * Takes a `platform` prop, pulls that platform's writeups from the `docs`
+ * collection (excluding the index page itself), derives DIFFICULTY from the
+ * entry id path ({platform}/{difficulty}/{slug}), sorts easy < medium < hard <
+ * misc then title, and renders: a color-coded animated hero, a difficulty
+ * filter rail, and a grid of <WriteupCard>. Empty platforms show an "incoming"
+ * panel instead of a broken empty grid.
+ *
+ * Effects (3D tilt + glare, scroll-reveal stagger, count-up, one-time decode)
+ * are ported from src/pages/index.astro so these pages feel identical, not
+ * reinvented. Everything is prefers-reduced-motion aware.
+ */
+import { getCollection, type CollectionEntry } from 'astro:content';
+import WriteupCard from './WriteupCard.astro';
+
+interface Props {
+	platform: string;
+	/**
+	 * 'writeups' (default): cards are individual writeup pages, grouped by difficulty.
+	 * 'wargames': cards are the platform's wargames (each sub-hub index page, e.g.
+	 * overthewire/bandit), each linking to its hub. Levels live in the sidebar, never
+	 * listed here, so the landing stays bounded as a wargame's level count grows.
+	 */
+	mode?: 'writeups' | 'wargames';
+}
+const { platform, mode = 'writeups' } = Astro.props;
+const isWargames: boolean = mode === 'wargames';
+
+type Difficulty = 'easy' | 'medium' | 'hard' | 'misc';
+const DIFF_ORDER: readonly Difficulty[] = ['easy', 'medium', 'hard', 'misc'];
+const DIFF_RANK: Record<Difficulty, number> = { easy: 0, medium: 1, hard: 2, misc: 3 };
+
+interface PlatformMeta {
+	name: string;
+	tagline: string; // one line, no em dashes
+	icon: string;
+}
+const PLATFORM_META: Record<string, PlatformMeta> = {
+	hackthebox: { name: 'HackTheBox', tagline: 'Retired machines, owned and documented.', icon: '/icons/htb.svg' },
+	vulnhub: { name: 'VulnHub', tagline: 'Vulnerable VMs, pulled apart in my home lab.', icon: '/icons/vulnhub.svg' },
+	picoctf: { name: 'PicoCTF', tagline: 'Where I built my CTF fundamentals.', icon: '/icons/picoctf.svg' },
+	overthewire: { name: 'OverTheWire', tagline: 'Wargames that taught me Linux the hard way.', icon: '/icons/overthewire.svg' },
+};
+const meta: PlatformMeta = PLATFORM_META[platform] ?? {
+	name: platform,
+	tagline: '',
+	icon: `/icons/${platform}.svg`,
+};
+
+type Entry = CollectionEntry<'docs'>;
+
+interface CardModel {
+	href: string;
+	title: string;
+	description?: string;
+	difficulty: Difficulty;
+	os?: string;
+	tags?: string[];
+}
+
+/** Derive difficulty from the entry id path: {platform}/{difficulty}/{slug}. */
+function difficultyOf(entry: Entry): Difficulty {
+	const parts = entry.id.split('/');
+	const raw = parts.length >= 3 ? parts[1].toLowerCase() : 'misc';
+	return (DIFF_ORDER as readonly string[]).includes(raw) ? (raw as Difficulty) : 'misc';
+}
+
+const all = await getCollection('docs');
+
+// Everything under this platform. The platform index page's id is exactly `{platform}`
+// (no trailing segment), so `startsWith('{platform}/')` excludes it cleanly.
+const entries: Entry[] = all.filter((e) => e.id.startsWith(`${platform}/`));
+
+// WARGAME cards (mode="wargames"): a wargame's hub is the index page one segment under the
+// platform, e.g. `overthewire/bandit`. Levels (`overthewire/bandit/0-1`) carry an extra
+// segment and are deliberately excluded, they are reached via the sidebar, never listed here.
+interface WargameModel {
+	href: string;
+	title: string;
+	description?: string;
+}
+const wargames: WargameModel[] = isWargames
+	? entries
+		.filter((e) => e.id.split('/').length === 2)
+		.map((e): WargameModel => ({
+			href: `/${e.id.toLowerCase()}/`,
+			title: e.data.title,
+			description: e.data.description,
+		}))
+		.sort((a, b) => a.title.localeCompare(b.title))
+	: [];
+
+// WRITEUP cards (default mode): individual writeup pages, grouped by difficulty. Empty in
+// wargames mode so the per-level pages never render as a card wall.
+const cards: CardModel[] = isWargames
+	? []
+	: entries
+		.map((e): CardModel => {
+			const difficulty = difficultyOf(e);
+			return {
+				// Starlight lowercases doc URLs even though entry ids preserve folder casing
+				// (e.g. id `hackthebox/Easy/busqueda` -> URL /hackthebox/easy/busqueda/).
+				href: `/${e.id.toLowerCase()}/`,
+				title: e.data.title,
+				description: e.data.description,
+				difficulty,
+				os: e.data.os,
+				tags: e.data.tags,
+			};
+		})
+		.sort((a, b) => {
+			const d = DIFF_RANK[a.difficulty] - DIFF_RANK[b.difficulty];
+			return d !== 0 ? d : a.title.localeCompare(b.title);
+		});
+
+const total: number = isWargames ? wargames.length : cards.length;
+
+// Per-difficulty counts, in canonical order, for the breakdown + filter rail (writeups mode only;
+// cards is empty in wargames mode, so these stay zero and the breakdown / rail self-hide).
+const counts: Record<Difficulty, number> = { easy: 0, medium: 0, hard: 0, misc: 0 };
+for (const c of cards) counts[c.difficulty]++;
+
+const present: Difficulty[] = DIFF_ORDER.filter((d) => counts[d] > 0);
+// A single difficulty group makes the rail pointless; only show it with 2+ (never in wargames mode).
+const showFilter: boolean = !isWargames && present.length > 1;
+const isEmpty: boolean = total === 0;
+---
+
+{/* not-content: Starlight's opt-out for component UI inside docs. Its prose styles
+    (and our guarded custom.css overrides) skip this subtree, so the hero, filter
+    rail, and cards style deterministically without specificity arms races. */}
+<div class={`pi-index not-content pf-${platform}`}>
+	<!-- HERO -->
+	<header class="pi-hero">
+		<span class="pi-glow" aria-hidden="true"></span>
+		<div class="pi-hero-inner">
+			<div class="pi-hero-text">
+				<div class="pi-eyebrow reveal">// {meta.name.toUpperCase()}</div>
+				<h1 class="pi-name decode reveal" data-word={meta.name}>{meta.name}</h1>
+				{meta.tagline && <p class="pi-tagline reveal">{meta.tagline}</p>}
+
+				{!isEmpty && (
+					<div class="pi-stats reveal">
+						<div class="pi-stat">
+							<div class="pi-num" data-count={total}>0</div>
+							<div class="pi-lbl">{isWargames ? (total === 1 ? 'Wargame' : 'Wargames') : total === 1 ? 'Writeup' : 'Writeups'}</div>
+						</div>
+						{present.length > 0 && (
+							<div class="pi-breakdown">
+								{present.map((d, i) => (
+									<>
+										{i > 0 && <span class="pi-bd-sep" aria-hidden="true">·</span>}
+										<span class={`pi-bd-${d}`}>{counts[d]} {d}</span>
+									</>
+								))}
+							</div>
+						)}
+					</div>
+				)}
+			</div>
+
+			<div class="pi-logo-wrap reveal">
+				<img class="pi-logo" src={meta.icon} alt={`${meta.name} logo`} data-zoom-off loading="eager" decoding="async" />
+			</div>
+		</div>
+	</header>
+
+	{isEmpty ? (
+		<div class="pi-empty reveal">
+			<p class="pi-empty-title">Writeups landing soon</p>
+			<p class="pi-empty-text">
+				{meta.name} writeups are in the lab and on the way. Check back shortly, the recon is already underway.
+			</p>
+		</div>
+	) : (
+		<>
+			{showFilter && (
+				<div class="pi-filters reveal" role="group" aria-label="Filter writeups by difficulty">
+					<button type="button" class="pi-pill is-active" data-filter="all" data-filter-key="difficulty">All</button>
+					{present.map((d) => (
+						<button type="button" class="pi-pill" data-filter={d} data-filter-key="difficulty">{d}</button>
+					))}
+				</div>
+			)}
+
+			<div class="pi-grid">
+				{isWargames
+					? wargames.map((wg) => (
+						<a
+							href={wg.href}
+							class="pi-wg-card reveal"
+							data-tilt
+							aria-label={`Enter the ${wg.title} wargame`}
+						>
+							<span class="pi-wg-bar" aria-hidden="true"></span>
+							<span class="pi-wg-glare" aria-hidden="true"></span>
+							<div class="pi-wg-eyebrow">// WARGAME</div>
+							<h3 class="pi-wg-name">{wg.title}</h3>
+							{wg.description && <p class="pi-wg-desc">{wg.description}</p>}
+							<span class="pi-wg-go">Enter wargame <span class="pi-wg-arrow" aria-hidden="true">-&gt;</span></span>
+						</a>
+					))
+					: cards.map((c) => (
+						<WriteupCard
+							href={c.href}
+							title={c.title}
+							description={c.description}
+							platform={platform}
+							difficulty={c.difficulty}
+							os={c.os}
+							tags={c.tags}
+						/>
+					))}
+			</div>
+		</>
+	)}
+</div>
+
+<style>
+	.pi-index {
+		position: relative;
+		/* Platform color leads; universal cyan secondary is the duotone partner (theme-aware). */
+		--accent: var(--pf-accent, var(--sl-color-accent));
+		--accent-2: var(--pf-accent-2, var(--tp-cyan));
+	}
+
+	/* ── HERO ── */
+	.pi-hero {
+		position: relative;
+		padding: 0.5rem 0 2.25rem;
+		margin-bottom: 1.5rem;
+	}
+	.pi-glow {
+		position: absolute;
+		inset: -40% -10% auto -12%;
+		height: 360px;
+		z-index: 0;
+		pointer-events: none;
+		/* Duotone wash: the platform color leads on the left, a softer cyan pool on the right,
+		   so the atmosphere is never one flat hue. */
+		background:
+			radial-gradient(52% 100% at 20% 0%, color-mix(in oklab, var(--accent) 22%, transparent), transparent 70%),
+			radial-gradient(46% 90% at 80% 8%, color-mix(in oklab, var(--accent-2) 13%, transparent), transparent 72%);
+	}
+	html[data-theme='light'] .pi-glow {
+		background:
+			radial-gradient(52% 100% at 20% 0%, color-mix(in oklab, var(--accent) 32%, transparent), transparent 72%),
+			radial-gradient(46% 90% at 80% 8%, color-mix(in oklab, var(--accent-2) 18%, transparent), transparent 74%);
+	}
+	.pi-hero-inner {
+		position: relative;
+		z-index: 1;
+		display: flex;
+		align-items: center;
+		gap: 2rem;
+		flex-wrap: wrap;
+	}
+	.pi-hero-text {
+		flex: 1;
+		min-width: 260px;
+	}
+
+	.pi-eyebrow {
+		font-family: var(--sl-font-mono);
+		font-size: 0.8rem;
+		letter-spacing: 0.3em;
+		text-transform: uppercase;
+		color: var(--accent);
+		margin-bottom: 1rem;
+		display: flex;
+		align-items: center;
+		gap: 0.8rem;
+	}
+	.pi-eyebrow::before {
+		content: '';
+		width: 38px;
+		height: 1px;
+		background: var(--accent);
+		display: inline-block;
+	}
+
+	/* h1 inside markdown content; override the default heading color with the accent. */
+	.pi-name {
+		font-family: var(--tp-display);
+		font-weight: 800;
+		font-size: clamp(2.2rem, 5.5vw, 3.6rem);
+		line-height: 1;
+		letter-spacing: -0.02em;
+		color: var(--accent);
+		margin: 0 0 0.9rem;
+	}
+	.pi-tagline {
+		color: color-mix(in oklab, var(--sl-color-text) 72%, transparent);
+		font-size: clamp(0.95rem, 1.4vw, 1.1rem);
+		line-height: 1.6;
+		max-width: 46ch;
+		margin: 0;
+	}
+
+	/* ── STAT STRIP ── */
+	.pi-stats {
+		display: flex;
+		align-items: baseline;
+		gap: 1.5rem;
+		margin-top: 1.7rem;
+		flex-wrap: wrap;
+	}
+	.pi-stat {
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+	}
+	.pi-num {
+		font-family: var(--sl-font-mono);
+		font-weight: 700;
+		font-size: clamp(2rem, 4vw, 2.8rem);
+		line-height: 1;
+		color: var(--accent);
+		font-variant-numeric: tabular-nums;
+	}
+	/* Secondary stat label uses the cyan secondary (the big number stays the platform color). */
+	.pi-lbl {
+		font-family: var(--sl-font-mono);
+		font-size: 0.68rem;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		color: var(--accent-2);
+	}
+	.pi-breakdown {
+		align-self: center;
+		font-family: var(--sl-font-mono);
+		font-size: 0.8rem;
+		letter-spacing: 0.02em;
+		display: inline-flex;
+		align-items: baseline;
+		gap: 0.1rem;
+		flex-wrap: wrap;
+	}
+	/* Each segment carries its DIFFICULTY color, so the breakdown adds informative variety
+	   rather than more of the lead hue. Theme-aware, AA on the page background. */
+	.pi-bd-sep {
+		color: color-mix(in oklab, var(--sl-color-text) 38%, transparent);
+		margin: 0 0.4rem;
+	}
+	.pi-bd-easy { color: #4ade80; }
+	.pi-bd-medium { color: #fbbf24; }
+	.pi-bd-hard { color: #f87171; }
+	.pi-bd-misc { color: #94a3b8; }
+	html[data-theme='light'] .pi-bd-easy { color: #15723a; }
+	html[data-theme='light'] .pi-bd-medium { color: #8a5600; }
+	html[data-theme='light'] .pi-bd-hard { color: #b01818; }
+	html[data-theme='light'] .pi-bd-misc { color: #475569; }
+
+	/* ── LOGO ── */
+	.pi-logo-wrap {
+		position: relative;
+		flex-shrink: 0;
+	}
+	.pi-logo-wrap::before {
+		content: '';
+		position: absolute;
+		inset: -22%;
+		border-radius: 50%;
+		z-index: 0;
+		background: radial-gradient(circle, color-mix(in oklab, var(--accent) 28%, transparent), transparent 64%);
+	}
+	.pi-logo {
+		position: relative;
+		z-index: 1;
+		width: 108px;
+		height: 108px;
+		object-fit: contain;
+		filter: drop-shadow(0 0 18px color-mix(in oklab, var(--accent) 45%, transparent));
+	}
+
+	/* ── FILTER RAIL ── */
+	.pi-filters {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		margin: 0 0 1.6rem;
+	}
+	.pi-pill {
+		font-family: var(--sl-font-mono);
+		font-size: 0.74rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		padding: 0.38rem 0.9rem;
+		border-radius: 999px;
+		cursor: pointer;
+		line-height: 1.4;
+		/* Mirrors the difficulty badge palette via a single --pill hue. */
+		--pill: var(--sl-color-gray-2);
+		color: var(--pill);
+		border: 1px solid color-mix(in oklab, var(--pill) 45%, transparent);
+		background: color-mix(in oklab, var(--pill) 12%, transparent);
+		transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+	}
+	.pi-pill[data-filter='all'] { --pill: var(--accent); }
+	.pi-pill[data-filter='easy'] { --pill: #16a34a; }
+	.pi-pill[data-filter='medium'] { --pill: #d97706; }
+	.pi-pill[data-filter='hard'] { --pill: #dc2626; }
+	.pi-pill[data-filter='misc'] { --pill: #64748b; }
+	html[data-theme='dark'] .pi-pill[data-filter='easy'] { --pill: #4ade80; }
+	html[data-theme='dark'] .pi-pill[data-filter='medium'] { --pill: #fbbf24; }
+	html[data-theme='dark'] .pi-pill[data-filter='hard'] { --pill: #f87171; }
+	html[data-theme='dark'] .pi-pill[data-filter='misc'] { --pill: #94a3b8; }
+	.pi-pill:hover {
+		transform: translateY(-1px);
+	}
+	/* Active pill keeps its own difficulty tint, but the selected INDICATOR is the cyan
+	   secondary (a ring + soft glow) so the current filter stands out regardless of its hue. */
+	.pi-pill.is-active {
+		font-weight: 700;
+		background: color-mix(in oklab, var(--pill) 22%, transparent);
+		box-shadow: 0 0 0 2px var(--accent-2), 0 6px 18px -8px var(--accent-2);
+	}
+
+	/* ── GRID ── */
+	.pi-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+		gap: 1.1rem;
+	}
+
+	/* ── EMPTY STATE ── */
+	.pi-empty {
+		position: relative;
+		overflow: hidden;
+		border-radius: 16px;
+		padding: 2.6rem 2rem;
+		text-align: center;
+		border: 1px solid color-mix(in oklab, var(--accent) 35%, transparent);
+		border-left: 3px solid var(--accent);
+		background: color-mix(in oklab, var(--accent) 8%, transparent);
+	}
+	html[data-theme='light'] .pi-empty {
+		background: color-mix(in oklab, var(--accent) 12%, #f4f1e8);
+		box-shadow: 0 8px 24px -16px rgba(60, 50, 30, 0.4);
+	}
+	.pi-empty-title {
+		font-family: var(--tp-display);
+		font-weight: 700;
+		font-size: 1.45rem;
+		color: var(--accent);
+		margin: 0 0 0.5rem;
+	}
+	.pi-empty-text {
+		color: color-mix(in oklab, var(--sl-color-text) 65%, transparent);
+		font-size: 0.92rem;
+		line-height: 1.6;
+		max-width: 46ch;
+		margin: 0 auto;
+	}
+
+	@media (max-width: 640px) {
+		.pi-hero-inner {
+			flex-direction: column-reverse;
+			align-items: flex-start;
+		}
+		.pi-stats {
+			gap: 1.1rem;
+		}
+	}
+
+	/* ── WARGAME CARD (mode="wargames") ──────────────────────────────────────────────
+	   A bounded card linking to a wargame hub. Mirrors the WriteupCard look (accent bar,
+	   cursor glare, 3D tilt) so the landing stays cohesive; tilt, glare, and reveal are driven
+	   by the shared script below via data-tilt + .reveal, the same hooks WriteupCard uses. */
+	.pi-wg-card {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		background: #0d1113;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		border-radius: 16px;
+		padding: 1.6rem 1.5rem;
+		text-decoration: none;
+		color: var(--sl-color-text);
+		transform-style: preserve-3d;
+		transition: transform 0.12s ease, border-color 0.3s ease;
+		overflow: hidden;
+		will-change: transform;
+	}
+	html[data-theme='light'] .pi-wg-card {
+		background: #f7f5ee;
+		border-color: rgba(0, 0, 0, 0.12);
+		box-shadow: 0 8px 24px -16px rgba(60, 50, 30, 0.45);
+	}
+	.pi-wg-card:hover {
+		border-color: var(--accent);
+	}
+	.pi-wg-bar {
+		position: absolute;
+		left: 0;
+		top: 0;
+		bottom: 0;
+		width: 3px;
+		background: var(--accent);
+	}
+	.pi-wg-glare {
+		position: absolute;
+		inset: 0;
+		opacity: 0;
+		transition: opacity 0.3s ease;
+		pointer-events: none;
+		background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), color-mix(in oklab, var(--accent) 22%, transparent), transparent 45%);
+	}
+	.pi-wg-card:hover .pi-wg-glare {
+		opacity: 1;
+	}
+	.pi-wg-eyebrow {
+		font-family: var(--sl-font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		color: var(--accent-2);
+	}
+	.pi-wg-name {
+		font-family: var(--tp-display);
+		font-weight: 700;
+		font-size: 1.4rem;
+		line-height: 1.15;
+		color: var(--sl-color-text);
+		margin: 0.6rem 0 0;
+		transform: translateZ(40px);
+	}
+	.pi-wg-desc {
+		color: color-mix(in oklab, var(--sl-color-text) 62%, transparent);
+		font-size: 0.86rem;
+		line-height: 1.55;
+		margin: 0.85rem 0 0;
+		transform: translateZ(20px);
+	}
+	.pi-wg-go {
+		font-family: var(--sl-font-mono);
+		font-size: 0.78rem;
+		letter-spacing: 0.04em;
+		color: var(--accent-2);
+		margin-top: 1.1rem;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		transform: translateZ(30px);
+	}
+	.pi-wg-arrow {
+		transition: transform 0.2s ease;
+	}
+	.pi-wg-card:hover .pi-wg-arrow {
+		transform: translateX(4px);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.pi-wg-card {
+			transition: none;
+		}
+		.pi-wg-card:hover {
+			transform: none !important;
+		}
+		.pi-wg-arrow,
+		.pi-wg-card:hover .pi-wg-arrow {
+			transition: none;
+		}
+	}
+</style>
+
+<script>
+	/* Effects ported from src/pages/index.astro so the page feels identical.
+	   Scoped to .pi-index so nothing leaks to the rest of the Starlight doc. */
+	const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+	/* One-time text decode (the page's single decode moment). */
+	function decode(el: HTMLElement) {
+		const target = el.dataset.word ?? '';
+		const chars = '!<>-_\\/[]{}=+*^?#01';
+		let frame = 0;
+		const dur = 38;
+		const id = setInterval(() => {
+			el.textContent = target
+				.split('')
+				.map((c, i) => ((frame / dur) * target.length > i ? c : chars[Math.floor(Math.random() * chars.length)]))
+				.join('');
+			if (frame++ > dur) {
+				clearInterval(id);
+				el.textContent = target;
+			}
+		}, 45);
+	}
+
+	/* Count up (cubic ease-out, 1400ms): verbatim from the homepage. */
+	function countUp(el: HTMLElement) {
+		const text = el.dataset.text;
+		if (text) {
+			el.textContent = text;
+			return;
+		}
+		const end = +(el.dataset.count ?? '0');
+		const suf = el.dataset.suffix ?? '';
+		const dur = 1400;
+		let s: number | null = null;
+		const step = (t: number) => {
+			if (s === null) s = t;
+			const p = Math.min((t - s) / dur, 1);
+			const e = 1 - Math.pow(1 - p, 3);
+			el.textContent = Math.floor(e * end) + (p === 1 ? suf : '');
+			if (p < 1) requestAnimationFrame(step);
+		};
+		requestAnimationFrame(step);
+	}
+
+	/* Scroll-reveal stagger via IntersectionObserver: same threshold + delay as the homepage.
+	   Hero reveals are handled on load below, so they are observed but skipped here. */
+	const io = new IntersectionObserver(
+		(ents) => {
+			ents.forEach((e) => {
+				if (e.isIntersecting) {
+					e.target.classList.add('in');
+					(e.target.querySelectorAll('[data-count],[data-text]') as NodeListOf<HTMLElement>).forEach(countUp);
+					io.unobserve(e.target);
+				}
+			});
+		},
+		{ threshold: 0.2 }
+	);
+	(document.querySelectorAll('.pi-index .reveal') as NodeListOf<HTMLElement>).forEach((el, i) => {
+		el.style.transitionDelay = (i % 4) * 90 + 'ms';
+		if (!el.closest('.pi-hero')) io.observe(el);
+	});
+
+	window.addEventListener('load', () => {
+		document.querySelectorAll('.pi-hero .reveal').forEach((el, i) =>
+			setTimeout(() => {
+				el.classList.add('in');
+				(el.querySelectorAll('[data-count],[data-text]') as NodeListOf<HTMLElement>).forEach(countUp);
+			}, 120 * i)
+		);
+		const d = document.querySelector('.pi-name.decode') as HTMLElement | null;
+		if (d && !reduce) setTimeout(() => decode(d), 600);
+		else if (d) d.textContent = d.dataset.word ?? '';
+	});
+
+	/* 3D tilt + cursor glare: verbatim from the homepage (perspective 800, +/-10deg). */
+	if (!reduce)
+		(document.querySelectorAll('.pi-index [data-tilt]') as NodeListOf<HTMLElement>).forEach((card) => {
+			card.addEventListener('mousemove', (e) => {
+				const r = card.getBoundingClientRect();
+				const px = (e.clientX - r.left) / r.width,
+					py = (e.clientY - r.top) / r.height;
+				card.style.transform = `perspective(800px) rotateY(${(px - 0.5) * 10}deg) rotateX(${(0.5 - py) * 10}deg) translateY(-4px)`;
+				card.style.setProperty('--mx', px * 100 + '%');
+				card.style.setProperty('--my', py * 100 + '%');
+			});
+			card.addEventListener('mouseleave', () => {
+				card.style.transform = '';
+			});
+		});
+
+	/* Filter rail: client-side show/hide. Generic: a pill carries data-filter-key
+	   (the card data-* dimension) + data-filter (the value), so the same code can later
+	   filter by platform or topic. Cards expose data-difficulty / data-platform / data-tags. */
+	const pills = Array.from(document.querySelectorAll('.pi-pill')) as HTMLElement[];
+	const cards = Array.from(document.querySelectorAll('.pi-index .wc-card')) as HTMLElement[];
+	function applyFilter(key: string, value: string) {
+		cards.forEach((c) => {
+			const raw = c.dataset[key] ?? '';
+			const show = value === 'all' || raw.split(',').map((s) => s.trim()).includes(value);
+			c.classList.toggle('wc-hidden', !show);
+			// Guarantee a filtered-in card is visible even if it never scrolled into view.
+			if (show) c.classList.add('in');
+		});
+	}
+	pills.forEach((p) =>
+		p.addEventListener('click', () => {
+			pills.forEach((x) => x.classList.toggle('is-active', x === p));
+			applyFilter(p.dataset.filterKey ?? 'difficulty', p.dataset.filter ?? 'all');
+		})
+	);
+</script>

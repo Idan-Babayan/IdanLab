@@ -1,0 +1,37 @@
+---
+title: Bandit 26 → 27
+description: "OverTheWire Bandit 26 to 27: run an arbitrary command through a setuid helper to read the next password."
+sidebar:
+  label: "26 → 27"
+  order: 26
+---
+
+import Toggle from '@components/Toggle.astro';
+
+<div class="machine-meta">
+  <span class="meta-badge platform-overthewire">OverTheWire</span>
+  <span class="meta-badge os-linux">Linux</span>
+</div>
+
+> Goal: read bandit27's password using the setuid helper in the home directory.
+
+## Approach
+
+```bash frame="code" title="bandit26@bandit"
+bandit26@bandit:~$ ls
+bandit27-do  text.txt
+bandit26@bandit:~$ ./bandit27-do cat /etc/bandit_pass/bandit27
+The password you are looking for is: <password>
+```
+
+## Why it works
+
+Same setuid pattern as level 19: bandit27-do runs as its owner bandit27 and forwards whatever command you hand it, so a single cat reads bandit27's password file. (Reaching a shell as bandit26 in the first place is the pager escape from the previous level.)
+
+<Toggle label="Reveal password" class="spoiler-toggle">
+
+```text frame="code"
+upsNCc7vzaRDx6oZC6GiR6ERwe1MowGB
+```
+
+</Toggle>

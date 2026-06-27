@@ -1,0 +1,75 @@
+---
+title: Bandit 15 → 16
+description: "OverTheWire Bandit 15 to 16: submit the password to a TLS-wrapped service with openssl s_client."
+sidebar:
+  label: "15 → 16"
+  order: 15
+---
+
+import Toggle from '@components/Toggle.astro';
+
+<div class="machine-meta">
+  <span class="meta-badge platform-overthewire">OverTheWire</span>
+  <span class="meta-badge os-linux">Linux</span>
+</div>
+
+> Goal: send the current password to the service on localhost port 30001, which only speaks TLS.
+
+## Approach
+
+Same exchange as the previous level, but the port now expects TLS, so a plain nc just hangs. Open the channel with openssl, send the password, and read the reply. (Full handshake noise is in the log below.)
+
+```bash frame="code" title="bandit15@bandit"
+bandit15@bandit:~$ openssl s_client -connect localhost:30001 -quiet
+depth=0 CN = SnakeOil
+verify error:num=18:self-signed certificate
+<password>
+Correct!
+The password you are looking for is: <password>
+```
+
+## Why it works
+
+The listener wraps the same line protocol in TLS, so a plaintext client never completes a connection. openssl s_client performs the handshake and then hands you an interactive channel to type into. The self-signed certificate warning is expected here and does not affect sending the password.
+
+<Toggle label="Full session log">
+
+```bash frame="code" title="bandit15@bandit"
+bandit15@bandit:~$ openssl s_client -connect localhost:30001
+CONNECTED(00000003)
+Can't use SSL_get_servername
+depth=0 CN = SnakeOil
+verify error:num=18:self-signed certificate
+verify return:1
+depth=0 CN = SnakeOil
+verify return:1
+---
+Certificate chain
+ 0 s:CN = SnakeOil
+   i:CN = SnakeOil
+---
+Server certificate
+-----BEGIN CERTIFICATE-----
+MIIFBzCCAu+gAwIBAgIUBLz7DBxA0IfojaL/WaJzE6Sbz7c...
+-----END CERTIFICATE-----
+subject=CN = SnakeOil
+issuer=CN = SnakeOil
+---
+SSL handshake has read 2103 bytes and written 373 bytes
+New, TLSv1.3, Cipher is TLS_AES_256_GCM_SHA384
+Verify return code: 18 (self-signed certificate)
+---
+<password>
+Correct!
+The password you are looking for is: <password>
+```
+
+</Toggle>
+
+<Toggle label="Reveal password" class="spoiler-toggle">
+
+```text frame="code"
+kSkvUpMQ7lBYyCM4GBPvCvT1BfWRy0Dx
+```
+
+</Toggle>

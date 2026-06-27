@@ -1,0 +1,74 @@
+---
+/**
+ * NotFound: the first breadcrumb of the easter-egg trail.
+ *
+ * Rendered below the Starlight hero in src/content/docs/404.mdx (splash template),
+ * so it inherits the site theme, fonts, and light/dark toggle for free. All it adds
+ * is a subtle, human-readable nudge toward /robots.txt. The little decode flair on
+ * one word honors prefers-reduced-motion (it renders the final text instantly).
+ * `not-content` opts the line out of Starlight prose styling so it stays deterministic.
+ */
+---
+
+<p class="nf-crumb not-content">
+	<span class="nf-hash">#</span> even my <a class="nf-link" href="/robots.txt">robots.txt</a> keeps
+	<span class="nf-decode" data-word="secrets">secrets</span>. the curious ones always check.
+</p>
+
+<style>
+	.nf-crumb {
+		text-align: center;
+		font-family: var(--sl-font-mono);
+		font-size: 0.85rem;
+		line-height: 1.6;
+		color: color-mix(in oklab, var(--sl-color-text) 58%, transparent);
+		margin: 2.5rem auto 0;
+		max-width: 42rem;
+	}
+	.nf-hash {
+		color: var(--sl-color-accent);
+	}
+	.nf-decode {
+		color: var(--sl-color-accent);
+	}
+	.nf-link {
+		color: var(--tp-cyan);
+		text-decoration: none;
+		border-bottom: 1px solid color-mix(in oklab, var(--tp-cyan) 40%, transparent);
+		transition: color 0.15s ease, border-color 0.15s ease;
+	}
+	.nf-link:hover {
+		color: var(--sl-color-accent);
+		border-bottom-color: var(--sl-color-accent);
+	}
+	html[data-theme='light'] .nf-link {
+		color: var(--tp-cyan-ink);
+		border-bottom-color: color-mix(in oklab, var(--tp-cyan-ink) 40%, transparent);
+	}
+</style>
+
+<script>
+	/* One-time decode on the word "secrets" (ported from index.astro), reduced-motion safe. */
+	const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+	const el = document.querySelector('.nf-decode') as HTMLElement | null;
+	if (el) {
+		const word: string = el.dataset.word ?? '';
+		if (reduce) {
+			el.textContent = word;
+		} else {
+			const chars = '!<>-_\\/[]{}=+*^?#01';
+			let frame = 0;
+			const dur = 30;
+			const id = window.setInterval(() => {
+				el.textContent = word
+					.split('')
+					.map((c, i) => ((frame / dur) * word.length > i ? c : chars[Math.floor(Math.random() * chars.length)]))
+					.join('');
+				if (frame++ > dur) {
+					window.clearInterval(id);
+					el.textContent = word;
+				}
+			}, 45);
+		}
+	}
+</script>

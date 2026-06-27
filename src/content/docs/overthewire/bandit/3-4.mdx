@@ -1,0 +1,41 @@
+---
+title: Bandit 3 → 4
+description: "OverTheWire Bandit 3 to 4: find and read a hidden dotfile inside a directory with ls -a."
+sidebar:
+  label: "3 → 4"
+  order: 3
+---
+
+import Toggle from '@components/Toggle.astro';
+
+<div class="machine-meta">
+  <span class="meta-badge platform-overthewire">OverTheWire</span>
+  <span class="meta-badge os-linux">Linux</span>
+</div>
+
+> Goal: read the password from a hidden file inside the inhere directory.
+
+## Approach
+
+```bash frame="code" title="bandit3@bandit"
+bandit3@bandit:~$ cd inhere
+bandit3@bandit:~/inhere$ ls -la
+total 12
+drwxr-xr-x 2 root    root    4096 Jul 28 19:03 .
+drwxr-xr-x 3 root    root    4096 Jul 28 19:03 ..
+-rw-r----- 1 bandit4 bandit3   33 Jul 28 19:03 ...Hiding-From-You
+bandit3@bandit:~/inhere$ cat ./...Hiding-From-You
+The password you are looking for is: <password>
+```
+
+## Why it works
+
+ls omits any name beginning with a dot by default, so -a is needed to list it. The leading dots are only a naming convention, not a filesystem attribute, so once you name the file it reads like any other.
+
+<Toggle label="Reveal password" class="spoiler-toggle">
+
+```text frame="code"
+2WmrDFRmJIq3IPxneAaMGhap0pFhF3NJ
+```
+
+</Toggle>

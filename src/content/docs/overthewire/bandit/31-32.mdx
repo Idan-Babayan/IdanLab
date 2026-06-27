@@ -1,0 +1,47 @@
+---
+title: Bandit 31 → 32
+description: "OverTheWire Bandit 31 to 32: trigger a server-side pre-receive hook by pushing a file, and read the password it returns."
+sidebar:
+  label: "31 → 32"
+  order: 31
+---
+
+import Toggle from '@components/Toggle.astro';
+
+<div class="machine-meta">
+  <span class="meta-badge platform-overthewire">OverTheWire</span>
+  <span class="meta-badge os-linux">Linux</span>
+</div>
+
+> Goal: push the requested file to the repo so the server hook releases the next password.
+
+## Approach
+
+```bash frame="code" title="bandit31@bandit"
+bandit31@bandit:~$ cd "$(mktemp -d)" && git clone ssh://bandit31-git@localhost:2220/home/bandit31-git/repo
+bandit31@bandit:...$ cd repo
+bandit31@bandit:...$ cat README.md
+    File name: key.txt
+    Content: 'May I come in?'
+    Branch: master
+bandit31@bandit:...$ echo 'May I come in?' > key.txt
+bandit31@bandit:...$ git add -f key.txt
+bandit31@bandit:...$ git commit -m 'key'
+bandit31@bandit:...$ git push -u origin master
+remote: ### Attempting to validate files... ####
+remote: Well done! Here is the password for the next level:
+remote: <password>
+ ! [remote rejected] master -> master (pre-receive hook declined)
+```
+
+## Why it works
+
+A pre-receive hook runs on the server when you push, before anything is accepted. This one inspects the pushed file, and when the name and content match what was asked it prints the next password, then rejects the push so nothing actually lands. Server-side hooks can gate or react to pushes, which is exactly what is on display here.
+
+<Toggle label="Reveal password" class="spoiler-toggle">
+
+```text frame="code"
+3O9RfhqyAlVBEZpVb6LYStshZoqoSx5K
+```
+
+</Toggle>

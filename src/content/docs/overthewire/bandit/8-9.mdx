@@ -1,0 +1,35 @@
+---
+title: Bandit 8 → 9
+description: "OverTheWire Bandit 8 to 9: find the only line that occurs once in a file with sort and uniq."
+sidebar:
+  label: "8 → 9"
+  order: 8
+---
+
+import Toggle from '@components/Toggle.astro';
+
+<div class="machine-meta">
+  <span class="meta-badge platform-overthewire">OverTheWire</span>
+  <span class="meta-badge os-linux">Linux</span>
+</div>
+
+> Goal: find the single line of text that appears exactly once in data.txt.
+
+## Approach
+
+```bash frame="code" title="bandit8@bandit"
+bandit8@bandit:~$ sort data.txt | uniq -u
+<password>
+```
+
+## Why it works
+
+uniq only collapses adjacent duplicate lines, so the input has to be sorted first to bring every repeat together. -u then prints only the lines that never repeat, isolating the one unique entry.
+
+<Toggle label="Reveal password" class="spoiler-toggle">
+
+```text frame="code"
+4CKMh1JI91bUIZZPXDqGanal4xvAg0JM
+```
+
+</Toggle>

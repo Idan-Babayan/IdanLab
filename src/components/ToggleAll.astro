@@ -1,0 +1,194 @@
+---
+// src/components/ToggleAll.astro
+//
+// A dependency-free "Expand all / Collapse all" control for a writeup's content toggles. It is
+// injected at the BOTTOM of the right "On this page" sidebar by the PageSidebar override, as a
+// standalone utility set apart from the TOC list by whitespace (clearly interactive, not a TOC entry).
+// It targets only the <details class="toggle"> rendered by
+// Toggle.astro, scoped to .sl-markdown-content and excluding flag toggles, so it never touches the
+// sidebar, the nav, code-block details, or the spoiler-gated flags.
+//
+// The wrapper starts hidden and the script reveals it only when content toggles exist, so there is no
+// dead button without JS and no empty control on a page that has no toggles. Expand/collapse anchors
+// on the reader's current heading and corrects scroll so the page does not teleport.
+---
+
+<div class="toggle-all-wrap" hidden>
+  <button type="button" class="toggle-all" data-toggle-all aria-pressed="false" aria-label="Expand all toggles">
+    <span class="ta-label">Expand all</span>
+    <svg
+      class="ta-chev"
+      viewBox="0 0 24 24"
+      width="14"
+      height="14"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2.2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M6 9l6 6 6-6" />
+    </svg>
+  </button>
+</div>
+
+<script>
+  // Reflect the bulk state on a button: expanded=true means every toggle is open.
+  function setExpanded(btn: HTMLButtonElement, expanded: boolean): void {
+    const label = btn.querySelector('.ta-label') as HTMLElement | null;
+    if (label) label.textContent = expanded ? 'Collapse all' : 'Expand all';
+    btn.setAttribute('aria-pressed', expanded ? 'true' : 'false');
+    btn.setAttribute('aria-label', expanded ? 'Collapse all toggles' : 'Expand all toggles');
+    btn.classList.toggle('is-collapse', expanded); // chevron points up when everything is open
+  }
+
+  // Only the writeup's own methodology toggles: <details class="toggle"> inside the main content,
+  // excluding the spoiler-gated flag toggles (.toggle-flag) so expand-all never reveals a flag.
+  function contentToggles(): HTMLDetailsElement[] {
+    const scope = document.querySelector('.sl-markdown-content');
+    if (!scope) return [];
+    return Array.from(scope.querySelectorAll('details.toggle:not(.toggle-flag)')) as HTMLDetailsElement[];
+  }
+
+  // A stable scroll anchor for the bulk operation: the content heading (h2/h3) at or just above the
+  // top of the viewport (the section the reader is under). Headings live outside the toggles, so they
+  // survive both expand and collapse. Falls back to the topmost visible content element, else null.
+  function anchorElement(): HTMLElement | null {
+    const scope = document.querySelector('.sl-markdown-content');
+    if (!scope) return null;
+    const ANCHOR_LINE = 96; // a little below the sticky header, the reader's notional reading line
+    const headings = Array.from(scope.querySelectorAll('h2, h3')) as HTMLElement[];
+    let current: HTMLElement | null = null;
+    for (const h of headings) {
+      if (h.getBoundingClientRect().top <= ANCHOR_LINE) current = h; // last heading at/above the line
+      else break; // headings are in document order, so the rest are further down
+    }
+    if (current) return current;
+    // Reader is above the first heading: anchor on the topmost element still in view.
+    const candidates: HTMLElement[] = headings.length
+      ? headings
+      : (Array.from(scope.children) as HTMLElement[]);
+    for (const el of candidates) {
+      const top = el.getBoundingClientRect().top;
+      if (top >= 0 && top < window.innerHeight) return el;
+    }
+    return null;
+  }
+
+  function initToggleAll(): void {
+    const buttons = Array.from(document.querySelectorAll('[data-toggle-all]')) as HTMLButtonElement[];
+    buttons.forEach((btn) => {
+      if (btn.dataset.taReady === 'true') return; // avoid double-binding on the same element
+      btn.dataset.taReady = 'true';
+
+      const wrap = btn.closest('.toggle-all-wrap') as HTMLElement | null;
+      const toggles = contentToggles();
+      if (toggles.length === 0) {
+        if (wrap) wrap.hidden = true; // nothing to control, stay hidden
+        return;
+      }
+      if (wrap) wrap.hidden = false;
+      setExpanded(btn, toggles.every((d) => d.open));
+
+      btn.addEventListener('click', () => {
+        const current = contentToggles();
+        const anyClosed = current.some((d) => !d.open);
+
+        // Scroll-anchor around the bulk change so the reader's place is preserved (no teleport).
+        const anchor = anchorElement();
+        const oldTop = anchor ? anchor.getBoundingClientRect().top : 0;
+
+        // Suppress the browser's NATIVE scroll anchoring for just this operation. It is active
+        // (overflow-anchor: auto) and picks its own anchor, which fights the manual correction below
+        // and leaves a few-pixel offset that differs between the expanded and collapsed layouts (a
+        // small reversible shift). Set it on document.documentElement (the viewport scroller).
+        const scroller = document.documentElement;
+        scroller.style.setProperty('overflow-anchor', 'none');
+
+        // Mixed or all-closed expands first; all-open collapses. anyClosed is the next open state.
+        current.forEach((d) => {
+          d.open = anyClosed;
+        });
+        setExpanded(btn, anyClosed);
+
+        // Reading getBoundingClientRect forces the reflow, so newTop is the post-mutation position.
+        // Correct by the difference synchronously (same task, no rAF), keeping the anchor heading
+        // visually fixed. Two-arg scrollBy is instant here (writeup pages have no smooth scroll-behavior).
+        if (anchor) {
+          const delta = anchor.getBoundingClientRect().top - oldTop;
+          if (delta !== 0) window.scrollBy(0, delta);
+        }
+
+        // Restore native anchoring on the NEXT frame, not synchronously: native anchoring runs during
+        // this operation's rendering step (after this task), so the override must still be in place
+        // then. Restoring next frame scopes the suppression to the operation, so normal reading (for
+        // example late-loading content above the viewport) still benefits from native anchoring.
+        requestAnimationFrame(() => {
+          scroller.style.removeProperty('overflow-anchor');
+        });
+      });
+    });
+  }
+
+  initToggleAll();
+  // Keep working if View Transitions are ever added (module scripts do not re-run on navigation).
+  document.addEventListener('astro:page-load', initToggleAll);
+</script>
+
+<style>
+  /* Standalone secondary utility at the BOTTOM of the right "On this page" column. Separation comes
+     from a gap above plus a subtle theme-matched hairline divider (Starlight's --sl-color-hairline),
+     then padding down to the button, so it reads as a utility set apart from the TOC list, not another
+     TOC entry. Normal document flow, relative units only (no fixed/absolute). The divider spans the
+     column; the button (styled below, unchanged) is inset to align with the TOC content. Both themes. */
+  .toggle-all-wrap {
+    display: flex;
+    justify-content: flex-start;
+    margin: 2.5rem 0 0;
+    padding: 1rem var(--sl-sidebar-pad-x, 1rem) 0.75rem;
+    border-top: 1px solid var(--sl-color-hairline);
+  }
+  .toggle-all-wrap[hidden] {
+    display: none;
+  }
+  .toggle-all {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.32rem 0.7rem;
+    font-family: var(--sl-font-mono, ui-monospace, monospace);
+    font-size: 0.78rem;
+    line-height: 1;
+    color: var(--sl-color-gray-2);
+    background: transparent;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 7px;
+    cursor: pointer;
+    transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+  }
+  .toggle-all:hover,
+  .toggle-all:focus-visible {
+    color: var(--pf-accent-2);
+    border-color: color-mix(in oklab, var(--pf-accent-2) 55%, transparent);
+    background: color-mix(in oklab, var(--pf-accent-2) 8%, transparent);
+  }
+  .toggle-all:focus-visible {
+    outline: 2px solid color-mix(in oklab, var(--pf-accent-2) 60%, transparent);
+    outline-offset: 2px;
+  }
+  .ta-chev {
+    flex: none;
+    transition: transform 0.18s ease;
+  }
+  .toggle-all.is-collapse .ta-chev {
+    transform: rotate(180deg);
+  }
+  /* Reduced motion: swap the chevron instantly, no rotation animation. */
+  @media (prefers-reduced-motion: reduce) {
+    .toggle-all,
+    .ta-chev {
+      transition: none;
+    }
+  }
+</style>
