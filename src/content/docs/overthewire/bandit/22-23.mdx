@@ -32,7 +32,7 @@ The password you are looking for is: <password>
 
 ## Why it works
 
-The job runs as bandit23 and stores its password under /tmp in a file named by the md5 of a fixed string. md5 is deterministic, so the same input always yields the same name; recomputing it locally tells you exactly where to look. A predictable filename is not a secret one.
+The job runs as `bandit23` and stores its password under `/tmp` in a file named by the MD5 hash of a fixed string. MD5 is deterministic, so the same input always yields the same name. Recomputing it locally tells you exactly where to look. A predictable filename is not a secret one.
 
 <Toggle label="Reveal password" class="spoiler-toggle">
 

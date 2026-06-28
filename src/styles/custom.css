@@ -697,6 +697,12 @@ body:has(.pi-index) .content-panel + .content-panel {
   /* Flag loot gold: one signal for the User Flag / Root Flag heading, reveal toggle, and TOC entry.
      Theme-aware; AA in both themes (12.4:1 on ink, 4.85:1 on paper). */
   --flag-gold: #ffc23d;
+  /* FlagCapture tiers (see the FLAG CAPTURE block). --flag-gold-root is the richer "bigger prize" gold
+     for root; --flag-gold-val(-root) is the AA-grade gold used for the actual flag VALUE text. On dark
+     the bright loot gold already clears AA, so value == identity. All clear 4.5:1 on the captured row. */
+  --flag-gold-root: #ffcf63;
+  --flag-gold-val: #ffc23d;
+  --flag-gold-val-root: #ffcf63;
   --sl-color-bg: #07090a;
   --sl-color-bg-nav: color-mix(in oklab, #07090a 78%, transparent);
   --sl-color-bg-sidebar: #0a0e0f;
@@ -711,6 +717,12 @@ body:has(.pi-index) .content-panel + .content-panel {
   --sl-color-accent-high: #2f4d09;
   --sl-color-text-accent: #4d7c0f;
   --flag-gold: #C6A243;
+  /* FlagCapture tiers, light. The bright loot gold (#C6A243) reads as decorative gold but is NOT AA as
+     text on paper, so the flag VALUE uses a deeper antique gold that clears 4.5:1 on the captured row
+     (user 5.1:1, root 6.1:1). Root identity + value are a notch deeper so root reads as the richer prize. */
+  --flag-gold-root: #B8862B;
+  --flag-gold-val: #7a5a12;
+  --flag-gold-val-root: #6b4e0e;
   --sl-color-bg: #ece9e0;
   --sl-color-bg-nav: color-mix(in oklab, #ece9e0 80%, transparent);
   --sl-color-bg-sidebar: #f1eee5;
@@ -1356,3 +1368,301 @@ html[data-theme="light"] .sl-markdown-content details.spoiler-toggle > summary {
   box-shadow: 0 1px 4px rgba(60, 50, 30, 0.07);
 }
 /* === end LIGHT SURFACE DEPTH (V3) === */
+
+
+/* === FLAG CAPTURE (Decrypt to Capture) ======================================
+   The gold flag-loot control (FlagCapture.astro) under the gold "## User Flag" /
+   "## Root Flag" heading. The heading already owns the flag glyph + gold name, so
+   this control carries NO identity icon: a LOCK marks LOCKED, a single neutral CHECK
+   marks CAPTURED. Root vs user differs ONLY by the richer gold tier (color), never a
+   glyph. The frame matches the writeup Toggle (full content width, same padding +
+   6px radius) so it sits on the page like a toggle, not a chip; it keeps the gold
+   loot identity (gold border + faint gold surface). --fc-id is the identity gold
+   (frame, lock/check, label); --fc-val is the AA-grade gold for the flag VALUE text.
+   Capture moment is a warm gold GLOW pulse in BOTH themes (tuned per theme). */
+.flagcap-user { --fc-id: var(--flag-gold);      --fc-val: var(--flag-gold-val); }
+.flagcap-root { --fc-id: var(--flag-gold-root); --fc-val: var(--flag-gold-val-root); }
+
+/* Per-theme glow color for the capture moment (light needs a warmer, stronger halo to read on paper). */
+:root[data-theme='dark'] .flagcap {
+  --fc-glow: color-mix(in oklab, var(--fc-id) 55%, transparent);
+  --fc-glow-text: color-mix(in oklab, var(--fc-val) 75%, transparent);
+}
+:root[data-theme='light'] .flagcap {
+  --fc-glow: color-mix(in oklab, var(--fc-id) 72%, transparent);
+  --fc-glow-text: color-mix(in oklab, var(--fc-id) 50%, transparent);
+}
+
+/* The FRAME: full content width, Toggle-matched radius, gold loot identity. */
+.sl-markdown-content .flagcap {
+  position: relative;
+  margin: 0.6rem 0 1.4rem;
+  border: 1px solid color-mix(in oklab, var(--fc-id) 38%, transparent);
+  border-radius: 6px;
+  background: color-mix(in oklab, var(--fc-id) 6%, var(--sl-color-bg));
+  transition: border-color 0.18s ease, background-color 0.18s ease, box-shadow 0.25s ease;
+}
+:root[data-theme='light'] .sl-markdown-content .flagcap {
+  /* Raised warm panel like the Toggle (#f2ede0) with a faint gold tint + the V3 depth shadow. */
+  background: color-mix(in oklab, var(--fc-id) 7%, #f2ede0);
+  border-color: color-mix(in oklab, var(--fc-id) 55%, var(--tp-divider));
+  box-shadow: 0 4px 14px -12px rgba(60, 50, 30, 0.4);
+}
+/* Locked frame is interactive (the inner button fills it); lift the border on hover/focus. */
+.sl-markdown-content .flagcap:not(.is-captured):hover {
+  border-color: color-mix(in oklab, var(--fc-id) 62%, transparent);
+  background: color-mix(in oklab, var(--fc-id) 10%, var(--sl-color-bg));
+}
+:root[data-theme='light'] .sl-markdown-content .flagcap:not(.is-captured):hover {
+  background: color-mix(in oklab, var(--fc-id) 11%, #f2ede0);
+}
+
+/* The decrypt affordance: a real <button> that FILLS the frame (so the whole frame is the click target),
+   borderless + transparent (the frame owns the surface), padding matched to the Toggle. */
+.sl-markdown-content .flagcap-btn {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center; /* vertical centering: lock/check, value, label share one centered row */
+  gap: 0.45rem 0.75rem;
+  width: 100%;
+  margin: 0;
+  padding: 0.85rem 0.95rem;
+  font-family: var(--sl-font-mono, ui-monospace, monospace);
+  text-align: left;
+  color: var(--fc-id);
+  background: transparent;
+  border: 0;
+  border-radius: inherit;
+  cursor: pointer;
+}
+.sl-markdown-content .flagcap-btn:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--fc-id) 65%, transparent);
+  outline-offset: 2px;
+}
+/* Captured: the prize sits there inert (copy is the live control); reserve right space for the copy icon. */
+.flagcap.is-captured .flagcap-btn {
+  cursor: default;
+  padding-right: 2.7rem;
+}
+
+/* Glyph: ONE icon whose path swaps from a closed padlock (LOCKED) to a single neutral check (CAPTURED),
+   done in the component script. No flag/crown identity icon. A single icon is one flex child, so the
+   button's align-items:center centers it on the value/label row with no baseline drift (two
+   display-toggled icons drift a few px in flexbox). */
+.flagcap .fc-ico {
+  flex: none;
+  width: 1.25em;
+  height: 1.25em;
+  display: block;
+}
+.flagcap.is-capturing .fc-ico {
+  animation: fc-unlock 700ms ease 1;
+  transform-origin: 50% 62%;
+}
+.flagcap.is-captured .fc-ico {
+  animation: fc-pop 320ms ease 1;
+}
+
+/* The flag value. Three classes outrank Starlight's inline-code rule on this <code>, so the frame owns
+   the surface and the value is transparent gold monospace, the exact same length locked vs captured. */
+.sl-markdown-content .flagcap .flagcap-value {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--fc-val);
+  font-family: var(--sl-font-mono, ui-monospace, monospace);
+  font-size: 1.02em;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+  /* Stays one line on desktop (plenty of room); on a narrow phone column the flag wraps within its box
+     instead of overflowing the frame. */
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}
+/* Locked cyphertext: dimmed identity gold (decorative, aria-hidden). After the base rule so it wins. */
+.sl-markdown-content .flagcap:not(.is-captured) .flagcap-value {
+  color: color-mix(in oklab, var(--fc-id) 88%, transparent);
+}
+
+/* Label: LOCKED -> CAPTURED (the leading glyph carries the check; no second check here). */
+.flagcap-state {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.69rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--fc-id) 75%, var(--sl-color-gray-2));
+}
+.flagcap.is-captured .flagcap-state {
+  color: var(--fc-id);
+}
+
+/* Copy: icon-only, INSIDE the frame (top-right, like the code-block copy button). Hidden until capture,
+   then fades in. The copy icon swaps to a check for ~1.5s on success, then reverts. */
+.sl-markdown-content .flagcap-copy {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0.5rem;
+  margin: auto 0; /* vertically centered in the taller frame (no transform, so fc-fadein stays intact) */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  color: color-mix(in oklab, var(--fc-id) 78%, var(--sl-color-gray-2));
+  background: color-mix(in oklab, var(--fc-id) 8%, var(--sl-color-bg));
+  border: 1px solid color-mix(in oklab, var(--fc-id) 30%, transparent);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+}
+:root[data-theme='light'] .sl-markdown-content .flagcap-copy {
+  background: color-mix(in oklab, var(--fc-id) 10%, #f2ede0);
+}
+.sl-markdown-content .flagcap-copy:hover,
+.sl-markdown-content .flagcap-copy:focus-visible {
+  color: var(--fc-id);
+  border-color: color-mix(in oklab, var(--fc-id) 60%, transparent);
+  background: color-mix(in oklab, var(--fc-id) 16%, var(--sl-color-bg));
+}
+.sl-markdown-content .flagcap-copy:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--fc-id) 60%, transparent);
+  outline-offset: 2px;
+}
+.flagcap-copy[hidden] {
+  display: none;
+}
+.flagcap .fc-copy-ico {
+  width: 1em;
+  height: 1em;
+  display: block;
+}
+.flagcap-copy.is-copied {
+  color: var(--fc-id);
+  border-color: color-mix(in oklab, var(--fc-id) 55%, transparent);
+}
+.flagcap.is-captured .flagcap-copy {
+  animation: fc-fadein 0.32s ease both;
+}
+
+/* "Copied!" feedback pill: golden accent, like the code-block copy confirmation. Sits just left of the
+   copy icon, fades in while the copy button is in its is-copied state (~1.5s), then fades out. */
+.sl-markdown-content .flagcap .fc-copy-feedback {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 2.9rem;
+  margin: auto 0;
+  display: inline-flex;
+  align-items: center;
+  height: 1.55rem;
+  padding: 0 0.5rem;
+  font-family: var(--sl-font-mono, ui-monospace, monospace);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--fc-id);
+  background: color-mix(in oklab, var(--fc-id) 16%, var(--sl-color-bg));
+  border: 1px solid color-mix(in oklab, var(--fc-id) 35%, transparent);
+  border-radius: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(4px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+:root[data-theme='light'] .sl-markdown-content .flagcap .fc-copy-feedback {
+  background: color-mix(in oklab, var(--fc-id) 16%, #f2ede0);
+}
+.flagcap.is-copy-active .fc-copy-feedback {
+  opacity: 1;
+  transform: none;
+}
+/* While "Copied!" shows, fade the CAPTURED label so the pill never collides with it on narrow frames. */
+.flagcap.is-copy-active .flagcap-state {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+/* The real flag, always in the DOM for screen readers + copy, visually hidden; plus the polite
+   capture announcement. */
+.flagcap-real,
+.flagcap-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --- Captured frame depth, per theme (full gold border) --- */
+:root[data-theme='dark'] .flagcap.is-captured {
+  border-color: var(--fc-id);
+  background: color-mix(in oklab, var(--fc-id) 12%, var(--sl-color-bg));
+}
+:root[data-theme='light'] .flagcap.is-captured {
+  border-color: color-mix(in oklab, var(--fc-id) 90%, transparent);
+  background: color-mix(in oklab, var(--fc-id) 10%, #f2ede0);
+  box-shadow: 0 2px 8px rgba(60, 50, 30, 0.1), 0 1px 2px rgba(60, 50, 30, 0.06);
+}
+
+/* --- Capture MOMENT: a warm gold glow pulse, BOTH themes (one-shot, fired by .is-sweep) ---
+   The glow lives on a ::after overlay so it never disturbs the captured frame's persistent shadow. */
+.flagcap.is-sweep::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: 0 0 0 0 transparent;
+  animation: fc-glow 760ms ease-out 1;
+}
+.flagcap.is-sweep .flagcap-value {
+  animation: fc-textglow 760ms ease-out 1;
+}
+
+@keyframes fc-unlock {
+  0% { transform: translateY(0) rotate(0); }
+  22% { transform: translateY(-1px) rotate(-7deg); }
+  60% { transform: translateY(0) rotate(5deg); }
+  100% { transform: translateY(0) rotate(0); }
+}
+@keyframes fc-pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes fc-fadein {
+  from { opacity: 0; transform: translateY(2px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes fc-glow {
+  0% { box-shadow: 0 0 0 0 transparent; }
+  35% { box-shadow: 0 0 24px 1px var(--fc-glow); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+@keyframes fc-textglow {
+  0% { text-shadow: none; }
+  35% { text-shadow: 0 0 12px var(--fc-glow-text); }
+  100% { text-shadow: none; }
+}
+
+/* Reduced motion: no scramble (skipped in the script), no glow, no pop/unlock. The CAPTURED state still
+   applies via classes, so the value reveals instantly and copy still works. */
+@media (prefers-reduced-motion: reduce) {
+  .flagcap *,
+  .flagcap *::before,
+  .flagcap *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+/* === end FLAG CAPTURE === */

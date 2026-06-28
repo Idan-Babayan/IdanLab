@@ -31,7 +31,7 @@ The password you are looking for is: <password>
 
 ## Why it works
 
-Files in /etc/cron.d declare a job and the user it runs as. This one runs as bandit22 every minute and writes that user's password to a fixed /tmp path with mode 644 (world-readable), so reading the leaked output takes no privileges at all.
+Files in `/etc/cron.d` declare a job and the user it runs as. This one runs as `bandit22` every minute and writes that user's password to a fixed `/tmp` path with mode 644 (world-readable), so reading the leaked output takes no privileges at all.
 
 <Toggle label="Reveal password" class="spoiler-toggle">
 

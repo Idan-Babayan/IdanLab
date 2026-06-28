@@ -17,7 +17,7 @@ import Toggle from '@components/Toggle.astro';
 
 ## Approach
 
-There is no password here, only a private key. Use it to authenticate as bandit14, then read that user's password from the system store.
+There is no password here, only a private key. Use it to authenticate as `bandit14`, then read that user's password from the system store.
 
 ```bash frame="code" title="bandit13@bandit"
 bandit13@bandit:~$ ls
@@ -29,7 +29,7 @@ The password you are looking for is: <password>
 
 ## Why it works
 
-Public-key auth proves identity by signing a server challenge with the private key, so no secret crosses the wire; the server only needs the matching public key in authorized_keys. Each level's own password also lives at /etc/bandit_pass/banditN, readable solely by that user, so a shell as bandit14 can read it directly.
+Public-key authentication proves identity by signing a server challenge with the private key, so no secret crosses the wire. The server only needs the matching public key in `authorized_keys`. Each level's own password also lives at `/etc/bandit_pass/banditN`, readable solely by that user, so a shell as `bandit14` can read it directly.
 
 <Toggle label="Reveal password" class="spoiler-toggle">
 

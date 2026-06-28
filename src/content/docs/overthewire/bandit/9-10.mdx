@@ -26,7 +26,7 @@ U========== <password>
 
 ## Why it works
 
-strings walks a binary and emits runs of printable characters above a length threshold, discarding the non-text bytes. That turns an unreadable file into something line tools like grep can filter, here keyed on the marker.
+`strings` parses a binary and emits runs of printable characters above a length threshold, discarding the non-text bytes. That turns an unreadable file into something line tools like `grep` can filter for the exact marker you need.
 
 <Toggle label="Reveal password" class="spoiler-toggle">
 

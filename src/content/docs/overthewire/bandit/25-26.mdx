@@ -7,6 +7,7 @@ sidebar:
 ---
 
 import Toggle from '@components/Toggle.astro';
+import { Steps } from '@astrojs/starlight/components';
 
 <div class="machine-meta">
   <span class="meta-badge platform-overthewire">OverTheWire</span>
@@ -17,32 +18,36 @@ import Toggle from '@components/Toggle.astro';
 
 ## Approach
 
-First inspect why a normal login fails: bandit26's shell is showtext, a pager wrapper.
+<Steps>
 
-```bash frame="code" title="bandit25@bandit"
-bandit25@bandit:~$ grep bandit26 /etc/passwd
-bandit26:x:11026:11026:bandit level 26:/home/bandit26:/usr/bin/showtext
-bandit25@bandit:~$ cat /usr/bin/showtext
-#!/bin/sh
-export TERM=linux
-exec more ~/text.txt
-exit 0
-```
+1. First, inspect why a normal login fails: `bandit26`'s shell is `showtext`, a pager wrapper.
 
-Shrink the terminal window so more has to paginate, log in with the key, then break out through vi.
+   ```bash frame="code" title="bandit25@bandit"
+   bandit25@bandit:~$ grep bandit26 /etc/passwd
+   bandit26:x:11026:11026:bandit level 26:/home/bandit26:/usr/bin/showtext
+   bandit25@bandit:~$ cat /usr/bin/showtext
+   #!/bin/sh
+   export TERM=linux
+   exec more ~/text.txt
+   exit 0
+   ```
 
-```bash frame="code" title="bandit25@bandit"
-bandit25@bandit:~$ ssh -i bandit26.sshkey bandit26@bandit.labs.overthewire.org -p 2220
-# in the more pager, press v to open vi, then inside vi:
-:set shell=/bin/bash
-:shell
-bandit26@bandit:~$ cat /etc/bandit_pass/bandit26
-The password you are looking for is: <password>
-```
+2. Shrink the terminal window so more has to paginate, log in with the key, then break out through `vi`.
+   
+   ```bash frame="code" title="bandit25@bandit"
+   bandit25@bandit:~$ ssh -i bandit26.sshkey bandit26@bandit.labs.overthewire.org -p 2220
+   # in the more pager, press v to open vi, then inside vi:
+   :set shell=/bin/bash
+   :shell
+   bandit26@bandit:~$ cat /etc/bandit_pass/bandit26
+   The password you are looking for is: <password>
+   ```
+
+</Steps>
 
 ## Why it works
 
-bandit26's login shell is not a shell, it is showtext, which runs more on a text file and exits. But more is interactive: with a small enough window it pauses, and v opens its configured editor (vi). From vi you can repoint the editor's shell to bash and spawn it, escaping the pager into a full session. Interactive programs that launch other programs are classic restricted-shell escapes.
+`bandit26`'s login shell is not a shell, it is `showtext`, which runs `more` on a text file and exits. But `more` is interactive: with a small enough window it pauses, allowing you to press `v` and open its configured editor (`vi`). From `vi` you can repoint the editor's shell to bash and spawn it, escaping the pager into a full session. Interactive programs that launch other programs are classic restricted-shell escapes.
 
 <Toggle label="Reveal password" class="spoiler-toggle">
 

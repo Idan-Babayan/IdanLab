@@ -27,7 +27,7 @@ The password you are looking for is: <password>
 
 ## Why it works
 
-find filters on inode metadata before touching contents: -size 1033c matches an exact byte count (c = bytes) and -type f restricts to regular files. Stacking predicates pinpoints one file across a deep directory tree without reading any of them.
+`find` filters on inode metadata before ever touching file contents: `-size 1033c` targets an exact byte count (c for bytes) while `-type f` restricts the search to regular files. Stacking these predicates pinpoints a single file across a deep directory tree without reading any of them.
 
 <Toggle label="Reveal password" class="spoiler-toggle">
 

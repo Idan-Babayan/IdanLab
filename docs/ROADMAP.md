@@ -44,9 +44,6 @@
 - [ENG] ToggleAll on mobile: currently desktop-only (hidden below the lg breakpoint). To put it inside
   the collapsed "On this page" dropdown would need a second override (`MobileTableOfContents`); deferred
   (owner judged the bulk control a poor fit for narrow screens; individual toggles still work on mobile).
-- [DESIGN] Optional flag Root-vs-User hierarchy (Root as the bigger prize, e.g. crown icon or richer
-  gold), once the pipeline emits distinct hooks so all three flag states (heading, toggle, TOC) stay in
-  sync; not feasible cleanly CSS-only today (toggle icon is content-lane).
 - [DESIGN] Answer-callout (:::tip) accent color: tips currently render purple (the rocket-to-check icon
   swap on 2026-06-27 kept the inherited tip color). Experiment with a tip accent that better matches the
   overall theme (e.g. green/teal or a paper-harmonious hue), both themes, CSS-only via the Starlight aside

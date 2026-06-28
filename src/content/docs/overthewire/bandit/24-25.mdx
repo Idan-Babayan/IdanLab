@@ -27,7 +27,7 @@ The password of user bandit25 is <password>
 
 ## Why it works
 
-The service checks the current password followed by a four-digit pin, but 10^4 combinations is a tiny keyspace. Sending all 10000 guesses down a single connection lets the server reject the misses (filtered out with grep) and answer the one that fits. Small keyspaces fall to enumeration.
+The service checks the current password followed by a four-digit pin, but 10<sup>4</sup> combinations is a tiny keyspace. Sending all 10,000 guesses down a single connection lets the server reject the misses (filtered out with `grep`) and answer the one that fits. Small keyspaces fall to enumeration.
 
 <Toggle label="Reveal password" class="spoiler-toggle">
 
