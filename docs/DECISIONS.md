@@ -45,10 +45,12 @@
 - **Pipeline:** `notion_cleaner.py` (still NOT committed) should emit the gold heading + `<FlagCapture>`
   (with the import) for both user and root flags, handling user-only / root-only writeups. Contract
   recorded in CORE_SPEC §7.
-- **Status:** Adopted. Component + tokens + styles built and verified live (both themes, reduced-motion,
-  copy) on `busquedav2.mdx` (owner's testbed); `npm run build` green (45 pages). Owner will migrate
-  `busqueda.mdx` and remove `busquedav2.mdx` manually. Supersedes the `.toggle-flag` reveal from the
-  2026-06-20 flag-loot entry (the heading + gold TOC from that entry are unchanged).
+- **Status:** Adopted + shipped. Built and verified live (both themes, reduced-motion, copy) on the
+  `busquedav2.mdx` testbed; owner then migrated `busqueda.mdx`'s User/Root flags to `<FlagCapture>` and
+  deleted `busquedav2.mdx`. Shipped in PR #5 (`dev` -> `main`), `npm run build` green (44 pages).
+  Supersedes the `.toggle-flag` reveal from the 2026-06-20 flag-loot entry (the heading + gold TOC from
+  that entry are unchanged). The Bandit "Reveal Password" toggles are a candidate for the same swap (see
+  ROADMAP).
 
 ### 2026-06-26 · Truncate embedded private keys in writeups (GitHub push protection)
 - **Decision:** Writeups whose level reward is an SSH/RSA private key (OverTheWire Bandit

@@ -5,12 +5,17 @@
 > Each item: `[area] description — owner-note`. Areas: DESIGN, CONTENT, ENG, PRODUCT.
 
 ## Now (in progress)
-- [ENG] PR #3 (`dev` -> `main`): READY for review, OPEN, ~16 commits ahead of `main`. Merging deploys to
-  production (idanlab.dev via Cloudflare Pages on push to `main`), so it is the owner's call. The whole
-  working tree is committed + pushed to `dev`; nothing is uncommitted. Carries (this session): platform-
-  index duotone, OKLCH command palette, favicon fix, icon callouts, busquedav2 restructure, ToggleAll
-  sidebar control + scroll fix, flag-gold loot system, homepage Reflection violet, plus the earlier
-  easter-egg trail, light art-direction, robots.txt, sidebar polish, domain rebrand.
+- [ENG] PR #5 (`dev` -> `main`): OPEN, MERGEABLE, Cloudflare Pages preview green. Merging deploys to
+  production (idanlab.dev via Cloudflare Pages on push to `main`), so it is the owner's call. Carries
+  (this session): the FlagCapture "Decrypt to Capture" flag component (replaces the flag reveal toggle;
+  `busqueda.mdx` migrated to it, the `busquedav2.mdx` testbed removed), a fine-tune pass over all
+  OverTheWire Bandit writeups (prep for the FlagCapture swap, not yet applied), 404.mdx tweaks, and the
+  doc updates. (PR #3 and PR #4 already merged.)
+- [CONTENT] Apply FlagCapture to the Bandit "Reveal Password" toggles: the writeups are fine-tuned and
+  ready; owner wants to test the swap soon (the level reward is a password/key, so keep the truncation
+  rule for any PEM, see DECISIONS 2026-06-26).
+- [CONTENT] Revisit `404.mdx`: owner made manual changes on 2026-06-28 and wants to review/refine it
+  again on a later day.
 - [ENG/INFRA] Domain rebrand: in-repo done (site=idanlab.dev, wordmark/titles, copy, robots Sitemap).
   Remaining (owner/other chats): Pages custom domain, 301 from idanstudio.click, Cloudflare email on
   @idanlab.dev, Search Console + sitemap resubmit, external link updates. Confirm
@@ -19,8 +24,6 @@
   considered closed.
 
 ## Next (committed)
-- [CONTENT] Finish or remove `busquedav2.mdx` (a design demo with a duplicate "Busqueda" title)
-  before mass import; it exists only to dial in the card/index design.
 - [CONTENT] Mass-import ~50 existing writeups via the pipeline (HTB / VulnHub / PicoCTF / OTW).
   Once HTB Medium/Hard folders have content, uncomment those sidebar groups in `astro.config.mjs`.
 - [ENG] `og:image` + social preview cards (per-page Open Graph) for shareable links.
@@ -28,7 +31,9 @@
   mixed cross-platform grid (the card was built for this).
 - [CONTENT] Pipeline (`notion_cleaner.py`) hooks for content-lane dependencies: emit a `.flag-title`
   class on flag headings (flag-gold currently targets slug ids `#user-flag`/`#root-flag` as an interim),
-  wrap `:::tip[Answer]` in a `<Toggle flag>` spoiler reveal, and optionally promote os/tags to frontmatter.
+  emit the gold heading + `<FlagCapture type="..." flag="..." />` for User/Root flags (replacing the old
+  heading + duplicate `<Toggle flag>` + `:::tip`; see CORE_SPEC §7 + DECISIONS 2026-06-27), and optionally
+  promote os/tags to frontmatter.
 
 ## Later (parked)
 - [CONTENT] Surface topic tags as a browsable index (filter writeups by technique).
@@ -59,9 +64,6 @@
 - [INFRA] `public/robots.txt` holds ONLY the breadcrumb comment + a `Sitemap:` line. On deploy it is
   served as `/robots.txt` and can override the Cloudflare-managed bot disallows / Content-Signals.
   Add the full managed content (or confirm Cloudflare still appends its block) before relying on it.
-- [CONTENT] `busquedav2.mdx` shares the frontmatter title "Busqueda" with `busqueda.mdx`, so both cards
-  read "Busqueda" on the HTB index. It is the live design testbed (icon callouts, flag-gold, ToggleAll,
-  Title Case headers, Kali prompts, no line highlights). Disambiguate or remove before mass import.
 - [DESIGN] Flag-gold targets the slug ids `#user-flag` / `#root-flag` as an interim (no `.flag-title`
   class exists; flag headings reuse `.task-title`). Breaks if those headings are renamed or another page
   reuses the slugs. Clean fix: a `.flag-title` class from the pipeline (see Next).
