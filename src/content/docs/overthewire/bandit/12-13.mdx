@@ -18,7 +18,7 @@ import { Steps } from '@astrojs/starlight/components';
 
 ## Approach
 
-data.txt is a hexdump. Reverse it back to raw bytes, then repeatedly let file name the compression format, rename to match, and decompress, until file finally reports plain text. Work in a temp directory you own.
+`data.txt` is a hexdump. Reverse it back to raw bytes, then repeatedly let `file` name the compression format, rename to match, and decompress, until `file` finally reports plain text. Work in a temp directory you own.
 
 <Steps>
 
@@ -32,7 +32,7 @@ data.txt is a hexdump. Reverse it back to raw bytes, then repeatedly let file na
    bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ xxd -r data.txt compressed
    ```
 
-2. Run the same loop for each layer: detect, rename to the matching extension, decompress. tar archives extract to a new filename, so follow whatever appears.
+2. Run the same loop for each layer: detect, rename to the matching extension, decompress. `tar` archives extract to a new filename, so follow whatever appears.
 
    ```bash frame="code" title="bandit12@bandit"
    bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ file compressed
@@ -49,7 +49,7 @@ data.txt is a hexdump. Reverse it back to raw bytes, then repeatedly let file na
    # ... keep going on the extracted files (tar, then bzip2, then tar, then gzip) ...
    ```
 
-3. When file finally says ASCII text, read it.
+3. When `file` finally says ASCII text, read it.
 
    ```bash frame="code" title="bandit12@bandit"
    bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ file data8
@@ -62,7 +62,7 @@ data.txt is a hexdump. Reverse it back to raw bytes, then repeatedly let file na
 
 ## Why it works
 
-Compression formats are recognised by header magic bytes, not by file extension, which is why file re-detects the type at every stage. The data was packed in alternating layers (gzip, bzip2 and tar in turn), so you peel them in reverse: detect, rename to match, decompress, repeat until plain text falls out.
+Compression formats are recognised by header magic bytes, not by file extension, which is why file re-detects the type at every stage. The data was packed in alternating layers (`gzip`, `bzip2` and `tar` in turn), so you peel them in reverse: detect, rename to match, decompress, repeat until plain text falls out.
 
 <Toggle label="Full session log">
 

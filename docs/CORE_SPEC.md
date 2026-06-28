@@ -64,6 +64,7 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in C:\Users
 │  │  └─ secret.mdx                   # hidden /secret (splash, pagefind:false, noindex), renders <SecretTerminal/>
 │  ├─ components/
 │  │  ├─ Toggle.astro                 # <details class="toggle"> wrapper; flag prop adds .toggle-flag; renders MDX (incl. code) in slot
+│  │  ├─ FlagCapture.astro            # "Decrypt to Capture" gold flag control (props: type user|root, flag); replaces the heading-plus-duplicate flag Toggle
 │  │  ├─ ToggleAll.astro              # Expand/Collapse-all control (vanilla TS, scroll-anchored); injected via PageSidebar override
 │  │  ├─ Callout.astro                # icon-based tagged callout (recon/loot/intel/vuln/defense); .cl styles in custom.css
 │  │  ├─ WriteupCard.astro            # presentational writeup card (props only, reusable for a future /writeups index)
@@ -218,12 +219,25 @@ label), theme-aware (vivid border, light-mode ink swap on icon/label): recon (cy
 since Starlight has no shield). Icons via Starlight's `<Icon>`. Authored as `<Callout type="...">` in MDX.
 
 ### Flag loot gold (User Flag / Root Flag)
-One gold signal across the flag's three states via the `--flag-gold` token (`#ffc23d` dark / `#835e00`
-light, AA both): the body heading (gold, with a flag-SVG mask icon; replaces the brown `.task-title`),
-the reveal toggle (`.toggle-flag`), and the right TOC entry (muted gold at rest, full gold on
-hover/current; other TOC entries keep the green `--sl-color-text-accent`). Flag headings have no dedicated
-class yet, so the CSS targets the slug ids `#user-flag` / `#root-flag` (interim; a `.flag-title` from the
-pipeline is the clean hook). See DECISIONS 2026-06-20.
+One gold signal across the flag's states via the `--flag-gold` token (`#ffc23d` dark / `#C6A243` light):
+the body heading (gold, with a flag-SVG mask icon; replaces the brown `.task-title`) and the right TOC
+entry (muted gold at rest, full gold on hover/current; other TOC entries keep the green
+`--sl-color-text-accent`). Flag headings have no dedicated class yet, so the CSS targets the slug ids
+`#user-flag` / `#root-flag` (interim; a `.flag-title` from the pipeline is the clean hook). See
+DECISIONS 2026-06-20.
+
+The flag VALUE is now the **FlagCapture** "Decrypt to Capture" control under the heading (DECISIONS
+2026-06-27), which supersedes the old `.toggle-flag` reveal. The heading + gold TOC entry are unchanged;
+FlagCapture renders below them and never repeats the flag name OR its glyph (it carries one neutral
+lock-to-check icon, never a flag/crown). It adds tiers on top of `--flag-gold`: `--flag-gold-root`
+(richer gold for ROOT, the only user-vs-root signal, color not glyph) and AA-grade value golds
+`--flag-gold-val` / `--flag-gold-val-root` for the flag TEXT (the bright loot gold is decorative and not
+text-AA on paper, so the value uses a deeper gold: light user 4.99:1, root 5.93:1; dark both >11:1). The
+frame matches the writeup Toggle width + 6px radius but sits a bit taller for presence; an icon-only copy
+button sits inside it (right, vertically centered) and shows a golden "Copied!" pill on copy. Capture
+moment is a warm gold glow pulse in BOTH themes (tuned per theme,
+light halo stronger for paper; no underline). Locked state is static (no idle animation); reduced-motion
+skips the scramble + glow entirely.
 
 ### Expand/Collapse-all control (`ToggleAll.astro`)
 A dependency-free control auto-injected at the bottom of the right TOC via `overrides/PageSidebar.astro`
@@ -258,6 +272,11 @@ Preserves reading position: anchors on the current heading and corrects scroll s
 - Long/indented code → wrapped in `<Toggle>`; all code blocks get `frame="code"` + a
   language `title` so bash and python look identical.
 - Notion `<aside>` → `:::tip[Answer]`. Task headings → brown `.task-title`.
+- **Flags:** emit the gold heading `### <span class="task-title">User Flag</span>` (or `Root Flag`)
+  immediately followed by `<FlagCapture type="user" flag="..." />` (or `type="root"`), and add
+  `import FlagCapture from '@components/FlagCapture.astro'`. This replaces the old heading + duplicate
+  `<Toggle flag>` + `:::tip[Answer]`. Handle user-only and root-only writeups (emit only the flag that
+  exists). See DECISIONS 2026-06-27.
 - `**Port 80**` → red `.port-label`. Inline code → red.
 - Bold inside code fences is impossible (markdown); to emphasize a code line, manually
   use expressive-code line highlighting, e.g. ` ```bash {3} `.

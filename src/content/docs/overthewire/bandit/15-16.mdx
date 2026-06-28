@@ -17,7 +17,7 @@ import Toggle from '@components/Toggle.astro';
 
 ## Approach
 
-Same exchange as the previous level, but the port now expects TLS, so a plain nc just hangs. Open the channel with openssl, send the password, and read the reply. (Full handshake noise is in the log below.)
+Same exchange as the previous level, but the port now expects TLS, so a plain `nc` just hangs. Open the channel with `openssl`, send the password, and read the reply. (Full handshake noise is in the log below.)
 
 ```bash frame="code" title="bandit15@bandit"
 bandit15@bandit:~$ openssl s_client -connect localhost:30001 -quiet
@@ -30,7 +30,7 @@ The password you are looking for is: <password>
 
 ## Why it works
 
-The listener wraps the same line protocol in TLS, so a plaintext client never completes a connection. openssl s_client performs the handshake and then hands you an interactive channel to type into. The self-signed certificate warning is expected here and does not affect sending the password.
+The listener wraps the same line protocol in TLS, so a plaintext client never completes a connection. `openssl s_client` performs the handshake and then hands you an interactive channel to type into. The self-signed certificate warning is expected here and does not affect sending the password.
 
 <Toggle label="Full session log">
 

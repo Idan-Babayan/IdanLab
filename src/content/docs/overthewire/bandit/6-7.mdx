@@ -26,7 +26,7 @@ The password you are looking for is: <password>
 
 ## Why it works
 
-Searching from / matches by numeric owner and group metadata regardless of where the file sits, but most of the tree is unreadable to you, so find pours permission-denied messages onto stderr. Redirecting stderr to /dev/null (2>/dev/null) leaves only the real hit on stdout.
+Searching from `/` matches by numeric owner and group metadata regardless of where the file sits, but most of the tree is unreadable to you, so `find` pours permission-denied messages onto stderr. Redirecting stderr to /dev/null (`2>/dev/null`) leaves only the valid match on stdout.
 
 <Toggle label="Reveal password" class="spoiler-toggle">
 

@@ -6,6 +6,50 @@
 
 ---
 
+### 2026-06-27 · FlagCapture "Decrypt to Capture" replaces the flag reveal toggle
+- **Decision:** The User/Root flag value renders in a new **`FlagCapture.astro`** control under the
+  existing gold flag heading, replacing the old `<Toggle flag>` + `:::tip[Answer]` (which duplicated the
+  flag name already owned by the heading + TOC). It is LOCKED by default (static gold cyphertext the exact
+  length of the real value), and a click DECRYPTS it into the real flag using the site's signature
+  decode/scramble effect, then reads CAPTURED with a copy button.
+- **Component API:** `<FlagCapture type="user" | "root" flag="..." />`. `type` drives ONLY the gold tier
+  (user vs richer root); there is NO per-type glyph (the heading already owns the flag icon + gold name).
+  The control carries one neutral state icon: a LOCK (LOCKED) that swaps to a CHECK (CAPTURED). `flag` is
+  the real value (always in the DOM for screen readers + copy; visually scrambled until capture). The whole
+  frame is one real `<button>` (keyboard + focus); an `aria-live="polite"` region announces "User/Root flag
+  captured". The frame matches the writeup Toggle (full content width, 6px radius) but sits a bit taller
+  (more vertical padding) for presence, with a slightly larger value/icon. An icon-only copy button sits
+  INSIDE it (vertically centered at the right, like the code-block copy): on copy it swaps to a check and
+  shows a golden "Copied!" pill (the CAPTURED label fades out under it), reverting after ~1.5s. (Revised 2026-06-27: dropped the duplicate flag/crown identity glyph, the `path` prop + its
+  caption, and the chip sizing; see fixes below.)
+- **Decode reuse:** the scramble is the SAME effect as the hero/headline decode in `src/pages/index.astro`
+  and `about.astro` (charset `!<>-_\/[]{}=+*^?#01`, 45ms interval), ported into the component script at
+  `dur=15` (~720ms) so the flag decrypt matches the brand signature. Not reinvented.
+- **Gold values (tokens in custom.css):** identity gold `--flag-gold` `#ffc23d` dark / `#C6A243` light
+  (decorative: border, glyph, label). Root tier `--flag-gold-root` `#ffcf63` dark / `#B8862B` light. The
+  flag VALUE text uses AA-grade golds `--flag-gold-val` `#ffc23d` dark / `#7a5a12` light and
+  `--flag-gold-val-root` `#ffcf63` dark / `#6b4e0e` light, because the bright loot gold is NOT text-AA on
+  paper. Verified contrast on the captured row: dark user 11.66:1 / root 12.81:1; light user 4.99:1 / root
+  5.93:1 (all >= AA; root deeper so it reads as the bigger prize).
+- **Theme + motion:** the capture moment is a warm gold GLOW pulse in BOTH themes (revised 2026-06-27 from
+  the original dark-glow / light-underline split, so light feels as rich as dark): a one-shot glow on a
+  `::after` overlay + a value text-glow, tuned per theme (light halo stronger, `--fc-glow` 72% vs dark
+  55%, to read on paper). The captured row also gets the V3 light surface depth. Locked state is static
+  (no idle animation; reading stays calm). `prefers-reduced-motion` (read at click time) skips the
+  scramble and the glow entirely and reveals the value instantly in the CAPTURED state; copy still works.
+  No flashing.
+- **Icon alignment (2026-06-27):** the lock/check and copy/check are each ONE `<svg>` whose `<path>` is
+  swapped in JS, not two display-toggled siblings. A flex item that follows a `display:none` sibling
+  drifts ~8px off the value/label center (a flexbox quirk); a single icon stays a lone flex child and
+  centers cleanly.
+- **Pipeline:** `notion_cleaner.py` (still NOT committed) should emit the gold heading + `<FlagCapture>`
+  (with the import) for both user and root flags, handling user-only / root-only writeups. Contract
+  recorded in CORE_SPEC §7.
+- **Status:** Adopted. Component + tokens + styles built and verified live (both themes, reduced-motion,
+  copy) on `busquedav2.mdx` (owner's testbed); `npm run build` green (45 pages). Owner will migrate
+  `busqueda.mdx` and remove `busquedav2.mdx` manually. Supersedes the `.toggle-flag` reveal from the
+  2026-06-20 flag-loot entry (the heading + gold TOC from that entry are unchanged).
+
 ### 2026-06-26 · Truncate embedded private keys in writeups (GitHub push protection)
 - **Decision:** Writeups whose level reward is an SSH/RSA private key (OverTheWire Bandit
   16->17, and any future key-based level) must NOT commit the full PEM. In the single "Reveal

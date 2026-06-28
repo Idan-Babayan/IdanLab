@@ -17,7 +17,7 @@ import Toggle from '@components/Toggle.astro';
 
 ## Approach
 
-Pass the command as the final argument to ssh, so it runs without ever opening an interactive shell.
+Pass the command as the final argument to `ssh`, so it runs without ever opening an interactive shell.
 
 ```bash frame="code" title="bandit18@bandit"
 $ ssh bandit18@bandit.labs.overthewire.org -p 2220 cat readme
@@ -26,7 +26,7 @@ The password you are looking for is: <password>
 
 ## Why it works
 
-An interactive login sources .bashrc, and this one exits at once, so a normal session dies before you can type. Supplying a command as the last ssh argument runs it through a non-interactive shell that skips the interactive rc and returns the output directly.
+An interactive login sources `.bashrc` or `.profile` upon connecting. This one contains immediate `exit` directive, so a normal session dies before you can type. Supplying a command as the last `ssh` argument runs it through a non-interactive shell that skips the interactive startup scripts and returns the output directly.
 
 <Toggle label="Reveal password" class="spoiler-toggle">
 
