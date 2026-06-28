@@ -209,8 +209,8 @@ pill uses a cyan ring.
 - Mechanism: command-position detection (first word after prompt / `sudo` / `|` `&&` `;`); sudo stays
   content-matched. Command lists are one-line-extendable. Residual risk: an output line whose first
   word is exactly a listed command (rare) can be mis-tagged.
-- Note: EC `{n}` line highlights are currently unused (dropped from busquedav2) and have no custom
-  marked-line styling; if reintroduced, EC's default blue marked line would need restyling.
+- Note: EC `{n}` line highlights are currently unused (dropped during the busqueda design pass) and have
+  no custom marked-line styling; if reintroduced, EC's default blue marked line would need restyling.
 
 ### Tagged callouts (icon-based, `Callout.astro` + `.cl*` in custom.css)
 Five semantic writeup callouts, each a 3px accent left border + faint tint + a header (icon + UPPERCASE
