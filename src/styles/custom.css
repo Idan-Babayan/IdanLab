@@ -68,6 +68,34 @@ html[data-theme="dark"] .task-title {
   color: var(--flag-gold);
 }
 
+/* TOC active-entry color mirrors the content heading ladder: the entry the reader is currently on
+   (aria-current) takes the hue of the heading it points to, so the "On this page" column echoes the
+   in-page hierarchy (h2 green, h3 cyan, h4+ muted). Heading level is read from Starlight's TOC
+   nesting (it nests h3 under h2, h4 under h3, by maxHeadingLevel), so depth maps to level. ONLY the
+   current entry recolors; inactive entries keep their muted default. h1/h2 (top level) keep
+   Starlight's green accent (untouched), and flags keep gold (their rule above wins and they are
+   excluded below). Unlayered, so it beats Starlight's layered a[aria-current] green. Desktop column
+   only; the mobile TOC keeps Starlight's white + checkmark active style. Parity with the heading
+   rules is by shared tokens (--tp-cyan / --sl-color-gray-2); if a heading color changes, change it
+   here too. */
+
+/* h3 (nested one level): cyan, matching the ### heading. Flags are also h3, so their anchors are
+   excluded here (they own the gold rule above). */
+.right-sidebar-panel nav > ul > li > ul > li > a[aria-current="true"]:not([href="#user-flag"]):not([href="#root-flag"]) {
+  color: var(--tp-cyan);
+}
+:root[data-theme='light'] .right-sidebar-panel nav > ul > li > ul > li > a[aria-current="true"]:not([href="#user-flag"]):not([href="#root-flag"]) {
+  color: var(--tp-cyan-ink);
+}
+
+/* h4 / h5 / h6 (nested two or more levels): the muted gray of the h4 heading, continuing the quiet
+   tail of the ladder. These levels are not in the TOC unless tableOfContents.maxHeadingLevel is
+   raised; the rule is here so they are correct when it is. --sl-color-gray-2 is theme-aware (no
+   light override needed), matching the h4 heading rule. */
+.right-sidebar-panel nav > ul > li > ul > li > ul li a[aria-current="true"] {
+  color: var(--sl-color-gray-2);
+}
+
 
 /* ── Port labels (red) ───────────────────────── */
 
@@ -80,17 +108,30 @@ html[data-theme="dark"] .port-label {
 }
 
 
-/* ── Inline code color (matches Notion red) ──── */
-
-html[data-theme="light"] :not(pre) > code {
-  color: #c92a2a;
-  /* Warm the inline-code chip to match the paper: Starlight's default is a cool ~#edeef3 that reads
-     too white/blue here. Kept light so the red code text stays AA (4.6:1). Light only; dark untouched. */
-  background-color: #f3ebda;
+/* ── Inline code: its own object (a calm rounded red chip, readability first) ──
+   Inline code (:not(pre) > code) is a passing REFERENCE inside prose, not a destination, so it stays
+   subordinate to the sentence: a soft red-tinted fill, a warm-red hairline, and SOFT ROUNDED corners,
+   deliberately the opposite of the sharp-cornered code-block destinations. ONE structure for both
+   themes; only the red is tuned per theme (brighter on ink, deeper on paper). No surface special-casing:
+   it reads on the plain page, the raised toggle panel, and inside a <summary> title on its own. Scoped
+   to :not(pre) > code so it never touches code-block tokens (those live in <pre>). Unlayered, so it
+   overrides Starlight's default inline-code chip. Red text stays AA on its own fill in both themes
+   (dark ~9:1, light ~5:1). */
+:not(pre) > code {
+  border-radius: 5px;
+  border: 1px solid;
+  padding: 0.12em 0.4em;
+  font-size: 0.875em;
 }
-
 html[data-theme="dark"] :not(pre) > code {
-  color: #ff8787;
+  color: #ff9b9b;
+  background-color: rgba(255, 120, 120, 0.07);
+  border-color: rgba(255, 120, 120, 0.26);
+}
+html[data-theme="light"] :not(pre) > code {
+  color: #b03326;
+  background-color: #f3e4d6;
+  border-color: rgba(150, 74, 38, 0.32);
 }
 
 
@@ -160,16 +201,20 @@ html[data-theme="light"] .sl-markdown-content details {
   transform: rotate(90deg);
 }
 
-/* Toggle titles use the normal foreground text color (no cyan), so cyan stays reserved for links.
-   The disclosure chevron stays dim (the ::before above). Inline <code> in a summary keeps its red
-   code color so a command, tool, or path still pops. Flag toggles are the deliberate exception
-   (lime accent), handled by the :has() rule below. */
-html[data-theme="dark"] .sl-markdown-content details > summary code {
-  color: #ff8787;
+/* Tighten the gap under an OPEN toggle title: trim the summary's bottom padding only when open
+   (the closed pill keeps its balanced 0.3rem top/bottom). Paired with the smaller .toggle-body
+   padding-top below, content sits closer to the title. Content toggles only (scoped to
+   .sl-markdown-content), so sidebar group summaries are untouched. */
+.sl-markdown-content details[open] > summary {
+  padding-bottom: 0.15rem;
 }
-html[data-theme="light"] .sl-markdown-content details > summary code {
-  color: #c92a2a;
-}
+
+/* Toggle titles use the normal foreground text color (no cyan), so cyan stays reserved for links, and
+   the disclosure chevron stays dim (the ::before above). Inline <code> in a summary is deliberately NOT
+   special-cased here: the unified inline-code rule at the top of this file already renders it as the
+   same red chip on the toggle-panel surface (that was the point of making inline code its own object).
+   The flag-toggle summary keeps its gold label; a code chip inside it still reads red, because that
+   global rule sets color on the <code> directly and so wins over the summary's inherited gold. */
 
 /* Flag reveal is the prize of the writeup, so it is the one toggle that keeps a pop. Flag toggles
    carry the .toggle-flag class (Toggle's `flag` prop). Single-line layout: the summary is a flex row
@@ -199,7 +244,7 @@ html[data-theme="light"] .sl-markdown-content details > summary code {
 }
 
 .toggle-body {
-  padding-top: 0.5rem;
+  padding-top: 0.25rem;
 }
 
 
@@ -995,9 +1040,25 @@ nav.sidebar summary {
 
 /* ── Code blocks: a touch more presence (syntax colors stay from your EC themes) ── */
 .expressive-code { margin: 1.4rem 0; }
+/* Sharp rectangular code blocks in BOTH themes (matches dark's clean edges, fixes light's soft look).
+   --ec-brdRad is Expressive Code's own frame radius variable, so zeroing it sharpens the frame, the
+   title/terminal tab corners, and the code body at the source; the explicit frame border-radius:0
+   covers the literal override that used to set 12px. Only code blocks: the EC copy button keeps its
+   own radius, and toggle / button / badge / divider radii elsewhere are untouched. */
+.expressive-code {
+  --ec-brdRad: 0px;
+}
 .expressive-code .frame {
-  border-radius: 12px;
+  border-radius: 0;
   box-shadow: 0 14px 40px -24px rgba(0, 0, 0, .7);
+}
+/* EC insets the title tab (top) and code body (bottom) by calc(--ec-brdRad + border-width), which
+   leaves a 1px residual radius once --ec-brdRad is 0. Zero it so the tab and code body are perfectly
+   square too. Code blocks only; the copy button (.copy button) is not matched and keeps its radius. */
+.expressive-code .frame .header,
+.expressive-code .frame .title,
+.expressive-code .frame pre {
+  border-radius: 0;
 }
 
 /* ── Command highlight by category (.ec-cmd-*) ──
@@ -1090,6 +1151,15 @@ html[data-theme="light"] .ec-cmd-inspect span {
 :root[data-theme='light'] .expressive-code .frame {
   border: 1px solid rgba(60, 50, 30, 0.14);
   box-shadow: 0 8px 24px -16px rgba(60, 50, 30, 0.45), 0 1px 2px rgba(60, 50, 30, 0.06);
+}
+
+/* Soften the copy "Copied!" feedback on paper. EC's default success tooltip is a saturated teal
+   (--ec-frm-tooltipSuccessBg #438076 with white text), which reads too bold on the warm theme. In
+   LIGHT only, swap EC's success-tooltip vars for a soft pale sage pill with deep-olive text (the light
+   accent-high #2f4d09), so it fits the paper and stays AA (~6.8:1). Dark keeps EC's default. */
+:root[data-theme='light'] .expressive-code {
+  --ec-frm-tooltipSuccessBg: #d6e4c0;
+  --ec-frm-tooltipSuccessFg: #2f4d09;
 }
 
 /* ── Scrollbars ──────────────────────────────────────────────────────────────
@@ -1307,6 +1377,28 @@ html[data-theme="light"] .sl-markdown-content .cl-loot    { --cl-ink: #946a00; }
 html[data-theme="light"] .sl-markdown-content .cl-intel   { --cl-ink: #7a27b3; }
 html[data-theme="light"] .sl-markdown-content .cl-defense { --cl-ink: #15803d; }
 html[data-theme="light"] .sl-markdown-content .cl-vuln    { --cl-ink: #c92a2a; }
+
+/* Inline code INSIDE a colored callout harmonizes with that callout's accent instead of fighting it.
+   The standalone red chip (red text + warm-red fill) clashes inside a colored callout, worst in a vuln
+   callout in DARK (two saturated reds). Generic across every type: this reads the callout's own --acc
+   (and the light --cl-ink) tokens, so recon / loot / intel / defense / vuln each adapt automatically
+   with no per-type rule. The fill becomes a soft SAME-accent tint (quiet emphasis that reads as part of
+   the callout), the standalone hairline is dropped (transparent), and the text takes the accent: the
+   bright --acc on dark (high contrast on the near-black tint), and a DEEPENED --cl-ink on light, because
+   a few callout inks (vuln, loot, defense) sit only ~4:1 on the callout tint and body-size code needs
+   AA 4.5:1. Rounded corners + mono carry over from the standalone inline-code rule; only color / fill /
+   border change. Scoped to .cl inline code, so standalone inline code and all code blocks (in <pre>) are
+   untouched. */
+html[data-theme="dark"] .sl-markdown-content .cl :not(pre) > code {
+  color: var(--acc);
+  background-color: color-mix(in oklab, var(--acc) 16%, transparent);
+  border-color: transparent;
+}
+html[data-theme="light"] .sl-markdown-content .cl :not(pre) > code {
+  color: color-mix(in oklab, var(--cl-ink) 80%, #000);
+  background-color: color-mix(in oklab, var(--acc) 13%, transparent);
+  border-color: transparent;
+}
 
 
 /* ── Spoiler reveal toggle (OverTheWire amber) ───────────────────────────────

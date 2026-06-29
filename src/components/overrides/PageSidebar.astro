@@ -5,7 +5,8 @@
 // "Starlight Component Overrides"). It renders Starlight's Default PageSidebar unchanged and adds the
 // ToggleAll control AFTER it, so the control sits at the BOTTOM of the sticky right column as a
 // de-emphasized tertiary utility (below the TOC links in the reading order and visual weight). It
-// follows scroll and appears on every page that has content toggles; ToggleAll self-hides when none.
+// follows scroll and appears on pages with two or more content toggles; ToggleAll self-hides below that
+// (nothing on a zero- or single-toggle page, where a bulk expand/collapse adds nothing).
 //
 // Desktop only: the wrapper uses Starlight's own utilities (sl-hidden / lg:sl-block), so it is hidden
 // below the lg breakpoint where the right sidebar collapses into the mobile "On this page" dropdown.

@@ -8,9 +8,11 @@
 // Toggle.astro, scoped to .sl-markdown-content and excluding flag toggles, so it never touches the
 // sidebar, the nav, code-block details, or the spoiler-gated flags.
 //
-// The wrapper starts hidden and the script reveals it only when content toggles exist, so there is no
-// dead button without JS and no empty control on a page that has no toggles. Expand/collapse anchors
-// on the reader's current heading and corrects scroll so the page does not teleport.
+// The wrapper starts hidden and the script reveals it only when a page has two or more content
+// toggles, so there is no dead button without JS, no empty control on a page that has no toggles, and
+// no bulk control on a single-toggle page (where expand/collapse-all adds nothing over the lone
+// toggle). Expand/collapse anchors on the reader's current heading and corrects scroll so the page
+// does not teleport.
 ---
 
 <div class="toggle-all-wrap" hidden>
@@ -84,8 +86,8 @@
 
       const wrap = btn.closest('.toggle-all-wrap') as HTMLElement | null;
       const toggles = contentToggles();
-      if (toggles.length === 0) {
-        if (wrap) wrap.hidden = true; // nothing to control, stay hidden
+      if (toggles.length < 2) {
+        if (wrap) wrap.hidden = true; // a bulk control adds nothing with 0 or 1 toggle, stay hidden
         return;
       }
       if (wrap) wrap.hidden = false;

@@ -221,10 +221,21 @@ since Starlight has no shield). Icons via Starlight's `<Icon>`. Authored as `<Ca
 ### Flag loot gold (User Flag / Root Flag)
 One gold signal across the flag's states via the `--flag-gold` token (`#ffc23d` dark / `#C6A243` light):
 the body heading (gold, with a flag-SVG mask icon; replaces the brown `.task-title`) and the right TOC
-entry (muted gold at rest, full gold on hover/current; other TOC entries keep the green
-`--sl-color-text-accent`). Flag headings have no dedicated class yet, so the CSS targets the slug ids
-`#user-flag` / `#root-flag` (interim; a `.flag-title` from the pipeline is the clean hook). See
+entry (muted gold at rest, full gold on hover/current; non-flag TOC entries follow the active-color
+ladder below). Flag headings have no dedicated class yet, so the CSS targets the slug ids
+`#user-flag` / `#root-flag` (interim; a `.flag-title` from the pipeline is the clean hook). The same two
+slug ids are what the active-color ladder excludes, so flags keep gold instead of going cyan. See
 DECISIONS 2026-06-20.
+
+### TOC active-entry color ladder
+The right "On this page" entry the reader is currently on (`aria-current="true"`) takes the hue of the
+heading it points to, so the column mirrors the in-page hierarchy: h1/h2 keep Starlight's green
+`--sl-color-text-accent`, h3 turns cyan (`--tp-cyan` / `--tp-cyan-ink`, the same tokens as the `###`
+heading), and h4/h5/h6 go muted gray (`--sl-color-gray-2`, the h4 heading color). Flags stay gold (above).
+Only the current entry recolors; inactive entries keep the muted default. Heading level is read from
+Starlight's TOC nesting depth (h3 nested under h2, etc.), desktop column only (the mobile TOC keeps
+Starlight's white + checkmark active style). Unlayered CSS so it beats Starlight's layered green; parity
+with the heading rules is by shared tokens. See DECISIONS 2026-06-29.
 
 The flag VALUE is now the **FlagCapture** "Decrypt to Capture" control under the heading (DECISIONS
 2026-06-27), which supersedes the old `.toggle-flag` reveal. The heading + gold TOC entry are unchanged;
@@ -242,8 +253,9 @@ skips the scramble + glow entirely.
 ### Expand/Collapse-all control (`ToggleAll.astro`)
 A dependency-free control auto-injected at the bottom of the right TOC via `overrides/PageSidebar.astro`
 (additive override, renders `<Default/>`; wired in `astro.config.mjs` `components`). Bordered pill (gray +
-cyan hover), set apart by a gap + a `--sl-color-hairline` divider, desktop-only, self-hides when a page
-has no toggles. Acts on `.sl-markdown-content details.toggle:not(.toggle-flag)` (skips flags, code, nav).
+cyan hover), set apart by a gap + a `--sl-color-hairline` divider, desktop-only, self-hides unless a page
+has two or more toggles (a bulk expand/collapse is pointless with 0 or 1; the `>= 2` threshold clears every
+single-toggle page automatically). Acts on `.sl-markdown-content details.toggle:not(.toggle-flag)` (skips flags, code, nav).
 Preserves reading position: anchors on the current heading and corrects scroll synchronously, with native
 `overflow-anchor` suppressed for the operation (see DECISIONS; ROADMAP has the unverified few-pixel shift).
 
@@ -277,7 +289,10 @@ Preserves reading position: anchors on the current heading and corrects scroll s
   `import FlagCapture from '@components/FlagCapture.astro'`. This replaces the old heading + duplicate
   `<Toggle flag>` + `:::tip[Answer]`. Handle user-only and root-only writeups (emit only the flag that
   exists). See DECISIONS 2026-06-27.
-- `**Port 80**` → red `.port-label`. Inline code → red.
+- `**Port 80**` → red `.port-label`. Inline code (`:not(pre) > code`) → a rounded red hairline chip,
+  its own object (readability-first, theme-tuned, deliberately distinct from the sharp code blocks);
+  inside a colored callout it instead harmonizes with that callout's accent (reads `--acc` / `--cl-ink`,
+  generic per type); see DECISIONS 2026-06-29.
 - Bold inside code fences is impossible (markdown); to emphasize a code line, manually
   use expressive-code line highlighting, e.g. ` ```bash {3} `.
 
@@ -299,7 +314,8 @@ Preserves reading position: anchors on the current heading and corrects scroll s
 - **Tone:** confident, curious, learning-focused. No self-deprecation.
 - **Type-safe scripts:** all TS inside `.astro` `<script>` uses explicit assertions
   (`as NodeListOf<HTMLElement>`, `as HTMLElement | null`, `!`, `?? ''`) → zero VS Code problems.
-- **Code blocks:** every block has a language label; bash and python render identically.
+- **Code blocks:** every block has a language label; bash and python render identically; EC frames are
+  square-cornered (sharp) in both themes (DECISIONS 2026-06-29).
 - **Icons:** SVG for logos/icons; PNG acceptable only for detailed illustrations.
 - **Landing is dark-only**; content pages keep the toggle.
 - **Never rebuild Starlight**; content pages are themed via `custom.css` only.
