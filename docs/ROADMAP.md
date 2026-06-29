@@ -65,8 +65,10 @@
   served as `/robots.txt` and can override the Cloudflare-managed bot disallows / Content-Signals.
   Add the full managed content (or confirm Cloudflare still appends its block) before relying on it.
 - [DESIGN] Flag-gold targets the slug ids `#user-flag` / `#root-flag` as an interim (no `.flag-title`
-  class exists; flag headings reuse `.task-title`). Breaks if those headings are renamed or another page
-  reuses the slugs. Clean fix: a `.flag-title` class from the pipeline (see Next).
+  class exists; flag headings reuse `.task-title`). The TOC active-color ladder (DECISIONS 2026-06-29)
+  also excludes flags by those same two slug ids so they stay gold instead of going cyan, so it shares the
+  fragility. Breaks if those headings are renamed or another page reuses the slugs. Clean fix: a
+  `.flag-title` class from the pipeline (see Next), used by both the gold rule and the cyan exclusion.
 - [ENG] Command-highlighting residual risk: an OUTPUT line whose first word is exactly a listed command
   (e.g. `ls: cannot access`) can be mis-tagged. Rare; documented in `ec-priv-command.mjs` (EC 0.42
   exposes no token scopes, so strings/comments cannot be skipped by scope).

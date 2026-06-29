@@ -193,7 +193,7 @@ That version number is the lead. Searchor 2.4.0 has a well-documented arbitrary 
 
 <Callout type="vuln">
 
-Searchor builds its result by calling Python's `eval()` on a string assembled from the query, so a query that closes the expression early can append `__import__('os').system(...)` and run anything. The `query` field is the injection point; `engine` just picks the template.
+Searchor builds its result by calling Python's `eval()` on a string assembled from the query, so a query that closes the expression early can append `__import__('os').system(...)` and run anything. The `query` field is the injection point, `engine` just picks the template.
 
 </Callout>
 
@@ -414,7 +414,7 @@ root@busqueda:/home/svc#
 
 </Toggle>
 
-*The root-owned script runs my `full-checkup.sh` from my working directory, handing back a root shell.*
+*The root-owned script runs `full-checkup.sh` from my working directory, handing back a root shell.*
 
 <Toggle label="Confirming root <code>whoami</code>">
 
