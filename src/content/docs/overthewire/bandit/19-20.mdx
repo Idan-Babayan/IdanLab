@@ -28,7 +28,7 @@ The password you are looking for is: <password>
 
 ## Why it works
 
-The setuid bit (the s in -rwsr-x---) makes the binary run with its owner's identity, here bandit20, no matter who launches it. Access checks use the effective uid, so the helper reads bandit20's password file on your behalf. id confirms euid is bandit20 while your real uid stays bandit19.
+The setuid bit (the `s` in `-rwsr-x---`) makes the binary run with its owner's privileges, here `bandit20`, no matter who launches it. Access checks use the effective uid, so the helper reads `bandit20`'s password file on your behalf. The `id` command confirms euid is `bandit20` while your real uid stays `bandit19`.
 
 <Toggle label="Reveal password" class="spoiler-toggle">
 

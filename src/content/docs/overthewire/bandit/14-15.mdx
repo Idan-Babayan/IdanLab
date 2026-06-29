@@ -17,7 +17,7 @@ import Toggle from '@components/Toggle.astro';
 
 ## Approach
 
-Connect to the port and send the current password; the service replies with the next one.
+Connect to the port and send the current password. The service replies with the next one.
 
 ```bash frame="code" title="bandit14@bandit"
 bandit14@bandit:~$ nc localhost 30000
@@ -28,7 +28,7 @@ The password you are looking for is: <password>
 
 ## Why it works
 
-The level gates the next secret behind proof you already hold the current one. The service speaks a plain line protocol over a raw TCP socket, so a bare nc (or telnet) is enough to talk to it. No encoding, no TLS.
+The level gates the next secret behind proof you already hold the current one. The service speaks a plain line protocol over a raw TCP socket, so a bare `nc` (or `telnet`) is enough to talk to it. No encoding, no TLS.
 
 <Toggle label="Reveal password" class="spoiler-toggle">
 

@@ -26,7 +26,7 @@ The password you are looking for is: <password>
 
 ## Why it works
 
-The wrapper uppercases everything you type, so ls becomes LS and nothing on PATH matches. But $0 expands to the name the current shell was invoked as, and the shell resolves that variable before the uppercasing matters, so running it launches a fresh normal shell. From that prompt commands run unfiltered.
+The input wrapper converts all typed commands to uppercase, so `ls` becomes `LS` and nothing on `PATH` matches. However, `$0` expands to the name the current shell was invoked as, and the shell resolves that variable before the uppercasing matters, so running it launches a fresh normal shell. From that prompt commands run unfiltered.
 
 <Toggle label="Reveal password" class="spoiler-toggle">
 

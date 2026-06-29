@@ -13,7 +13,7 @@ import Toggle from '@components/Toggle.astro';
   <span class="meta-badge os-linux">Linux</span>
 </div>
 
-> Goal: push the requested file to the repo so the server hook releases the next password.
+> Goal: push the requested file to the repository so the server hook releases the next password.
 
 ## Approach
 
@@ -36,7 +36,7 @@ remote: <password>
 
 ## Why it works
 
-A pre-receive hook runs on the server when you push, before anything is accepted. This one inspects the pushed file, and when the name and content match what was asked it prints the next password, then rejects the push so nothing actually lands. Server-side hooks can gate or react to pushes, which is exactly what is on display here.
+A `pre-receive` hook runs on the server when you push, before anything is accepted. This one inspects the pushed file, and when the name and content match what was asked it prints the next password, then rejects the push so nothing actually lands. Server-side hooks can gate or react to pushes, which is exactly what is on display here.
 
 <Toggle label="Reveal password" class="spoiler-toggle">
 

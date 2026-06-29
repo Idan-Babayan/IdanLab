@@ -5,6 +5,7 @@ description: Python command injection in Searchor 2.4.0 for a foothold, then a r
 
 import Toggle from '@components/Toggle.astro';
 import Callout from '@components/Callout.astro';
+import FlagCapture from '@components/FlagCapture.astro';
 
 <div class="machine-meta">
   <span class="meta-badge platform-hackthebox">HackTheBox</span>
@@ -192,7 +193,7 @@ That version number is the lead. Searchor 2.4.0 has a well-documented arbitrary 
 
 <Callout type="vuln">
 
-Searchor builds its result by calling Python's `eval()` on a string assembled from the query, so a query that closes the expression early can append `__import__('os').system(...)` and run anything. The `query` field is the injection point; `engine` just picks the template.
+Searchor builds its result by calling Python's `eval()` on a string assembled from the query, so a query that closes the expression early can append `__import__('os').system(...)` and run anything. The `query` field is the injection point, `engine` just picks the template.
 
 </Callout>
 
@@ -245,13 +246,7 @@ I land as `svc` in `/var/www/app`, the application's own directory. That is the 
 
 ### <span class="task-title">User Flag</span>
 
-<Toggle flag label='<svg viewBox="0 0 24 24" fill="currentColor" width="1em" height="1em" aria-hidden="true" style="vertical-align:-0.15em"><path d="M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg> User Flag'>
-
-:::tip[Answer]
-2d742121744d37137177a940d19195e3
-:::
-
-</Toggle>
+<FlagCapture type="user" flag="2d742121744d37137177a940d19195e3" />
 
 ---
 
@@ -419,7 +414,7 @@ root@busqueda:/home/svc#
 
 </Toggle>
 
-*The root-owned script runs my `full-checkup.sh` from my working directory, handing back a root shell.*
+*The root-owned script runs `full-checkup.sh` from my working directory, handing back a root shell.*
 
 <Toggle label="Confirming root <code>whoami</code>">
 
@@ -427,20 +422,14 @@ root@busqueda:/home/svc#
 root@busqueda:/home/svc# whoami
 root
 root@busqueda:/home/svc# cat /root/root.txt
-3527d47d75482a5285afe6b132750aba
+<password>
 ```
 
 </Toggle>
 
 ### <span class="task-title">Root Flag</span>
 
-<Toggle flag label='<svg viewBox="0 0 24 24" fill="currentColor" width="1em" height="1em" aria-hidden="true" style="vertical-align:-0.15em"><path d="M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg> Root Flag'>
-
-:::tip[Answer]
-3527d47d75482a5285afe6b132750aba
-:::
-
-</Toggle>
+<FlagCapture type="root" flag="3527d47d75482a5285afe6b132750aba" />
 
 ---
 

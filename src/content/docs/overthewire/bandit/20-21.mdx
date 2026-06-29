@@ -30,7 +30,7 @@ The password you are looking for is: <password>
 
 ## Why it works
 
-suconnect runs setuid as bandit21 and connects to a port you name, reads one line, and compares it against the current password. On a match it sends back the next one. The backgrounded nc -l listener serves the current password on localhost, so the two ends complete the handshake.
+`suconnect` runs setuid as `bandit21` and connects to a port you name, reads one line, and compares it against the current password. Upon a successful match it sends back the next one. The backgrounded `nc -l` listener serves the current password on `localhost`, so the two ends complete the handshake.
 
 <Toggle label="Reveal password" class="spoiler-toggle">
 
