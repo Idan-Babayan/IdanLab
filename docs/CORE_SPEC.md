@@ -303,8 +303,9 @@ Preserves reading position: anchors on the current heading and corrects scroll s
   `import FlagCapture from '@components/FlagCapture.astro'`. This replaces the old heading + duplicate
   `<Toggle flag>` + `:::tip[Answer]`. Handle user-only and root-only writeups (emit only the flag that
   exists). See DECISIONS 2026-06-27.
-- `**Port 80**` → red `.port-label`. Inline code (`:not(pre) > code`) → a rounded red hairline chip,
-  its own object (readability-first, theme-tuned, deliberately distinct from the sharp code blocks);
+- `**Port 80**` → red `.port-label`. Inline code (`:not(pre) > code`) → a rounded NEUTRAL chip with red
+  text (identity in the glyphs, no red in the fill or border), its own object (readability-first,
+  theme-tuned, deliberately distinct from the sharp code blocks);
   inside a colored callout it instead harmonizes with that callout's accent (reads `--acc` / `--cl-ink`,
   generic per type); see DECISIONS 2026-06-29.
 - Bold inside code fences is impossible (markdown); to emphasize a code line, manually

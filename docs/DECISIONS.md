@@ -77,6 +77,14 @@ automatically; no astro.config.mjs edit is needed per writeup.
 - **Supersedes** the light-only cream chip (`#f7f0dc`) from the polish entry below: this unifies both
   themes and drops the toggle-title special case.
 - **Status:** Adopted + shipped (custom.css only; `npm run build` green, 44 pages).
+- **SUPERSEDED 2026-06-30 (surface only):** the chip is now NEUTRAL and the red identity lives only in
+  the text. Structure (5px radius, 1px border, 0.12em 0.4em padding, 0.875em, red mono text) and the
+  no-special-casing behavior are unchanged; only the fill + border moved off red so neutral tokens
+  (filenames, ports) never broadcast false urgency. New values: DARK fill `rgba(255,255,255,0.055)` +
+  border `rgba(255,255,255,0.11)` (white-alpha, adapts across the page / toggle panel / `<summary>`);
+  LIGHT fill `#ece2d6` + border `var(--tp-divider)` (the shared structural hairline). Red text is
+  unchanged (`#ff9b9b` / `#b03326`); AA on its own fill is dark 9.0:1, light 4.9:1 (verified live, both
+  themes). The callout-harmonize rule (2026-06-29) is untouched. `npm run build` green (45 pages).
 
 ### 2026-06-29 · Light/code/toggle polish: sharp code frames, light inline-code chip, softer copy toast, tighter toggle gap
 - **Sharp code blocks (both themes):** the EC frame radius is zeroed via EC's own `--ec-brdRad: 0` plus

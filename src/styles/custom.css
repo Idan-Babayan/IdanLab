@@ -108,15 +108,18 @@ html[data-theme="dark"] .port-label {
 }
 
 
-/* ── Inline code: its own object (a calm rounded red chip, readability first) ──
-   Inline code (:not(pre) > code) is a passing REFERENCE inside prose, not a destination, so it stays
-   subordinate to the sentence: a soft red-tinted fill, a warm-red hairline, and SOFT ROUNDED corners,
-   deliberately the opposite of the sharp-cornered code-block destinations. ONE structure for both
-   themes; only the red is tuned per theme (brighter on ink, deeper on paper). No surface special-casing:
-   it reads on the plain page, the raised toggle panel, and inside a <summary> title on its own. Scoped
-   to :not(pre) > code so it never touches code-block tokens (those live in <pre>). Unlayered, so it
-   overrides Starlight's default inline-code chip. Red text stays AA on its own fill in both themes
-   (dark ~9:1, light ~5:1). */
+/* Inline code: its own object (calm neutral chip, identity in the text). Inline code (:not(pre) > code)
+   is a passing REFERENCE inside prose, not a destination, so it stays subordinate to the sentence. The
+   chip is neutral in both themes (no red in the fill or border); the red identity lives in the GLYPHS,
+   where it reads as deliberate and never broadcasts false urgency on neutral tokens like filenames or
+   ports. Soft rounded corners, deliberately the opposite of the sharp-cornered code-block destinations.
+   ONE structure for both themes; only the surface is tuned per theme. Dark: a white-alpha lift that
+   adapts to whatever sits behind it (plain page, raised toggle panel, a summary title), so there is no
+   surface special-casing. Light: a warm fill (#ece2d6) with the shared --tp-divider hairline, the same
+   token every other structural line uses, so the chip edge stays system-coherent. Scoped to
+   :not(pre) > code so it never touches code-block tokens (those live in pre). Unlayered, so it overrides
+   Starlight's default inline-code chip. Red text stays AA on its own fill in both themes (dark is high
+   contrast on the near-black surface, light is about 4.9:1). */
 :not(pre) > code {
   border-radius: 5px;
   border: 1px solid;
@@ -125,13 +128,13 @@ html[data-theme="dark"] .port-label {
 }
 html[data-theme="dark"] :not(pre) > code {
   color: #ff9b9b;
-  background-color: rgba(255, 120, 120, 0.07);
-  border-color: rgba(255, 120, 120, 0.26);
+  background-color: rgba(255, 255, 255, 0.055);
+  border-color: rgba(255, 255, 255, 0.11);
 }
 html[data-theme="light"] :not(pre) > code {
   color: #b03326;
-  background-color: #f3e4d6;
-  border-color: rgba(150, 74, 38, 0.32);
+  background-color: #ece2d6;
+  border-color: var(--tp-divider);
 }
 
 
@@ -864,10 +867,15 @@ h1#_top {
   -webkit-text-fill-color: transparent;
 }
 :root[data-theme='light'] h1#_top {
-  /* Use an explicit dark ink, not var(--sl-color-black): Starlight's black/white tokens
-     invert per theme, so --sl-color-black resolves to WHITE in light mode and would make
-     the start stop invisible on paper. #12181a is the canonical light text color (CORE_SPEC). */
-  background: linear-gradient(135deg, #12181a, #4d7c0f);
+  /* Light-mode title: a dark-green-to-vivid sweep, not the old near-black-to-olive. The start is a
+     deep forest green (not neutral black) so the whole word reads as a green object instead of black,
+     the stops are front-loaded (green by 45%) and the angle is gentle (105deg, mostly horizontal) so
+     SHORT titles (Return, Lame, Bandit N -> M) reach green too, and the end is a brighter grass green
+     so the title pops on paper. Do NOT swap the start for var(--sl-color-black): Starlight's black/white
+     tokens invert per theme, so that token resolves to WHITE in light mode and the start stop would
+     vanish on the paper. The brightest end letters are a deliberate decorative tradeoff, verified
+     readable at the 800-weight display size. Dark mode (white to #9fef00) is unchanged. */
+  background: linear-gradient(105deg, #16280b 0%, #4a7d0d 45%, #62a011 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -1238,7 +1246,7 @@ html[data-theme="light"] .expressive-code pre::-webkit-scrollbar-track { backgro
 
 /* Brand wordmark "Idan.Lab": aligned to the writeup article title (h1#_top) so the header
    wordmark and the page title read as one Syne display type system. Same theme-aware lime
-   gradient text-fill as the h1 (dark: white -> #9fef00; light: #12181a -> #4d7c0f). Weight 700
+   gradient text-fill as the h1 (dark: white -> #9fef00; light: #16280b -> #62a011). Weight 700
    (lighter than the h1's 800, which reads heavy at header size); letter-spacing matches the h1.
    The "." is part of the text node, so it takes the same gradient as every other glyph. Wins
    over the earlier mono treatment via the same selector at later source order. */
@@ -1254,7 +1262,10 @@ a.site-title {
   transition: color .15s, border-color .15s, text-shadow .15s;
 }
 :root[data-theme='light'] a.site-title {
-  background: linear-gradient(135deg, #12181a, #4d7c0f);
+  /* Kept matched to the light h1#_top gradient (same dark-green-to-vivid sweep) so the header wordmark
+     and the page title stay one Syne type system. Front-loaded, so the short "IDAN.LAB" string still
+     transitions into the bright green by the end. */
+  background: linear-gradient(105deg, #16280b 0%, #4a7d0d 45%, #62a011 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
