@@ -13,7 +13,7 @@ import Toggle from '@components/Toggle.astro';
   <span class="meta-badge os-linux">Linux</span>
 </div>
 
-> Goal: find the password in an earlier commit of the level's repo, after it was redacted in the latest one.
+> Goal: find the password in an earlier commit of the level's repository, after it was redacted in the latest one.
 
 ## Approach
 
@@ -34,7 +34,7 @@ bandit28@bandit:...$ git show 68314e0:README.md
 
 ## Why it works
 
-Redacting a value in a later commit does not remove it; every prior version stays in the object history. git log surfaces the "fix info leak" commit, and git show on the commit before it prints the README as it was, password intact. Version control keeps what you delete.
+Redacting a value in a later commit does not remove it, every prior version stays in the object history. `git log` surfaces the "fix info leak" commit, and `git show` on the commit before it prints the `README` as it was, password intact. Version control keeps what you delete.
 
 <Toggle label="Reveal password" class="spoiler-toggle">
 

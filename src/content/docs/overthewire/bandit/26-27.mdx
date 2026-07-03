@@ -26,7 +26,7 @@ The password you are looking for is: <password>
 
 ## Why it works
 
-Same setuid pattern as level 19: bandit27-do runs as its owner bandit27 and forwards whatever command you hand it, so a single cat reads bandit27's password file. (Reaching a shell as bandit26 in the first place is the pager escape from the previous level.)
+Same setuid pattern as level 19: `bandit27-do` runs with its owner's (`bandit27`) privileges and forwards whatever command you hand it, so a single `cat` reads `bandit27`'s password file. (Reaching a shell as `bandit26` in the first place is the pager escape from the previous level.)
 
 <Toggle label="Reveal password" class="spoiler-toggle">
 

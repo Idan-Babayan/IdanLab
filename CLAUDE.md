@@ -64,7 +64,7 @@ Content pages are made to match the marketing pages purely by overriding Starlig
 Hand-curated; each category points at an `autogenerate.directory` relative to `src/content/docs/`. Sidebar markers are CSS-injected colored dots (not emojis).
 
 - **Starlight throws a build error if an `autogenerate` directory does not exist.** That's why HTB Medium/Hard are commented out — create the folder with at least one writeup *before* enabling its sidebar entry.
-- **Directory casing must match exactly.** Difficulty folders are Capitalized (`Easy`/`Medium`/`Hard`) and each sidebar `autogenerate.directory` must use that exact casing. Starlight matches the directory against collection entry ids case-sensitively, so pointing at `hackthebox/easy` silently drops writeups in `hackthebox/Easy/` — the page still builds and is reachable by URL, it just never appears in the sidebar. Windows hides this by resolving the path case-insensitively; a Linux/Cloudflare build fails harder. (This bit once: busqueda.mdx vanished from the sidebar until config was fixed to `hackthebox/Easy`.)
+- **Directory casing must match exactly.** Difficulty folders are lowercase (`easy`/`medium`/`hard`) and each sidebar `autogenerate.directory` must use that exact casing. Starlight matches the directory against collection entry ids case-sensitively, so pointing at `hackthebox/Easy` would silently drop writeups in `hackthebox/easy/` (the page still builds and is reachable by URL, it just never appears in the sidebar). Windows hides this by resolving the path case-insensitively; a Linux/Cloudflare build fails harder, and a case-only folder rename needs `git mv` (`core.ignorecase=true`). (This bit once: busqueda.mdx vanished from the sidebar until the casing matched; the tree was later migrated from `Easy` to lowercase `easy`.)
 
 ### Path alias
 
@@ -72,19 +72,19 @@ Hand-curated; each category points at an `autogenerate.directory` relative to `s
 
 ## Writeups
 
-Writeups are `.mdx` under `src/content/docs/<platform>/<difficulty>/<slug>.mdx` (e.g. `hackthebox/Easy/busqueda.mdx`). Every writeup follows the same methodology loop: **Recon → Foothold → Escalation → Reflection**, documenting the actual thought process and dead ends, not just commands.
+Writeups are flat `.mdx` files under `src/content/docs/<platform>/<difficulty>/<slug>.mdx` (e.g. `hackthebox/easy/busqueda.mdx`), one file per writeup with no per-writeup folder. Every writeup follows the same methodology loop: **Recon → Foothold → Escalation → Reflection**, documenting the actual thought process and dead ends, not just commands.
 
 Conventions (see `busqueda.mdx` as the reference and `CORE_SPEC.md` §7):
 
 - **Frontmatter is just `title` + `description`.** Machine metadata is *not* frontmatter — it's a `<div class="machine-meta">` of badge spans (`meta-badge platform-* / difficulty-* / os-*`) near the top, followed by the description repeated as a `>` blockquote lead.
 - Import the toggle: `import Toggle from '@components/Toggle.astro'`. `Toggle.astro` is a `<details>` wrapper whose `label` accepts an HTML string; code fences inside its slot are fully highlighted.
-- **Image paths must be absolute** (`/images/<platform>/<difficulty>/<slug>/...`); relative paths fail as MDX imports. Screenshots live under `public/images/...`. Site-wide click-to-zoom is provided by the `starlight-image-zoom` plugin (use `data-zoom-off` to opt an image out, e.g. logos).
+- **Writeup images live in `src/assets`** (parallel tree `src/assets/<platform>/<difficulty>/<slug>/...`), referenced from the `.mdx` by a relative Markdown path (`../../../../assets/...`, four `../` from a difficulty-tier writeup) so `astro:assets` optimizes and hashes them (served under `/_astro`). Use plain Markdown image syntax, not `<Image />`. Site-wide click-to-zoom is still provided by the `starlight-image-zoom` plugin (use `data-zoom-off` to opt an image out, e.g. logos).
 - Code blocks use `frame="code"` + a language `title` so bash/python render identically. Bold inside a code fence is impossible — use expressive-code line highlighting (e.g. ```` ```bash {3} ````) to emphasize a line.
 - Flag answers / spoilers go in `:::tip[Answer]` admonitions (often wrapped in a `<Toggle>`). Inline code renders red; `<span class="port-label">` for ports, `<span class="task-title">` for task headings.
 
 ### Content pipeline (Notion → MDX)
 
-The intended authoring flow is: write in Notion → export Markdown → run **`notion_cleaner.py`** to normalize into convention-compliant MDX (it enforces the badges, toggles, `frame="code"`, absolute image paths, and `:::tip` conversions above). **Note:** this script is documented in `CORE_SPEC.md` §7 but is **not currently committed** to this repo. The conventions it produces are the source of truth even when authoring by hand.
+The intended authoring flow is: write in Notion → export Markdown → run **`notion_cleaner.py`** to normalize into convention-compliant MDX (it enforces the badges, toggles, `frame="code"`, the `src/assets` relative image paths, and `:::tip` conversions above). **Note:** this script is documented in `CORE_SPEC.md` §7 but is **not currently committed** to this repo. The conventions it produces are the source of truth even when authoring by hand.
 
 ## Conventions & deployment
 
