@@ -97,14 +97,31 @@ html[data-theme="dark"] .task-title {
 }
 
 
-/* ── Port labels (red) ───────────────────────── */
-
-html[data-theme="light"] .port-label {
-  color: #c92a2a !important;
+/* ── Port label: a cyan mono tag inside recon callouts ────────────────────────
+   Was red, which clashed with the cyan recon callout it lives in and, like the old inline-code chip,
+   spent an alert color on a neutral identifier (a port is an address, not a danger). Now a calm cyan
+   mono TAG that harmonizes with the recon accent and out-ranks a passing inline-code reference by
+   WEIGHT (bold), not by adding another cyan. Theme-aware pop: bright cyan on the near-black callout
+   tint (where bright reads), a DEEPER teal on the warm paper (where deep reads). Snug by default so it
+   also works inline in prose (for example "the panel on 80/tcp"); the column alignment for findings
+   rows is layered on separately. Used only inside recon callouts. */
+.port-label {
+  font-family: var(--sl-font-mono);
+  font-size: 0.82em;
+  font-weight: 700;
+  border: 1px solid;
+  border-radius: 4px;
+  padding: 0.08em 0.45em;
 }
-
+html[data-theme="light"] .port-label {
+  color: #05495b !important;
+  background-color: color-mix(in oklab, #41efff 15%, transparent);
+  border-color: color-mix(in oklab, #096577 40%, transparent);
+}
 html[data-theme="dark"] .port-label {
-  color: #ff8787 !important;
+  color: #41efff !important;
+  background-color: color-mix(in oklab, #41efff 18%, transparent);
+  border-color: color-mix(in oklab, #41efff 42%, transparent);
 }
 
 
@@ -1409,6 +1426,55 @@ html[data-theme="light"] .sl-markdown-content .cl :not(pre) > code {
   color: color-mix(in oklab, var(--cl-ink) 80%, #000);
   background-color: color-mix(in oklab, var(--acc) 13%, transparent);
   border-color: transparent;
+}
+
+
+/* ── Recon findings layout + assessment (Direction 2) ─────────────────────────
+   Inside a recon callout, a markdown list of open ports becomes a scannable findings table: the
+   leading .port-label tag is given a fixed column width so ports align down a left rail, and each row
+   uses a hanging indent so wrapped notes line up under the description (not under the tag). The rail
+   width (4.9em) fits the widest port token (for example 5985/tcp); the tag min-width only applies to
+   the row-leading tag, so port tags used inline in prose stay snug. The concluding paragraph is treated
+   as the ASSESSMENT: a hairline separates it from the facts and an uppercase mono eyebrow labels it.
+   That treatment keys off :has(ul), so it fires only on recon callouts that actually list findings, and
+   never on a prose-only recon callout. Eyebrow color mirrors the callout header (bright --acc on dark,
+   the deeper --cl-ink on light). Scoped to .cl-recon. No motion. */
+.sl-markdown-content .cl-recon ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0.4rem 0 0.2rem;
+}
+.sl-markdown-content .cl-recon li {
+  padding-left: 5.6em;
+  text-indent: -5.6em;
+  margin: 0.26rem 0;
+  line-height: 1.55;
+}
+.sl-markdown-content .cl-recon li > .port-label:first-child {
+  display: inline-block;
+  min-width: 4.9em;
+  margin-right: 0.7em;
+  text-align: left;
+  /* text-indent is inherited, so the li's -5.6em hanging indent would otherwise shove this
+     inline-block's own port text off the left edge. Reset it; the row's hanging indent and this
+     tag's position on the line are unaffected (both are governed by the li, not the tag). */
+  text-indent: 0;
+}
+.sl-markdown-content .cl-recon:has(ul) > p:last-child {
+  margin-top: 0.8rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid color-mix(in oklab, var(--acc) 24%, transparent);
+}
+.sl-markdown-content .cl-recon:has(ul) > p:last-child::before {
+  content: "Assessment";
+  display: block;
+  font-family: var(--sl-font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--cl-ink, var(--acc));
+  margin-bottom: 0.3rem;
 }
 
 
