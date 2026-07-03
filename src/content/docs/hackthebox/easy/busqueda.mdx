@@ -112,7 +112,7 @@ Now make the site reachable by name, then fingerprint what runs behind Apache. F
 
 With the name resolving, `searcher.htb` loads: a clean search front end that proxies queries to other engines.
 
-![Searcher.htb landing page, a minimal search front end](/images/hackthebox/easy/busqueda/busqueda-1.png)
+![Searcher.htb landing page, a minimal search front end](../../../../assets/hackthebox/easy/busqueda/busqueda-1.png)
 *The application: a search box that forwards your query to a chosen engine. Worth asking how it builds that redirect.*
 
 I fingerprinted the stack three ways: `feroxbuster` for hidden routes, `nikto` for misconfigurations, and `whatweb` for the technology behind the polish.
@@ -179,10 +179,10 @@ And there it is: the facade drops, confirming a custom Python backend is handlin
 
 A `405 Method Not Allowed` is a hint, not a wall: the route exists, it just expects a different HTTP method. So I sent `/search` a `POST` through Burp Suite to see how it handles input.
 
-![BurpSuite request to /search showing the engine and query parameters](/images/hackthebox/easy/busqueda/busqueda-2.png)
+![BurpSuite request to /search showing the engine and query parameters](../../../../assets/hackthebox/easy/busqueda/busqueda-2.png)
 *This confirms the application is directly processing user-controlled input before performing the search logic.*
 
-![Looking again at the landing page footer, the backend engine is revealed as Searchor 2.4.0.](/images/hackthebox/easy/busqueda/busqueda-3.png)
+![Looking again at the landing page footer, the backend engine is revealed as Searchor 2.4.0.](../../../../assets/hackthebox/easy/busqueda/busqueda-3.png)
 *The footer then confirms the backend engine as Searchor 2.4.0.*
 
 That version number is the lead. Searchor 2.4.0 has a well-documented arbitrary command injection.
@@ -240,7 +240,7 @@ svc
 
 *The script closes Searchor's `eval()` expression, runs a base64 reverse shell, and the listener catches `svc`.*
 
-![Reverse shell landing as the svc user](/images/hackthebox/easy/busqueda/busqueda-4.png)
+![Reverse shell landing as the svc user](../../../../assets/hackthebox/easy/busqueda/busqueda-4.png)
 
 I land as `svc` in `/var/www/app`, the application's own directory. That is the foothold, and the user flag is one `cat` away.
 
@@ -286,10 +286,10 @@ The remote points at a new host `gitea.searcher.htb`, so I add it to `/etc/hosts
 10.129.228.217  searcher.htb gitea.searcher.htb
 ```
 
-![Gitea login screen for gitea.searcher.htb](/images/hackthebox/easy/busqueda/busqueda-5.png)
+![Gitea login screen for gitea.searcher.htb](../../../../assets/hackthebox/easy/busqueda/busqueda-5.png)
 *The new virtual host resolves correctly, revealing a Gitea login screen for gitea.searcher.htb.*
 
-![The Searcher_site repository inside Gitea](/images/hackthebox/easy/busqueda/busqueda-6.png)
+![The Searcher_site repository inside Gitea](../../../../assets/hackthebox/easy/busqueda/busqueda-6.png)
 *Inside Gitea, I find the Searcher_site repository.*
 
 <Callout type="loot">
@@ -365,7 +365,7 @@ svc@busqueda:~$ sudo /usr/bin/python3 /opt/scripts/system-checkup.py docker-insp
 
 *Inspecting the Gitea container leaks its database password straight out of the environment variables.*
 
-![Logging into Gitea as administrator with the recovered database password](/images/hackthebox/easy/busqueda/busqueda-7.png)
+![Logging into Gitea as administrator with the recovered database password](../../../../assets/hackthebox/easy/busqueda/busqueda-7.png)
 
 <Callout type="loot">
 

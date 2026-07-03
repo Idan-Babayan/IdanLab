@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-06-20.
+> Last updated: 2026-06-30.
 
 ---
 
@@ -50,18 +50,19 @@
 
 ```
 C:\dev\idanlab\                       # chosen to avoid Hebrew chars in C:\Users\אידן\
-├─ astro.config.mjs                   # Starlight config: site, sidebar, fonts(head), EC themes + pluginPrivCommand, reading-progress head script, image-zoom, vite alias, components override (PageSidebar)
+├─ astro.config.mjs                   # Starlight config: site, sidebar, fonts(head), EC themes + pluginPrivCommand, reading-progress head script, image-zoom, vite alias, components override (PageSidebar), markdown rehypePlugins (content image loading)
 ├─ src/
 │  ├─ content.config.ts               # docs collection (docsLoader + docsSchema), extended with optional os/tags
 │  ├─ pages/
 │  │  ├─ index.astro                  # HOMEPAGE: standalone immersive page (NOT Starlight). Dark-only.
 │  │  └─ about.astro                  # ABOUT: standalone immersive page. Has dark/light toggle.
 │  ├─ content/docs/                   # STARLIGHT docs (writeups + platform landings + 404 + secret)
-│  │  ├─ hackthebox/{Easy,Medium,Hard}/{slug}.mdx   # difficulty dirs Capitalized; sidebar autogenerate must match casing exactly
+│  │  ├─ hackthebox/{easy,medium,hard}/{slug}.mdx   # flat writeups, lowercase difficulty dirs; sidebar autogenerate matches this casing (Linux is case-sensitive)
 │  │  ├─ vulnhub|picoctf|overthewire/.../{slug}.mdx
 │  │  ├─ {platform}/index.mdx         # platform landing: minimal frontmatter + tableOfContents:false + <PlatformIndex/> (replaced the old .platform-intro markup)
 │  │  ├─ 404.mdx                      # themed 404 (template: splash + hero), renders <NotFound/>; Starlight slug-404 override
 │  │  └─ secret.mdx                   # hidden /secret (splash, pagefind:false, noindex), renders <SecretTerminal/>
+│  ├─ assets/{platform}/{difficulty}/{slug}/{slug}-N.ext   # writeup screenshots; astro:assets optimizes + hashes them, referenced by relative ../ from writeups (NOT public/)
 │  ├─ components/
 │  │  ├─ Toggle.astro                 # <details class="toggle"> wrapper; flag prop adds .toggle-flag; renders MDX (incl. code) in slot
 │  │  ├─ FlagCapture.astro            # "Decrypt to Capture" gold flag control (props: type user|root, flag); replaces the heading-plus-duplicate flag Toggle
@@ -77,11 +78,13 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in C:\Users
 │  │  └─ ec-priv-command.mjs          # EC plugin: tags command words by category (priv/recon/net/inspect)
 │  └─ styles/
 │     └─ custom.css                   # Starlight theme + THEME PASS + light art-direction + badges + sidebar + components
+├─ plugins/
+│  └─ rehype-content-image-loading.mjs # rehype: sets loading/decoding on content <img> (first eager, rest lazy); wired via astro.config markdown.rehypePlugins
 ├─ public/
 │  ├─ robots.txt                      # in-repo; breadcrumb comment + Sitemap line (see §2)
+│  ├─ favicon.svg                     # site favicon
 │  ├─ icons/{htb,vulnhub,picoctf,overthewire}.svg
-│  ├─ ethical-hacking.png             # about portrait (TODO: replace with transparent SVG)
-│  └─ images/{platform}/{difficulty}/{slug}/{slug}-N.ext   # writeup screenshots
+│  └─ ethical-hacking.png             # about portrait (TODO: replace with transparent SVG). Writeup screenshots now live in src/assets (see §7); marketing images, if any, go under public/images
 └─ notion_cleaner.py                  # CONTENT PIPELINE (documented in §7; NOT yet committed to the repo)
 ```
 
@@ -269,16 +272,27 @@ Preserves reading position: anchors on the current heading and corrects scroll s
    ```
    - Args: input; `-p {hackthebox,vulnhub,picoctf,overthewire}`; `-d {easy,medium,hard,misc}`;
      `-o` astro root; `-t/--title`; `--description`; `--os` (default Linux); `--toggle-threshold` (8).
-   - Note: `-d easy` must land the file in the Capitalized `Easy/` directory (the sidebar
-     `autogenerate.directory` is case-sensitive, e.g. `hackthebox/Easy`). If/when the script
-     is committed, confirm it Capitalizes the difficulty dir.
+   - Note: `-d easy` lands the file in the lowercase `easy/` directory (the sidebar
+     `autogenerate.directory` is case-sensitive, e.g. `hackthebox/easy`, and must match the on-disk
+     lowercase dir; a case-only rename needs `git mv` on Windows, `core.ignorecase=true`). If/when the
+     script is committed, confirm it lowercases the difficulty dir.
    - Output: `src/content/docs/{platform}/{difficulty}/{slug}.mdx`.
    - Manual step: copy + rename screenshots per the script's printed rename map into
-     `public/images/{platform}/{difficulty}/{slug}/`.
+     `src/assets/{platform}/{difficulty}/{slug}/`, then reference them from the writeup by a relative
+     Markdown path (`../../../../assets/...`) so astro:assets optimizes + hashes them.
 3. Commit + push → Cloudflare deploys.
 
 ### MDX conventions the script enforces
-- Absolute image paths only (`/images/...`); non-absolute paths fail as MDX imports.
+- Writeups are stored as flat .mdx files under src/content/docs
+  (<platform>/<difficulty>/<machine>.mdx), one file per writeup with no per-writeup
+  folder. Writeup images live in a parallel non-routable tree under src/assets
+  (src/assets/<platform>/<difficulty>/<machine>/) and are referenced from the mdx
+  with a relative Markdown path (../../../../assets/...) so they are optimized and
+  hashed by astro:assets. Plain Markdown image syntax is used, not <Image />. Flat
+  files allow Starlight sidebar autogenerate to render clean single entries with no
+  phantom groups and no per-writeup config; new writeups require no astro.config.mjs
+  change. Icons remain in public/icons; marketing images remain in public/images.
+  Absolute /public image paths are not used for writeup content images.
 - Frontmatter `title`/`description` + `import Toggle from '@components/Toggle.astro'`.
 - Metadata badges div + description as a `>` blockquote lead.
 - Long/indented code → wrapped in `<Toggle>`; all code blocks get `frame="code"` + a
