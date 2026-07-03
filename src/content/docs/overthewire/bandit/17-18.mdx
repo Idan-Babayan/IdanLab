@@ -27,7 +27,7 @@ bandit17@bandit:~$ diff passwords.old passwords.new
 
 ## Why it works
 
-diff reports only the lines that changed between two otherwise identical files, with the less-than side marking the old line and the greater-than side the new. The new password is the single changed entry.
+`diff` reports only the unique lines that differ between two otherwise identical files, using the less-than symbol (`<`) to mark the original text and the greater-than symbol (`>`) to mark the modifications. In this case, The new password is the single changed entry.
 
 <Toggle label="Reveal password" class="spoiler-toggle">
 

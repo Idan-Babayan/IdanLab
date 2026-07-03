@@ -1,0 +1,192 @@
+---
+// src/components/FlagCapture.astro
+//
+// "Decrypt to Capture" flag loot control. Replaces the old heading-plus-duplicate-Toggle for User /
+// Root flags. It sits UNDER the existing gold "## User Flag" / "## Root Flag" heading and never repeats
+// the flag name OR its glyph: the heading already owns the flag icon + gold name, so this control carries
+// NO identity icon. A LOCK marks the LOCKED state; a single neutral CHECK marks CAPTURED. Root vs user is
+// differentiated ONLY by the richer gold tier (color), never by a glyph.
+//
+// States:
+//   LOCKED (default, STATIC): the flag as gold cyphertext the exact length of the real value, a closed
+//     padlock, and a "LOCKED" label. The whole frame is a real <button> (keyboard + focus). No idle
+//     animation, so reading stays calm and performant.
+//   On activate: the lock opens, the site's signature decode/scramble (~700ms, ported from index.astro /
+//     about.astro) resolves the cypher into the real flag, a warm gold glow pulses as it locks in, the
+//     lock morphs to a check and the label morphs LOCKED -> CAPTURED. Happens once.
+//   CAPTURED (persistent): the real flag in gold monospace on a gold-bordered frame, with an icon-only
+//     copy button inside the frame (top-right, like the code-block copy button).
+//
+// Accessibility: real <button>; the real flag is always present in the DOM (.flagcap-real, visually
+// hidden) so screen readers get the value regardless of the visual scramble; an aria-live region
+// announces capture. prefers-reduced-motion skips the scramble + glow and reveals instantly.
+
+interface Props {
+  /** Which flag this is. Drives ONLY the gold tier (user vs richer root); there is no per-type glyph. */
+  type: 'user' | 'root';
+  /** The real flag value. Present in the DOM for screen readers + copy; visually scrambled until capture. */
+  flag: string;
+}
+
+const { type, flag } = Astro.props;
+
+// Build-time STATIC cyphertext, the exact length of the real flag and drawn from the site's decode
+// charset, so the locked row reads as encrypted gold loot with no idle animation and zero layout shift
+// when it later resolves to the same-length real value. The real value is NOT derivable from this.
+const CYPHER = '!<>-_\\/[]{}=+*^?#01';
+const cypher = Array.from(flag, () => CYPHER[Math.floor(Math.random() * CYPHER.length)]).join('');
+
+const isRoot = type === 'root';
+const noun = isRoot ? 'root flag' : 'user flag';
+---
+
+<div class:list={['flagcap', isRoot ? 'flagcap-root' : 'flagcap-user']} data-flagcap data-flag={flag}>
+  <button type="button" class="flagcap-btn" aria-label={`Decrypt ${noun}`}>
+    <svg class="fc-ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path class="fc-ico-path" d="M12 1.5a4.5 4.5 0 0 0-4.5 4.5V9H6.75A1.75 1.75 0 0 0 5 10.75v9.5A1.75 1.75 0 0 0 6.75 22h10.5A1.75 1.75 0 0 0 19 20.25v-9.5A1.75 1.75 0 0 0 17.25 9H16.5V6A4.5 4.5 0 0 0 12 1.5ZM15 9H9V6a3 3 0 0 1 6 0Z" />
+    </svg>
+
+    <code class="flagcap-value" aria-hidden="true">{cypher}</code>
+
+    <span class="flagcap-state"><span class="fc-state-text">LOCKED</span></span>
+  </button>
+
+  <button type="button" class="flagcap-copy" hidden aria-label="Copy flag" title="Copy to clipboard">
+    <svg class="fc-copy-ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path class="fc-copy-path" d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11z" />
+    </svg>
+  </button>
+  <span class="fc-copy-feedback" aria-hidden="true">Copied!</span>
+
+  <span class="flagcap-real">{flag}</span>
+  <span class="flagcap-live" aria-live="polite"></span>
+</div>
+
+<script>
+  // The site's signature decode charset, ported verbatim from the hero/headline decode in
+  // src/pages/index.astro and src/pages/about.astro so the flag decrypt matches the brand effect.
+  const CYPHER = '!<>-_\\/[]{}=+*^?#01';
+
+  // Single-icon path swaps: the lock/check glyph and the copy/check glyph each use ONE icon element
+  // whose path is swapped, so it stays one flex child and centers cleanly (two display-toggled siblings
+  // drift a few px in flexbox).
+  const CHECK_PATH = 'M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z';
+  const COPY_PATH =
+    'M16 1H4a2 2 0 0 0-2 2v14h2V3h12zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11z';
+
+  // Same scramble math as the hero decode, scaled to ~700ms (dur=15 -> ~16 frames x 45ms).
+  function runDecode(el: HTMLElement, target: string, done: () => void): void {
+    const dur = 15;
+    let frame = 0;
+    const id = window.setInterval(() => {
+      el.textContent = target
+        .split('')
+        .map((c, i) => ((frame / dur) * target.length > i ? c : CYPHER[Math.floor(Math.random() * CYPHER.length)]))
+        .join('');
+      if (frame++ > dur) {
+        window.clearInterval(id);
+        el.textContent = target;
+        done();
+      }
+    }, 45);
+  }
+
+  function capture(root: HTMLElement): void {
+    if (root.dataset.captured === 'true') return; // ceremony happens once
+    root.dataset.captured = 'true';
+
+    const flag = root.dataset.flag ?? '';
+    const value = root.querySelector('.flagcap-value') as HTMLElement | null;
+    const stateText = root.querySelector('.fc-state-text') as HTMLElement | null;
+    const live = root.querySelector('.flagcap-live') as HTMLElement | null;
+    const copy = root.querySelector('.flagcap-copy') as HTMLButtonElement | null;
+    const btn = root.querySelector('.flagcap-btn') as HTMLButtonElement | null;
+    const Noun = root.classList.contains('flagcap-root') ? 'Root flag' : 'User flag';
+
+    const iconPath = root.querySelector('.fc-ico-path') as SVGPathElement | null;
+
+    const finish = (): void => {
+      if (value) value.textContent = flag;
+      if (iconPath) iconPath.setAttribute('d', CHECK_PATH); // lock -> neutral check
+      root.classList.remove('is-capturing');
+      root.classList.add('is-captured');
+      if (stateText) stateText.textContent = 'CAPTURED';
+      if (btn) btn.setAttribute('aria-label', `${Noun} captured`);
+      if (copy) copy.hidden = false;
+      if (live) live.textContent = `${Noun} captured`;
+    };
+
+    // Reduced motion (or no value node): reveal instantly, no scramble, no glow. Copy still works.
+    // Read the preference at activation time so a runtime OS toggle is respected.
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce || !value) {
+      finish();
+      return;
+    }
+
+    root.classList.add('is-capturing'); // opens the lock
+    runDecode(value, flag, () => {
+      root.classList.add('is-sweep'); // warm gold glow pulse as the value locks in
+      finish();
+    });
+  }
+
+  function bindCopy(root: HTMLElement): void {
+    const copy = root.querySelector('.flagcap-copy') as HTMLButtonElement | null;
+    if (!copy) return;
+    const path = copy.querySelector('.fc-copy-path') as SVGPathElement | null;
+    let revertId = 0;
+
+    copy.addEventListener('click', () => {
+      const flag = root.dataset.flag ?? '';
+      const write = navigator.clipboard?.writeText(flag);
+      if (write && typeof write.catch === 'function') {
+        write.catch(() => legacyCopy(flag));
+      } else {
+        legacyCopy(flag);
+      }
+      copy.classList.add('is-copied');
+      root.classList.add('is-copy-active'); // reveals the "Copied!" pill, hides the CAPTURED label
+      if (path) path.setAttribute('d', CHECK_PATH); // copy icon -> check
+      copy.setAttribute('aria-label', 'Copied');
+      window.clearTimeout(revertId);
+      revertId = window.setTimeout(() => {
+        copy.classList.remove('is-copied');
+        root.classList.remove('is-copy-active');
+        if (path) path.setAttribute('d', COPY_PATH);
+        copy.setAttribute('aria-label', 'Copy flag');
+      }, 1500);
+    });
+  }
+
+  // Fallback for non-secure contexts where navigator.clipboard is unavailable.
+  function legacyCopy(text: string): void {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try {
+      document.execCommand('copy');
+    } catch (_e) {
+      /* no-op: clipboard simply unavailable */
+    }
+    ta.remove();
+  }
+
+  function init(): void {
+    (document.querySelectorAll('[data-flagcap]') as NodeListOf<HTMLElement>).forEach((root) => {
+      if (root.dataset.fcReady === 'true') return; // avoid double-binding
+      root.dataset.fcReady = 'true';
+      const btn = root.querySelector('.flagcap-btn') as HTMLButtonElement | null;
+      if (btn) btn.addEventListener('click', () => capture(root));
+      bindCopy(root);
+    });
+  }
+
+  init();
+  // Keep working if View Transitions are ever added (module scripts do not re-run on navigation).
+  document.addEventListener('astro:page-load', init);
+</script>

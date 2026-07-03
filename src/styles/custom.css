@@ -68,6 +68,34 @@ html[data-theme="dark"] .task-title {
   color: var(--flag-gold);
 }
 
+/* TOC active-entry color mirrors the content heading ladder: the entry the reader is currently on
+   (aria-current) takes the hue of the heading it points to, so the "On this page" column echoes the
+   in-page hierarchy (h2 green, h3 cyan, h4+ muted). Heading level is read from Starlight's TOC
+   nesting (it nests h3 under h2, h4 under h3, by maxHeadingLevel), so depth maps to level. ONLY the
+   current entry recolors; inactive entries keep their muted default. h1/h2 (top level) keep
+   Starlight's green accent (untouched), and flags keep gold (their rule above wins and they are
+   excluded below). Unlayered, so it beats Starlight's layered a[aria-current] green. Desktop column
+   only; the mobile TOC keeps Starlight's white + checkmark active style. Parity with the heading
+   rules is by shared tokens (--tp-cyan / --sl-color-gray-2); if a heading color changes, change it
+   here too. */
+
+/* h3 (nested one level): cyan, matching the ### heading. Flags are also h3, so their anchors are
+   excluded here (they own the gold rule above). */
+.right-sidebar-panel nav > ul > li > ul > li > a[aria-current="true"]:not([href="#user-flag"]):not([href="#root-flag"]) {
+  color: var(--tp-cyan);
+}
+:root[data-theme='light'] .right-sidebar-panel nav > ul > li > ul > li > a[aria-current="true"]:not([href="#user-flag"]):not([href="#root-flag"]) {
+  color: var(--tp-cyan-ink);
+}
+
+/* h4 / h5 / h6 (nested two or more levels): the muted gray of the h4 heading, continuing the quiet
+   tail of the ladder. These levels are not in the TOC unless tableOfContents.maxHeadingLevel is
+   raised; the rule is here so they are correct when it is. --sl-color-gray-2 is theme-aware (no
+   light override needed), matching the h4 heading rule. */
+.right-sidebar-panel nav > ul > li > ul > li > ul li a[aria-current="true"] {
+  color: var(--sl-color-gray-2);
+}
+
 
 /* ── Port labels (red) ───────────────────────── */
 
@@ -80,17 +108,33 @@ html[data-theme="dark"] .port-label {
 }
 
 
-/* ── Inline code color (matches Notion red) ──── */
-
-html[data-theme="light"] :not(pre) > code {
-  color: #c92a2a;
-  /* Warm the inline-code chip to match the paper: Starlight's default is a cool ~#edeef3 that reads
-     too white/blue here. Kept light so the red code text stays AA (4.6:1). Light only; dark untouched. */
-  background-color: #f3ebda;
+/* Inline code: its own object (calm neutral chip, identity in the text). Inline code (:not(pre) > code)
+   is a passing REFERENCE inside prose, not a destination, so it stays subordinate to the sentence. The
+   chip is neutral in both themes (no red in the fill or border); the red identity lives in the GLYPHS,
+   where it reads as deliberate and never broadcasts false urgency on neutral tokens like filenames or
+   ports. Soft rounded corners, deliberately the opposite of the sharp-cornered code-block destinations.
+   ONE structure for both themes; only the surface is tuned per theme. Dark: a white-alpha lift that
+   adapts to whatever sits behind it (plain page, raised toggle panel, a summary title), so there is no
+   surface special-casing. Light: a warm fill (#ece2d6) with the shared --tp-divider hairline, the same
+   token every other structural line uses, so the chip edge stays system-coherent. Scoped to
+   :not(pre) > code so it never touches code-block tokens (those live in pre). Unlayered, so it overrides
+   Starlight's default inline-code chip. Red text stays AA on its own fill in both themes (dark is high
+   contrast on the near-black surface, light is about 4.9:1). */
+:not(pre) > code {
+  border-radius: 5px;
+  border: 1px solid;
+  padding: 0.12em 0.4em;
+  font-size: 0.875em;
 }
-
 html[data-theme="dark"] :not(pre) > code {
-  color: #ff8787;
+  color: #ff9b9b;
+  background-color: rgba(255, 255, 255, 0.055);
+  border-color: rgba(255, 255, 255, 0.11);
+}
+html[data-theme="light"] :not(pre) > code {
+  color: #b03326;
+  background-color: #ece2d6;
+  border-color: var(--tp-divider);
 }
 
 
@@ -160,16 +204,20 @@ html[data-theme="light"] .sl-markdown-content details {
   transform: rotate(90deg);
 }
 
-/* Toggle titles use the normal foreground text color (no cyan), so cyan stays reserved for links.
-   The disclosure chevron stays dim (the ::before above). Inline <code> in a summary keeps its red
-   code color so a command, tool, or path still pops. Flag toggles are the deliberate exception
-   (lime accent), handled by the :has() rule below. */
-html[data-theme="dark"] .sl-markdown-content details > summary code {
-  color: #ff8787;
+/* Tighten the gap under an OPEN toggle title: trim the summary's bottom padding only when open
+   (the closed pill keeps its balanced 0.3rem top/bottom). Paired with the smaller .toggle-body
+   padding-top below, content sits closer to the title. Content toggles only (scoped to
+   .sl-markdown-content), so sidebar group summaries are untouched. */
+.sl-markdown-content details[open] > summary {
+  padding-bottom: 0.15rem;
 }
-html[data-theme="light"] .sl-markdown-content details > summary code {
-  color: #c92a2a;
-}
+
+/* Toggle titles use the normal foreground text color (no cyan), so cyan stays reserved for links, and
+   the disclosure chevron stays dim (the ::before above). Inline <code> in a summary is deliberately NOT
+   special-cased here: the unified inline-code rule at the top of this file already renders it as the
+   same red chip on the toggle-panel surface (that was the point of making inline code its own object).
+   The flag-toggle summary keeps its gold label; a code chip inside it still reads red, because that
+   global rule sets color on the <code> directly and so wins over the summary's inherited gold. */
 
 /* Flag reveal is the prize of the writeup, so it is the one toggle that keeps a pop. Flag toggles
    carry the .toggle-flag class (Toggle's `flag` prop). Single-line layout: the summary is a flex row
@@ -199,7 +247,7 @@ html[data-theme="light"] .sl-markdown-content details > summary code {
 }
 
 .toggle-body {
-  padding-top: 0.5rem;
+  padding-top: 0.25rem;
 }
 
 
@@ -697,6 +745,12 @@ body:has(.pi-index) .content-panel + .content-panel {
   /* Flag loot gold: one signal for the User Flag / Root Flag heading, reveal toggle, and TOC entry.
      Theme-aware; AA in both themes (12.4:1 on ink, 4.85:1 on paper). */
   --flag-gold: #ffc23d;
+  /* FlagCapture tiers (see the FLAG CAPTURE block). --flag-gold-root is the richer "bigger prize" gold
+     for root; --flag-gold-val(-root) is the AA-grade gold used for the actual flag VALUE text. On dark
+     the bright loot gold already clears AA, so value == identity. All clear 4.5:1 on the captured row. */
+  --flag-gold-root: #ffcf63;
+  --flag-gold-val: #ffc23d;
+  --flag-gold-val-root: #ffcf63;
   --sl-color-bg: #07090a;
   --sl-color-bg-nav: color-mix(in oklab, #07090a 78%, transparent);
   --sl-color-bg-sidebar: #0a0e0f;
@@ -711,6 +765,12 @@ body:has(.pi-index) .content-panel + .content-panel {
   --sl-color-accent-high: #2f4d09;
   --sl-color-text-accent: #4d7c0f;
   --flag-gold: #C6A243;
+  /* FlagCapture tiers, light. The bright loot gold (#C6A243) reads as decorative gold but is NOT AA as
+     text on paper, so the flag VALUE uses a deeper antique gold that clears 4.5:1 on the captured row
+     (user 5.1:1, root 6.1:1). Root identity + value are a notch deeper so root reads as the richer prize. */
+  --flag-gold-root: #B8862B;
+  --flag-gold-val: #7a5a12;
+  --flag-gold-val-root: #6b4e0e;
   --sl-color-bg: #ece9e0;
   --sl-color-bg-nav: color-mix(in oklab, #ece9e0 80%, transparent);
   --sl-color-bg-sidebar: #f1eee5;
@@ -807,10 +867,15 @@ h1#_top {
   -webkit-text-fill-color: transparent;
 }
 :root[data-theme='light'] h1#_top {
-  /* Use an explicit dark ink, not var(--sl-color-black): Starlight's black/white tokens
-     invert per theme, so --sl-color-black resolves to WHITE in light mode and would make
-     the start stop invisible on paper. #12181a is the canonical light text color (CORE_SPEC). */
-  background: linear-gradient(135deg, #12181a, #4d7c0f);
+  /* Light-mode title: a dark-green-to-vivid sweep, not the old near-black-to-olive. The start is a
+     deep forest green (not neutral black) so the whole word reads as a green object instead of black,
+     the stops are front-loaded (green by 45%) and the angle is gentle (105deg, mostly horizontal) so
+     SHORT titles (Return, Lame, Bandit N -> M) reach green too, and the end is a brighter grass green
+     so the title pops on paper. Do NOT swap the start for var(--sl-color-black): Starlight's black/white
+     tokens invert per theme, so that token resolves to WHITE in light mode and the start stop would
+     vanish on the paper. The brightest end letters are a deliberate decorative tradeoff, verified
+     readable at the 800-weight display size. Dark mode (white to #9fef00) is unchanged. */
+  background: linear-gradient(105deg, #16280b 0%, #4a7d0d 45%, #62a011 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -983,9 +1048,25 @@ nav.sidebar summary {
 
 /* ── Code blocks: a touch more presence (syntax colors stay from your EC themes) ── */
 .expressive-code { margin: 1.4rem 0; }
+/* Sharp rectangular code blocks in BOTH themes (matches dark's clean edges, fixes light's soft look).
+   --ec-brdRad is Expressive Code's own frame radius variable, so zeroing it sharpens the frame, the
+   title/terminal tab corners, and the code body at the source; the explicit frame border-radius:0
+   covers the literal override that used to set 12px. Only code blocks: the EC copy button keeps its
+   own radius, and toggle / button / badge / divider radii elsewhere are untouched. */
+.expressive-code {
+  --ec-brdRad: 0px;
+}
 .expressive-code .frame {
-  border-radius: 12px;
+  border-radius: 0;
   box-shadow: 0 14px 40px -24px rgba(0, 0, 0, .7);
+}
+/* EC insets the title tab (top) and code body (bottom) by calc(--ec-brdRad + border-width), which
+   leaves a 1px residual radius once --ec-brdRad is 0. Zero it so the tab and code body are perfectly
+   square too. Code blocks only; the copy button (.copy button) is not matched and keeps its radius. */
+.expressive-code .frame .header,
+.expressive-code .frame .title,
+.expressive-code .frame pre {
+  border-radius: 0;
 }
 
 /* ── Command highlight by category (.ec-cmd-*) ──
@@ -1080,6 +1161,15 @@ html[data-theme="light"] .ec-cmd-inspect span {
   box-shadow: 0 8px 24px -16px rgba(60, 50, 30, 0.45), 0 1px 2px rgba(60, 50, 30, 0.06);
 }
 
+/* Soften the copy "Copied!" feedback on paper. EC's default success tooltip is a saturated teal
+   (--ec-frm-tooltipSuccessBg #438076 with white text), which reads too bold on the warm theme. In
+   LIGHT only, swap EC's success-tooltip vars for a soft pale sage pill with deep-olive text (the light
+   accent-high #2f4d09), so it fits the paper and stays AA (~6.8:1). Dark keeps EC's default. */
+:root[data-theme='light'] .expressive-code {
+  --ec-frm-tooltipSuccessBg: #d6e4c0;
+  --ec-frm-tooltipSuccessFg: #2f4d09;
+}
+
 /* ── Scrollbars ──────────────────────────────────────────────────────────────
    Starlight ships no scrollbar styling, so the page scroller and the code-block
    horizontal scroller fall back to the browser default (a cool white bar in light).
@@ -1156,7 +1246,7 @@ html[data-theme="light"] .expressive-code pre::-webkit-scrollbar-track { backgro
 
 /* Brand wordmark "Idan.Lab": aligned to the writeup article title (h1#_top) so the header
    wordmark and the page title read as one Syne display type system. Same theme-aware lime
-   gradient text-fill as the h1 (dark: white -> #9fef00; light: #12181a -> #4d7c0f). Weight 700
+   gradient text-fill as the h1 (dark: white -> #9fef00; light: #16280b -> #62a011). Weight 700
    (lighter than the h1's 800, which reads heavy at header size); letter-spacing matches the h1.
    The "." is part of the text node, so it takes the same gradient as every other glyph. Wins
    over the earlier mono treatment via the same selector at later source order. */
@@ -1172,7 +1262,10 @@ a.site-title {
   transition: color .15s, border-color .15s, text-shadow .15s;
 }
 :root[data-theme='light'] a.site-title {
-  background: linear-gradient(135deg, #12181a, #4d7c0f);
+  /* Kept matched to the light h1#_top gradient (same dark-green-to-vivid sweep) so the header wordmark
+     and the page title stay one Syne type system. Front-loaded, so the short "IDAN.LAB" string still
+     transitions into the bright green by the end. */
+  background: linear-gradient(105deg, #16280b 0%, #4a7d0d 45%, #62a011 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -1296,6 +1389,28 @@ html[data-theme="light"] .sl-markdown-content .cl-intel   { --cl-ink: #7a27b3; }
 html[data-theme="light"] .sl-markdown-content .cl-defense { --cl-ink: #15803d; }
 html[data-theme="light"] .sl-markdown-content .cl-vuln    { --cl-ink: #c92a2a; }
 
+/* Inline code INSIDE a colored callout harmonizes with that callout's accent instead of fighting it.
+   The standalone red chip (red text + warm-red fill) clashes inside a colored callout, worst in a vuln
+   callout in DARK (two saturated reds). Generic across every type: this reads the callout's own --acc
+   (and the light --cl-ink) tokens, so recon / loot / intel / defense / vuln each adapt automatically
+   with no per-type rule. The fill becomes a soft SAME-accent tint (quiet emphasis that reads as part of
+   the callout), the standalone hairline is dropped (transparent), and the text takes the accent: the
+   bright --acc on dark (high contrast on the near-black tint), and a DEEPENED --cl-ink on light, because
+   a few callout inks (vuln, loot, defense) sit only ~4:1 on the callout tint and body-size code needs
+   AA 4.5:1. Rounded corners + mono carry over from the standalone inline-code rule; only color / fill /
+   border change. Scoped to .cl inline code, so standalone inline code and all code blocks (in <pre>) are
+   untouched. */
+html[data-theme="dark"] .sl-markdown-content .cl :not(pre) > code {
+  color: var(--acc);
+  background-color: color-mix(in oklab, var(--acc) 16%, transparent);
+  border-color: transparent;
+}
+html[data-theme="light"] .sl-markdown-content .cl :not(pre) > code {
+  color: color-mix(in oklab, var(--cl-ink) 80%, #000);
+  background-color: color-mix(in oklab, var(--acc) 13%, transparent);
+  border-color: transparent;
+}
+
 
 /* ── Spoiler reveal toggle (OverTheWire amber) ───────────────────────────────
    A <Toggle class="spoiler-toggle"> for "reveal the answer" controls (e.g. a wargame password).
@@ -1356,3 +1471,301 @@ html[data-theme="light"] .sl-markdown-content details.spoiler-toggle > summary {
   box-shadow: 0 1px 4px rgba(60, 50, 30, 0.07);
 }
 /* === end LIGHT SURFACE DEPTH (V3) === */
+
+
+/* === FLAG CAPTURE (Decrypt to Capture) ======================================
+   The gold flag-loot control (FlagCapture.astro) under the gold "## User Flag" /
+   "## Root Flag" heading. The heading already owns the flag glyph + gold name, so
+   this control carries NO identity icon: a LOCK marks LOCKED, a single neutral CHECK
+   marks CAPTURED. Root vs user differs ONLY by the richer gold tier (color), never a
+   glyph. The frame matches the writeup Toggle (full content width, same padding +
+   6px radius) so it sits on the page like a toggle, not a chip; it keeps the gold
+   loot identity (gold border + faint gold surface). --fc-id is the identity gold
+   (frame, lock/check, label); --fc-val is the AA-grade gold for the flag VALUE text.
+   Capture moment is a warm gold GLOW pulse in BOTH themes (tuned per theme). */
+.flagcap-user { --fc-id: var(--flag-gold);      --fc-val: var(--flag-gold-val); }
+.flagcap-root { --fc-id: var(--flag-gold-root); --fc-val: var(--flag-gold-val-root); }
+
+/* Per-theme glow color for the capture moment (light needs a warmer, stronger halo to read on paper). */
+:root[data-theme='dark'] .flagcap {
+  --fc-glow: color-mix(in oklab, var(--fc-id) 55%, transparent);
+  --fc-glow-text: color-mix(in oklab, var(--fc-val) 75%, transparent);
+}
+:root[data-theme='light'] .flagcap {
+  --fc-glow: color-mix(in oklab, var(--fc-id) 72%, transparent);
+  --fc-glow-text: color-mix(in oklab, var(--fc-id) 50%, transparent);
+}
+
+/* The FRAME: full content width, Toggle-matched radius, gold loot identity. */
+.sl-markdown-content .flagcap {
+  position: relative;
+  margin: 0.6rem 0 1.4rem;
+  border: 1px solid color-mix(in oklab, var(--fc-id) 38%, transparent);
+  border-radius: 6px;
+  background: color-mix(in oklab, var(--fc-id) 6%, var(--sl-color-bg));
+  transition: border-color 0.18s ease, background-color 0.18s ease, box-shadow 0.25s ease;
+}
+:root[data-theme='light'] .sl-markdown-content .flagcap {
+  /* Raised warm panel like the Toggle (#f2ede0) with a faint gold tint + the V3 depth shadow. */
+  background: color-mix(in oklab, var(--fc-id) 7%, #f2ede0);
+  border-color: color-mix(in oklab, var(--fc-id) 55%, var(--tp-divider));
+  box-shadow: 0 4px 14px -12px rgba(60, 50, 30, 0.4);
+}
+/* Locked frame is interactive (the inner button fills it); lift the border on hover/focus. */
+.sl-markdown-content .flagcap:not(.is-captured):hover {
+  border-color: color-mix(in oklab, var(--fc-id) 62%, transparent);
+  background: color-mix(in oklab, var(--fc-id) 10%, var(--sl-color-bg));
+}
+:root[data-theme='light'] .sl-markdown-content .flagcap:not(.is-captured):hover {
+  background: color-mix(in oklab, var(--fc-id) 11%, #f2ede0);
+}
+
+/* The decrypt affordance: a real <button> that FILLS the frame (so the whole frame is the click target),
+   borderless + transparent (the frame owns the surface), padding matched to the Toggle. */
+.sl-markdown-content .flagcap-btn {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center; /* vertical centering: lock/check, value, label share one centered row */
+  gap: 0.45rem 0.75rem;
+  width: 100%;
+  margin: 0;
+  padding: 0.85rem 0.95rem;
+  font-family: var(--sl-font-mono, ui-monospace, monospace);
+  text-align: left;
+  color: var(--fc-id);
+  background: transparent;
+  border: 0;
+  border-radius: inherit;
+  cursor: pointer;
+}
+.sl-markdown-content .flagcap-btn:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--fc-id) 65%, transparent);
+  outline-offset: 2px;
+}
+/* Captured: the prize sits there inert (copy is the live control); reserve right space for the copy icon. */
+.flagcap.is-captured .flagcap-btn {
+  cursor: default;
+  padding-right: 2.7rem;
+}
+
+/* Glyph: ONE icon whose path swaps from a closed padlock (LOCKED) to a single neutral check (CAPTURED),
+   done in the component script. No flag/crown identity icon. A single icon is one flex child, so the
+   button's align-items:center centers it on the value/label row with no baseline drift (two
+   display-toggled icons drift a few px in flexbox). */
+.flagcap .fc-ico {
+  flex: none;
+  width: 1.25em;
+  height: 1.25em;
+  display: block;
+}
+.flagcap.is-capturing .fc-ico {
+  animation: fc-unlock 700ms ease 1;
+  transform-origin: 50% 62%;
+}
+.flagcap.is-captured .fc-ico {
+  animation: fc-pop 320ms ease 1;
+}
+
+/* The flag value. Three classes outrank Starlight's inline-code rule on this <code>, so the frame owns
+   the surface and the value is transparent gold monospace, the exact same length locked vs captured. */
+.sl-markdown-content .flagcap .flagcap-value {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--fc-val);
+  font-family: var(--sl-font-mono, ui-monospace, monospace);
+  font-size: 1.02em;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+  /* Stays one line on desktop (plenty of room); on a narrow phone column the flag wraps within its box
+     instead of overflowing the frame. */
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}
+/* Locked cyphertext: dimmed identity gold (decorative, aria-hidden). After the base rule so it wins. */
+.sl-markdown-content .flagcap:not(.is-captured) .flagcap-value {
+  color: color-mix(in oklab, var(--fc-id) 88%, transparent);
+}
+
+/* Label: LOCKED -> CAPTURED (the leading glyph carries the check; no second check here). */
+.flagcap-state {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.69rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--fc-id) 75%, var(--sl-color-gray-2));
+}
+.flagcap.is-captured .flagcap-state {
+  color: var(--fc-id);
+}
+
+/* Copy: icon-only, INSIDE the frame (top-right, like the code-block copy button). Hidden until capture,
+   then fades in. The copy icon swaps to a check for ~1.5s on success, then reverts. */
+.sl-markdown-content .flagcap-copy {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0.5rem;
+  margin: auto 0; /* vertically centered in the taller frame (no transform, so fc-fadein stays intact) */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  color: color-mix(in oklab, var(--fc-id) 78%, var(--sl-color-gray-2));
+  background: color-mix(in oklab, var(--fc-id) 8%, var(--sl-color-bg));
+  border: 1px solid color-mix(in oklab, var(--fc-id) 30%, transparent);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+}
+:root[data-theme='light'] .sl-markdown-content .flagcap-copy {
+  background: color-mix(in oklab, var(--fc-id) 10%, #f2ede0);
+}
+.sl-markdown-content .flagcap-copy:hover,
+.sl-markdown-content .flagcap-copy:focus-visible {
+  color: var(--fc-id);
+  border-color: color-mix(in oklab, var(--fc-id) 60%, transparent);
+  background: color-mix(in oklab, var(--fc-id) 16%, var(--sl-color-bg));
+}
+.sl-markdown-content .flagcap-copy:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--fc-id) 60%, transparent);
+  outline-offset: 2px;
+}
+.flagcap-copy[hidden] {
+  display: none;
+}
+.flagcap .fc-copy-ico {
+  width: 1em;
+  height: 1em;
+  display: block;
+}
+.flagcap-copy.is-copied {
+  color: var(--fc-id);
+  border-color: color-mix(in oklab, var(--fc-id) 55%, transparent);
+}
+.flagcap.is-captured .flagcap-copy {
+  animation: fc-fadein 0.32s ease both;
+}
+
+/* "Copied!" feedback pill: golden accent, like the code-block copy confirmation. Sits just left of the
+   copy icon, fades in while the copy button is in its is-copied state (~1.5s), then fades out. */
+.sl-markdown-content .flagcap .fc-copy-feedback {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 2.9rem;
+  margin: auto 0;
+  display: inline-flex;
+  align-items: center;
+  height: 1.55rem;
+  padding: 0 0.5rem;
+  font-family: var(--sl-font-mono, ui-monospace, monospace);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--fc-id);
+  background: color-mix(in oklab, var(--fc-id) 16%, var(--sl-color-bg));
+  border: 1px solid color-mix(in oklab, var(--fc-id) 35%, transparent);
+  border-radius: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(4px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+:root[data-theme='light'] .sl-markdown-content .flagcap .fc-copy-feedback {
+  background: color-mix(in oklab, var(--fc-id) 16%, #f2ede0);
+}
+.flagcap.is-copy-active .fc-copy-feedback {
+  opacity: 1;
+  transform: none;
+}
+/* While "Copied!" shows, fade the CAPTURED label so the pill never collides with it on narrow frames. */
+.flagcap.is-copy-active .flagcap-state {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+/* The real flag, always in the DOM for screen readers + copy, visually hidden; plus the polite
+   capture announcement. */
+.flagcap-real,
+.flagcap-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --- Captured frame depth, per theme (full gold border) --- */
+:root[data-theme='dark'] .flagcap.is-captured {
+  border-color: var(--fc-id);
+  background: color-mix(in oklab, var(--fc-id) 12%, var(--sl-color-bg));
+}
+:root[data-theme='light'] .flagcap.is-captured {
+  border-color: color-mix(in oklab, var(--fc-id) 90%, transparent);
+  background: color-mix(in oklab, var(--fc-id) 10%, #f2ede0);
+  box-shadow: 0 2px 8px rgba(60, 50, 30, 0.1), 0 1px 2px rgba(60, 50, 30, 0.06);
+}
+
+/* --- Capture MOMENT: a warm gold glow pulse, BOTH themes (one-shot, fired by .is-sweep) ---
+   The glow lives on a ::after overlay so it never disturbs the captured frame's persistent shadow. */
+.flagcap.is-sweep::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: 0 0 0 0 transparent;
+  animation: fc-glow 760ms ease-out 1;
+}
+.flagcap.is-sweep .flagcap-value {
+  animation: fc-textglow 760ms ease-out 1;
+}
+
+@keyframes fc-unlock {
+  0% { transform: translateY(0) rotate(0); }
+  22% { transform: translateY(-1px) rotate(-7deg); }
+  60% { transform: translateY(0) rotate(5deg); }
+  100% { transform: translateY(0) rotate(0); }
+}
+@keyframes fc-pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes fc-fadein {
+  from { opacity: 0; transform: translateY(2px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes fc-glow {
+  0% { box-shadow: 0 0 0 0 transparent; }
+  35% { box-shadow: 0 0 24px 1px var(--fc-glow); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+@keyframes fc-textglow {
+  0% { text-shadow: none; }
+  35% { text-shadow: 0 0 12px var(--fc-glow-text); }
+  100% { text-shadow: none; }
+}
+
+/* Reduced motion: no scramble (skipped in the script), no glow, no pop/unlock. The CAPTURED state still
+   applies via classes, so the value reveals instantly and copy still works. */
+@media (prefers-reduced-motion: reduce) {
+  .flagcap *,
+  .flagcap *::before,
+  .flagcap *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+/* === end FLAG CAPTURE === */

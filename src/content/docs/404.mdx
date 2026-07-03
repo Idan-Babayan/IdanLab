@@ -6,12 +6,16 @@ hero:
   title: "404"
   tagline: "this page wandered off. maybe it never existed, maybe it is hiding. honestly, could be either."
   actions:
-    - text: "cd ~ (home)"
+    - text: "cd ~"
       link: /
       variant: primary
+      attrs:
+        title: "Home"
     - text: "browse writeups"
       link: /hackthebox/
-      variant: minimal
+      variant: secondary
+      attrs:
+        title: "Hack The Box Writeups"
 ---
 
 import NotFound from '@components/NotFound.astro';

@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-06-20.
+> Last updated: 2026-06-30.
 
 ---
 
@@ -50,20 +50,22 @@
 
 ```
 C:\dev\idanlab\                       # chosen to avoid Hebrew chars in C:\Users\אידן\
-├─ astro.config.mjs                   # Starlight config: site, sidebar, fonts(head), EC themes + pluginPrivCommand, reading-progress head script, image-zoom, vite alias, components override (PageSidebar)
+├─ astro.config.mjs                   # Starlight config: site, sidebar, fonts(head), EC themes + pluginPrivCommand, reading-progress head script, image-zoom, vite alias, components override (PageSidebar), markdown rehypePlugins (content image loading)
 ├─ src/
 │  ├─ content.config.ts               # docs collection (docsLoader + docsSchema), extended with optional os/tags
 │  ├─ pages/
 │  │  ├─ index.astro                  # HOMEPAGE: standalone immersive page (NOT Starlight). Dark-only.
 │  │  └─ about.astro                  # ABOUT: standalone immersive page. Has dark/light toggle.
 │  ├─ content/docs/                   # STARLIGHT docs (writeups + platform landings + 404 + secret)
-│  │  ├─ hackthebox/{Easy,Medium,Hard}/{slug}.mdx   # difficulty dirs Capitalized; sidebar autogenerate must match casing exactly
+│  │  ├─ hackthebox/{easy,medium,hard}/{slug}.mdx   # flat writeups, lowercase difficulty dirs; sidebar autogenerate matches this casing (Linux is case-sensitive)
 │  │  ├─ vulnhub|picoctf|overthewire/.../{slug}.mdx
 │  │  ├─ {platform}/index.mdx         # platform landing: minimal frontmatter + tableOfContents:false + <PlatformIndex/> (replaced the old .platform-intro markup)
 │  │  ├─ 404.mdx                      # themed 404 (template: splash + hero), renders <NotFound/>; Starlight slug-404 override
 │  │  └─ secret.mdx                   # hidden /secret (splash, pagefind:false, noindex), renders <SecretTerminal/>
+│  ├─ assets/{platform}/{difficulty}/{slug}/{slug}-N.ext   # writeup screenshots; astro:assets optimizes + hashes them, referenced by relative ../ from writeups (NOT public/)
 │  ├─ components/
 │  │  ├─ Toggle.astro                 # <details class="toggle"> wrapper; flag prop adds .toggle-flag; renders MDX (incl. code) in slot
+│  │  ├─ FlagCapture.astro            # "Decrypt to Capture" gold flag control (props: type user|root, flag); replaces the heading-plus-duplicate flag Toggle
 │  │  ├─ ToggleAll.astro              # Expand/Collapse-all control (vanilla TS, scroll-anchored); injected via PageSidebar override
 │  │  ├─ Callout.astro                # icon-based tagged callout (recon/loot/intel/vuln/defense); .cl styles in custom.css
 │  │  ├─ WriteupCard.astro            # presentational writeup card (props only, reusable for a future /writeups index)
@@ -76,11 +78,13 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in C:\Users
 │  │  └─ ec-priv-command.mjs          # EC plugin: tags command words by category (priv/recon/net/inspect)
 │  └─ styles/
 │     └─ custom.css                   # Starlight theme + THEME PASS + light art-direction + badges + sidebar + components
+├─ plugins/
+│  └─ rehype-content-image-loading.mjs # rehype: sets loading/decoding on content <img> (first eager, rest lazy); wired via astro.config markdown.rehypePlugins
 ├─ public/
 │  ├─ robots.txt                      # in-repo; breadcrumb comment + Sitemap line (see §2)
+│  ├─ favicon.svg                     # site favicon
 │  ├─ icons/{htb,vulnhub,picoctf,overthewire}.svg
-│  ├─ ethical-hacking.png             # about portrait (TODO: replace with transparent SVG)
-│  └─ images/{platform}/{difficulty}/{slug}/{slug}-N.ext   # writeup screenshots
+│  └─ ethical-hacking.png             # about portrait (TODO: replace with transparent SVG). Writeup screenshots now live in src/assets (see §7); marketing images, if any, go under public/images
 └─ notion_cleaner.py                  # CONTENT PIPELINE (documented in §7; NOT yet committed to the repo)
 ```
 
@@ -208,8 +212,8 @@ pill uses a cyan ring.
 - Mechanism: command-position detection (first word after prompt / `sudo` / `|` `&&` `;`); sudo stays
   content-matched. Command lists are one-line-extendable. Residual risk: an output line whose first
   word is exactly a listed command (rare) can be mis-tagged.
-- Note: EC `{n}` line highlights are currently unused (dropped from busquedav2) and have no custom
-  marked-line styling; if reintroduced, EC's default blue marked line would need restyling.
+- Note: EC `{n}` line highlights are currently unused (dropped during the busqueda design pass) and have
+  no custom marked-line styling; if reintroduced, EC's default blue marked line would need restyling.
 
 ### Tagged callouts (icon-based, `Callout.astro` + `.cl*` in custom.css)
 Five semantic writeup callouts, each a 3px accent left border + faint tint + a header (icon + UPPERCASE
@@ -218,18 +222,43 @@ label), theme-aware (vivid border, light-mode ink swap on icon/label): recon (cy
 since Starlight has no shield). Icons via Starlight's `<Icon>`. Authored as `<Callout type="...">` in MDX.
 
 ### Flag loot gold (User Flag / Root Flag)
-One gold signal across the flag's three states via the `--flag-gold` token (`#ffc23d` dark / `#835e00`
-light, AA both): the body heading (gold, with a flag-SVG mask icon; replaces the brown `.task-title`),
-the reveal toggle (`.toggle-flag`), and the right TOC entry (muted gold at rest, full gold on
-hover/current; other TOC entries keep the green `--sl-color-text-accent`). Flag headings have no dedicated
-class yet, so the CSS targets the slug ids `#user-flag` / `#root-flag` (interim; a `.flag-title` from the
-pipeline is the clean hook). See DECISIONS 2026-06-20.
+One gold signal across the flag's states via the `--flag-gold` token (`#ffc23d` dark / `#C6A243` light):
+the body heading (gold, with a flag-SVG mask icon; replaces the brown `.task-title`) and the right TOC
+entry (muted gold at rest, full gold on hover/current; non-flag TOC entries follow the active-color
+ladder below). Flag headings have no dedicated class yet, so the CSS targets the slug ids
+`#user-flag` / `#root-flag` (interim; a `.flag-title` from the pipeline is the clean hook). The same two
+slug ids are what the active-color ladder excludes, so flags keep gold instead of going cyan. See
+DECISIONS 2026-06-20.
+
+### TOC active-entry color ladder
+The right "On this page" entry the reader is currently on (`aria-current="true"`) takes the hue of the
+heading it points to, so the column mirrors the in-page hierarchy: h1/h2 keep Starlight's green
+`--sl-color-text-accent`, h3 turns cyan (`--tp-cyan` / `--tp-cyan-ink`, the same tokens as the `###`
+heading), and h4/h5/h6 go muted gray (`--sl-color-gray-2`, the h4 heading color). Flags stay gold (above).
+Only the current entry recolors; inactive entries keep the muted default. Heading level is read from
+Starlight's TOC nesting depth (h3 nested under h2, etc.), desktop column only (the mobile TOC keeps
+Starlight's white + checkmark active style). Unlayered CSS so it beats Starlight's layered green; parity
+with the heading rules is by shared tokens. See DECISIONS 2026-06-29.
+
+The flag VALUE is now the **FlagCapture** "Decrypt to Capture" control under the heading (DECISIONS
+2026-06-27), which supersedes the old `.toggle-flag` reveal. The heading + gold TOC entry are unchanged;
+FlagCapture renders below them and never repeats the flag name OR its glyph (it carries one neutral
+lock-to-check icon, never a flag/crown). It adds tiers on top of `--flag-gold`: `--flag-gold-root`
+(richer gold for ROOT, the only user-vs-root signal, color not glyph) and AA-grade value golds
+`--flag-gold-val` / `--flag-gold-val-root` for the flag TEXT (the bright loot gold is decorative and not
+text-AA on paper, so the value uses a deeper gold: light user 4.99:1, root 5.93:1; dark both >11:1). The
+frame matches the writeup Toggle width + 6px radius but sits a bit taller for presence; an icon-only copy
+button sits inside it (right, vertically centered) and shows a golden "Copied!" pill on copy. Capture
+moment is a warm gold glow pulse in BOTH themes (tuned per theme,
+light halo stronger for paper; no underline). Locked state is static (no idle animation); reduced-motion
+skips the scramble + glow entirely.
 
 ### Expand/Collapse-all control (`ToggleAll.astro`)
 A dependency-free control auto-injected at the bottom of the right TOC via `overrides/PageSidebar.astro`
 (additive override, renders `<Default/>`; wired in `astro.config.mjs` `components`). Bordered pill (gray +
-cyan hover), set apart by a gap + a `--sl-color-hairline` divider, desktop-only, self-hides when a page
-has no toggles. Acts on `.sl-markdown-content details.toggle:not(.toggle-flag)` (skips flags, code, nav).
+cyan hover), set apart by a gap + a `--sl-color-hairline` divider, desktop-only, self-hides unless a page
+has two or more toggles (a bulk expand/collapse is pointless with 0 or 1; the `>= 2` threshold clears every
+single-toggle page automatically). Acts on `.sl-markdown-content details.toggle:not(.toggle-flag)` (skips flags, code, nav).
 Preserves reading position: anchors on the current heading and corrects scroll synchronously, with native
 `overflow-anchor` suppressed for the operation (see DECISIONS; ROADMAP has the unverified few-pixel shift).
 
@@ -243,22 +272,42 @@ Preserves reading position: anchors on the current heading and corrects scroll s
    ```
    - Args: input; `-p {hackthebox,vulnhub,picoctf,overthewire}`; `-d {easy,medium,hard,misc}`;
      `-o` astro root; `-t/--title`; `--description`; `--os` (default Linux); `--toggle-threshold` (8).
-   - Note: `-d easy` must land the file in the Capitalized `Easy/` directory (the sidebar
-     `autogenerate.directory` is case-sensitive, e.g. `hackthebox/Easy`). If/when the script
-     is committed, confirm it Capitalizes the difficulty dir.
+   - Note: `-d easy` lands the file in the lowercase `easy/` directory (the sidebar
+     `autogenerate.directory` is case-sensitive, e.g. `hackthebox/easy`, and must match the on-disk
+     lowercase dir; a case-only rename needs `git mv` on Windows, `core.ignorecase=true`). If/when the
+     script is committed, confirm it lowercases the difficulty dir.
    - Output: `src/content/docs/{platform}/{difficulty}/{slug}.mdx`.
    - Manual step: copy + rename screenshots per the script's printed rename map into
-     `public/images/{platform}/{difficulty}/{slug}/`.
+     `src/assets/{platform}/{difficulty}/{slug}/`, then reference them from the writeup by a relative
+     Markdown path (`../../../../assets/...`) so astro:assets optimizes + hashes them.
 3. Commit + push → Cloudflare deploys.
 
 ### MDX conventions the script enforces
-- Absolute image paths only (`/images/...`); non-absolute paths fail as MDX imports.
+- Writeups are stored as flat .mdx files under src/content/docs
+  (<platform>/<difficulty>/<machine>.mdx), one file per writeup with no per-writeup
+  folder. Writeup images live in a parallel non-routable tree under src/assets
+  (src/assets/<platform>/<difficulty>/<machine>/) and are referenced from the mdx
+  with a relative Markdown path (../../../../assets/...) so they are optimized and
+  hashed by astro:assets. Plain Markdown image syntax is used, not <Image />. Flat
+  files allow Starlight sidebar autogenerate to render clean single entries with no
+  phantom groups and no per-writeup config; new writeups require no astro.config.mjs
+  change. Icons remain in public/icons; marketing images remain in public/images.
+  Absolute /public image paths are not used for writeup content images.
 - Frontmatter `title`/`description` + `import Toggle from '@components/Toggle.astro'`.
 - Metadata badges div + description as a `>` blockquote lead.
 - Long/indented code → wrapped in `<Toggle>`; all code blocks get `frame="code"` + a
   language `title` so bash and python look identical.
 - Notion `<aside>` → `:::tip[Answer]`. Task headings → brown `.task-title`.
-- `**Port 80**` → red `.port-label`. Inline code → red.
+- **Flags:** emit the gold heading `### <span class="task-title">User Flag</span>` (or `Root Flag`)
+  immediately followed by `<FlagCapture type="user" flag="..." />` (or `type="root"`), and add
+  `import FlagCapture from '@components/FlagCapture.astro'`. This replaces the old heading + duplicate
+  `<Toggle flag>` + `:::tip[Answer]`. Handle user-only and root-only writeups (emit only the flag that
+  exists). See DECISIONS 2026-06-27.
+- `**Port 80**` → red `.port-label`. Inline code (`:not(pre) > code`) → a rounded NEUTRAL chip with red
+  text (identity in the glyphs, no red in the fill or border), its own object (readability-first,
+  theme-tuned, deliberately distinct from the sharp code blocks);
+  inside a colored callout it instead harmonizes with that callout's accent (reads `--acc` / `--cl-ink`,
+  generic per type); see DECISIONS 2026-06-29.
 - Bold inside code fences is impossible (markdown); to emphasize a code line, manually
   use expressive-code line highlighting, e.g. ` ```bash {3} `.
 
@@ -280,7 +329,8 @@ Preserves reading position: anchors on the current heading and corrects scroll s
 - **Tone:** confident, curious, learning-focused. No self-deprecation.
 - **Type-safe scripts:** all TS inside `.astro` `<script>` uses explicit assertions
   (`as NodeListOf<HTMLElement>`, `as HTMLElement | null`, `!`, `?? ''`) → zero VS Code problems.
-- **Code blocks:** every block has a language label; bash and python render identically.
+- **Code blocks:** every block has a language label; bash and python render identically; EC frames are
+  square-cornered (sharp) in both themes (DECISIONS 2026-06-29).
 - **Icons:** SVG for logos/icons; PNG acceptable only for detailed illustrations.
 - **Landing is dark-only**; content pages keep the toggle.
 - **Never rebuild Starlight**; content pages are themed via `custom.css` only.

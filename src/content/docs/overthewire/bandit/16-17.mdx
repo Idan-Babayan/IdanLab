@@ -17,7 +17,7 @@ import Toggle from '@components/Toggle.astro';
 
 ## Approach
 
-Scan the range to learn which ports are open and which speak SSL, then send the password to the TLS port that is not a plain echo. It replies with an RSA private key, not a password. Save the key with mode 600 and use it to log in.
+Scan the range to identify open ports and determine which speak SSL, then transmit the password to the TLS port that behaves as something other than a plain echo server. It replies with an RSA private key instead of a standard password string. Save this text block as a local file, restrict its permissions to mode 600, and use it to log in as the next user.
 
 ```bash frame="code" title="bandit16@bandit"
 bandit16@bandit:~$ nmap -p 31000-32000 --open -sV localhost
@@ -33,9 +33,7 @@ Correct!
 -----BEGIN RSA PRIVATE KEY-----
 ... (key returned, revealed below) ...
 -----END RSA PRIVATE KEY-----
-```
 
-```bash frame="code" title="bandit16@bandit"
 bandit16@bandit:~$ cd "$(mktemp -d)"
 bandit16@bandit:/tmp/tmp.zDtZtyb689$ vim key.private        # paste the key
 bandit16@bandit:/tmp/tmp.zDtZtyb689$ chmod 600 key.private
@@ -44,7 +42,7 @@ bandit16@bandit:/tmp/tmp.zDtZtyb689$ ssh -i key.private bandit17@bandit.labs.ove
 
 ## Why it works
 
-Service discovery maps each port to a protocol (nmap -sV), so you know which ones need TLS (ssl/...) versus plain echo before you connect. The two ssl ports are the candidates, and the one that is not a plain echo returns the credential. The reward is a private key, so authentication moves from something you know (a password) to something you have (a key), which is why ssh refuses it until it is saved with mode 600.
+Service discovery maps each port to a protocol (`nmap -sV`), so you know which ones need TLS (ssl/...) versus plain echo before you connect. The two ssl ports are the candidates, and the one that is not a plain echo returns the credential. The reward is a private key, so authentication moves from something you know (a password) to something you have (a key), which is why `ssh` refuses it until it is saved with mode 600.
 
 <Toggle label="Full session log">
 

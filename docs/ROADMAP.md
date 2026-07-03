@@ -5,12 +5,22 @@
 > Each item: `[area] description — owner-note`. Areas: DESIGN, CONTENT, ENG, PRODUCT.
 
 ## Now (in progress)
-- [ENG] PR #3 (`dev` -> `main`): READY for review, OPEN, ~16 commits ahead of `main`. Merging deploys to
-  production (idanlab.dev via Cloudflare Pages on push to `main`), so it is the owner's call. The whole
-  working tree is committed + pushed to `dev`; nothing is uncommitted. Carries (this session): platform-
-  index duotone, OKLCH command palette, favicon fix, icon callouts, busquedav2 restructure, ToggleAll
-  sidebar control + scroll fix, flag-gold loot system, homepage Reflection violet, plus the earlier
-  easter-egg trail, light art-direction, robots.txt, sidebar polish, domain rebrand.
+- [ENG] PR #5 (`dev` -> `main`): OPEN, MERGEABLE. Merging deploys to production (idanlab.dev via
+  Cloudflare Pages on push to `main`), so it is the owner's call. Carries: the FlagCapture "Decrypt to
+  Capture" flag component, a fine-tune pass over the OverTheWire Bandit writeups, 404.mdx tweaks, and
+  (committed `c59be70`) the inline-code chip system + TOC active-color ladder + code/toggle polish. (PR
+  #3 and PR #4 already merged.)
+- [ENG] Writeup-structure migration is complete LOCALLY but UNCOMMITTED (not yet in PR #5): writeups are
+  flat `.mdx` under lowercase `hackthebox/easy/` (busqueda + return), screenshots moved to `src/assets`
+  with relative `../` refs (astro:assets), `astro.config.mjs` autogenerate restored to `hackthebox/easy`,
+  and `plugins/rehype-content-image-loading.mjs` lazy-loads content images. Build verified (hashed images
+  under `_astro`); the busqueda case-rename is staged via `git mv`. Needs commit + push. See DECISIONS
+  2026-06-30.
+- [CONTENT] Apply FlagCapture to the Bandit "Reveal Password" toggles: the writeups are fine-tuned and
+  ready; owner wants to test the swap soon (the level reward is a password/key, so keep the truncation
+  rule for any PEM, see DECISIONS 2026-06-26).
+- [CONTENT] Revisit `404.mdx`: owner made manual changes on 2026-06-28 and wants to review/refine it
+  again on a later day.
 - [ENG/INFRA] Domain rebrand: in-repo done (site=idanlab.dev, wordmark/titles, copy, robots Sitemap).
   Remaining (owner/other chats): Pages custom domain, 301 from idanstudio.click, Cloudflare email on
   @idanlab.dev, Search Console + sitemap resubmit, external link updates. Confirm
@@ -19,16 +29,17 @@
   considered closed.
 
 ## Next (committed)
-- [CONTENT] Finish or remove `busquedav2.mdx` (a design demo with a duplicate "Busqueda" title)
-  before mass import; it exists only to dial in the card/index design.
-- [CONTENT] Mass-import ~50 existing writeups via the pipeline (HTB / VulnHub / PicoCTF / OTW).
-  Once HTB Medium/Hard folders have content, uncomment those sidebar groups in `astro.config.mjs`.
+- [CONTENT] Mass-import ~50 existing writeups via the pipeline (HTB / VulnHub / PicoCTF / OTW), each as a
+  flat `.mdx` with images under the parallel `src/assets` tree (DECISIONS 2026-06-30). Once HTB
+  Medium/Hard folders have content, uncomment those (lowercase) sidebar groups in `astro.config.mjs`.
 - [ENG] `og:image` + social preview cards (per-page Open Graph) for shareable links.
 - [PRODUCT] Global `/writeups` index (path 3): reuse `WriteupCard` with `showPlatform` true for a
   mixed cross-platform grid (the card was built for this).
 - [CONTENT] Pipeline (`notion_cleaner.py`) hooks for content-lane dependencies: emit a `.flag-title`
   class on flag headings (flag-gold currently targets slug ids `#user-flag`/`#root-flag` as an interim),
-  wrap `:::tip[Answer]` in a `<Toggle flag>` spoiler reveal, and optionally promote os/tags to frontmatter.
+  emit the gold heading + `<FlagCapture type="..." flag="..." />` for User/Root flags (replacing the old
+  heading + duplicate `<Toggle flag>` + `:::tip`; see CORE_SPEC §7 + DECISIONS 2026-06-27), and optionally
+  promote os/tags to frontmatter.
 
 ## Later (parked)
 - [CONTENT] Surface topic tags as a browsable index (filter writeups by technique).
@@ -44,9 +55,6 @@
 - [ENG] ToggleAll on mobile: currently desktop-only (hidden below the lg breakpoint). To put it inside
   the collapsed "On this page" dropdown would need a second override (`MobileTableOfContents`); deferred
   (owner judged the bulk control a poor fit for narrow screens; individual toggles still work on mobile).
-- [DESIGN] Optional flag Root-vs-User hierarchy (Root as the bigger prize, e.g. crown icon or richer
-  gold), once the pipeline emits distinct hooks so all three flag states (heading, toggle, TOC) stay in
-  sync; not feasible cleanly CSS-only today (toggle icon is content-lane).
 - [DESIGN] Answer-callout (:::tip) accent color: tips currently render purple (the rocket-to-check icon
   swap on 2026-06-27 kept the inherited tip color). Experiment with a tip accent that better matches the
   overall theme (e.g. green/teal or a paper-harmonious hue), both themes, CSS-only via the Starlight aside
@@ -62,12 +70,11 @@
 - [INFRA] `public/robots.txt` holds ONLY the breadcrumb comment + a `Sitemap:` line. On deploy it is
   served as `/robots.txt` and can override the Cloudflare-managed bot disallows / Content-Signals.
   Add the full managed content (or confirm Cloudflare still appends its block) before relying on it.
-- [CONTENT] `busquedav2.mdx` shares the frontmatter title "Busqueda" with `busqueda.mdx`, so both cards
-  read "Busqueda" on the HTB index. It is the live design testbed (icon callouts, flag-gold, ToggleAll,
-  Title Case headers, Kali prompts, no line highlights). Disambiguate or remove before mass import.
 - [DESIGN] Flag-gold targets the slug ids `#user-flag` / `#root-flag` as an interim (no `.flag-title`
-  class exists; flag headings reuse `.task-title`). Breaks if those headings are renamed or another page
-  reuses the slugs. Clean fix: a `.flag-title` class from the pipeline (see Next).
+  class exists; flag headings reuse `.task-title`). The TOC active-color ladder (DECISIONS 2026-06-29)
+  also excludes flags by those same two slug ids so they stay gold instead of going cyan, so it shares the
+  fragility. Breaks if those headings are renamed or another page reuses the slugs. Clean fix: a
+  `.flag-title` class from the pipeline (see Next), used by both the gold rule and the cyan exclusion.
 - [ENG] Command-highlighting residual risk: an OUTPUT line whose first word is exactly a listed command
   (e.g. `ls: cannot access`) can be mis-tagged. Rare; documented in `ec-priv-command.mjs` (EC 0.42
   exposes no token scopes, so strings/comments cannot be skipped by scope).
