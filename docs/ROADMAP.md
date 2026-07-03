@@ -5,12 +5,17 @@
 > Each item: `[area] description — owner-note`. Areas: DESIGN, CONTENT, ENG, PRODUCT.
 
 ## Now (in progress)
-- [ENG] PR #5 (`dev` -> `main`): OPEN, MERGEABLE, Cloudflare Pages preview green. Merging deploys to
-  production (idanlab.dev via Cloudflare Pages on push to `main`), so it is the owner's call. Carries
-  (this session): the FlagCapture "Decrypt to Capture" flag component (replaces the flag reveal toggle;
-  `busqueda.mdx` migrated to it, the `busquedav2.mdx` testbed removed), a fine-tune pass over all
-  OverTheWire Bandit writeups (prep for the FlagCapture swap, not yet applied), 404.mdx tweaks, and the
-  doc updates. (PR #3 and PR #4 already merged.)
+- [ENG] PR #5 (`dev` -> `main`): OPEN, MERGEABLE. Merging deploys to production (idanlab.dev via
+  Cloudflare Pages on push to `main`), so it is the owner's call. Carries: the FlagCapture "Decrypt to
+  Capture" flag component, a fine-tune pass over the OverTheWire Bandit writeups, 404.mdx tweaks, and
+  (committed `c59be70`) the inline-code chip system + TOC active-color ladder + code/toggle polish. (PR
+  #3 and PR #4 already merged.)
+- [ENG] Writeup-structure migration is complete LOCALLY but UNCOMMITTED (not yet in PR #5): writeups are
+  flat `.mdx` under lowercase `hackthebox/easy/` (busqueda + return), screenshots moved to `src/assets`
+  with relative `../` refs (astro:assets), `astro.config.mjs` autogenerate restored to `hackthebox/easy`,
+  and `plugins/rehype-content-image-loading.mjs` lazy-loads content images. Build verified (hashed images
+  under `_astro`); the busqueda case-rename is staged via `git mv`. Needs commit + push. See DECISIONS
+  2026-06-30.
 - [CONTENT] Apply FlagCapture to the Bandit "Reveal Password" toggles: the writeups are fine-tuned and
   ready; owner wants to test the swap soon (the level reward is a password/key, so keep the truncation
   rule for any PEM, see DECISIONS 2026-06-26).
@@ -24,8 +29,9 @@
   considered closed.
 
 ## Next (committed)
-- [CONTENT] Mass-import ~50 existing writeups via the pipeline (HTB / VulnHub / PicoCTF / OTW).
-  Once HTB Medium/Hard folders have content, uncomment those sidebar groups in `astro.config.mjs`.
+- [CONTENT] Mass-import ~50 existing writeups via the pipeline (HTB / VulnHub / PicoCTF / OTW), each as a
+  flat `.mdx` with images under the parallel `src/assets` tree (DECISIONS 2026-06-30). Once HTB
+  Medium/Hard folders have content, uncomment those (lowercase) sidebar groups in `astro.config.mjs`.
 - [ENG] `og:image` + social preview cards (per-page Open Graph) for shareable links.
 - [PRODUCT] Global `/writeups` index (path 3): reuse `WriteupCard` with `showPlatform` true for a
   mixed cross-platform grid (the card was built for this).

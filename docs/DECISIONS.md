@@ -6,6 +6,43 @@
 
 ---
 
+### 2026-06-30 · Content images and writeup structure: flat files + parallel src/assets (supersedes colocated index.mdx)
+
+Supersedes: the prior decision to colocate writeup images next to each writeup
+and name each writeup index.mdx.
+
+Decision: Writeups are flat .mdx files under src/content/docs (one file per
+writeup, no per-writeup folder). Their images live in a parallel tree under
+src/assets mirroring the content path (src/assets/<platform>/<difficulty>/<machine>/).
+Images are referenced from the writeup with a relative Markdown path
+(../../../../assets/... , four ../ from a difficulty-tier writeup) so Astro's
+built-in astro:assets pipeline optimizes and hashes them. Plain Markdown image
+syntax is used, not <Image />, to avoid per-image import boilerplate across many
+hand-authored writeups and to keep starlight-image-zoom coverage of content
+images intact.
+
+Why the reversal: Colocating images forced each writeup into its own folder, and
+Starlight sidebar autogenerate renders every folder as a collapsible group, so a
+single-page writeup folder became a phantom group wrapping one page. Keeping
+colocation required either accepting phantom groups or hand-listing every writeup
+in astro.config.mjs; both were rejected. Flat files let autogenerate produce clean
+single entries with zero manual config and no phantom groups, matching the Bandit
+pattern. Images under src/assets keep full astro:assets optimization, so no
+performance is lost. The costs given up (physical colocation, clean image paths)
+have low practical value for a single-repo site and did not justify the recurring
+sidebar cost.
+
+Boundaries: Icons remain in public/icons. Marketing images remain in public/images.
+The rehype lazy-loading plugin and notion_cleaner.py are unchanged. No user-facing
+URLs change; writeups keep their routes (/hackthebox/<difficulty>/<machine>/) and
+images are served as hashed astro:assets under /_astro. Sitemap and Search Console
+are unaffected.
+
+Convention going forward: a new writeup is added as a single flat .mdx file in the
+appropriate difficulty folder, with images placed under the parallel src/assets
+path and referenced via the relative ../ path. Autogenerate surfaces it
+automatically; no astro.config.mjs edit is needed per writeup.
+
 ### 2026-06-29 · Inline code inside a colored callout harmonizes with the callout accent
 - **Problem:** the standalone red inline-code chip (see the entry below) clashed inside a colored
   callout: two reds in a `vuln` callout (worst in dark, where the callout tint is more saturated), and
@@ -378,6 +415,12 @@
   path case-insensitively; a Linux/Cloudflare build would fail harder. Chose to match the
   existing on-disk Capitalized folders rather than rename them.
 - **Status:** Adopted. (Pipeline note: `notion_cleaner.py -d easy` must output into `Easy/`.)
+- **SUPERSEDED 2026-06-30:** difficulty directories are now LOWERCASE (`hackthebox/easy`), and
+  `astro.config.mjs` was restored to `hackthebox/easy`, as part of the flat-files + parallel `src/assets`
+  migration (see the top entry). The case-only folder rename was registered in git with `git mv`; with
+  `core.ignorecase=true` git otherwise misses it and would ship a split `Easy/` + `easy/` tree that drops
+  a writeup from the sidebar on the case-sensitive Linux build. The case-sensitivity lesson still holds,
+  now on the lowercase form: on-disk difficulty dirs and every `autogenerate.directory` must match exactly.
 
 ### 2026-05-31 · Sidebar markers: CSS colored dots, not emojis
 - **Decision:** Replace sidebar emoji labels with CSS-injected colored circles targeting
