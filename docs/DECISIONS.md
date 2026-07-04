@@ -6,6 +6,30 @@
 
 ---
 
+### 2026-07-04 · Principle: a closing epigraph component for writeups (centered italic mono maxim)
+- **Decision:** New additive component `src/components/Principle.astro` (prop `text: string`) renders the
+  one-line lesson a writeup decrypts to as a literary epigraph, not a callout: `<aside class="principle">`
+  with a dinkus (three-dot scene break), a small uppercase mono `PRINCIPLE` label, and the maxim in
+  centered italic JetBrains Mono. Styled in custom.css after the lead-blockquote rules. No border,
+  background, box-shadow, icon, accent color, or motion; identity is the mono label plus placement. Meant
+  to be the LAST content element, after the Defense callout. Both themes via `--sl-color-text` /
+  `--sl-color-gray-3` / `--sl-color-gray-4` (no lime, deliberately).
+- **Placed on** busqueda as the working demo (`text="Parameterize, do not sanitize."`, which is busqueda's
+  own Reflection lesson #1), imported via the `@components` alias. The task's relative `../../../components`
+  path was the wrong depth for a difficulty-tier writeup (would resolve to a non-existent
+  `src/content/components/`); the alias is the repo convention and what the other imports use.
+- **Known caveat (engineering):** the maxim renders as a SYNTHETIC slant, not JetBrains Mono's true
+  italic, because the Google Fonts link in `astro.config.mjs` loads `JetBrains+Mono:wght@400;500;700` with
+  no `ital` axis (verified: zero italic faces loaded; normal vs italic glyph widths identical). Fix is a
+  one-line font-URL change (add the `ital` axis), deferred as an engineering item, config left untouched.
+- **Follow-ups (ROADMAP):** auto-append via the pipeline (so authors do not hand-place it), suppress
+  Starlight pagination/footer beneath it on writeups (nothing should render after the coda), load the
+  true italic face.
+- **Verified** on busqueda both themes: aside with no border / background / shadow, centered italic mono
+  maxim in `--sl-color-text`, quiet gray dinkus + label, sitting ~58px below the Defense callout. Type-safe
+  (`Props.text: string`); `npm run build` green (45 pages).
+- **Status:** Adopted + shipped (component + custom.css; demo on busqueda).
+
 ### 2026-07-04 · Port label is a cyan recon tag; recon findings become an aligned table with an Assessment eyebrow
 - **Problem:** `.port-label` was only a red color override, which clashed with the cyan recon callout it
   lives in and, like the old inline-code chip, spent an alert color on a neutral identifier (a port is an

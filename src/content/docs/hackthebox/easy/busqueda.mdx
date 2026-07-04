@@ -6,6 +6,7 @@ description: Python command injection in Searchor 2.4.0 for a foothold, then a r
 import Toggle from '@components/Toggle.astro';
 import Callout from '@components/Callout.astro';
 import FlagCapture from '@components/FlagCapture.astro';
+import Principle from '@components/Principle.astro';
 
 <div class="machine-meta">
   <span class="meta-badge platform-hackthebox">HackTheBox</span>
@@ -452,3 +453,5 @@ Three lessons, one per stage of the chain:
 Pin Searchor to a patched release, keep secrets in a vault instead of a committed `.git` directory, and tighten the sudo rule from a wildcard (`*`) to a fixed, audited argument set. Any one of these breaks the chain.
 
 </Callout>
+
+<Principle text="Parameterize, do not sanitize." />
