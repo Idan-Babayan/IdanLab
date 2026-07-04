@@ -992,6 +992,50 @@ h1#_top {
 }
 .sl-markdown-content blockquote p { margin: 0; }
 
+
+/* ── Principle: the closing epigraph ──────────────────────────────────────────
+   The one-line lesson a writeup decrypts to, set as literature rather than UI: the reading face
+   (JetBrains Mono) in italic, centered, a dinkus (the three-dot scene break) above it, and a lot of
+   whitespace doing the work. No border, background, glow, icon, or motion, so it never pulls the eye
+   of a reader still mid-page; it rewards the reader who reaches the end. The maxim carries no accent
+   color (the page already spends color elsewhere); identity is the small mono PRINCIPLE label and the
+   consistent placement. Meant to be the LAST thing on the page, after the Defense callout, with
+   nothing rendered beneath it (see the engineering note about suppressing pagination/footer on
+   writeups). Centered italic monospace is on-brand here precisely because the whole site reads in
+   mono: this is the operator's typed coda. Both themes; neutral, editorial. */
+.sl-markdown-content .principle {
+  display: block;
+  text-align: center;
+  margin: 3.6rem auto 1rem;
+  max-width: 46ch;
+}
+.sl-markdown-content .principle-dinkus {
+  display: block;
+  color: var(--sl-color-gray-4);
+  letter-spacing: 0.6em;
+  font-size: 0.9rem;
+  margin-bottom: 1.2rem;
+}
+.sl-markdown-content .principle-label {
+  display: block;
+  font-family: var(--sl-font-mono);
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--sl-color-gray-3);
+  margin-bottom: 0.7rem;
+}
+.sl-markdown-content .principle-text {
+  font-family: var(--sl-font-mono);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.2rem;
+  line-height: 1.55;
+  color: var(--sl-color-text);
+  margin: 0 auto;
+}
+
 /* ── Sidebar: active item — obviously filled accent row, distinct from hover ──
    Raised tint + 3px bar + explicit accessible label color (accent-high, theme-aware:
    light olive #2f4d09 on pale sidebar, dark pale-lime #daff9e on ink) so the active

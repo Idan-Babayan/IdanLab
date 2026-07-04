@@ -33,6 +33,11 @@
   flat `.mdx` with images under the parallel `src/assets` tree (DECISIONS 2026-06-30). Once HTB
   Medium/Hard folders have content, uncomment those (lowercase) sidebar groups in `astro.config.mjs`.
 - [ENG] `og:image` + social preview cards (per-page Open Graph) for shareable links.
+- [ENG/DESIGN] Principle coda follow-ups (component shipped 2026-07-04, see DECISIONS): (1) auto-append
+  `<Principle>` via the pipeline so authors do not hand-place it, (2) suppress Starlight pagination/footer
+  beneath it on writeups so nothing renders after the coda, (3) add the `ital` axis to the JetBrains Mono
+  Google Fonts link in `astro.config.mjs` so the maxim uses the true italic face (currently a synthetic
+  slant because only upright weights are loaded).
 - [PRODUCT] Global `/writeups` index (path 3): reuse `WriteupCard` with `showPlatform` true for a
   mixed cross-platform grid (the card was built for this).
 - [CONTENT] Pipeline (`notion_cleaner.py`) hooks for content-lane dependencies: emit a `.flag-title`
