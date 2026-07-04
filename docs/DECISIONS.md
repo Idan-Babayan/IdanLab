@@ -6,6 +6,34 @@
 
 ---
 
+### 2026-07-04 · Port label is a cyan recon tag; recon findings become an aligned table with an Assessment eyebrow
+- **Problem:** `.port-label` was only a red color override, which clashed with the cyan recon callout it
+  lives in and, like the old inline-code chip, spent an alert color on a neutral identifier (a port is an
+  address, not a danger). Separately, a recon callout's port list read as a loose bullet list with no
+  structure.
+- **Decision (A, port tag):** `.port-label` becomes a calm cyan mono TAG (1px border + soft tint + bold
+  700) that harmonizes with the recon accent and out-ranks a passing inline-code reference by WEIGHT, not
+  by adding another cyan shade. Theme-aware: bright `#41efff` text on the near-black dark tint, deeper teal
+  `#05495b` on the warm light paper; fills/borders are `color-mix` of `#41efff` / `#096577` (the recon
+  accent + its light ink). `!important` on `color` is kept to retain the prior override strength.
+- **Decision (B, findings layout):** inside `.cl-recon`, a markdown port list becomes a scannable findings
+  table: `list-style:none`, each `li` uses a hanging indent (padding-left 5.6em / text-indent -5.6em) so
+  wrapped notes align under the description, and the row-leading tag gets `min-width:4.9em` so ports align
+  down a left rail (port tags used inline in prose stay snug). The concluding paragraph is the ASSESSMENT:
+  a `:has(ul)`-gated hairline (`--acc` @ 24%) plus an uppercase mono `Assessment` eyebrow (bright `--acc`
+  on dark, deep `--cl-ink` on light). `:has(ul)` means a prose-only recon callout shows no eyebrow.
+- **Gotcha fixed:** `text-indent` is an inherited property, so the li's `-5.6em` hanging indent leaked into
+  the `.port-label` inline-block and shoved its own port text off-screen (rendered at x ~= -48, invisible).
+  Fixed with `text-indent:0` on the tag rule; the row hanging indent and the tag's position on the line are
+  unaffected (both governed by the li, not the tag). This one line is the only deviation from the pasted spec.
+- **Scope:** `.cl-recon` only; other callout types and normal lists untouched. The eyebrow label is the
+  single word in `content`, changeable in one place. No new tokens, no new deps, no motion.
+- **Verified** on busqueda (both themes): ports read as cyan tags (no red anywhere), port weight 700 vs the
+  harmonized inline-code 400, tags align in a column, notes wrap under the description, the assessment sits
+  under a hairline with the eyebrow (deep teal light / bright cyan dark), and an injected prose-only recon
+  callout shows no eyebrow (`::before` content `none`, border 0).
+- **Status:** Adopted + shipped (custom.css only).
+
 ### 2026-06-30 · Content images and writeup structure: flat files + parallel src/assets (supersedes colocated index.mdx)
 
 Supersedes: the prior decision to colocate writeup images next to each writeup
