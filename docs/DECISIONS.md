@@ -6,6 +6,38 @@
 
 ---
 
+### 2026-07-04 · Principle coda auto-appends from frontmatter; JetBrains Mono italic loaded
+- **Completes** the follow-ups from the Principle-component entry below (auto-append, footer silence, true
+  italic face).
+- **Schema:** `content.config.ts` docs schema gains optional `principle: z.string()`, alongside os/tags.
+- **Auto-append:** a second additive Starlight override, `src/components/overrides/Footer.astro` (Footer is
+  the only default component rendering the Prev/Next `<Pagination />` after the content). On writeups that
+  declare a non-empty `principle` it renders ONLY the shipped `<Principle>` coda, so the coda is the last
+  thing on the page and no pagination/footer renders beneath it (the silence). Coupled to the coda: no
+  principle means the default footer renders normally. Non-writeup pages are untouched. Writeup detection
+  uses `entry.filePath` (under a platform dir, not an index page), robust across HTB tiers, VulnHub/Pico
+  flat, and the OTW bandit hub. The coda is wrapped in a `.sl-markdown-content` element so the design's
+  scoped `.sl-markdown-content .principle` CSS applies from the footer seam without touching custom.css.
+- **Italic:** the Google Fonts head link adds the JetBrains Mono `ital` axis (0/1, weights 400 and 500), so
+  the italic maxim uses the true italic face, not a synthetic slant (JetBrains Mono is monospace, so the
+  face is confirmed via document.fonts, not glyph width).
+- **Verified** both themes, all page types (writeup with/without principle, landing, bandit hub); build
+  green (45 pages). Additive overrides, no forks; PageSidebar override untouched.
+- **Status:** Adopted + shipped.
+
+### 2026-07-04 · Decisive-line focus highlighting for Expressive Code {n} markers
+- **Decision:** a fence line marked `{n}` reads as focus: a lime gutter accent bar plus a restrained
+  background tint that sits UNDER the semantic command-token colors and never competes with them. custom.css
+  only, after the EC scrollbar rules. Tint kept low (dark `--sl-color-accent` 10%, light `--tp-deco-lime`
+  12%); the lime lives only in the gutter (2px border-inline-start).
+- **Selector / EC coordination:** targets `.ec-line.mark` (the class EC 0.42 applies; the element also
+  carries `highlight`). custom.css is unlayered, so it cleanly overrides EC's default blue marked-line
+  background (`rgba(154,182,255,.6)` light / `rgba(23,74,144,.6)` dark) with no `styleOverrides` needed and
+  no doubling. Token colors (sudo magenta, recon, network cyan) stay untouched.
+- **Verified** both themes on a marked line with sudo/nmap/curl: lime gutter + tint, tokens unchanged. No
+  motion. Supersedes the "EC {n} highlights unused" note in CORE_SPEC.
+- **Status:** Adopted + shipped.
+
 ### 2026-07-04 · Principle: a closing epigraph component for writeups (centered italic mono maxim)
 - **Decision:** New additive component `src/components/Principle.astro` (prop `text: string`) renders the
   one-line lesson a writeup decrypts to as a literary epigraph, not a callout: `<aside class="principle">`

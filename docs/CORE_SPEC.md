@@ -50,9 +50,9 @@
 
 ```
 C:\dev\idanlab\                       # chosen to avoid Hebrew chars in C:\Users\אידן\
-├─ astro.config.mjs                   # Starlight config: site, sidebar, fonts(head), EC themes + pluginPrivCommand, reading-progress head script, image-zoom, vite alias, components override (PageSidebar), markdown rehypePlugins (content image loading)
+├─ astro.config.mjs                   # Starlight config: site, sidebar, fonts(head), EC themes + pluginPrivCommand, reading-progress head script, image-zoom, vite alias, components overrides (PageSidebar + Footer), markdown rehypePlugins (content image loading)
 ├─ src/
-│  ├─ content.config.ts               # docs collection (docsLoader + docsSchema), extended with optional os/tags
+│  ├─ content.config.ts               # docs collection (docsLoader + docsSchema), extended with optional os/tags/principle
 │  ├─ pages/
 │  │  ├─ index.astro                  # HOMEPAGE: standalone immersive page (NOT Starlight). Dark-only.
 │  │  └─ about.astro                  # ABOUT: standalone immersive page. Has dark/light toggle.
@@ -74,7 +74,8 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in C:\Users
 │  │  ├─ NotFound.astro               # 404 breadcrumb body (nudges to /robots.txt)
 │  │  ├─ SecretTerminal.astro         # from-scratch, zero-dependency vanilla-TS fake terminal
 │  │  └─ overrides/
-│  │     └─ PageSidebar.astro         # additive Starlight override: renders <Default/> then <ToggleAll/> at the bottom of the right TOC
+│  │     ├─ PageSidebar.astro         # additive Starlight override: renders <Default/> then <ToggleAll/> at the bottom of the right TOC
+│  │     └─ Footer.astro              # additive Starlight override: auto-appends the <Principle> coda from frontmatter and suppresses pagination on writeups that carry one
 │  ├─ lib/
 │  │  └─ ec-priv-command.mjs          # EC plugin: tags command words by category (priv/recon/net/inspect)
 │  └─ styles/
@@ -124,7 +125,7 @@ Two surfaces, deliberately different:
 - **Text (dark):** `--text #e9f1ee`, `--muted #79857f`. **(light):** `#12181a`, `#586460`.
 - **Accents (dark):** lime `#b6ff3c`, cyan `#41efff`, magenta `#ff4d9d`.
 - **Accents (light, darkened for contrast):** lime `#4d7c0f`, cyan `#0b7e92`, magenta `#c41d6f`.
-- **Fonts:** display = **Syne** (600/700/800); mono/body/UI = **JetBrains Mono** (400/500/700).
+- **Fonts:** display = **Syne** (600/700/800); mono/body/UI = **JetBrains Mono** (400/500/700, plus italic 400/500 for the Principle coda maxim).
   Loaded from Google Fonts. (Self-hosting is a roadmap item.)
 - **Starlight var overrides:** `--sl-color-accent` = lime, `--sl-color-bg` = ink,
   `--sl-font` = JetBrains Mono. Headings forced to Syne via CSS.
@@ -213,8 +214,10 @@ pill uses a cyan ring.
 - Mechanism: command-position detection (first word after prompt / `sudo` / `|` `&&` `;`); sudo stays
   content-matched. Command lists are one-line-extendable. Residual risk: an output line whose first
   word is exactly a listed command (rare) can be mis-tagged.
-- Note: EC `{n}` line highlights are currently unused (dropped during the busqueda design pass) and have
-  no custom marked-line styling; if reintroduced, EC's default blue marked line would need restyling.
+- EC `{n}` line highlights get a decisive-line focus treatment (custom.css, after the scrollbar rules):
+  `.ec-line.mark` gets a lime gutter bar + a low tint (dark accent 10%, light `--tp-deco-lime` 12%) that
+  sits under the command-token colors. custom.css is unlayered so it overrides EC's default blue marked
+  line cleanly (no `styleOverrides`). See DECISIONS 2026-07-04.
 
 ### Tagged callouts (icon-based, `Callout.astro` + `.cl*` in custom.css)
 Five semantic writeup callouts, each a 3px accent left border + faint tint + a header (icon + UPPERCASE
