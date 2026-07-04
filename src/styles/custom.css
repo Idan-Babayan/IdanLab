@@ -1273,6 +1273,25 @@ html[data-theme="light"] ::-webkit-scrollbar-thumb:hover { background-color: #9d
 html[data-theme="light"] .expressive-code pre { scrollbar-color: #b3a88f #e8e2d3; }
 html[data-theme="light"] .expressive-code pre::-webkit-scrollbar-track { background: #e8e2d3; }
 
+
+/* ── Decisive-line focus layer (Expressive Code {n} markers) ──────────────────
+   Marks the one line that matters in a dense dump (a leaked credential, the ttl tell, the single ./).
+   This is a LINE-LEVEL focus layer that sits UNDER the semantic command-highlighting token colors
+   (sudo magenta, recon vivid, network cyan, inspection muted) and must never fight them. Two rules:
+   the lime lives ONLY in the gutter (the left accent bar), where no token ever sits, and the tint is
+   kept low (<= 12%) so every syntax color reads unchanged on the marked line. If any token ever
+   muddies, the tint loses: lower it. OKLCH-mixed lime, both themes. No motion. Scoped to
+   .expressive-code. Do not color the code tokens here. */
+.expressive-code .ec-line.mark {
+  background: color-mix(in oklab, var(--sl-color-accent) 10%, transparent);
+  border-inline-start: 2px solid var(--sl-color-accent);
+}
+:root[data-theme="light"] .expressive-code .ec-line.mark {
+  background: color-mix(in oklab, var(--tp-deco-lime) 12%, transparent);
+  border-inline-start-color: var(--tp-deco-lime);
+}
+
+
 /* Lead blockquote: a calm warm-paper card (subtle olive tint kept light so the body text on it
    stays AA), but the left bar is the vivid deco-lime panel accent. */
 :root[data-theme='light'] .sl-markdown-content blockquote {
