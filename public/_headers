@@ -1,0 +1,70 @@
+# Cloudflare Pages _headers (application layer). Additive to zone-level hardening.
+#
+# Scope note: this file carries APP headers only. HSTS is intentionally absent here:
+# it is set at the Cloudflare zone level, and duplicating it risks conflicting max-age.
+#
+# Content-Security-Policy ships as Report-Only: this is a STAGING step, not the finish line.
+# Report-Only blocks nothing; it only surfaces would-be violations, so we confirm the intended
+# policy is clean (in real browsers, not just Chromium) before flipping to enforced. The flip
+# from Content-Security-Policy-Report-Only to Content-Security-Policy is the finish line.
+#
+# script-src note (important): the production build emits 18 distinct inline scripts, not
+# one. Besides our reading-progress bar, Starlight injects its own inline scripts (theme
+# provider, mobile-menu toggle, sidebar/TOC persistence, updatePickers, Expressive Code),
+# and the marketing pages (/ and /about) plus a few writeups carry their own inline FX.
+# A hash in script-src makes browsers ignore 'unsafe-inline', so a single progress-script
+# hash would block the other 17. We therefore keep 'unsafe-inline' in script-src for now.
+# The stable progress-script hash is sha256-zbeMm3179IyQub695L7lMzB1ygPiSe0lSSrMfkEOwpc=
+# (recompute the full set from dist to drop unsafe-inline later; see DECISIONS.md).
+#
+# 'wasm-unsafe-eval' is REQUIRED, not optional: Starlight's search (Pagefind) instantiates a
+# WebAssembly module inside a Web Worker (dist/pagefind/pagefind-worker.js + wasm.*.pagefind).
+# Under CSP, WASM compilation needs 'wasm-unsafe-eval' (or the broader 'unsafe-eval'); without
+# it the browser blocks it as blockedURI "wasm-eval" and search breaks. Verified on Chromium
+# 148: with only 'self' 'unsafe-inline' a direct WebAssembly.instantiate fires a script-src
+# violation (report disposition = would block under enforcement); Firefox 102+ and Safari 16+
+# are stricter still. 'wasm-unsafe-eval' is the narrow WASM-only token (it does NOT permit JS
+# eval / new Function), so it is a minimal, targeted relaxation. NOTE: worker-context CSP
+# violations do NOT surface on the main-thread securitypolicyviolation listener or console, so
+# a search smoke test can look clean while WASM is actually being flagged; probe WASM directly.
+#
+# style-src keeps 'unsafe-inline': Starlight and Expressive Code inject inline styles.
+# That is effectively permanent short of forking Starlight.
+#
+# Do NOT add Trusted Types (require-trusted-types-for / trusted-types). The SecretTerminal
+# (src/components/SecretTerminal.astro) renders via innerHTML; visitor input is escaped and
+# only trusted authored markup is injected raw, so it is safe, but Trusted Types blocks
+# innerHTML sinks and would break it. Standard CSP is fully compatible.
+#
+# Permissions-Policy denies every powerful feature the site does not use (fullscreen too:
+# the image-zoom overlay is a CSS transform, not the Fullscreen API). A few tokens are
+# nonstandard or experimental (ambient-light-sensor, battery, document-domain,
+# execution-while-*, idle-detection, local-fonts, screen-wake-lock, speaker-selection,
+# web-share); browsers that do not recognize a token simply ignore it, so listing them is
+# harmless and future-proofs the deny posture. Header values cannot be multiline, so the
+# policy is one line.
+#
+# Enforce-phase to-do: confirm zero Report-Only violations in real browsers (Chromium done;
+# Firefox and Safari still to check, since they gate WASM more strictly), both themes,
+# including a real search run (WASM) since worker violations hide from the main-thread console.
+# Then rename Content-Security-Policy-Report-Only to Content-Security-Policy. Keep style-src
+# 'unsafe-inline' and script-src 'wasm-unsafe-eval'. Never add Trusted Types.
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY
+  Permissions-Policy: accelerometer=(), ambient-light-sensor=(), autoplay=(), battery=(), camera=(), display-capture=(), document-domain=(), encrypted-media=(), execution-while-not-rendered=(), execution-while-out-of-viewport=(), fullscreen=(), gamepad=(), geolocation=(), gyroscope=(), hid=(), idle-detection=(), local-fonts=(), magnetometer=(), microphone=(), midi=(), payment=(), picture-in-picture=(), publickey-credentials-get=(), screen-wake-lock=(), serial=(), speaker-selection=(), usb=(), web-share=(), xr-spatial-tracking=()
+  Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests
+
+# Hashed, content-addressed build assets: safe to cache hard and forever.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Self-hosted subset WOFF2 fonts: content-stable filenames, cache hard and forever.
+# CAVEAT: immutable means a year with NO revalidation. These filenames are NOT content-hashed,
+# so if a font is ever re-subset or replaced you MUST change its filename (or bump a ?v= query),
+# otherwise returning visitors keep the stale cached file for up to a year. Record any such
+# change in DECISIONS.md / CORE_SPEC.md.
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable

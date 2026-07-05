@@ -5,6 +5,17 @@
 > Each item: `[area] description — owner-note`. Areas: DESIGN, CONTENT, ENG, PRODUCT.
 
 ## Now (in progress)
+- [ENG/INFRA] Enforce the CSP. It currently ships as `Content-Security-Policy-Report-Only` in
+  `public/_headers` (2026-07-05); Report-Only is a STAGING step, not the finish line. Font self-hosting is
+  complete, so the CSP already has no Google origins and `font-src` is `'self'`. Remaining before the flip:
+  a real Firefox AND Safari Report-Only pass (Chromium 148 already confirmed clean, but it is not installed
+  on the build host), both themes, INCLUDING running search so Pagefind's worker WASM is exercised (worker
+  CSP violations hide from the main-thread console). Then rename `Content-Security-Policy-Report-Only` to
+  `Content-Security-Policy`. Notes: `script-src` includes `'wasm-unsafe-eval'` (required for Pagefind WASM)
+  and keeps `'unsafe-inline'` (18 distinct inline scripts; a hash would disable `'unsafe-inline'`; to drop
+  it later enumerate all 18 hashes (brittle) or add a nonce edge-transform). Keep `style-src
+  'unsafe-inline'` (Starlight/EC). Do NOT add Trusted Types (breaks the SecretTerminal `innerHTML`). See
+  DECISIONS 2026-07-05.
 - [ENG] PR #5 (`dev` -> `main`): OPEN, MERGEABLE. Merging deploys to production (idanlab.dev via
   Cloudflare Pages on push to `main`), so it is the owner's call. Carries: the FlagCapture "Decrypt to
   Capture" flag component, a fine-tune pass over the OverTheWire Bandit writeups, 404.mdx tweaks, and
