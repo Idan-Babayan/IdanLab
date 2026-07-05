@@ -41,6 +41,13 @@
   worker-context CSP violations do NOT surface on the main-thread `securitypolicyviolation` listener or
   the page console. A search smoke test looked clean while WASM was actually being flagged; the direct
   WASM probe is what exposed it. Always probe WASM directly, not just via a search click.
+- **How the worker actually gets the token (precise):** the worker does NOT inherit the document's CSP. The
+  same-origin worker script `/pagefind/pagefind-worker.js` is served by the Cloudflare `/*` rule, so it
+  receives the SAME CSP header (token included) on its OWN response; the worker's execution context carries
+  `'wasm-unsafe-eval'` on that response's merits. Verified by curl: `/pagefind/pagefind-worker.js` (and the
+  `wasm.en.pagefind` binary) both return the header, and the worker-WASM run is clean. The worker is a
+  same-origin file, not a `blob:` worker, so it is allowed by the policy (a blob worker would have needed
+  `blob:` added to `script-src`).
 - **Why still Report-Only for a round:** confirms in real browsers (both themes) that the intended policy
   fires zero violations before enforcement makes any mismatch fatal. Once confirmed, enforcement is a
   single directive-name flip (`Content-Security-Policy-Report-Only` to `Content-Security-Policy`).
