@@ -6,6 +6,70 @@
 
 ---
 
+### 2026-07-05 · Application-layer security headers via public/_headers; CSP Report-Only as a staging step toward enforcement
+- **Decision:** Application-layer security headers ship via `public/_headers` on Cloudflare Pages, additive
+  to the zone-level hardening. Safe headers (X-Content-Type-Options, Referrer-Policy, X-Frame-Options,
+  Permissions-Policy) and immutable caching for `/_astro/*` and `/fonts/*` are ENFORCED immediately.
+  Content-Security-Policy ships as `Content-Security-Policy-Report-Only`. Report-Only is a STAGING STEP,
+  NOT the finish line: it blocks nothing and only surfaces would-be violations, so we validate the intended
+  policy in real browsers first. The finish line is renaming the header to `Content-Security-Policy`.
+- **Post-self-host CSP state:** the font self-hosting migration is complete, so the CSP has NO Google Fonts
+  origins; `font-src 'self'` (fonts served same-origin from `/fonts/*.woff2`). `style-src` retains
+  `'unsafe-inline'` because Starlight and Expressive Code inject inline styles; that is effectively
+  permanent short of forking Starlight. `img-src 'self' data:` (the `data:` is required: 30-plus
+  `url(data:image...)` CSS backgrounds from Starlight/Expressive Code icons). No external origins in any
+  directive (verified zero in source and dist).
+- **script-src reality (supersedes the brief's "one inline script" premise):** the production build emits
+  **18 distinct inline scripts**, not one. Besides our static reading-progress bar, Starlight injects its
+  own inline scripts (theme provider, mobile-menu toggle, sidebar/TOC persistence, `updatePickers`,
+  Expressive Code), and the marketing pages (`/`, `/about`) plus a few writeups (busqueda/return
+  decode-scramble, the platform-index reveal, the `404` reduced-motion guard) carry their own inline FX.
+  A hash in `script-src` makes browsers ignore `'unsafe-inline'`, so a single progress-script hash would
+  block the other 17. Chosen (owner decision): keep `script-src 'self' 'unsafe-inline'` for now. The
+  stable progress-bar hash is `sha256-zbeMm3179IyQub695L7lMzB1ygPiSe0lSSrMfkEOwpc=`; the full 18-hash set
+  is reproducible from `dist` (enumerate inline `<script>` bodies, SHA-256 each) but roughly a third are
+  volatile authored FX that change with the pages, so hardcoding them into a global header is brittle.
+- **script-src also needs `'wasm-unsafe-eval'` (required, verified):** Starlight's search (Pagefind)
+  instantiates a WebAssembly module inside a Web Worker (`dist/pagefind/pagefind-worker.js` +
+  `wasm.*.pagefind`). Under CSP, WASM compilation needs `'wasm-unsafe-eval'` (or the broader
+  `'unsafe-eval'`); without it browsers block it as `blockedURI "wasm-eval"` and search breaks. Confirmed
+  empirically on Chromium 148: under only `'self' 'unsafe-inline'`, a direct `WebAssembly.instantiate`
+  fires a `script-src` violation (`blockedURI: wasm-eval`, disposition `report` = would block once
+  enforced); Firefox 102+ and Safari 16+ gate WASM more strictly still. `'wasm-unsafe-eval'` is the narrow
+  WASM-only token (does NOT permit JS `eval` / `new Function`), so it is a minimal, targeted relaxation.
+  **Testing lesson (why an earlier pass missed this):** Pagefind's WASM runs in a Worker, and
+  worker-context CSP violations do NOT surface on the main-thread `securitypolicyviolation` listener or
+  the page console. A search smoke test looked clean while WASM was actually being flagged; the direct
+  WASM probe is what exposed it. Always probe WASM directly, not just via a search click.
+- **Why still Report-Only for a round:** confirms in real browsers (both themes) that the intended policy
+  fires zero violations before enforcement makes any mismatch fatal. Chromium is confirmed clean with the
+  token present; Firefox and Safari are NOT installed on the build host, so a real FF/Safari pass is still
+  outstanding before the flip. Once confirmed, enforcement is a single directive-name flip
+  (`Content-Security-Policy-Report-Only` to `Content-Security-Policy`).
+- **Why HSTS is not in _headers:** HSTS is set at the Cloudflare zone level; duplicating it risks a
+  conflicting max-age. The zone owns HSTS; `_headers` carries app headers only.
+- **Hard constraint recorded:** the CSP MUST NOT use Trusted Types (`require-trusted-types-for` /
+  `trusted-types`). The SecretTerminal (`src/components/SecretTerminal.astro`, embedded in `secret.mdx`)
+  renders via `innerHTML` (visitor input escaped, only trusted authored markup injected raw); Trusted
+  Types blocks `innerHTML` sinks and would break it. Standard CSP is fully compatible.
+- **Enforce-phase checklist:** confirm zero Report-Only violations in real browsers (Chromium done;
+  Firefox + Safari still to do), both themes, INCLUDING a real search run so Pagefind's worker WASM is
+  exercised, then flip Report-Only to enforced. To also drop `script-src 'unsafe-inline'`, either enumerate
+  all 18 inline-script hashes (brittle: recompute on any FX/Starlight change) or adopt a nonce strategy
+  (needs an edge transform, not present on static Pages). Keep `style-src 'unsafe-inline'` and
+  `script-src 'wasm-unsafe-eval'`. Never add Trusted Types.
+- **Cache-Control caveat (`/fonts/*`):** the immutable rule means a full year with no revalidation, and the
+  font filenames are NOT content-hashed (unlike `/_astro/*`). So if a font is ever re-subset, replaced, or
+  a weight added, you MUST change the filename (or add a `?v=` bust); otherwise returning visitors keep the
+  stale file for up to a year. Record any such font change here and in CORE_SPEC.
+- **Verified:** `public/_headers` emitted byte-identical to `dist/_headers`; no `Strict-Transport-Security`
+  line; no Trusted Types directive; no Google/external origins; CSP is Report-Only; `font-src 'self'`;
+  `script-src` has `'wasm-unsafe-eval'` (WASM probe fires zero violations with it, both a direct probe and
+  a real Pagefind search); both `/_astro/*` and `/fonts/*` immutable rules active; `npm run build` green
+  (45 pages); no new deps, versions unchanged. Supersedes the earlier "enforce CSP gated on font
+  self-hosting" ROADMAP item.
+- **Status:** Adopted + shipped (single static `public/_headers` plus doc edits).
+
 ### 2026-07-05 · Spoiler-toggle open border derives from summary color via --spoiler-color (fixes a masked light-mode bug)
 - **Decision:** `.sl-markdown-content details.spoiler-toggle` now sets a single `--spoiler-color` custom
   property (`#ffc23d` dark, `#a86f04` light) that BOTH the `[open]` border and the summary color read
