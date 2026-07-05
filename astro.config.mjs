@@ -4,6 +4,7 @@ import starlightImageZoom from 'starlight-image-zoom';
 import path from 'path';
 import { pluginPrivCommand } from './src/lib/ec-priv-command.mjs';
 import rehypeContentImageLoading from './plugins/rehype-content-image-loading.mjs';
+import remarkInjectPasswordReveal from './plugins/remark-inject-passwordreveal.mjs';
 
 export default defineConfig({
   site: 'https://idanlab.dev',
@@ -18,7 +19,10 @@ export default defineConfig({
 
   // Content image loading: a rehype pass sets loading/decoding on content <img> (first eager,
   // rest lazy). Covers raw /public absolute-path images that skip astro:assets. See plugins/.
+  // remarkInjectPasswordReveal: a remark pass that auto-injects the PasswordReveal import into
+  // any MDX file that uses <PasswordReveal /> inline, so writeups need no per-file import.
   markdown: {
+    remarkPlugins: [remarkInjectPasswordReveal],
     rehypePlugins: [rehypeContentImageLoading],
   },
 
