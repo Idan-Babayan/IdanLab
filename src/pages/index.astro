@@ -2,6 +2,8 @@
 // Standalone landing page for Idan's Cyber Lab.
 // Lives OUTSIDE Starlight's layout for full creative control.
 // Owns the "/" route.
+// Self-hosted fonts (@font-face + metric-matched fallbacks) shared with the Starlight docs.
+import '../styles/fonts.css';
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -11,9 +13,8 @@
   <title>Idan.Lab | CTF Writeups & Security Notes</title>
   <meta name="description" content="Curiosity is my exploit. A living lab notebook of machine walkthroughs and capture-the-flag solutions by Idan Babayan." />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/jetbrains-mono-400.woff2" crossorigin />
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/syne-800.woff2" crossorigin />
 </head>
 <body>
 
@@ -125,8 +126,8 @@
     --lime: #b6ff3c;
     --cyan: #41efff;
     --magenta: #ff4d9d;
-    --display: 'Syne', sans-serif;
-    --mono: 'JetBrains Mono', monospace;
+    --display: 'Syne', 'Syne Fallback', sans-serif;
+    --mono: 'JetBrains Mono', 'JetBrains Mono Fallback', monospace;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { scroll-behavior: smooth; }

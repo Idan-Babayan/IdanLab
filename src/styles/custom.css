@@ -745,9 +745,9 @@ body:has(.pi-index) .content-panel + .content-panel {
 
 /* ── Typography: Syne for display, JetBrains Mono for everything else ── */
 :root {
-  --sl-font: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
-  --sl-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
-  --tp-display: 'Syne', sans-serif;
+  --sl-font: 'JetBrains Mono', 'JetBrains Mono Fallback', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --sl-font-mono: 'JetBrains Mono', 'JetBrains Mono Fallback', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --tp-display: 'Syne', 'Syne Fallback', sans-serif;
   --tp-cyan: #41efff;
   --tp-cyan-ink: #0b7e92;
 }
