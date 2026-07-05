@@ -6,8 +6,6 @@ sidebar:
   order: 27
 ---
 
-import Toggle from '@components/Toggle.astro';
-
 <div class="machine-meta">
   <span class="meta-badge platform-overthewire">OverTheWire</span>
   <span class="meta-badge os-linux">Linux</span>
@@ -25,14 +23,8 @@ bandit27@bandit:/tmp/tmp.NxwmnLaKZF$ cat repo/README
 The password to the next level is: <password>
 ```
 
+<PasswordReveal password="Yz9IpL0sBcCeuG7m9uQFt8ZNpS4HZRcN" />
+
 ## Why it works
 
 A Git remote you can authenticate to is just a readable data source. Using `git clone` copies the working tree (and the full history) to a directory you own, so a secret committed into the `README` comes along with it. This is the setup for the next three levels, which all mine a Git repository.
-
-<Toggle label="Reveal password" class="spoiler-toggle">
-
-```text frame="code"
-Yz9IpL0sBcCeuG7m9uQFt8ZNpS4HZRcN
-```
-
-</Toggle>

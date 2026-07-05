@@ -6,8 +6,6 @@ sidebar:
   order: 5
 ---
 
-import Toggle from '@components/Toggle.astro';
-
 <div class="machine-meta">
   <span class="meta-badge platform-overthewire">OverTheWire</span>
   <span class="meta-badge os-linux">Linux</span>
@@ -25,14 +23,8 @@ bandit5@bandit:~/inhere$ cat ./maybehere07/.file2
 The password you are looking for is: <password>
 ```
 
+<PasswordReveal password="HWasnPhtq9AVKe0dmk45nxy20cvUa6EG" />
+
 ## Why it works
 
 `find` filters on inode metadata before ever touching file contents: `-size 1033c` targets an exact byte count (c for bytes) while `-type f` restricts the search to regular files. Stacking these predicates pinpoints a single file across a deep directory tree without reading any of them.
-
-<Toggle label="Reveal password" class="spoiler-toggle">
-
-```text frame="code"
-HWasnPhtq9AVKe0dmk45nxy20cvUa6EG
-```
-
-</Toggle>

@@ -6,8 +6,6 @@ sidebar:
   order: 21
 ---
 
-import Toggle from '@components/Toggle.astro';
-
 <div class="machine-meta">
   <span class="meta-badge platform-overthewire">OverTheWire</span>
   <span class="meta-badge os-linux">Linux</span>
@@ -29,14 +27,8 @@ bandit21@bandit:~$ cat /tmp/t7O6lds9S0RqQh9aMcz6ShpAoZKF7fgv
 The password you are looking for is: <password>
 ```
 
+<PasswordReveal password="tRae0UfB9v0UzbCdn9cY0gQnds9GF58Q" />
+
 ## Why it works
 
 Files in `/etc/cron.d` declare a job and the user it runs as. This one runs as `bandit22` every minute and writes that user's password to a fixed `/tmp` path with mode 644 (world-readable), so reading the leaked output takes no privileges at all.
-
-<Toggle label="Reveal password" class="spoiler-toggle">
-
-```text frame="code"
-tRae0UfB9v0UzbCdn9cY0gQnds9GF58Q
-```
-
-</Toggle>

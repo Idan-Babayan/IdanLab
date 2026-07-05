@@ -6,8 +6,6 @@ sidebar:
   order: 4
 ---
 
-import Toggle from '@components/Toggle.astro';
-
 <div class="machine-meta">
   <span class="meta-badge platform-overthewire">OverTheWire</span>
   <span class="meta-badge os-linux">Linux</span>
@@ -33,14 +31,8 @@ bandit4@bandit:~/inhere$ cat ./-file07
 The password you are looking for is: <password>
 ```
 
+<PasswordReveal password="4oQYVPkxZOOEOO5pTW81FB8j8lxXGUQw" />
+
 ## Why it works
 
 `file` classifies each input by inspecting its leading magic bytes and content rather than its name, so the one ASCII text file stands out from nine binaries without opening each by hand. The `./` prefix again keeps the dash-led names from reading as options.
-
-<Toggle label="Reveal password" class="spoiler-toggle">
-
-```text frame="code"
-4oQYVPkxZOOEOO5pTW81FB8j8lxXGUQw
-```
-
-</Toggle>

@@ -6,8 +6,6 @@ sidebar:
   order: 30
 ---
 
-import Toggle from '@components/Toggle.astro';
-
 <div class="machine-meta">
   <span class="meta-badge platform-overthewire">OverTheWire</span>
   <span class="meta-badge os-linux">Linux</span>
@@ -28,14 +26,8 @@ bandit30@bandit:...$ git show secret
 The password you are looking for is: <password>
 ```
 
+<PasswordReveal password="fb5S2xb7bRyFmAvQYQGEqsbhVyJqhnDy" />
+
 ## Why it works
 
 A Git tag serves as a static, named reference to a specific object, separated from the commit and branch graph, so its contents never show up in a normal log or checkout. `git tag` lists it and `git show secret` prints what it points at, here the password.
-
-<Toggle label="Reveal password" class="spoiler-toggle">
-
-```text frame="code"
-fb5S2xb7bRyFmAvQYQGEqsbhVyJqhnDy
-```
-
-</Toggle>
