@@ -48,7 +48,6 @@
 ## Later (parked)
 - [CONTENT] Surface topic tags as a browsable index (filter writeups by technique).
 - [ENG] Starlight plugins: scroll-to-top button, mobile sidebar swipe, fullscreen code blocks.
-- [ENG] Self-host Syne + JetBrains Mono (drop Google Fonts dependency; faster, private).
 - [DESIGN] Replace `ethical-hacking.png` about portrait with a transparent custom SVG.
 - [ENG] Extract repeated UI into reusable Astro components (cards, badges, buttons, hero FX).
 - [ENG] CI on push: type-check, build, link-check, (later) visual-regression screenshots.

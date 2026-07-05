@@ -50,7 +50,7 @@
 
 ```
 C:\dev\idanlab\                       # chosen to avoid Hebrew chars in C:\Users\אידן\
-├─ astro.config.mjs                   # Starlight config: site, sidebar, fonts(head), EC themes + pluginPrivCommand, reading-progress head script, image-zoom, vite alias, components overrides (PageSidebar + Footer), markdown rehypePlugins (content image loading)
+├─ astro.config.mjs                   # Starlight config: site, sidebar, self-hosted font preloads(head) + customCss[fonts.css, custom.css], EC themes + pluginPrivCommand, reading-progress head script, image-zoom, vite alias, components overrides (PageSidebar + Footer), markdown rehypePlugins (content image loading)
 ├─ src/
 │  ├─ content.config.ts               # docs collection (docsLoader + docsSchema), extended with optional os/tags/principle
 │  ├─ pages/
@@ -79,12 +79,14 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in C:\Users
 │  ├─ lib/
 │  │  └─ ec-priv-command.mjs          # EC plugin: tags command words by category (priv/recon/net/inspect)
 │  └─ styles/
-│     └─ custom.css                   # Starlight theme + THEME PASS + light art-direction + badges + sidebar + components
+│     ├─ custom.css                   # Starlight theme + THEME PASS + light art-direction + badges + sidebar + components
+│     └─ fonts.css                    # self-hosted @font-face (subset WOFF2) + metric-matched fallbacks; loaded via customCss and imported by the marketing pages
 ├─ plugins/
 │  └─ rehype-content-image-loading.mjs # rehype: sets loading/decoding on content <img> (first eager, rest lazy); wired via astro.config markdown.rehypePlugins
 ├─ public/
 │  ├─ robots.txt                      # in-repo; breadcrumb comment + Sitemap line (see §2)
 │  ├─ favicon.svg                     # site favicon
+│  ├─ fonts/*.woff2                   # self-hosted subset fonts (Syne 600/700/800; JetBrains Mono 400/500/700 + 400/500 italic); served at /fonts/
 │  ├─ icons/{htb,vulnhub,picoctf,overthewire}.svg
 │  └─ ethical-hacking.png             # about portrait (TODO: replace with transparent SVG). Writeup screenshots now live in src/assets (see §7); marketing images, if any, go under public/images
 └─ notion_cleaner.py                  # CONTENT PIPELINE (documented in §7; NOT yet committed to the repo)
@@ -126,7 +128,8 @@ Two surfaces, deliberately different:
 - **Accents (dark):** lime `#b6ff3c`, cyan `#41efff`, magenta `#ff4d9d`.
 - **Accents (light, darkened for contrast):** lime `#4d7c0f`, cyan `#0b7e92`, magenta `#c41d6f`.
 - **Fonts:** display = **Syne** (600/700/800); mono/body/UI = **JetBrains Mono** (400/500/700, plus italic 400/500 for the Principle coda maxim).
-  Loaded from Google Fonts. (Self-hosting is a roadmap item.)
+  Self-hosted as subset WOFF2 in public/fonts/ (see src/styles/fonts.css), with metric-matched
+  size-adjust fallbacks so the font swap is shift-free; no Google Fonts origin. See DECISIONS 2026-07-04.
 - **Starlight var overrides:** `--sl-color-accent` = lime, `--sl-color-bg` = ink,
   `--sl-font` = JetBrains Mono. Headings forced to Syne via CSS.
 
