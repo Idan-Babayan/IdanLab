@@ -44,11 +44,20 @@
 # harmless and future-proofs the deny posture. Header values cannot be multiline, so the
 # policy is one line.
 #
-# Enforce-phase to-do: confirm zero Report-Only violations in real browsers (Chromium done;
-# Firefox and Safari still to check, since they gate WASM more strictly), both themes,
-# including a real search run (WASM) since worker violations hide from the main-thread console.
-# Then rename Content-Security-Policy-Report-Only to Content-Security-Policy. Keep style-src
-# 'unsafe-inline' and script-src 'wasm-unsafe-eval'. Never add Trusted Types.
+# Cross-browser verified (2026-07-05): zero violations under this policy on Chromium 148,
+# Firefox 152, and WebKit 26.5 (Safari engine, via Playwright): synthetic main+worker WASM,
+# the real Pagefind search, and every real page, both themes. Necessity also confirmed: with
+# the token removed, WASM throws CompileError on all three. Still recommended before the flip:
+# a pass on real Safari hardware (this build host is Windows) via a cloud lab or an Apple
+# device against a deployed Pages preview, since it already serves these headers.
+#
+# Note (report-only semantics): frame-ancestors and upgrade-insecure-requests are inert while
+# the policy is Report-Only (WebKit logs a console notice to that effect; it is benign). They
+# activate on the flip to enforced. Clickjacking protection is not lost in the meantime: the
+# enforced X-Frame-Options: DENY above covers it, and HSTS lives at the zone.
+#
+# Enforce-phase to-do: rename Content-Security-Policy-Report-Only to Content-Security-Policy.
+# Keep style-src 'unsafe-inline' and script-src 'wasm-unsafe-eval'. Never add Trusted Types.
 
 /*
   X-Content-Type-Options: nosniff
