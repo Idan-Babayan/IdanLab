@@ -38,14 +38,17 @@ export default defineConfig({
       },
       plugins: [starlightImageZoom()],
       head: [
-        { tag: 'link', attrs: { rel: 'preconnect', href: 'https://fonts.googleapis.com' } },
-        { tag: 'link', attrs: { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: true } },
-        { tag: 'link', attrs: { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400;1,500&display=swap' } },
+        // Self-hosted fonts (see src/styles/fonts.css + public/fonts/). Preload only the two most
+        // critical above-the-fold faces: JetBrains Mono 400 (body + code) and Syne 800 (the h1 page
+        // title and hero headline, the dominant display element). Other weights load on demand and stay
+        // shift-free via the metric-matched fallbacks. crossorigin is required on font preloads.
+        { tag: 'link', attrs: { rel: 'preload', as: 'font', type: 'font/woff2', href: '/fonts/jetbrains-mono-400.woff2', crossorigin: true } },
+        { tag: 'link', attrs: { rel: 'preload', as: 'font', type: 'font/woff2', href: '/fonts/syne-800.woff2', crossorigin: true } },
         // Reading-progress bar (styled by #tp-progress in custom.css)
         { tag: 'script', content: "window.addEventListener('DOMContentLoaded',function(){var b=document.createElement('div');b.id='tp-progress';document.body.appendChild(b);var u=function(){var h=document.documentElement,m=h.scrollHeight-h.clientHeight;b.style.width=(m>0?h.scrollTop/m*100:0)+'%';};document.addEventListener('scroll',u,{passive:true});window.addEventListener('resize',u);u();});" },
       ],
       title: "Idan.Lab",
-      customCss: ['./src/styles/custom.css'],
+      customCss: ['./src/styles/fonts.css', './src/styles/custom.css'],
       // Additive override: render the default right "On this page" sidebar and add the ToggleAll
       // control at the top (see src/components/overrides/PageSidebar.astro). Default TOC preserved.
       components: {
