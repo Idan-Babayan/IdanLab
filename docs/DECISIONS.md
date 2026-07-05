@@ -6,6 +6,32 @@
 
 ---
 
+### 2026-07-04 · Self-hosted fonts (subset WOFF2 + metric-matched fallbacks), Google Fonts removed
+- **Decision:** Syne and JetBrains Mono are self-hosted as subset WOFF2 under public/fonts/ (served at
+  /fonts/), replacing the remote Google Fonts request. Removes an external origin (privacy/optics on a
+  security site), the extra DNS/TLS, and the render-blocking external stylesheet; the cross-site cache
+  benefit is dead since browsers partition the HTTP cache by top-level site.
+- **Faces:** JetBrains Mono 400/500/700 roman + 400/500 italic (broad subset: Latin, punctuation,
+  currency, arrows, math, box drawing, block elements, geometric shapes, misc technical and symbols,
+  since it renders terminal output); Syne 600/700/800 (narrow: Latin + general punctuation). 8 files,
+  ~300 KB. Subset locally with fonttools pyftsubset + brotli in a throwaway venv (NOT a project
+  dependency; not in package.json or the build).
+- **@font-face home:** src/styles/fonts.css (not custom.css, so Design keeps custom.css authorship),
+  loaded via Starlight customCss and imported by the two marketing pages. Font stacks are the real
+  family, then the metric-matched fallback, then the generic.
+- **Shift-free swap:** two fallback @font-face families with size-adjust + ascent/descent/line-gap
+  overrides computed from the real font metrics (JetBrains Mono vs Courier New = 99.98/102.02/30/0;
+  Syne vs Arial = 123.39/74.97/22.29/0). Each lists Windows and macOS locals first, then DejaVu and
+  Liberation so the shift-free swap also applies on Linux, then the generic.
+- **Preloads:** only jetbrains-mono-400 and syne-800 (the dominant above-the-fold body/code and display
+  faces), crossorigin. font-display: swap on every real face.
+- **Verified:** zero fonts.googleapis/gstatic references (source + dist), both themes render identically,
+  the Principle coda now uses a REAL JetBrains Mono italic, no tofu on terminal glyphs, build green
+  (45 pages). Supersedes the "loaded from Google Fonts" note in CORE_SPEC and the self-host ROADMAP item.
+- **Follow-up:** /fonts/*.woff2 should get Cache-Control: public, max-age=31536000, immutable via the
+  pending public/_headers (out of scope, not touched).
+- **Status:** Adopted + shipped.
+
 ### 2026-07-04 · Principle coda auto-appends from frontmatter; JetBrains Mono italic loaded
 - **Completes** the follow-ups from the Principle-component entry below (auto-append, footer silence, true
   italic face).
