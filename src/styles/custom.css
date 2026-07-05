@@ -1545,25 +1545,144 @@ html[data-theme="light"] .sl-markdown-content .cl :not(pre) > code {
    A <Toggle class="spoiler-toggle"> for "reveal the answer" controls (e.g. a wargame password).
    It reuses the base .sl-markdown-content details card and only layers OverTheWire's amber on the
    border and a compact mono summary, so the reveal reads as the level's payoff without a new
-   component. Theme-aware (amber #ffc23d dark, #a86f04 light, both AA on the toggle panel). The
-   disclosure marker transition is removed so the control is calm under prefers-reduced-motion.
-   Wargame-agnostic: any level page can opt in via the class. */
+   component. Theme-aware via a single --spoiler-color token (amber #ffc23d dark, #a86f04 light,
+   both AA on the toggle panel): the OPEN border and the summary both read from it, so the open
+   border always matches the label. In dark the two values were already identical (no visible
+   change); in light this unifies the open border to the deeper #a86f04 summary color, fixing a
+   prior mismatch where the open border stayed the brighter #ffc23d. The closed border keeps its
+   translucent amber. The disclosure marker transition is removed so the control is calm under
+   prefers-reduced-motion. Wargame-agnostic: any level page can opt in via the class.
+   Specificity note: two generic rules elsewhere in this file also set border-color on any
+   .sl-markdown-content details / details[open] (the base per-theme card border, and light mode's
+   "no green edge on paper" open-state override), and both are unconditional on element type, so
+   they silently outrank a plain .spoiler-toggle selector and the amber border never renders. The
+   closed- and open-state rules below are prefixed with html[data-theme] (attribute-presence only,
+   not tied to a value, so it still applies in both themes) purely to out-specificity those two
+   rules. Scoped to .spoiler-toggle only; the shared rules themselves are untouched. */
 .sl-markdown-content details.spoiler-toggle {
+  --spoiler-color: #ffc23d;
+}
+html[data-theme="light"] .sl-markdown-content details.spoiler-toggle {
+  --spoiler-color: #a86f04;
+}
+html[data-theme] .sl-markdown-content details.spoiler-toggle {
   border-color: rgba(245, 158, 11, 0.45);
 }
-.sl-markdown-content details.spoiler-toggle[open] {
-  border-color: #ffc23d;
+html[data-theme] .sl-markdown-content details.spoiler-toggle[open] {
+  border-color: var(--spoiler-color);
 }
 .sl-markdown-content details.spoiler-toggle > summary {
-  color: #ffc23d;
+  color: var(--spoiler-color);
   font-family: var(--sl-font-mono);
   font-weight: 700;
 }
-html[data-theme="light"] .sl-markdown-content details.spoiler-toggle > summary {
-  color: #a86f04;
-}
 .sl-markdown-content details.spoiler-toggle > summary::before {
   transition: none;
+}
+
+
+/* ── PasswordReveal: wargame waypoint (OverTheWire amber, not gold flag) ───────
+   A wargame password is a waypoint, not a trophy: amber (the OverTheWire / spoiler identity), never
+   the gold flag tokens, and NO decode scramble (reserved for FlagCapture, so the flag vs password
+   distinction reads). The row is a passive amber card: only .pw-action is interactive. The label and
+   value are NON-selectable (copy is the only way to take the value, like FlagCapture), and the value
+   is spoiler-blurred until Reveal is clicked (never on hover). Amber matches the site system:
+   #f59e0b washes/borders, accent #ffc23d dark / #a86f04 light (same as the spoiler-toggle). Both
+   themes; light is stronger and more golden. Values are literal so nothing fails to resolve. */
+.sl-markdown-content .pwreveal {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  background: rgba(245, 158, 11, 0.08);
+  border-radius: 8px;
+  padding: 0.5rem 0.7rem;
+  margin: 1rem 0;
+  cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
+}
+:root[data-theme="light"] .sl-markdown-content .pwreveal {
+  border-color: rgba(245, 158, 11, 0.55);
+  background: rgba(245, 158, 11, 0.14);
+}
+.sl-markdown-content .pwreveal .pw-label {
+  font-family: var(--sl-font-mono);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sl-color-gray-3);
+  flex: none;
+}
+.sl-markdown-content .pwreveal .pw-value {
+  font-family: var(--sl-font-mono);
+  font-size: 0.88rem;
+  color: var(--sl-color-text);
+  background: none;
+  border: 0;
+  padding: 0;
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  cursor: default;
+  filter: blur(5px);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .sl-markdown-content .pwreveal .pw-value { transition: filter 0.3s ease; }
+}
+.sl-markdown-content .pwreveal.is-revealed .pw-value {
+  filter: none;
+}
+.sl-markdown-content .pwreveal .pw-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: none;
+  font-family: var(--sl-font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #ffc23d;
+  background: transparent;
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  border-radius: 6px;
+  padding: 0.28rem 0.6rem;
+  cursor: pointer;
+}
+:root[data-theme="light"] .sl-markdown-content .pwreveal .pw-action {
+  color: #a86f04;
+  border-color: rgba(245, 158, 11, 0.6);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .sl-markdown-content .pwreveal .pw-action { transition: background-color 0.15s ease, border-color 0.15s ease; }
+}
+.sl-markdown-content .pwreveal .pw-action:hover {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.65);
+}
+:root[data-theme="light"] .sl-markdown-content .pwreveal .pw-action:hover {
+  background: rgba(245, 158, 11, 0.2);
+}
+.sl-markdown-content .pwreveal .pw-action:focus-visible {
+  outline: 2px solid #ffc23d;
+  outline-offset: 2px;
+}
+:root[data-theme="light"] .sl-markdown-content .pwreveal .pw-action:focus-visible {
+  outline-color: #a86f04;
+}
+.sl-markdown-content .pwreveal .pw-action-ico { width: 15px; height: 15px; flex: none; }
+
+/* Visually hidden aria-live region (omit if an .sr-only utility already exists in the file). */
+.sl-markdown-content .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 
