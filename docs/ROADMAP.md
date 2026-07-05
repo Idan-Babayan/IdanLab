@@ -16,9 +16,14 @@
   and `plugins/rehype-content-image-loading.mjs` lazy-loads content images. Build verified (hashed images
   under `_astro`); the busqueda case-rename is staged via `git mv`. Needs commit + push. See DECISIONS
   2026-06-30.
-- [CONTENT] Apply FlagCapture to the Bandit "Reveal Password" toggles: the writeups are fine-tuned and
-  ready; owner wants to test the swap soon (the level reward is a password/key, so keep the truncation
-  rule for any PEM, see DECISIONS 2026-06-26).
+- [CONTENT] Apply PasswordReveal (NOT FlagCapture, see DECISIONS 2026-07-05) to the Bandit "Reveal
+  Password" toggles across all 34 pages, replacing `<Toggle class="spoiler-toggle">`: component +
+  styling shipped 2026-07-05 (amber waypoint identity, blur-to-reveal then copy-in-place, non-selectable
+  value, copy-only). Now wired into `overthewire/bandit/0-1.mdx` alongside the existing spoiler-toggle
+  (not yet removed); remove the redundant toggle there once confirmed, then roll out to the remaining 33
+  pages. As of the remark auto-import plugin (DECISIONS 2026-07-05), rollout only needs the
+  `<PasswordReveal password="..." />` tag per page, no import line. Keep the truncation rule for any PEM
+  (DECISIONS 2026-06-26).
 - [CONTENT] Revisit `404.mdx`: owner made manual changes on 2026-06-28 and wants to review/refine it
   again on a later day.
 - [ENG/INFRA] Domain rebrand: in-repo done (site=idanlab.dev, wordmark/titles, copy, robots Sitemap).
@@ -42,8 +47,11 @@
 - [CONTENT] Pipeline (`notion_cleaner.py`) hooks for content-lane dependencies: emit a `.flag-title`
   class on flag headings (flag-gold currently targets slug ids `#user-flag`/`#root-flag` as an interim),
   emit the gold heading + `<FlagCapture type="..." flag="..." />` for User/Root flags (replacing the old
-  heading + duplicate `<Toggle flag>` + `:::tip`; see CORE_SPEC §7 + DECISIONS 2026-06-27), and optionally
-  promote os/tags to frontmatter.
+  heading + duplicate `<Toggle flag>` + `:::tip`; see CORE_SPEC §7 + DECISIONS 2026-06-27), emit
+  `<PasswordReveal password="..." />` for wargame password levels (replacing
+  `<Toggle class="spoiler-toggle">`; see DECISIONS 2026-07-05) with no accompanying import line needed
+  (auto-injected, see DECISIONS 2026-07-05 remark-plugin entry), and optionally promote os/tags to
+  frontmatter.
 
 ## Later (parked)
 - [CONTENT] Surface topic tags as a browsable index (filter writeups by technique).

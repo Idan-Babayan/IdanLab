@@ -6,6 +6,175 @@
 
 ---
 
+### 2026-07-05 · Spoiler-toggle open border derives from summary color via --spoiler-color (fixes a masked light-mode bug)
+- **Decision:** `.sl-markdown-content details.spoiler-toggle` now sets a single `--spoiler-color` custom
+  property (`#ffc23d` dark, `#a86f04` light) that BOTH the `[open]` border and the summary color read
+  from, replacing two independently hardcoded values. Dark's two values were already identical
+  (`#ffc23d`/`#ffc23d`), so dark is unchanged; light's open border moves from `#ffc23d` to the deeper
+  `#a86f04` summary color, so the open border always matches the label by construction instead of by
+  coincidence. The closed border is unchanged (`rgba(245, 158, 11, 0.45)`, both themes).
+- **Bug found during verification (bigger than the ask):** live browser verification (enumerating every
+  matching CSS rule via `document.styleSheets`, not just reading source) showed the amber border was
+  ALREADY not rendering at all in light mode, in either state, before this fix, for a reason unrelated to
+  the open/summary color values: two generic, unconditional rules elsewhere in `custom.css` also set
+  `border-color` on any `.sl-markdown-content details` / `details[open]` and have higher specificity than
+  a plain `.spoiler-toggle` selector, so they silently won: `html[data-theme="..."] .sl-markdown-content
+  details { border-color: ... }` (the base per-theme card border, specificity classes=2/types=2) beat the
+  closed-state rule (classes=2/types=1) in BOTH themes, and light-only `:root[data-theme='light']
+  .sl-markdown-content details[open] { border-color: var(--tp-divider); }` (written to stop a REGULAR
+  toggle's border turning green on open, classes=4/types=1) beat the open-state rule (classes=3/types=1)
+  in light. Net effect verified before this fix: light mode showed a neutral gray border
+  (`--tp-divider`, `#c6c0b4`) in both states; dark showed gray closed / correct `#ffc23d` open (no
+  light-only `[open]` competitor exists in dark). So the "brighter gold over deep gold" mismatch described
+  in the request was never actually visible either, a different bug (the gray fallback) was masking both
+  the old value and the intended fix.
+- **Fix (scoped, user-chosen over two alternatives):** the closed- and open-state border rules are
+  prefixed with `html[data-theme]` (attribute-presence match, not tied to a value, so it still resolves
+  per-theme via the token) purely to out-specificity the two generic rules above: closed becomes
+  classes=3/types=2 (beats the base rule's classes=2/types=2 on the class tier), open becomes
+  classes=4/types=2 (ties the light `[open]` rule's classes=4, wins on the type tier, 2 vs 1). This only
+  touches `.spoiler-toggle`'s own selectors; the two shared generic rules (and every other toggle that
+  depends on them for the "no green edge on paper" behavior) are untouched. Rejected: editing the two
+  shared rules to add `:not(.spoiler-toggle)` instead, same visual result but a larger blast radius across
+  every content toggle on the site for no added benefit.
+- **Verified live** (both themes, both states, via `getComputedStyle` + a full matching-rule enumeration,
+  not just the token value): dark closed `rgba(245, 158, 11, 0.45)`, dark open `rgb(255, 194, 61)`
+  (`#ffc23d`, matches summary, unchanged from before); light closed `rgba(245, 158, 11, 0.45)` (now
+  correctly amber instead of the masked gray, a bonus fix beyond the original ask), light open
+  `rgb(168, 111, 4)` (`#a86f04`, matches summary exactly, the requested fix). A regular (non-spoiler)
+  toggle on `busqueda.mdx` was spot-checked and is unaffected: closed and open borders are still
+  identical (`--tp-divider`), so the "no green edge" behavior for ordinary toggles is untouched.
+  `npm run build` green (45 pages).
+- **Status:** Adopted + shipped (custom.css only).
+
+### 2026-07-05 · Remark plugin auto-injects the PasswordReveal import (no per-file import needed)
+- **Decision:** New additive build-time plugin `plugins/remark-inject-passwordreveal.mjs`, wired into
+  `astro.config.mjs` via `markdown.remarkPlugins` (a new array; only `rehypePlugins` existed before). It
+  walks each MDX file's mdast tree and, ONLY when the file contains a `<PasswordReveal .../>` JSX element
+  AND does not already import `PasswordReveal` itself, prepends an `import PasswordReveal from
+  '@components/PasswordReveal.astro'` ESM node to the tree. Writeup authors (and eventually
+  `notion_cleaner.py`) now write `<PasswordReveal password="..." />` inline with zero import boilerplate;
+  this is what makes rolling PasswordReveal out across 34+ Bandit pages (ROADMAP) tractable instead of a
+  34-file manual-import chore.
+- **Why a remark plugin, not a components map:** Starlight renders docs-page MDX internally, so the
+  `<Content components={...}>` override point Astro exposes for user-land MDX rendering is not reachable
+  for Starlight docs. A build-time AST transform on the same legacy `unified()` pipeline the existing rehype
+  plugin (`rehype-content-image-loading.mjs`) already runs on is the mechanism that is actually reachable,
+  and is purely additive (new `remarkPlugins` key alongside the untouched `rehypePlugins` key).
+- **Mechanism (verified, not assumed):** MDX represents a component tag as an `mdxJsxFlowElement` /
+  `mdxJsxTextElement` mdast node (`name === 'PasswordReveal'`), and an ESM import as an `mdxjsEsm` node whose
+  `data.estree` is a full ESTree `Program` (confirmed by reading `mdast-util-mdxjs-esm`'s source directly:
+  `node.data = {estree}` is set from the parsed token, and `@mdx-js/mdx`'s hast/estree stage splices that
+  `Program`'s body into the compiled module, not `node.value`). Detection uses `unist-util-visit`; the
+  injected import's `data.estree` is produced by parsing the exact import string with `acorn.parse(source,
+  {ecmaVersion: 'latest', sourceType: 'module'})`, guaranteeing an ESTree shape byte-identical to what the
+  real compiler would produce for a hand-written import, rather than a hand-rolled AST literal that could be
+  subtly wrong. Both `unist-util-visit` (5.1.0) and `acorn` (8.16.0) are already present in `node_modules` as
+  transitive dependencies of `@astrojs/mdx` (which Starlight injects automatically; it is not itself listed
+  in this project's `package.json`), so nothing was added to `package.json`.
+- **Import specifier:** `@components/PasswordReveal.astro` (the existing Vite alias), used as-is. Verified
+  by an actual `npm run build` (not inferred): the caveat that Vite aliases can fail to resolve in
+  build-time-injected imports (the same caveat that applies to MDX image paths, which use a different,
+  astro:assets-specific resolution path) does NOT apply here, because MDX compilation never inspects or
+  rewrites plain `import` specifier strings itself; it only emits them into the compiled JS module verbatim,
+  and Vite/Rollup then resolves that module's imports exactly as it would for any hand-authored file. No
+  fallback (relative-path) specifier was needed.
+- **Conditional injection, verified empirically, not just by reading the code:** temporarily instrumented
+  the plugin to log every file it decided to inject into, then ran `npm run build` (45 pages). Exactly one
+  file logged, `overthewire/bandit/0-1.mdx`, with `alreadyImported: false`. Then temporarily restored a
+  manual `import PasswordReveal from '@components/PasswordReveal.astro'` line in that same file and rebuilt:
+  the plugin logged `alreadyImported: true` and skipped injection, and the build stayed green (a duplicate
+  injection would have produced a JS duplicate-binding `SyntaxError` at build time). The instrumentation was
+  then removed. This is the live proof that the guard against double-import (an author who writes both the
+  tag and a manual import) is not just a hoped-for property, it is exercised and does not break the build.
+- **Live testbed:** `overthewire/bandit/0-1.mdx`'s manual `import PasswordReveal from
+  '@components/PasswordReveal.astro'` line (added when PasswordReveal first shipped, same date) was removed;
+  the file now has only `<PasswordReveal password="..." />` with no import, relying entirely on the plugin.
+  `import Toggle from '@components/Toggle.astro'` (for the still-present `spoiler-toggle`) is untouched.
+- **Verified:** `npm run build` green, 45 pages, no unresolved-import warnings. In-browser on the built
+  page: `.pwreveal` renders inline immediately after the `spoiler-toggle` `<Toggle>` (source order), not
+  appended at the end of the page (distinct from the Footer/`<Principle>` auto-append mechanism); reveal
+  click swaps the button to Copy in place with the real password value; dark computes
+  `background-color: rgba(245, 158, 11, 0.08)` and light (via the shared `starlight-theme` key)
+  `rgba(245, 158, 11, 0.14)`, both exact matches for the values recorded in the PasswordReveal entry above,
+  confirming the component's rendering and theming are unaffected by how its import arrives. `busqueda.mdx`
+  (a page that does not use PasswordReveal) was spot-checked in-browser: no injected import side effects,
+  content images, `starlight-image-zoom`'s "Zoom image" buttons, and `ToggleAll`'s "Expand all" control all
+  still render, zero console errors. The existing rehype plugin, `expressiveCode` config, and
+  `PasswordReveal.astro` itself were not modified.
+- **Status:** Adopted + shipped. Unblocks the ROADMAP rollout of PasswordReveal to the remaining 33 Bandit
+  pages: those pages now only need the `<PasswordReveal password="..." />` tag, no import line, and
+  `notion_cleaner.py` (still uncommitted) only needs to emit the tag, not an import, when it adopts this
+  convention.
+
+### 2026-07-05 · PasswordReveal: a dedicated amber component for wargame passwords (not a FlagCapture reuse)
+- **Decision:** New additive component `src/components/PasswordReveal.astro` (prop `password: string`)
+  renders the OverTheWire Bandit "reveal the password" affordance as its own thing, deliberately distinct
+  from `FlagCapture`: a wargame password is a WAYPOINT the reader pastes into SSH, not a trophy to
+  capture. No gold/loot styling, no signature decode/scramble animation (reserved for real flags in
+  FlagCapture). This reverses the direction implied by the 2026-06-27 FlagCapture entry and its matching
+  ROADMAP item ("Apply FlagCapture to the Bandit Reveal Password toggles"); that swap is superseded by
+  this dedicated component.
+- **Layout/behavior:** a `PASSWORD` label, the value spoiler-blurred (`filter: blur(5px)`, purely visual;
+  the real value is always in the DOM for screen readers and copy) as plain text with no border,
+  background, or hover affordance of its own, then ONE control on the right, the ONLY interactive
+  element in the row. It starts as an eye icon + "Reveal"; on click the value unblurs and the SAME
+  control swaps in place to a copy icon + "Copy" (one swapping slot, no layout shift, focus stays put).
+  A second click copies to the clipboard (with a `document.execCommand('copy')` fallback for non-secure
+  contexts) and shows "Copied" for ~1.4s before reverting. No native `title` tooltip (tried once, dropped:
+  looked bad); `aria-label` alone carries the accessible name ("Reveal password" -> "Copy to clipboard").
+  A real `<button>` (keyboard + focus); reveal/copy are announced via a visually hidden
+  `aria-live="polite"` region (`.pw-live.sr-only`, a new project-first visually-hidden utility in
+  custom.css): no visible "Password revealed"/"Password copied" text ever appears.
+- **Visual identity:** only the BUTTON reads as interactive; the label and value are also non-selectable
+  (`user-select: none` on the container, inherited down), so copying is the only way to take the value,
+  matching FlagCapture's captured-value pattern. The row is a passive AMBER CARD (not the neutral
+  hairline frame of an earlier pass): literal `rgba(245, 158, 11, ...)` washes/borders on the container
+  (dark 0.08 fill / 0.4 border, light 0.14 fill / 0.55 border, stronger and more golden), matching the
+  site's canonical OverTheWire system (the same values `.spoiler-toggle` uses). The button text/icon uses
+  the OTW accent directly, `#ffc23d` dark / `#a86f04` light (literal hex, not a token), with an
+  `rgba(245, 158, 11, ...)` border/hover wash. Values are literal (no `color-mix()`/custom-property
+  indirection) specifically so nothing can fail to resolve. Deliberately NOT `--flag-gold` (`#ffc23d`
+  dark / `#C6A243` light happens to share the dark hex with OTW's accent, but the container/wash colors
+  and the light accent differ, so the two never read as the same gold-flag treatment).
+- **Two bugs caught over this component's revisions (engineering notes):** (1) an intermediate pass moved
+  the amber off the container onto custom-property tokens (`--pw-amber-bg` etc. via `color-mix()`) and
+  ended up rendering as a neutral/near-black box in practice; reverted in favor of the literal `rgba()`
+  values above, which cannot fail to resolve. (2) a separate intermediate pass added
+  `.pw-value:hover { filter: inherit; }`, meant as "hovering changes nothing." `inherit` instead pulls the
+  PARENT's (`.pwreveal`) computed `filter`, which is always `none` (the container never sets `filter`), so
+  hovering the STILL-LOCKED value silently removed the blur and exposed the password, defeating the
+  spoiler; confirmed live (`.pw-value:hover` gave `filter: none` while `data-revealed` was still unset).
+  Fixed by dropping the hover rule entirely: with no `:hover` rule touching `filter` anywhere, the
+  existing blur/reveal rules govern it unconditionally in both states, which is what "hover changes
+  nothing" actually requires.
+- **Motion:** the only animation is the blur-to-clear `filter` transition, gated behind
+  `@media (prefers-reduced-motion: no-preference)` in CSS alone: no JS matchMedia branch needed (unlike
+  FlagCapture's decode, which is a real script-driven animation). Under reduced motion the value still
+  reveals, just instantly.
+- **Scope:** component + the `.pwreveal` block in `custom.css` only (placed after the `.spoiler-toggle`
+  rules, before "LIGHT SURFACE DEPTH"), including the `.sr-only` utility. Not wired into `FlagCapture.astro`
+  (separate file, by design). Now applied to `overthewire/bandit/0-1.mdx` (owner-wired, alongside the
+  existing `<Toggle class="spoiler-toggle">` reveal, not replacing it yet); rolling it out to the
+  remaining 33 Bandit pages (and removing the redundant spoiler-toggle once confirmed) is tracked in
+  ROADMAP, same as the truncated-PEM rule (DECISIONS 2026-06-26) which is unaffected.
+- **Verified:** both themes live in dev on `overthewire/bandit/0-1`. Container background/border compute
+  to the exact literal values in both themes (dark `rgba(245, 158, 11, 0.08)` fill / `rgba(245, 158, 11,
+  0.4)` border; light `rgba(245, 158, 11, 0.14)` fill / `rgba(245, 158, 11, 0.55)` border); button color
+  computes to `rgb(255, 194, 61)` dark / `rgb(168, 111, 4)` light, exact matches for `#ffc23d` / `#a86f04`;
+  container, label, and value all compute `user-select: none` (button alone is excluded and remains the
+  only selectable/interactive element); container and value both compute `cursor: default`, button alone
+  `cursor: pointer`; hovering the still-locked value leaves `filter: blur(5px)` and `data-revealed` unset
+  (no reveal-on-hover); `.pw-live` computes to a 1x1px clipped box (screen-reader-only); the button never
+  carries a `title` attribute (confirmed with the owner this stays removed, superseding the "tooltip"
+  wording briefly reintroduced in an intermediate spec); reveal flips `filter` from `blur(5px)` to `none`
+  with the bounding box byte-identical before/after at a real desktop width (no layout shift; a narrow
+  ~279px viewport in one test pass did show a height delta, traced to the password text wrapping fewer/
+  more lines as the button's label goes Reveal -> Copy, not a regression, not reproducible at normal
+  reading widths). `npm run build` green (45 pages).
+- **Status:** Adopted + shipped (component + custom.css). Application to the Bandit writeups is future
+  work (ROADMAP), same as the still-uncommitted `notion_cleaner.py`.
+
 ### 2026-07-04 · Self-hosted fonts (subset WOFF2 + metric-matched fallbacks), Google Fonts removed
 - **Decision:** Syne and JetBrains Mono are self-hosted as subset WOFF2 under public/fonts/ (served at
   /fonts/), replacing the remote Google Fonts request. Removes an external origin (privacy/optics on a

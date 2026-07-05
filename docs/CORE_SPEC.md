@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-07-04.
+> Last updated: 2026-07-05.
 
 ---
 
@@ -50,7 +50,7 @@
 
 ```
 C:\dev\idanlab\                       # chosen to avoid Hebrew chars in C:\Users\אידן\
-├─ astro.config.mjs                   # Starlight config: site, sidebar, self-hosted font preloads(head) + customCss[fonts.css, custom.css], EC themes + pluginPrivCommand, reading-progress head script, image-zoom, vite alias, components overrides (PageSidebar + Footer), markdown rehypePlugins (content image loading)
+├─ astro.config.mjs                   # Starlight config: site, sidebar, self-hosted font preloads(head) + customCss[fonts.css, custom.css], EC themes + pluginPrivCommand, reading-progress head script, image-zoom, vite alias, components overrides (PageSidebar + Footer), markdown remarkPlugins (PasswordReveal import injection) + rehypePlugins (content image loading)
 ├─ src/
 │  ├─ content.config.ts               # docs collection (docsLoader + docsSchema), extended with optional os/tags/principle
 │  ├─ pages/
@@ -66,6 +66,7 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in C:\Users
 │  ├─ components/
 │  │  ├─ Toggle.astro                 # <details class="toggle"> wrapper; flag prop adds .toggle-flag; renders MDX (incl. code) in slot
 │  │  ├─ FlagCapture.astro            # "Decrypt to Capture" gold flag control (props: type user|root, flag); replaces the heading-plus-duplicate flag Toggle
+│  │  ├─ PasswordReveal.astro         # amber wargame password waypoint (prop: password); blur-to-reveal then copy-in-place, deliberately distinct from FlagCapture (no gold, no decode animation); no per-file import needed, see plugins/remark-inject-passwordreveal.mjs
 │  │  ├─ ToggleAll.astro              # Expand/Collapse-all control (vanilla TS, scroll-anchored); injected via PageSidebar override
 │  │  ├─ Callout.astro                # icon-based tagged callout (recon/loot/intel/vuln/defense); .cl styles in custom.css
 │  │  ├─ Principle.astro              # closing epigraph (aside.principle, prop: text): centered italic mono maxim + dinkus + PRINCIPLE label; no card/border/bg; .principle styles in custom.css
@@ -82,7 +83,8 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in C:\Users
 │     ├─ custom.css                   # Starlight theme + THEME PASS + light art-direction + badges + sidebar + components
 │     └─ fonts.css                    # self-hosted @font-face (subset WOFF2) + metric-matched fallbacks; loaded via customCss and imported by the marketing pages
 ├─ plugins/
-│  └─ rehype-content-image-loading.mjs # rehype: sets loading/decoding on content <img> (first eager, rest lazy); wired via astro.config markdown.rehypePlugins
+│  ├─ rehype-content-image-loading.mjs # rehype: sets loading/decoding on content <img> (first eager, rest lazy); wired via astro.config markdown.rehypePlugins
+│  └─ remark-inject-passwordreveal.mjs # remark: conditionally injects `import PasswordReveal from '@components/PasswordReveal.astro'` into an MDX file's AST at build time, only when that file uses <PasswordReveal/> and has no import of its own; wired via astro.config markdown.remarkPlugins
 ├─ public/
 │  ├─ robots.txt                      # in-repo; breadcrumb comment + Sitemap line (see §2)
 │  ├─ favicon.svg                     # site favicon
@@ -237,6 +239,34 @@ ladder below). Flag headings have no dedicated class yet, so the CSS targets the
 slug ids are what the active-color ladder excludes, so flags keep gold instead of going cyan. See
 DECISIONS 2026-06-20.
 
+### Password waypoint amber (PasswordReveal)
+`PasswordReveal.astro` (prop: `password: string`) is the wargame-password counterpart to FlagCapture,
+deliberately built as its own component (not a FlagCapture variant) because a wargame password
+(OverTheWire Bandit, etc.) is a waypoint the reader pastes into SSH, not a trophy: no gold/loot tokens,
+no signature decode/scramble animation. Layout: a `PASSWORD` label, the value blurred via CSS `filter`
+as plain text with no border/background/hover affordance of its own, then ONE control on the right, the
+ONLY interactive element in the row: it starts as an eye + "Reveal" and swaps in place to a copy icon +
+"Copy" on click (single slot, so there is no layout shift). A second click copies and briefly shows
+"Copied" before reverting. No native `title` tooltip (tried, then dropped for looking bad); the
+accessible name lives entirely in `aria-label`. Real `<button>`; reveal/copy are announced via a VISUALLY
+HIDDEN `aria-live` region (`.pw-live.sr-only`, screen-reader-only, no visible "Password
+revealed"/"Password copied" text). Only the button reads as interactive: the container (`.pwreveal`), the
+label, and the value are all `user-select: none` (copying is the only way to take the value, matching
+FlagCapture's captured-value pattern), and the container/value both get `cursor: default` with no `:hover`
+change to filter/cursor/color. The row itself IS a passive amber card (not a neutral hairline frame):
+literal `rgba(245, 158, 11, ...)` washes/borders (dark 0.08 fill / 0.4 border, light 0.14 fill / 0.55
+border, stronger and more golden), matching the site's canonical OverTheWire system, the same values
+`.spoiler-toggle` uses. The button text/icon is the OTW accent directly, `#ffc23d` dark / `#a86f04` light,
+with an `rgba(245, 158, 11, ...)` border/hover wash. Every color is a literal hex/rgba value (no
+`color-mix()` custom-property indirection, after an intermediate token-based pass rendered as a
+neutral/near-black box in practice), deliberately NOT `--flag-gold`. The only motion is the blur-to-clear
+filter transition, gated behind `prefers-reduced-motion: no-preference`; the value's `:hover` rule
+deliberately does NOT declare `filter` at all (an earlier `filter: inherit` attempt resolved to the
+parent's "none" and silently un-blurred the still-locked password on hover, see DECISIONS). Styled in
+`custom.css` near the `.spoiler-toggle` rules, including a project-first `.sr-only` utility. Wired into
+`overthewire/bandit/0-1.mdx` alongside the existing spoiler-toggle; rolling out to the remaining 33 Bandit
+pages is tracked in ROADMAP. See DECISIONS 2026-07-05.
+
 ### TOC active-entry color ladder
 The right "On this page" entry the reader is currently on (`aria-current="true"`) takes the hue of the
 heading it points to, so the column mirrors the in-page hierarchy: h1/h2 keep Starlight's green
@@ -310,6 +340,13 @@ Preserves reading position: anchors on the current heading and corrects scroll s
   `import FlagCapture from '@components/FlagCapture.astro'`. This replaces the old heading + duplicate
   `<Toggle flag>` + `:::tip[Answer]`. Handle user-only and root-only writeups (emit only the flag that
   exists). See DECISIONS 2026-06-27.
+- **Wargame passwords:** emit `<PasswordReveal password="..." />` inline, at the point in the walkthrough
+  where the password is obtained (not frontmatter, not appended at the end). No import line needed: a
+  remark plugin (`plugins/remark-inject-passwordreveal.mjs`, wired via astro.config `markdown.remarkPlugins`)
+  detects the tag in the MDX AST at build time and conditionally injects
+  `import PasswordReveal from '@components/PasswordReveal.astro'`, only in files that actually use the
+  component and only if they have not already imported it. Supersedes the manual per-file import used when
+  PasswordReveal first shipped on `overthewire/bandit/0-1.mdx`. See DECISIONS 2026-07-05.
 - `**Port 80**` → a cyan mono `.port-label` tag (was red; harmonizes with the recon callout, out-ranks
   inline code by weight; inside `.cl-recon` a port list becomes an aligned findings table with an
   `Assessment` eyebrow, see DECISIONS 2026-07-04). Inline code (`:not(pre) > code`) → a rounded NEUTRAL chip with red
