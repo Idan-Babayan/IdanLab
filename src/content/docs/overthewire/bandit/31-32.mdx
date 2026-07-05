@@ -6,8 +6,6 @@ sidebar:
   order: 31
 ---
 
-import Toggle from '@components/Toggle.astro';
-
 <div class="machine-meta">
   <span class="meta-badge platform-overthewire">OverTheWire</span>
   <span class="meta-badge os-linux">Linux</span>
@@ -34,14 +32,8 @@ remote: <password>
  ! [remote rejected] master -> master (pre-receive hook declined)
 ```
 
+<PasswordReveal password="3O9RfhqyAlVBEZpVb6LYStshZoqoSx5K" />
+
 ## Why it works
 
 A `pre-receive` hook runs on the server when you push, before anything is accepted. This one inspects the pushed file, and when the name and content match what was asked it prints the next password, then rejects the push so nothing actually lands. Server-side hooks can gate or react to pushes, which is exactly what is on display here.
-
-<Toggle label="Reveal password" class="spoiler-toggle">
-
-```text frame="code"
-3O9RfhqyAlVBEZpVb6LYStshZoqoSx5K
-```
-
-</Toggle>

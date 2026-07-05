@@ -6,8 +6,6 @@ sidebar:
   order: 29
 ---
 
-import Toggle from '@components/Toggle.astro';
-
 <div class="machine-meta">
   <span class="meta-badge platform-overthewire">OverTheWire</span>
   <span class="meta-badge os-linux">Linux</span>
@@ -32,14 +30,8 @@ bandit29@bandit:...$ cat README.md
 - password: <password>
 ```
 
+<PasswordReveal password="qp30ex3VLz5MDG1n91YowTv4Q8l7CDZL" />
+
 ## Why it works
 
 Branches hold divergent copies of the tree. The production branch deliberately omits the secret (no passwords in production), while a development branch still carries it. `git branch -a` lists every ref including remotes, so checking out the dev branch surfaces the password master never had.
-
-<Toggle label="Reveal password" class="spoiler-toggle">
-
-```text frame="code"
-qp30ex3VLz5MDG1n91YowTv4Q8l7CDZL
-```
-
-</Toggle>

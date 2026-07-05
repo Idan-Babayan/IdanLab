@@ -40,6 +40,18 @@ bandit16@bandit:/tmp/tmp.zDtZtyb689$ chmod 600 key.private
 bandit16@bandit:/tmp/tmp.zDtZtyb689$ ssh -i key.private bandit17@bandit.labs.overthewire.org -p 2220
 ```
 
+<Toggle label="Reveal private key" class="spoiler-toggle">
+
+```text frame="code"
+-----BEGIN RSA PRIVATE KEY-----
+MIIEogIBAAKCAQEAvmOkuifmMg6HL2YPIOjon6iWfbp7c3jx34YkYWqUH57SUdyJ
+... (key truncated; the SSL service returns the full PEM on the box) ...
+vBgsyi/sN3RqRBcGU40fOoZyfAMT8s1m/uYv52O6IgeuZ/ujbjY=
+-----END RSA PRIVATE KEY-----
+```
+
+</Toggle>
+
 ## Why it works
 
 Service discovery maps each port to a protocol (`nmap -sV`), so you know which ones need TLS (ssl/...) versus plain echo before you connect. The two ssl ports are the candidates, and the one that is not a plain echo returns the credential. The reward is a private key, so authentication moves from something you know (a password) to something you have (a key), which is why `ssh` refuses it until it is saved with mode 600.
@@ -72,18 +84,6 @@ verify error:num=18:self-signed certificate
 Correct!
 -----BEGIN RSA PRIVATE KEY-----
 ... (key returned, revealed below) ...
------END RSA PRIVATE KEY-----
-```
-
-</Toggle>
-
-<Toggle label="Reveal private key" class="spoiler-toggle">
-
-```text frame="code"
------BEGIN RSA PRIVATE KEY-----
-MIIEogIBAAKCAQEAvmOkuifmMg6HL2YPIOjon6iWfbp7c3jx34YkYWqUH57SUdyJ
-... (key truncated; the SSL service returns the full PEM on the box) ...
-vBgsyi/sN3RqRBcGU40fOoZyfAMT8s1m/uYv52O6IgeuZ/ujbjY=
 -----END RSA PRIVATE KEY-----
 ```
 

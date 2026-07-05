@@ -6,8 +6,6 @@ sidebar:
   order: 7
 ---
 
-import Toggle from '@components/Toggle.astro';
-
 <div class="machine-meta">
   <span class="meta-badge platform-overthewire">OverTheWire</span>
   <span class="meta-badge os-linux">Linux</span>
@@ -22,14 +20,8 @@ bandit7@bandit:~$ grep millionth data.txt
 millionth	<password>
 ```
 
+<PasswordReveal password="dfwvzFQi4mU0wfNbFOe9RoWskMLg7eEc" />
+
 ## Why it works
 
 `grep` scans the file line by line and prints those matching the pattern, so a single keyword extracts its record from a file of millions of lines without ever reading the whole thing yourself.
-
-<Toggle label="Reveal password" class="spoiler-toggle">
-
-```text frame="code"
-dfwvzFQi4mU0wfNbFOe9RoWskMLg7eEc
-```
-
-</Toggle>

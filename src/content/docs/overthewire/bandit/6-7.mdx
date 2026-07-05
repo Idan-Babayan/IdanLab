@@ -6,8 +6,6 @@ sidebar:
   order: 6
 ---
 
-import Toggle from '@components/Toggle.astro';
-
 <div class="machine-meta">
   <span class="meta-badge platform-overthewire">OverTheWire</span>
   <span class="meta-badge os-linux">Linux</span>
@@ -24,14 +22,8 @@ bandit6@bandit:~$ cat /var/lib/dpkg/info/bandit7.password
 The password you are looking for is: <password>
 ```
 
+<PasswordReveal password="morbNTDkSW6jIlUc0ymOdMaLnOlFVAaj" />
+
 ## Why it works
 
 Searching from `/` matches by numeric owner and group metadata regardless of where the file sits, but most of the tree is unreadable to you, so `find` pours permission-denied messages onto stderr. Redirecting stderr to /dev/null (`2>/dev/null`) leaves only the valid match on stdout.
-
-<Toggle label="Reveal password" class="spoiler-toggle">
-
-```text frame="code"
-morbNTDkSW6jIlUc0ymOdMaLnOlFVAaj
-```
-
-</Toggle>

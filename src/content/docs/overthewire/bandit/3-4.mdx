@@ -6,8 +6,6 @@ sidebar:
   order: 3
 ---
 
-import Toggle from '@components/Toggle.astro';
-
 <div class="machine-meta">
   <span class="meta-badge platform-overthewire">OverTheWire</span>
   <span class="meta-badge os-linux">Linux</span>
@@ -28,14 +26,8 @@ bandit3@bandit:~/inhere$ cat ./...Hiding-From-You
 The password you are looking for is: <password>
 ```
 
+<PasswordReveal password="2WmrDFRmJIq3IPxneAaMGhap0pFhF3NJ" />
+
 ## Why it works
 
 `ls` omits any name beginning with a dot by default, so `-a` is needed to list it. The leading dots are only a naming convention, not a filesystem attribute, so once you name the file it reads like any other.
-
-<Toggle label="Reveal password" class="spoiler-toggle">
-
-```text frame="code"
-2WmrDFRmJIq3IPxneAaMGhap0pFhF3NJ
-```
-
-</Toggle>

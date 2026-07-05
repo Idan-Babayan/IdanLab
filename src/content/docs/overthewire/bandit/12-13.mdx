@@ -60,6 +60,8 @@ import { Steps } from '@astrojs/starlight/components';
 
 </Steps>
 
+<PasswordReveal password="FO5dwFsc0cbaIiH0h8J2eUks2vdTDwAn" />
+
 ## Why it works
 
 Compression formats are recognised by header magic bytes, not by file extension, which is why file re-detects the type at every stage. The data was packed in alternating layers (`gzip`, `bzip2` and `tar` in turn), so you peel them in reverse: detect, rename to match, decompress, repeat until plain text falls out.
@@ -98,14 +100,6 @@ bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ mv data8.bin data8.gz
 bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ gunzip -d data8.gz
 bandit12@bandit:/tmp/tmp.WwgYxQHtYe$ cat data8
 The password you are looking for is: <password>
-```
-
-</Toggle>
-
-<Toggle label="Reveal password" class="spoiler-toggle">
-
-```text frame="code"
-FO5dwFsc0cbaIiH0h8J2eUks2vdTDwAn
 ```
 
 </Toggle>

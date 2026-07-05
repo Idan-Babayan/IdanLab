@@ -1,0 +1,108 @@
+/* ── Self-hosted fonts (Syne + JetBrains Mono) ────────────────────────────────
+   Replaces the remote Google Fonts request. Subset WOFF2 files live in public/fonts/ and are served
+   at /fonts/*.woff2 (see the pending _headers work for an immutable Cache-Control on that path). This
+   is infrastructure kept OUT of custom.css so Design owns styling: custom.css and the marketing pages
+   only reference the families below in their font stacks.
+
+   JetBrains Mono is subset broad (Latin, punctuation, currency, arrows, math operators, box drawing,
+   block elements, geometric shapes, misc technical and symbols) because it renders live terminal
+   output and payloads where a dropped glyph reads as broken. Syne is subset narrow (Latin plus general
+   punctuation) since it only sets headings and the wordmark. Italic mono faces are included for the
+   Principle coda maxim, which is italic monospace and needs a real italic rather than a synthetic slant.
+
+   Each real face is followed by a metric-matched fallback (size-adjust plus ascent, descent, and
+   line-gap overrides tuned from the real font metrics against a local system font), so the swap from
+   fallback to web font is shift-free (no CLS). Overrides were computed from the actual font metrics:
+   JetBrains Mono against Courier New, Syne against Arial. No motion anywhere. */
+
+/* ── JetBrains Mono: real faces (roman 400/500/700, italic 400/500) ── */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-400.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+2000-206F, U+2070-209F, U+20A0-20BF, U+2100-214F, U+2190-21FF, U+2200-22FF, U+2300-23FF, U+2500-257F, U+2580-259F, U+25A0-25FF, U+2600-26FF, U+2700-27BF;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-500.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+2000-206F, U+2070-209F, U+20A0-20BF, U+2100-214F, U+2190-21FF, U+2200-22FF, U+2300-23FF, U+2500-257F, U+2580-259F, U+25A0-25FF, U+2600-26FF, U+2700-27BF;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-700.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+2000-206F, U+2070-209F, U+20A0-20BF, U+2100-214F, U+2190-21FF, U+2200-22FF, U+2300-23FF, U+2500-257F, U+2580-259F, U+25A0-25FF, U+2600-26FF, U+2700-27BF;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-400-italic.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+2000-206F, U+2070-209F, U+20A0-20BF, U+2100-214F, U+2190-21FF, U+2200-22FF, U+2300-23FF, U+2500-257F, U+2580-259F, U+25A0-25FF, U+2600-26FF, U+2700-27BF;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-500-italic.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+2000-206F, U+2070-209F, U+20A0-20BF, U+2100-214F, U+2190-21FF, U+2200-22FF, U+2300-23FF, U+2500-257F, U+2580-259F, U+25A0-25FF, U+2600-26FF, U+2700-27BF;
+}
+
+/* ── Syne: real faces (600/700/800) ── */
+@font-face {
+  font-family: 'Syne';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/syne-600.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+2000-206F;
+}
+@font-face {
+  font-family: 'Syne';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/syne-700.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+2000-206F;
+}
+@font-face {
+  font-family: 'Syne';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('/fonts/syne-800.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+2000-206F;
+}
+
+/* ── Metric-matched fallbacks (shift-free swap). Values computed from the real font metrics:
+   JetBrains Mono (upm 1000, asc 1020, desc 300, gap 0, avg width ratio 0.598) vs Courier New (ratio
+   0.598); Syne (upm 1000, asc 925, desc 275, gap 0, avg width ratio 0.540) vs Arial (ratio 0.437).
+   Each family lists its Windows and macOS face first, then DejaVu and Liberation, which are
+   near-universal on Linux and close enough in metrics that these same overrides stay approximately
+   correct there (strictly better than falling to an un-adjusted generic monospace or sans-serif).
+   Only if none of the named faces are present does the stack fall through to the generic family. ── */
+@font-face {
+  font-family: 'JetBrains Mono Fallback';
+  src: local('Courier New'), local('DejaVu Sans Mono'), local('Liberation Mono');
+  size-adjust: 99.98%;
+  ascent-override: 102.02%;
+  descent-override: 30.00%;
+  line-gap-override: 0.00%;
+}
+@font-face {
+  font-family: 'Syne Fallback';
+  src: local('Arial'), local('DejaVu Sans'), local('Liberation Sans');
+  size-adjust: 123.39%;
+  ascent-override: 74.97%;
+  descent-override: 22.29%;
+  line-gap-override: 0.00%;
+}

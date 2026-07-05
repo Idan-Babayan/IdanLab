@@ -6,8 +6,6 @@ sidebar:
   order: 13
 ---
 
-import Toggle from '@components/Toggle.astro';
-
 <div class="machine-meta">
   <span class="meta-badge platform-overthewire">OverTheWire</span>
   <span class="meta-badge os-linux">Linux</span>
@@ -27,14 +25,8 @@ bandit14@bandit:~$ cat /etc/bandit_pass/bandit14
 The password you are looking for is: <password>
 ```
 
+<PasswordReveal password="MU4VWeTyJk8ROof1qqmcBPaLh7lDCPvS" />
+
 ## Why it works
 
 Public-key authentication proves identity by signing a server challenge with the private key, so no secret crosses the wire. The server only needs the matching public key in `authorized_keys`. Each level's own password also lives at `/etc/bandit_pass/banditN`, readable solely by that user, so a shell as `bandit14` can read it directly.
-
-<Toggle label="Reveal password" class="spoiler-toggle">
-
-```text frame="code"
-MU4VWeTyJk8ROof1qqmcBPaLh7lDCPvS
-```
-
-</Toggle>

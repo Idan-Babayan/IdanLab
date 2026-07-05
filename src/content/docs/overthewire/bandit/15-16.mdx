@@ -28,6 +28,8 @@ Correct!
 The password you are looking for is: <password>
 ```
 
+<PasswordReveal password="kSkvUpMQ7lBYyCM4GBPvCvT1BfWRy0Dx" />
+
 ## Why it works
 
 The listener wraps the same line protocol in TLS, so a plaintext client never completes a connection. `openssl s_client` performs the handshake and then hands you an interactive channel to type into. The self-signed certificate warning is expected here and does not affect sending the password.
@@ -62,14 +64,6 @@ Verify return code: 18 (self-signed certificate)
 <password>
 Correct!
 The password you are looking for is: <password>
-```
-
-</Toggle>
-
-<Toggle label="Reveal password" class="spoiler-toggle">
-
-```text frame="code"
-kSkvUpMQ7lBYyCM4GBPvCvT1BfWRy0Dx
 ```
 
 </Toggle>
