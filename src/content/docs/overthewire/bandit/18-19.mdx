@@ -6,8 +6,6 @@ sidebar:
   order: 18
 ---
 
-import Toggle from '@components/Toggle.astro';
-
 <div class="machine-meta">
   <span class="meta-badge platform-overthewire">OverTheWire</span>
   <span class="meta-badge os-linux">Linux</span>
@@ -24,14 +22,8 @@ $ ssh bandit18@bandit.labs.overthewire.org -p 2220 cat readme
 The password you are looking for is: <password>
 ```
 
+<PasswordReveal password="cGWpMaKXVwDUNgPAVJbWYuGHVn9zl3j8" />
+
 ## Why it works
 
 An interactive login sources `.bashrc` or `.profile` upon connecting. This one contains immediate `exit` directive, so a normal session dies before you can type. Supplying a command as the last `ssh` argument runs it through a non-interactive shell that skips the interactive startup scripts and returns the output directly.
-
-<Toggle label="Reveal password" class="spoiler-toggle">
-
-```text frame="code"
-cGWpMaKXVwDUNgPAVJbWYuGHVn9zl3j8
-```
-
-</Toggle>

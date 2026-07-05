@@ -6,8 +6,6 @@ sidebar:
   order: 8
 ---
 
-import Toggle from '@components/Toggle.astro';
-
 <div class="machine-meta">
   <span class="meta-badge platform-overthewire">OverTheWire</span>
   <span class="meta-badge os-linux">Linux</span>
@@ -22,14 +20,8 @@ bandit8@bandit:~$ sort data.txt | uniq -u
 <password>
 ```
 
+<PasswordReveal password="4CKMh1JI91bUIZZPXDqGanal4xvAg0JM" />
+
 ## Why it works
 
 `uniq` only collapses adjacent duplicate lines, so the input has to be sorted first to bring every repeat together. `-u` then prints only the lines that never repeat, isolating the one unique entry.
-
-<Toggle label="Reveal password" class="spoiler-toggle">
-
-```text frame="code"
-4CKMh1JI91bUIZZPXDqGanal4xvAg0JM
-```
-
-</Toggle>

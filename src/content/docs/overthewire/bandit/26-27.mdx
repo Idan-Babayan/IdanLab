@@ -6,8 +6,6 @@ sidebar:
   order: 26
 ---
 
-import Toggle from '@components/Toggle.astro';
-
 <div class="machine-meta">
   <span class="meta-badge platform-overthewire">OverTheWire</span>
   <span class="meta-badge os-linux">Linux</span>
@@ -24,14 +22,8 @@ bandit26@bandit:~$ ./bandit27-do cat /etc/bandit_pass/bandit27
 The password you are looking for is: <password>
 ```
 
+<PasswordReveal password="upsNCc7vzaRDx6oZC6GiR6ERwe1MowGB" />
+
 ## Why it works
 
 Same setuid pattern as level 19: `bandit27-do` runs with its owner's (`bandit27`) privileges and forwards whatever command you hand it, so a single `cat` reads `bandit27`'s password file. (Reaching a shell as `bandit26` in the first place is the pager escape from the previous level.)
-
-<Toggle label="Reveal password" class="spoiler-toggle">
-
-```text frame="code"
-upsNCc7vzaRDx6oZC6GiR6ERwe1MowGB
-```
-
-</Toggle>

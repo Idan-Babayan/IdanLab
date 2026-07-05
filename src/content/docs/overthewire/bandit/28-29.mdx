@@ -6,8 +6,6 @@ sidebar:
   order: 28
 ---
 
-import Toggle from '@components/Toggle.astro';
-
 <div class="machine-meta">
   <span class="meta-badge platform-overthewire">OverTheWire</span>
   <span class="meta-badge os-linux">Linux</span>
@@ -32,14 +30,8 @@ bandit28@bandit:...$ git show 68314e0:README.md
 - password: <password>
 ```
 
+<PasswordReveal password="4pT1t5DENaYuqnqvadYs1oE4QLCdjmJ7" />
+
 ## Why it works
 
 Redacting a value in a later commit does not remove it, every prior version stays in the object history. `git log` surfaces the "fix info leak" commit, and `git show` on the commit before it prints the `README` as it was, password intact. Version control keeps what you delete.
-
-<Toggle label="Reveal password" class="spoiler-toggle">
-
-```text frame="code"
-4pT1t5DENaYuqnqvadYs1oE4QLCdjmJ7
-```
-
-</Toggle>

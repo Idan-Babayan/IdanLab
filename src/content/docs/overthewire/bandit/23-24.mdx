@@ -6,8 +6,6 @@ sidebar:
   order: 23
 ---
 
-import Toggle from '@components/Toggle.astro';
-
 <div class="machine-meta">
   <span class="meta-badge platform-overthewire">OverTheWire</span>
   <span class="meta-badge os-linux">Linux</span>
@@ -43,14 +41,8 @@ bandit23@bandit:~$ cat /tmp/loot/pw
 The password you are looking for is: <password>
 ```
 
+<PasswordReveal password="gb8KRRCsshuZXI0tUuR6ypOFjiZbf3G8" />
+
 ## Why it works
 
 The job runs every script that appears in `bandit24`'s spool directory as `bandit24`, and that directory is writable by you. Write access to a privileged job's input is code execution as that user: the planted script copies the password to a directory you can read. You never needed read access to `bandit24`'s files, only the ability to make it act for you.
-
-<Toggle label="Reveal password" class="spoiler-toggle">
-
-```text frame="code"
-gb8KRRCsshuZXI0tUuR6ypOFjiZbf3G8
-```
-
-</Toggle>

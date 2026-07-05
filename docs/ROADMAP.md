@@ -16,9 +16,14 @@
   and `plugins/rehype-content-image-loading.mjs` lazy-loads content images. Build verified (hashed images
   under `_astro`); the busqueda case-rename is staged via `git mv`. Needs commit + push. See DECISIONS
   2026-06-30.
-- [CONTENT] Apply FlagCapture to the Bandit "Reveal Password" toggles: the writeups are fine-tuned and
-  ready; owner wants to test the swap soon (the level reward is a password/key, so keep the truncation
-  rule for any PEM, see DECISIONS 2026-06-26).
+- [CONTENT] Apply PasswordReveal (NOT FlagCapture, see DECISIONS 2026-07-05) to the Bandit "Reveal
+  Password" toggles across all 34 pages, replacing `<Toggle class="spoiler-toggle">`: component +
+  styling shipped 2026-07-05 (amber waypoint identity, blur-to-reveal then copy-in-place, non-selectable
+  value, copy-only). Now wired into `overthewire/bandit/0-1.mdx` alongside the existing spoiler-toggle
+  (not yet removed); remove the redundant toggle there once confirmed, then roll out to the remaining 33
+  pages. As of the remark auto-import plugin (DECISIONS 2026-07-05), rollout only needs the
+  `<PasswordReveal password="..." />` tag per page, no import line. Keep the truncation rule for any PEM
+  (DECISIONS 2026-06-26).
 - [CONTENT] Revisit `404.mdx`: owner made manual changes on 2026-06-28 and wants to review/refine it
   again on a later day.
 - [ENG/INFRA] Domain rebrand: in-repo done (site=idanlab.dev, wordmark/titles, copy, robots Sitemap).
@@ -33,18 +38,24 @@
   flat `.mdx` with images under the parallel `src/assets` tree (DECISIONS 2026-06-30). Once HTB
   Medium/Hard folders have content, uncomment those (lowercase) sidebar groups in `astro.config.mjs`.
 - [ENG] `og:image` + social preview cards (per-page Open Graph) for shareable links.
+- [CONTENT] Author `principle:` frontmatter on writeups to surface the coda (the auto-append mechanism,
+  footer silence, and true italic face all shipped 2026-07-04, see DECISIONS). Migrate busqueda's body
+  `<Principle>` to frontmatter (remove the inline component + import, add `principle:`), and have
+  `notion_cleaner.py` emit `principle:` so codas flow through the pipeline.
 - [PRODUCT] Global `/writeups` index (path 3): reuse `WriteupCard` with `showPlatform` true for a
   mixed cross-platform grid (the card was built for this).
 - [CONTENT] Pipeline (`notion_cleaner.py`) hooks for content-lane dependencies: emit a `.flag-title`
   class on flag headings (flag-gold currently targets slug ids `#user-flag`/`#root-flag` as an interim),
   emit the gold heading + `<FlagCapture type="..." flag="..." />` for User/Root flags (replacing the old
-  heading + duplicate `<Toggle flag>` + `:::tip`; see CORE_SPEC §7 + DECISIONS 2026-06-27), and optionally
-  promote os/tags to frontmatter.
+  heading + duplicate `<Toggle flag>` + `:::tip`; see CORE_SPEC §7 + DECISIONS 2026-06-27), emit
+  `<PasswordReveal password="..." />` for wargame password levels (replacing
+  `<Toggle class="spoiler-toggle">`; see DECISIONS 2026-07-05) with no accompanying import line needed
+  (auto-injected, see DECISIONS 2026-07-05 remark-plugin entry), and optionally promote os/tags to
+  frontmatter.
 
 ## Later (parked)
 - [CONTENT] Surface topic tags as a browsable index (filter writeups by technique).
 - [ENG] Starlight plugins: scroll-to-top button, mobile sidebar swipe, fullscreen code blocks.
-- [ENG] Self-host Syne + JetBrains Mono (drop Google Fonts dependency; faster, private).
 - [DESIGN] Replace `ethical-hacking.png` about portrait with a transparent custom SVG.
 - [ENG] Extract repeated UI into reusable Astro components (cards, badges, buttons, hero FX).
 - [ENG] CI on push: type-check, build, link-check, (later) visual-regression screenshots.

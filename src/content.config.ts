@@ -15,6 +15,11 @@ export const collections = {
 			extend: z.object({
 				os: z.string().optional(),
 				tags: z.array(z.string()).optional(),
+				// Optional closing maxim. When a writeup sets this, the Footer override
+				// auto-appends the design's <Principle> coda and suppresses pagination on
+				// that page (the silence is coupled to the coda). Omitted means no coda,
+				// exactly as os/tags omit their chips. See src/components/overrides/Footer.astro.
+				principle: z.string().optional(),
 			}),
 		}),
 	}),

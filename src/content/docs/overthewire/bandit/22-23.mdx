@@ -6,8 +6,6 @@ sidebar:
   order: 22
 ---
 
-import Toggle from '@components/Toggle.astro';
-
 <div class="machine-meta">
   <span class="meta-badge platform-overthewire">OverTheWire</span>
   <span class="meta-badge os-linux">Linux</span>
@@ -30,14 +28,8 @@ bandit22@bandit:~$ cat /tmp/8ca319486bfbbc3663ea0fbe81326349
 The password you are looking for is: <password>
 ```
 
+<PasswordReveal password="0Zf11ioIjMVN551jX3CmStKLYqjk54Ga" />
+
 ## Why it works
 
 The job runs as `bandit23` and stores its password under `/tmp` in a file named by the MD5 hash of a fixed string. MD5 is deterministic, so the same input always yields the same name. Recomputing it locally tells you exactly where to look. A predictable filename is not a secret one.
-
-<Toggle label="Reveal password" class="spoiler-toggle">
-
-```text frame="code"
-0Zf11ioIjMVN551jX3CmStKLYqjk54Ga
-```
-
-</Toggle>

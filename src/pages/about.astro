@@ -3,6 +3,8 @@
 // Standalone About page — matches the homepage design system.
 // Theme toggle is synced with Starlight via the shared `starlight-theme`
 // localStorage key. Defaults to dark on every device; light is opt-in.
+// Self-hosted fonts (@font-face + metric-matched fallbacks) shared with the Starlight docs.
+import '../styles/fonts.css';
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -12,9 +14,8 @@
   <title>About | Idan.Lab</title>
   <meta name="description" content="Idan Babayan: cybersecurity student, CTF player, and offensive security enthusiast documenting the journey from recon to root." />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/jetbrains-mono-400.woff2" crossorigin />
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/syne-800.woff2" crossorigin />
   <!-- Default dark on every device. Only an explicit stored 'light' choice overrides. Shares Starlight's key. -->
   <script is:inline>
     (() => {
@@ -175,7 +176,7 @@
     /* Background-glow hues — kept separate from text accents so each theme
        can have its own atmospheric palette without hurting contrast. */
     --glow-1: #41efff; --glow-2: #b6ff3c; --glow-3: #ff4d9d;
-    --display: 'Syne', sans-serif; --mono: 'JetBrains Mono', monospace;
+    --display: 'Syne', 'Syne Fallback', sans-serif; --mono: 'JetBrains Mono', 'JetBrains Mono Fallback', monospace;
   }
   /* LIGHT THEME — warm paper, darkened accents for contrast, soft pastel glows */
   html[data-theme="light"] {
