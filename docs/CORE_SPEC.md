@@ -31,6 +31,21 @@
 - **robots.txt:** managed in-repo at `public/robots.txt` (served at `/robots.txt`). It currently
   holds only the easter-egg breadcrumb comment + a `Sitemap:` line (NOT the Cloudflare-managed
   bot disallows; see ROADMAP open issues).
+- **Security headers:** application-layer headers are served via `public/_headers` (Cloudflare Pages),
+  additive to zone-level hardening (HSTS, Full Strict TLS, DNSSEC live at the Cloudflare zone; HSTS is
+  NOT duplicated in `_headers` to avoid a conflicting max-age). Enforced now: `X-Content-Type-Options:
+  nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `X-Frame-Options: DENY`, a deny-most
+  `Permissions-Policy`, and immutable `Cache-Control` for `/_astro/*` and the self-hosted `/fonts/*`.
+  Content-Security-Policy ships as `Content-Security-Policy-Report-Only` (a STAGING step, not the final
+  state; the finish line is renaming it to `Content-Security-Policy` after real-browser validation):
+  `font-src 'self'` (fonts self-hosted, no external origins), `style-src 'self' 'unsafe-inline'`
+  (Starlight / Expressive Code inline styles, effectively permanent), `img-src 'self' data:` (icon data
+  URIs). `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'`: `'unsafe-inline'` because the build emits
+  18 distinct inline scripts (Starlight's own plus our marketing/writeup FX) and a hash would disable
+  `'unsafe-inline'` and block the rest; `'wasm-unsafe-eval'` because Starlight search (Pagefind)
+  instantiates WebAssembly in a Web Worker, which CSP blocks without it (see DECISIONS). The CSP must NOT
+  use Trusted Types (the SecretTerminal renders via `innerHTML`). Cache caveat: `/fonts/*` is immutable for
+  a year and filenames are not content-hashed, so replacing a font requires a new filename.
 - **Local dev:** `npm run dev` → `localhost:4321`.
 
 ## 3. Tech Stack (pinned)
