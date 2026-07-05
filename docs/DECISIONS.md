@@ -42,22 +42,35 @@
   the page console. A search smoke test looked clean while WASM was actually being flagged; the direct
   WASM probe is what exposed it. Always probe WASM directly, not just via a search click.
 - **Why still Report-Only for a round:** confirms in real browsers (both themes) that the intended policy
-  fires zero violations before enforcement makes any mismatch fatal. Chromium is confirmed clean with the
-  token present; Firefox and Safari are NOT installed on the build host, so a real FF/Safari pass is still
-  outstanding before the flip. Once confirmed, enforcement is a single directive-name flip
-  (`Content-Security-Policy-Report-Only` to `Content-Security-Policy`).
+  fires zero violations before enforcement makes any mismatch fatal. Once confirmed, enforcement is a
+  single directive-name flip (`Content-Security-Policy-Report-Only` to `Content-Security-Policy`).
+- **Cross-browser verification (2026-07-05, done):** zero violations under the shipped policy on **Chromium
+  148, Firefox 152, and WebKit 26.5** (Safari's engine, driven via Playwright on the Windows host). Each
+  engine was checked three ways: a synthetic harness running WASM on the main thread AND in a same-origin
+  Web Worker; the REAL Pagefind module imported and searched (returns results, worker WASM runs); and every
+  real page plus a real search-UI run, both themes. Necessity was also proven per engine: with
+  `'wasm-unsafe-eval'` removed, `WebAssembly.instantiate` / `new WebAssembly.Module` throw `CompileError`
+  (Chromium reports a `wasm-eval` violation; FF/WebKit throw under enforcement). Real Safari on Apple
+  hardware is the one remaining nice-to-have (WebKit engine is a strong proxy but not identical); run it via
+  a cloud lab (BrowserStack/LambdaTest) or any Apple device against a deployed Pages preview, which already
+  serves these headers. See ROADMAP.
+- **Report-only semantics caught during testing:** `frame-ancestors` and `upgrade-insecure-requests` are
+  inert while the policy is `-Report-Only` (WebKit logs a benign console notice saying so; per spec both are
+  enforcement-only). They activate on the flip. No protection gap in the interim: the ENFORCED
+  `X-Frame-Options: DENY` covers clickjacking and zone HSTS covers transport. They stay in the policy so the
+  flip needs no directive edits.
 - **Why HSTS is not in _headers:** HSTS is set at the Cloudflare zone level; duplicating it risks a
   conflicting max-age. The zone owns HSTS; `_headers` carries app headers only.
 - **Hard constraint recorded:** the CSP MUST NOT use Trusted Types (`require-trusted-types-for` /
   `trusted-types`). The SecretTerminal (`src/components/SecretTerminal.astro`, embedded in `secret.mdx`)
   renders via `innerHTML` (visitor input escaped, only trusted authored markup injected raw); Trusted
   Types blocks `innerHTML` sinks and would break it. Standard CSP is fully compatible.
-- **Enforce-phase checklist:** confirm zero Report-Only violations in real browsers (Chromium done;
-  Firefox + Safari still to do), both themes, INCLUDING a real search run so Pagefind's worker WASM is
-  exercised, then flip Report-Only to enforced. To also drop `script-src 'unsafe-inline'`, either enumerate
-  all 18 inline-script hashes (brittle: recompute on any FX/Starlight change) or adopt a nonce strategy
-  (needs an edge transform, not present on static Pages). Keep `style-src 'unsafe-inline'` and
-  `script-src 'wasm-unsafe-eval'`. Never add Trusted Types.
+- **Enforce-phase checklist:** Chromium 148, Firefox 152, and WebKit 26.5 are confirmed clean (incl. real
+  search / worker WASM, both themes). Remaining before the flip: optionally a real-Safari-hardware pass
+  (cloud lab or Apple device against a deployed preview), then rename Report-Only to enforced. To also drop
+  `script-src 'unsafe-inline'`, either enumerate all 18 inline-script hashes (brittle: recompute on any
+  FX/Starlight change) or adopt a nonce strategy (needs an edge transform, not present on static Pages).
+  Keep `style-src 'unsafe-inline'` and `script-src 'wasm-unsafe-eval'`. Never add Trusted Types.
 - **Cache-Control caveat (`/fonts/*`):** the immutable rule means a full year with no revalidation, and the
   font filenames are NOT content-hashed (unlike `/_astro/*`). So if a font is ever re-subset, replaced, or
   a weight added, you MUST change the filename (or add a `?v=` bust); otherwise returning visitors keep the
