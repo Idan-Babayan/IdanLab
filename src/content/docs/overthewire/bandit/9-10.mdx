@@ -6,8 +6,6 @@ sidebar:
   order: 9
 ---
 
-import Toggle from '@components/Toggle.astro';
-
 <div class="machine-meta">
   <span class="meta-badge platform-overthewire">OverTheWire</span>
   <span class="meta-badge os-linux">Linux</span>
@@ -24,14 +22,8 @@ bandit9@bandit:~$ strings data.txt | grep -i '=='
 U========== <password>
 ```
 
+<PasswordReveal password="FGUW5ilLVJrxX9kMYMmlN4MgbpfMiqey" />
+
 ## Why it works
 
 `strings` parses a binary and emits runs of printable characters above a length threshold, discarding the non-text bytes. That turns an unreadable file into something line tools like `grep` can filter for the exact marker you need.
-
-<Toggle label="Reveal password" class="spoiler-toggle">
-
-```text frame="code"
-FGUW5ilLVJrxX9kMYMmlN4MgbpfMiqey
-```
-
-</Toggle>

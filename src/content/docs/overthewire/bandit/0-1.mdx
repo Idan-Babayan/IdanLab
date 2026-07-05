@@ -6,8 +6,6 @@ sidebar:
   order: 0
 ---
 
-import Toggle from '@components/Toggle.astro';
-
 <div class="machine-meta">
   <span class="meta-badge platform-overthewire">OverTheWire</span>
   <span class="meta-badge os-linux">Linux</span>
@@ -24,10 +22,4 @@ bandit0@bandit:~$ cat readme
 The password you are looking for is: <password>
 ```
 
-<Toggle label="Reveal password" class="spoiler-toggle">
-
-```text frame="code"
-ZjLjTmM6FvvyRnrb2rfNWOZOTa6ip5If
-```
-
-</Toggle>
+<PasswordReveal password="ZjLjTmM6FvvyRnrb2rfNWOZOTa6ip5If" />

@@ -6,7 +6,6 @@ sidebar:
   order: 25
 ---
 
-import Toggle from '@components/Toggle.astro';
 import { Steps } from '@astrojs/starlight/components';
 
 <div class="machine-meta">
@@ -45,14 +44,8 @@ import { Steps } from '@astrojs/starlight/components';
 
 </Steps>
 
+<PasswordReveal password="s0773xxkk0MXfdqOfPRVr9L3jJBUOgCZ" />
+
 ## Why it works
 
 `bandit26`'s login shell is not a shell, it is `showtext`, which runs `more` on a text file and exits. But `more` is interactive: with a small enough window it pauses, allowing you to press `v` and open its configured editor (`vi`). From `vi` you can repoint the editor's shell to bash and spawn it, escaping the pager into a full session. Interactive programs that launch other programs are classic restricted-shell escapes.
-
-<Toggle label="Reveal password" class="spoiler-toggle">
-
-```text frame="code"
-s0773xxkk0MXfdqOfPRVr9L3jJBUOgCZ
-```
-
-</Toggle>

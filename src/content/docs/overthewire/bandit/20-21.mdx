@@ -6,8 +6,6 @@ sidebar:
   order: 20
 ---
 
-import Toggle from '@components/Toggle.astro';
-
 <div class="machine-meta">
   <span class="meta-badge platform-overthewire">OverTheWire</span>
   <span class="meta-badge os-linux">Linux</span>
@@ -28,14 +26,8 @@ Password matches, sending next password
 The password you are looking for is: <password>
 ```
 
+<PasswordReveal password="EeoULMCra2q0dSkYj561DX7s1CpBuOBt" />
+
 ## Why it works
 
 `suconnect` runs setuid as `bandit21` and connects to a port you name, reads one line, and compares it against the current password. Upon a successful match it sends back the next one. The backgrounded `nc -l` listener serves the current password on `localhost`, so the two ends complete the handshake.
-
-<Toggle label="Reveal password" class="spoiler-toggle">
-
-```text frame="code"
-EeoULMCra2q0dSkYj561DX7s1CpBuOBt
-```
-
-</Toggle>

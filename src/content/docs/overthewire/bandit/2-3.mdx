@@ -6,8 +6,6 @@ sidebar:
   order: 2
 ---
 
-import Toggle from '@components/Toggle.astro';
-
 <div class="machine-meta">
   <span class="meta-badge platform-overthewire">OverTheWire</span>
   <span class="meta-badge os-linux">Linux</span>
@@ -24,14 +22,8 @@ bandit2@bandit:~$ cat "./--spaces in this filename--"
 The password you are looking for is: <password>
 ```
 
+<PasswordReveal password="MNk8KNH3Usiio41PRUEoDFPqfxLPlSmx" />
+
 ## Why it works
 
 The shell splits a command line into words on whitespace, meaning an unquoted name with spaces arrives as several separate arguments. Quoting the whole path (or escaping each space, or tab completing) passes it as one. The leading dashes also need the `./` prefix so the name is not read as an option.
-
-<Toggle label="Reveal password" class="spoiler-toggle">
-
-```text frame="code"
-MNk8KNH3Usiio41PRUEoDFPqfxLPlSmx
-```
-
-</Toggle>
