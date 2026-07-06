@@ -36,16 +36,28 @@
   NOT duplicated in `_headers` to avoid a conflicting max-age). Enforced now: `X-Content-Type-Options:
   nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `X-Frame-Options: DENY`, a deny-most
   `Permissions-Policy`, and immutable `Cache-Control` for `/_astro/*` and the self-hosted `/fonts/*`.
-  Content-Security-Policy ships as `Content-Security-Policy-Report-Only` (a STAGING step, not the final
-  state; the finish line is renaming it to `Content-Security-Policy` after real-browser validation):
-  `font-src 'self'` (fonts self-hosted, no external origins), `style-src 'self' 'unsafe-inline'`
-  (Starlight / Expressive Code inline styles, effectively permanent), `img-src 'self' data:` (icon data
-  URIs). `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'`: `'unsafe-inline'` because the build emits
-  18 distinct inline scripts (Starlight's own plus our marketing/writeup FX) and a hash would disable
-  `'unsafe-inline'` and block the rest; `'wasm-unsafe-eval'` because Starlight search (Pagefind)
-  instantiates WebAssembly in a Web Worker, which CSP blocks without it (see DECISIONS). The CSP must NOT
-  use Trusted Types (the SecretTerminal renders via `innerHTML`). Cache caveat: `/fonts/*` is immutable for
-  a year and filenames are not content-hashed, so replacing a font requires a new filename.
+  Content-Security-Policy is ENFORCED (flipped from `Content-Security-Policy-Report-Only` after full
+  cross-browser plus real-Safari verification): `font-src 'self'` (fonts self-hosted, no external origins),
+  `style-src 'self' 'unsafe-inline'` (Starlight / Expressive Code inline styles, effectively permanent),
+  `img-src 'self' data:` (icon data URIs), `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`,
+  plus `frame-ancestors 'none'` and `upgrade-insecure-requests`, which were inert under Report-Only and are
+  now ACTIVE (frame-ancestors backs up the enforced `X-Frame-Options: DENY`; upgrade-insecure-requests
+  upgrades same-origin subresources to HTTPS). `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'`:
+  `'unsafe-inline'` because the build emits 18 distinct inline scripts (Starlight's own plus our
+  marketing/writeup FX) and a hash would disable `'unsafe-inline'` and block the rest; `'wasm-unsafe-eval'`
+  because Starlight search (Pagefind) instantiates WebAssembly in a Web Worker, which CSP blocks without it
+  (see DECISIONS). No third-party script origin: Cloudflare Web Analytics was removed, so the site loads
+  zero external scripts and `script-src 'self'` is honest. No reporting endpoint (report-to / report-uri)
+  by design. The CSP must NOT use Trusted Types (the SecretTerminal renders via `innerHTML`). The
+  `Permissions-Policy` was pruned of six tokens current browsers no longer recognize (ambient-light-sensor,
+  battery, document-domain, execution-while-not-rendered, execution-while-out-of-viewport,
+  speaker-selection). Cache caveat: `/fonts/*` is immutable for a year and filenames are not
+  content-hashed, so replacing a font requires a new filename.
+- Cloudflare Web Analytics (RUM) is disabled and removed (deleted at the dashboard, not just
+  toggled off); no static.cloudflareinsights.com beacon is injected. Consequently the
+  Content-Security-Policy keeps script-src 'self' with no third-party script origin, and the
+  site loads no external scripts (all scripts are same-origin). Re-enabling analytics in any
+  mode would require allowlisting static.cloudflareinsights.com in script-src.
 - **Local dev:** `npm run dev` → `localhost:4321`.
 
 ## 3. Tech Stack (pinned)

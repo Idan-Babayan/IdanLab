@@ -6,6 +6,57 @@
 
 ---
 
+### 2026-07-06 · CSP flipped from Report-Only to enforced (Permissions-Policy pruned; site loads only self scripts)
+- **Decision:** `public/_headers` now serves `Content-Security-Policy` (enforced), replacing
+  `Content-Security-Policy-Report-Only`. Only the header NAME changed: the policy value is byte-identical to
+  the Report-Only version verified clean across Chromium 148, Firefox 152, WebKit 26.5, and real Safari
+  hardware (iPhone, iPad, BrowserStack Safari 18.4, Safari 16.5). Shipped on dev (commit `132a1da`),
+  deploying to production via PR #9.
+- **Now active (were inert under Report-Only):** `frame-ancestors 'none'` (clickjacking defense alongside
+  the enforced `X-Frame-Options: DENY`) and `upgrade-insecure-requests` (upgrades same-origin subresources
+  to HTTPS). The three Report-Only console notices (frame-ancestors ignored, upgrade-insecure-requests
+  ignored, and Safari's no-report-to notice) resolve on enforcement.
+- **All scripts are self (what made enforcement honest):** Cloudflare Web Analytics was disabled AND removed
+  (deleted at the dashboard, not just toggled), so the `static.cloudflareinsights.com` beacon is gone and
+  the site loads zero external scripts. `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'` has no
+  third-party origin (`'unsafe-inline'` covers the 18 inline scripts; `'wasm-unsafe-eval'` covers Pagefind's
+  worker WASM, proven necessary and sufficient on all three engines). See the analytics entry below.
+- **Permissions-Policy pruned (same _headers change):** removed six tokens current Chromium/Edge no longer
+  recognize and log as "Unrecognized feature": ambient-light-sensor, battery, document-domain,
+  execution-while-not-rendered, execution-while-out-of-viewport, speaker-selection. All still-recognized
+  deny entries kept. `web-share` deliberately KEPT despite a Chromium "unrecognized" warning, because Safari
+  recognizes it as a real deny (removing it would weaken the policy there).
+- **Unchanged constraints:** no reporting endpoint (report-to / report-uri) by design; no Trusted Types
+  (SecretTerminal `innerHTML`); HSTS stays at the Cloudflare zone (not duplicated in `_headers`).
+- **Verified under real enforcement:** on the live Cloudflare preview (`dev.idanlab.pages.dev`) and local
+  wrangler, Pagefind search returns results (WASM under the enforced token), `/secret` works, fonts /
+  Expressive Code / image-zoom / ToggleAll work, both themes render, and the console is clean of the former
+  Report-Only notices, the six Permissions-Policy errors, and any beacon. Chromium + Firefox clean; WebKit
+  main-thread clean (its Playwright worker sandbox on Windows is a test-harness limit, not CSP); real Safari
+  confirmed on device.
+- **Status:** Adopted; enforced on dev, production deploy via PR #9 (owner merges).
+
+### 2026-07-06 · Cloudflare Web Analytics disabled; CSP stays script-src 'self' (no third-party beacon)
+
+Decision: Cloudflare Web Analytics (RUM) auto-injection is disabled at the Cloudflare
+dashboard, so the static.cloudflareinsights.com beacon is no longer injected into any
+page. The site's Content-Security-Policy therefore keeps script-src 'self' with no
+third-party script origin.
+
+Why: The beacon is served from Cloudflare's CDN in every installation mode (automatic,
+EU-excluded, or manual snippet), so keeping analytics would have required allowlisting
+static.cloudflareinsights.com in script-src regardless of method. Manual installation was
+evaluated and rejected: it still loads the beacon from the same external origin, so it
+does not avoid the allowlist, and it adds a maintained third-party tag to the build for no
+CSP benefit. The site's audience skews privacy and security focused, where a large share
+of visitors block third-party analytics at the browser level, so the collected data would
+have been both incomplete and skewed. Disabling keeps the CSP genuinely self-contained
+(no third-party script origin), which is the more coherent posture for this site, and
+removes the only external script, unblocking CSP enforcement with no allowlist compromise.
+
+Boundary: this is a Cloudflare dashboard setting, not a repo change. If web analytics is
+ever wanted later, it would require adding static.cloudflareinsights.com to script-src.
+
 ### 2026-07-05 · Application-layer security headers via public/_headers; CSP Report-Only as a staging step toward enforcement
 - **Decision:** Application-layer security headers ship via `public/_headers` on Cloudflare Pages, additive
   to the zone-level hardening. Safe headers (X-Content-Type-Options, Referrer-Policy, X-Frame-Options,
