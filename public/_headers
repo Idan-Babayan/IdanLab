@@ -3,30 +3,31 @@
 # Scope note: this file carries APP headers only. HSTS is intentionally absent here:
 # it is set at the Cloudflare zone level, and duplicating it risks conflicting max-age.
 #
-# Content-Security-Policy ships as Report-Only: this is a STAGING step, not the finish line.
-# Report-Only blocks nothing; it only surfaces would-be violations, so we confirm the intended
-# policy is clean (in real browsers, not just Chromium) before flipping to enforced. The flip
-# from Content-Security-Policy-Report-Only to Content-Security-Policy is the finish line.
+# Content-Security-Policy is ENFORCED (as of 2026-07-06). It shipped Report-Only for one
+# staging round, was verified clean across Chromium 148, Firefox 152, WebKit 26.5, and real
+# Safari hardware, then flipped to enforced after the Cloudflare Web Analytics beacon was
+# removed (the site now loads zero external scripts, so script-src 'self' is honest and
+# enforcement blocks nothing). There is NO reporting endpoint (report-to / report-uri) by
+# design; violations surface in browser devtools.
 #
 # script-src note (important): the production build emits 18 distinct inline scripts, not
 # one. Besides our reading-progress bar, Starlight injects its own inline scripts (theme
 # provider, mobile-menu toggle, sidebar/TOC persistence, updatePickers, Expressive Code),
 # and the marketing pages (/ and /about) plus a few writeups carry their own inline FX.
 # A hash in script-src makes browsers ignore 'unsafe-inline', so a single progress-script
-# hash would block the other 17. We therefore keep 'unsafe-inline' in script-src for now.
+# hash would block the other 17. We therefore keep 'unsafe-inline' in script-src.
 # The stable progress-script hash is sha256-zbeMm3179IyQub695L7lMzB1ygPiSe0lSSrMfkEOwpc=
 # (recompute the full set from dist to drop unsafe-inline later; see DECISIONS.md).
 #
 # 'wasm-unsafe-eval' is REQUIRED, not optional: Starlight's search (Pagefind) instantiates a
 # WebAssembly module inside a Web Worker (dist/pagefind/pagefind-worker.js + wasm.*.pagefind).
 # Under CSP, WASM compilation needs 'wasm-unsafe-eval' (or the broader 'unsafe-eval'); without
-# it the browser blocks it as blockedURI "wasm-eval" and search breaks. Verified on Chromium
-# 148: with only 'self' 'unsafe-inline' a direct WebAssembly.instantiate fires a script-src
-# violation (report disposition = would block under enforcement); Firefox 102+ and Safari 16+
-# are stricter still. 'wasm-unsafe-eval' is the narrow WASM-only token (it does NOT permit JS
-# eval / new Function), so it is a minimal, targeted relaxation. NOTE: worker-context CSP
-# violations do NOT surface on the main-thread securitypolicyviolation listener or console, so
-# a search smoke test can look clean while WASM is actually being flagged; probe WASM directly.
+# it the browser blocks it (blockedURI "wasm-eval", CompileError under enforcement) and search
+# breaks. Verified across Chromium 148, Firefox 152, and WebKit 26.5: WASM runs clean with the
+# token, blocked without it. 'wasm-unsafe-eval' is the narrow WASM-only token (does NOT permit
+# JS eval / new Function), a minimal targeted relaxation. NOTE: worker-context CSP violations
+# do NOT surface on the main-thread securitypolicyviolation listener or console, so a search
+# smoke test can look clean while WASM is actually being flagged; probe WASM directly.
 #
 # style-src keeps 'unsafe-inline': Starlight and Expressive Code inject inline styles.
 # That is effectively permanent short of forking Starlight.
@@ -36,35 +37,29 @@
 # only trusted authored markup is injected raw, so it is safe, but Trusted Types blocks
 # innerHTML sinks and would break it. Standard CSP is fully compatible.
 #
-# Permissions-Policy denies every powerful feature the site does not use (fullscreen too:
-# the image-zoom overlay is a CSS transform, not the Fullscreen API). A few tokens are
-# nonstandard or experimental (ambient-light-sensor, battery, document-domain,
-# execution-while-*, idle-detection, local-fonts, screen-wake-lock, speaker-selection,
-# web-share); browsers that do not recognize a token simply ignore it, so listing them is
-# harmless and future-proofs the deny posture. Header values cannot be multiline, so the
-# policy is one line.
+# frame-ancestors 'none' and upgrade-insecure-requests were inert under Report-Only and are
+# now ACTIVE under enforcement: frame-ancestors adds clickjacking defense alongside the
+# enforced X-Frame-Options: DENY above, and upgrade-insecure-requests upgrades any same-origin
+# subresource request to HTTPS.
 #
-# Cross-browser verified (2026-07-05): zero violations under this policy on Chromium 148,
-# Firefox 152, and WebKit 26.5 (Safari engine, via Playwright): synthetic main+worker WASM,
-# the real Pagefind search, and every real page, both themes. Necessity also confirmed: with
-# the token removed, WASM throws CompileError on all three. Still recommended before the flip:
-# a pass on real Safari hardware (this build host is Windows) via a cloud lab or an Apple
-# device against a deployed Pages preview, since it already serves these headers.
+# Permissions-Policy denies powerful features the site does not use (fullscreen too: the
+# image-zoom overlay is a CSS transform, not the Fullscreen API). Pruned 2026-07-06 of six
+# tokens that current Chromium/Edge no longer recognize and log as "Unrecognized feature"
+# (ambient-light-sensor, battery, document-domain, execution-while-not-rendered,
+# execution-while-out-of-viewport, speaker-selection). Header values cannot be multiline, so
+# the policy is one line.
 #
-# Note (report-only semantics): frame-ancestors and upgrade-insecure-requests are inert while
-# the policy is Report-Only (WebKit logs a console notice to that effect; it is benign). They
-# activate on the flip to enforced. Clickjacking protection is not lost in the meantime: the
-# enforced X-Frame-Options: DENY above covers it, and HSTS lives at the zone.
-#
-# Enforce-phase to-do: rename Content-Security-Policy-Report-Only to Content-Security-Policy.
-# Keep style-src 'unsafe-inline' and script-src 'wasm-unsafe-eval'. Never add Trusted Types.
+# Cross-browser verified: zero violations under this policy on Chromium 148, Firefox 152,
+# WebKit 26.5 (Safari engine, via Playwright), and real Safari hardware (iPhone, iPad, and
+# macOS Safari): synthetic main+worker WASM, the real Pagefind search, and every real page,
+# both themes.
 
 /*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: DENY
-  Permissions-Policy: accelerometer=(), ambient-light-sensor=(), autoplay=(), battery=(), camera=(), display-capture=(), document-domain=(), encrypted-media=(), execution-while-not-rendered=(), execution-while-out-of-viewport=(), fullscreen=(), gamepad=(), geolocation=(), gyroscope=(), hid=(), idle-detection=(), local-fonts=(), magnetometer=(), microphone=(), midi=(), payment=(), picture-in-picture=(), publickey-credentials-get=(), screen-wake-lock=(), serial=(), speaker-selection=(), usb=(), web-share=(), xr-spatial-tracking=()
-  Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests
+  Permissions-Policy: accelerometer=(), autoplay=(), camera=(), display-capture=(), encrypted-media=(), fullscreen=(), gamepad=(), geolocation=(), gyroscope=(), hid=(), idle-detection=(), local-fonts=(), magnetometer=(), microphone=(), midi=(), payment=(), picture-in-picture=(), publickey-credentials-get=(), screen-wake-lock=(), serial=(), usb=(), web-share=(), xr-spatial-tracking=()
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests
 
 # Hashed, content-addressed build assets: safe to cache hard and forever.
 /_astro/*
