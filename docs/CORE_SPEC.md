@@ -46,8 +46,8 @@
   `'unsafe-inline'` because the build emits 18 distinct inline scripts (Starlight's own plus our
   marketing/writeup FX) and a hash would disable `'unsafe-inline'` and block the rest; `'wasm-unsafe-eval'`
   because Starlight search (Pagefind) instantiates WebAssembly in a Web Worker, which CSP blocks without it
-  (see DECISIONS). No third-party script origin: Cloudflare Web Analytics was removed, so the site loads
-  zero external scripts and `script-src 'self'` is honest. No reporting endpoint (report-to / report-uri)
+  (see DECISIONS). No third-party script origin, so `script-src 'self'` is honest: the site loads only
+  same-origin scripts (see the Web Analytics bullet below). No reporting endpoint (report-to / report-uri)
   by design. The CSP must NOT use Trusted Types (the SecretTerminal renders via `innerHTML`). The
   `Permissions-Policy` was pruned of six tokens current browsers no longer recognize (ambient-light-sensor,
   battery, document-domain, execution-while-not-rendered, execution-while-out-of-viewport,
@@ -77,7 +77,7 @@
 
 ```
 C:\dev\idanlab\                       # chosen to avoid Hebrew chars in C:\Users\אידן\
-├─ astro.config.mjs                   # Starlight config: site, sidebar, self-hosted font preloads(head) + customCss[fonts.css, custom.css], EC themes + pluginPrivCommand, reading-progress head script, image-zoom, vite alias, components overrides (PageSidebar + Footer), markdown remarkPlugins (PasswordReveal import injection) + rehypePlugins (content image loading)
+├─ astro.config.mjs                   # Starlight config: site, sidebar, customCss[fonts.css, custom.css], EC themes + pluginPrivCommand, reading-progress head script (no font preloads, see DECISIONS 2026-07-07), image-zoom, vite alias, components overrides (PageSidebar + Footer), markdown remarkPlugins (PasswordReveal import injection) + rehypePlugins (content image loading)
 ├─ src/
 │  ├─ content.config.ts               # docs collection (docsLoader + docsSchema), extended with optional os/tags/principle
 │  ├─ pages/

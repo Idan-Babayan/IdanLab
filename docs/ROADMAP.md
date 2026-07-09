@@ -5,19 +5,11 @@
 > Each item: `[area] description — owner-note`. Areas: DESIGN, CONTENT, ENG, PRODUCT.
 
 ## Now (in progress)
-- [ENG/INFRA] Enforce the CSP. It currently ships as `Content-Security-Policy-Report-Only` in
-  `public/_headers` (2026-07-05); Report-Only is a STAGING step, not the finish line. Cross-browser
-  verification is DONE and clean: Chromium 148, Firefox 152, and WebKit 26.5 (Safari's engine, via
-  Playwright), including the real Pagefind search / worker WASM and both themes. The one nice-to-have left
-  is a pass on real Safari hardware (this host is Windows): use a cloud lab (BrowserStack/LambdaTest) or any
-  Apple device (iPhone/iPad/Mac) against a deployed Pages preview, which already serves these headers; on
-  Mac Safari check the Web Inspector console, on iOS just confirm search returns results. Then flip: rename
-  `Content-Security-Policy-Report-Only` to `Content-Security-Policy` (this also activates `frame-ancestors`
-  and `upgrade-insecure-requests`, inert until then; X-Frame-Options already covers clickjacking meanwhile).
-  Notes: `script-src` includes `'wasm-unsafe-eval'` (required for Pagefind WASM) and keeps `'unsafe-inline'`
-  (18 distinct inline scripts; a hash would disable `'unsafe-inline'`; to drop it later enumerate all 18
-  hashes (brittle) or add a nonce edge-transform). Keep `style-src 'unsafe-inline'` (Starlight/EC). Do NOT
-  add Trusted Types (breaks the SecretTerminal `innerHTML`). See DECISIONS 2026-07-05.
+- [ENG/INFRA] Deploy the enforced CSP to production. The CSP is already ENFORCED on `dev` (flipped from
+  Report-Only, Permissions-Policy pruned of six unrecognized tokens; see DECISIONS 2026-07-06), verified
+  clean across Chromium 148, Firefox 152, WebKit 26.5, and real Safari hardware (iPhone, iPad, Safari 18.4,
+  Safari 16.5). Remaining: merge PR #9 (`dev` -> `main`), which deploys the enforced headers to production
+  (idanlab.dev via Cloudflare Pages); production stays Report-Only until then. Owner's call to merge.
 - [ENG] PR #5 (`dev` -> `main`): OPEN, MERGEABLE. Merging deploys to production (idanlab.dev via
   Cloudflare Pages on push to `main`), so it is the owner's call. Carries: the FlagCapture "Decrypt to
   Capture" flag component, a fine-tune pass over the OverTheWire Bandit writeups, 404.mdx tweaks, and
