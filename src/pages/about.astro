@@ -14,8 +14,9 @@ import '../styles/fonts.css';
   <title>About | Idan.Lab</title>
   <meta name="description" content="Idan Babayan: cybersecurity student, CTF player, and offensive security enthusiast documenting the journey from recon to root." />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-  <link rel="preload" as="font" type="font/woff2" href="/fonts/jetbrains-mono-400.woff2" crossorigin />
-  <link rel="preload" as="font" type="font/woff2" href="/fonts/syne-800.woff2" crossorigin />
+  <!-- Fonts load via @font-face in src/styles/fonts.css (imported at the top of this file) with
+       metric-matched fallbacks; no <link rel="preload"> on purpose. Firefox flagged the used font
+       preloads as "not used"; the preload only shortened first-load FOUT. Do not re-add font preloads. -->
   <!-- Default dark on every device. Only an explicit stored 'light' choice overrides. Shares Starlight's key. -->
   <script is:inline>
     (() => {
