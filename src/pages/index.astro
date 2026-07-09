@@ -13,8 +13,9 @@ import '../styles/fonts.css';
   <title>Idan.Lab | CTF Writeups & Security Notes</title>
   <meta name="description" content="Curiosity is my exploit. A living lab notebook of machine walkthroughs and capture-the-flag solutions by Idan Babayan." />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-  <link rel="preload" as="font" type="font/woff2" href="/fonts/jetbrains-mono-400.woff2" crossorigin />
-  <link rel="preload" as="font" type="font/woff2" href="/fonts/syne-800.woff2" crossorigin />
+  <!-- Fonts load via @font-face in src/styles/fonts.css (imported at the top of this file) with
+       metric-matched fallbacks; no <link rel="preload"> on purpose. Firefox flagged the used font
+       preloads as "not used"; the preload only shortened first-load FOUT. Do not re-add font preloads. -->
 </head>
 <body>
 
