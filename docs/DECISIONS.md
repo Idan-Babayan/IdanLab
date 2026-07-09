@@ -6,6 +6,29 @@
 
 ---
 
+### 2026-07-07 · Font `<link rel=preload>` hints removed site-wide (Firefox "preloaded but not used")
+- **Decision:** The two font preload hints (`jetbrains-mono-400.woff2`, `syne-800.woff2`) are removed from
+  all three sources that emitted them: the Starlight `head` config in `astro.config.mjs` (docs pages) and
+  the `<head>` of both standalone marketing pages (`src/pages/index.astro`, `src/pages/about.astro`). Each
+  site now carries a short rationale comment so the preloads are not re-added.
+- **Why:** Firefox logs "preloaded but not used within a few seconds" for these preloads on every page.
+  This is NOT an unused-weight problem: both faces genuinely paint above the fold (JetBrains Mono 400 is
+  body text, Syne 800 is the `h1#_top` page title). Firefox simply does not credit a same-origin
+  `crossorigin` font preload that is served from its own preload cache, and warns anyway. The preload only
+  shortened first-load FOUT, with no CLS or LCP effect here because of the metric-matched fallbacks, so it
+  was not worth the warning.
+- **Fonts load unchanged:** still self-hosted via `@font-face` in `src/styles/fonts.css` (imported by the
+  two marketing pages and via Starlight `customCss`) with metric-matched size-adjust fallbacks and
+  `font-display: swap`, so first paint stays shift-free with no preload. `@font-face`, the fallback
+  declarations, and `public/fonts/` were not touched.
+- **Supersedes:** the "Preloads" bullet of the 2026-07-04 self-hosted-fonts entry, and the 2026-07-05
+  crossorigin correction (which had switched these preloads from `crossorigin="true"` to bare
+  `crossorigin`). With the preloads gone, the crossorigin value is moot.
+- **Verified:** `npm run build` green; zero `<link rel="preload" ... fonts/>` anywhere in `dist/`; the
+  reading-progress head script is byte-for-byte unchanged; theme-orthogonal (identical hints in dark and
+  light), so both themes are unaffected.
+- **Status:** Adopted (in working tree; owner commits).
+
 ### 2026-07-06 · CSP flipped from Report-Only to enforced (Permissions-Policy pruned; site loads only self scripts)
 - **Decision:** `public/_headers` now serves `Content-Security-Policy` (enforced), replacing
   `Content-Security-Policy-Report-Only`. Only the header NAME changed: the policy value is byte-identical to
