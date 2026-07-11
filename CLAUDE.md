@@ -52,12 +52,12 @@ Content pages are made to match the marketing pages purely by overriding Starlig
 
 ### Design system & brand
 
-- **Fonts:** Syne (display/headings) + JetBrains Mono (body, UI, and code), loaded from Google Fonts via `<link>`s (in the Starlight `head` config for docs; in each marketing page's `<head>`).
+- **Fonts:** Syne (display/headings) + JetBrains Mono (body, UI, and code), self-hosted as subset WOFF2 served from `/fonts/` (see `src/styles/fonts.css`), with metric-matched size-adjust fallbacks so the swap is shift-free. There is no Google Fonts origin in source (migrated 2026-07-04, see DECISIONS).
 - **Tokens:** ink/lime/cyan/magenta on dark; warm paper + darkened accents on light. The `--ink/--lime/--cyan/--magenta/--display/--mono` token block is **duplicated** inside both `index.astro` and `about.astro` `<style is:global>` (extracting it is a ROADMAP item — keep them in sync if you edit one).
 - **Marketing-page FX** (inline JS, all `prefers-reduced-motion`-aware): constellation canvas, text decode/scramble, count-up stats, 3D-tilt cards with cursor glare, magnetic buttons, IntersectionObserver scroll-reveal, click-to-copy email, film-grain + glow overlays.
 - **Reading-progress bar** on Starlight pages is a vanilla-JS snippet injected via the `head` config in `astro.config.mjs`, styled by `#tp-progress` in `custom.css` — both files are involved.
 - Code-block themes (`expressiveCode`): `github-dark-dimmed` (dark) / `catppuccin-latte` (light).
-- ⚠️ **Known inconsistency** (tracked in ROADMAP): two platform color schemes coexist — homepage cards/sidebar dots (HTB lime, VulnHub red, Pico purple, OTW amber) vs. writeup badges (HTB blue, VulnHub cyan, Pico violet, OTW orange). Pick the canonical set before adding platform-colored UI.
+- **Platform palette (unified):** one canonical set everywhere (homepage cards, sidebar dots, about-page accents, and writeup badges): HTB lime, VulnHub red, PicoCTF purple, OTW amber. The old writeup-badge set (HTB blue, VulnHub cyan, Pico violet, OTW orange) is retired. Because HTB lime overlaps Easy green, every `.platform-*` badge carries a leading glow dot so it never reads as a difficulty pill. (See CORE_SPEC §6 / DECISIONS 2026-06-01.)
 
 ### Sidebar (`astro.config.mjs`)
 
@@ -84,7 +84,7 @@ Conventions (see `busqueda.mdx` as the reference and `CORE_SPEC.md` §7):
 
 ### Content pipeline (Notion → MDX)
 
-The intended authoring flow is: write in Notion → export Markdown → run **`notion_cleaner.py`** to normalize into convention-compliant MDX (it enforces the badges, toggles, `frame="code"`, the `src/assets` relative image paths, and `:::tip` conversions above). **Note:** this script is documented in `CORE_SPEC.md` §7 but is **not currently committed** to this repo. The conventions it produces are the source of truth even when authoring by hand.
+The authoring flow is: write in Notion, export Markdown, then polish it by hand into convention-compliant MDX (the badges, toggles, `frame="code"`, the `src/assets` relative image paths, and `:::tip` conversions above). The content pipeline is deliberate manual editorial polish against a Notion template, not a text-transformation script: the gap between a raw Notion export and the intended finished writeup is an editorial-judgment problem no script resolves. (A Python cleaner, `notion_cleaner.py`, was previously planned but is retired and was never committed; see `CORE_SPEC.md` §7 and DECISIONS.) These conventions are the source of truth.
 
 ## Conventions & deployment
 

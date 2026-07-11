@@ -32,14 +32,6 @@
   violations, fonts load and cache from `/fonts/*`, no visual regressions from the layout rebalance). The
   enforced-CSP deploy, PR #5, and the writeup-structure migration are all done now (see DECISIONS
   2026-07-11 / 2026-07-06 / 2026-06-30).
-- [CONTENT] Apply PasswordReveal (NOT FlagCapture, see DECISIONS 2026-07-05) to the Bandit "Reveal
-  Password" toggles across all 34 pages, replacing `<Toggle class="spoiler-toggle">`: component +
-  styling shipped 2026-07-05 (amber waypoint identity, blur-to-reveal then copy-in-place, non-selectable
-  value, copy-only). Now wired into `overthewire/bandit/0-1.mdx` alongside the existing spoiler-toggle
-  (not yet removed); remove the redundant toggle there once confirmed, then roll out to the remaining 33
-  pages. As of the remark auto-import plugin (DECISIONS 2026-07-05), rollout only needs the
-  `<PasswordReveal password="..." />` tag per page, no import line. Keep the truncation rule for any PEM
-  (DECISIONS 2026-06-26).
 - [CONTENT] Revisit `404.mdx`: owner made manual changes on 2026-06-28 and wants to review/refine it
   again on a later day.
 - [ENG/INFRA] Domain rebrand: in-repo done (site=idanlab.dev, wordmark/titles, copy, robots Sitemap).
@@ -63,8 +55,6 @@
      hue-free growing pips are a SECOND difficulty encoding vs the traffic-light `.difficulty-*` badge).
      The filter routes the chips link to (`/platform`, `/os`, `/environment`) do not exist yet; remove the
      chips' `data-astro-prefetch="false"` when they land.
-- Replace the improvised PicoCTF badge asset (65 KB raster-in-SVG) with a clean lightweight
-  source (optimized raster at icon size, or a redrawn vector). Design.
 - Wire WriteupMeta into the writeup and wargame-level pages (rollout: auto-inject vs manual).
   It currently renders on no page. Content/Product.
 - Build the /platform, /os, /environment filter/aggregation routes the nav chips link to, and
@@ -78,20 +68,12 @@
 - [ENG] `og:image` + social preview cards (per-page Open Graph) for shareable links.
 - [CONTENT] Author `principle:` frontmatter on writeups to surface the coda (the auto-append mechanism,
   footer silence, and true italic face all shipped 2026-07-04, see DECISIONS). Migrate busqueda's body
-  `<Principle>` to frontmatter (remove the inline component + import, add `principle:`), and have
-  `notion_cleaner.py` emit `principle:` so codas flow through the pipeline.
+  `<Principle>` to frontmatter (remove the inline component + import, add `principle:`).
 - [PRODUCT] Global `/writeups` index (path 3): reuse `WriteupCard` with `showPlatform` true for a
   mixed cross-platform grid (the card was built for this).
-- [CONTENT] Pipeline (`notion_cleaner.py`) hooks for content-lane dependencies: emit a `.flag-title`
-  class on flag headings (flag-gold currently targets slug ids `#user-flag`/`#root-flag` as an interim),
-  emit the gold heading + `<FlagCapture type="..." flag="..." />` for User/Root flags (replacing the old
-  heading + duplicate `<Toggle flag>` + `:::tip`; see CORE_SPEC §7 + DECISIONS 2026-06-27), emit
-  `<PasswordReveal password="..." />` for wargame password levels (replacing
-  `<Toggle class="spoiler-toggle">`; see DECISIONS 2026-07-05) with no accompanying import line needed
-  (auto-injected, see DECISIONS 2026-07-05 remark-plugin entry), and optionally promote os/tags to
-  frontmatter.
 
 ## Later (parked)
+- [CONTENT] Revisit a scripted content-cleaning pass only if manual polish proves to not scale; deliberately deferred, not abandoned.
 - [CONTENT] Surface topic tags as a browsable index (filter writeups by technique).
 - [ENG] Starlight plugins: scroll-to-top button, mobile sidebar swipe, fullscreen code blocks.
 - [DESIGN] Replace `ethical-hacking.png` about portrait with a transparent custom SVG.
@@ -116,15 +98,11 @@
   reproducible in headless Chromium (false negative), so the fix is UNVERIFIED visually; owner to confirm
   in a real browser. If a sub-pixel residual remains, it is rounding territory, leave it.
 - Known minor (low priority): few-pixel content shift on bulk expand/collapse (ToggleAll), traced to sub-pixel scroll rounding that scales with correction size; native-anchoring suppression reduced but did not eliminate it. Revisit by confirming overflow-anchor:none is on document.scrollingElement and instrumenting delta vs actual scrollY landing in a real browser.
-- [INFRA] `public/robots.txt` holds ONLY the breadcrumb comment + a `Sitemap:` line. On deploy it is
-  served as `/robots.txt` and can override the Cloudflare-managed bot disallows / Content-Signals.
-  Add the full managed content (or confirm Cloudflare still appends its block) before relying on it.
 - [DESIGN] Flag-gold targets the slug ids `#user-flag` / `#root-flag` as an interim (no `.flag-title`
   class exists; flag headings reuse `.task-title`). The TOC active-color ladder (DECISIONS 2026-06-29)
   also excludes flags by those same two slug ids so they stay gold instead of going cyan, so it shares the
-  fragility. Breaks if those headings are renamed or another page reuses the slugs. Clean fix: a
-  `.flag-title` class from the pipeline (see Next), used by both the gold rule and the cyan exclusion.
+  fragility. Breaks if those headings are renamed or another page reuses the slugs. Clean fix: add a
+  `.flag-title` class to flag headings during authoring, used by both the gold rule and the cyan exclusion.
 - [ENG] Command-highlighting residual risk: an OUTPUT line whose first word is exactly a listed command
   (e.g. `ls: cannot access`) can be mis-tagged. Rare; documented in `ec-priv-command.mjs` (EC 0.42
   exposes no token scopes, so strings/comments cannot be skipped by scope).
-- [ENG] `notion_cleaner.py` is documented (CORE_SPEC §7) but NOT committed to the repo.

@@ -28,9 +28,12 @@
   Pages auto-deploys. Also serves at `idanlab.pages.dev`. `astro.config.mjs` sets
   `site: 'https://idanlab.dev'` (drives the sitemap + canonical URLs). Branches: only `main`
   and `dev`; work lands on `dev`, then a PR into `main`.
-- **robots.txt:** managed in-repo at `public/robots.txt` (served at `/robots.txt`). It currently
-  holds only the easter-egg breadcrumb comment + a `Sitemap:` line (NOT the Cloudflare-managed
-  bot disallows; see ROADMAP open issues).
+- **robots.txt:** managed in-repo at `public/robots.txt` (served at `/robots.txt`). The in-repo file
+  holds the easter-egg breadcrumb comment + a `Sitemap:` line. On deploy, Cloudflare composes its own
+  managed block (the Content-Signals header plus the managed bot disallow list: Amazonbot,
+  Applebot-Extended, Bytespider, CCBot, ClaudeBot, CloudflareBrowserRenderingCrawler, Google-Extended,
+  GPTBot, meta-externalagent) with this in-repo content, so the deployed `/robots.txt` carries both
+  intact. There is no override: the two compose as intended (verified on the production site).
 - **Security headers:** application-layer headers are served via `public/_headers` (Cloudflare Pages),
   additive to zone-level hardening (HSTS, Full Strict TLS, DNSSEC live at the Cloudflare zone; HSTS is
   NOT duplicated in `_headers` to avoid a conflicting max-age). Enforced now: `X-Content-Type-Options:
@@ -112,13 +115,12 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in C:\Users
 ├─ plugins/
 │  ├─ rehype-content-image-loading.mjs # rehype: sets loading/decoding on content <img> (first eager, rest lazy); wired via astro.config markdown.rehypePlugins
 │  └─ remark-inject-passwordreveal.mjs # remark: conditionally injects `import PasswordReveal from '@components/PasswordReveal.astro'` into an MDX file's AST at build time, only when that file uses <PasswordReveal/> and has no import of its own; wired via astro.config markdown.remarkPlugins
-├─ public/
-│  ├─ robots.txt                      # in-repo; breadcrumb comment + Sitemap line (see §2)
-│  ├─ favicon.svg                     # site favicon
-│  ├─ fonts/*.woff2                   # self-hosted subset fonts (Syne 600/700/800; JetBrains Mono 400/500/700 + 400/500 italic); served at /fonts/
-│  ├─ icons/{htb,vulnhub,picoctf,overthewire}.svg
-│  └─ ethical-hacking.png             # about portrait (TODO: replace with transparent SVG). Writeup screenshots now live in src/assets (see §7); marketing images, if any, go under public/images
-└─ notion_cleaner.py                  # CONTENT PIPELINE (documented in §7; NOT yet committed to the repo)
+└─ public/
+   ├─ robots.txt                      # in-repo; breadcrumb comment + Sitemap line (see §2)
+   ├─ favicon.svg                     # site favicon
+   ├─ fonts/*.woff2                   # self-hosted subset fonts (Syne 600/700/800; JetBrains Mono 400/500/700 + 400/500 italic); served at /fonts/
+   ├─ icons/{htb,vulnhub,picoctf,overthewire}.svg
+   └─ ethical-hacking.png             # about portrait (TODO: replace with transparent SVG). Writeup screenshots now live in src/assets (see §7); marketing images, if any, go under public/images
 ```
 
 - **Vite alias:** `@components` → `./src/components` (required for MDX imports; tsconfig
@@ -344,25 +346,22 @@ Preserves reading position: anchors on the current heading and corrects scroll s
 
 ## 7. Content Pipeline (Notion → site)
 
-1. Author writeup in **Notion**, export as Markdown.
-2. Run **`notion_cleaner.py`**:
-   ```
-   python notion_cleaner.py "Machine.md" -p hackthebox -d easy -o C:\dev\idanlab \
-     --description "..." --os Linux --title "Busqueda"
-   ```
-   - Args: input; `-p {hackthebox,vulnhub,picoctf,overthewire}`; `-d {easy,medium,hard,misc}`;
-     `-o` astro root; `-t/--title`; `--description`; `--os` (default Linux); `--toggle-threshold` (8).
-   - Note: `-d easy` lands the file in the lowercase `easy/` directory (the sidebar
-     `autogenerate.directory` is case-sensitive, e.g. `hackthebox/easy`, and must match the on-disk
-     lowercase dir; a case-only rename needs `git mv` on Windows, `core.ignorecase=true`). If/when the
-     script is committed, confirm it lowercases the difficulty dir.
-   - Output: `src/content/docs/{platform}/{difficulty}/{slug}.mdx`.
-   - Manual step: copy + rename screenshots per the script's printed rename map into
-     `src/assets/{platform}/{difficulty}/{slug}/`, then reference them from the writeup by a relative
-     Markdown path (`../../../../assets/...`) so astro:assets optimizes + hashes them.
+1. Author the writeup in **Notion**, export as Markdown.
+2. **Polish it by hand into convention-compliant MDX.** The content pipeline is deliberate manual
+   editorial polish of each writeup against a Notion template, not a text-transformation script. The
+   gap between a raw Notion export and the intended finished writeup is an editorial-judgment problem
+   that no text-transformation script resolves: a script can normalize syntax, but it cannot make the
+   editorial calls that define the site's writeup quality. Apply the MDX conventions below by hand.
+   - Place the file at `src/content/docs/{platform}/{difficulty}/{slug}.mdx`. The `{difficulty}` dir is
+     lowercase (`easy`/`medium`/`hard`/`misc`): the sidebar `autogenerate.directory` is case-sensitive
+     (e.g. `hackthebox/easy`) and must match the on-disk lowercase dir; a case-only rename needs
+     `git mv` on Windows (`core.ignorecase=true`).
+   - Copy + rename screenshots into `src/assets/{platform}/{difficulty}/{slug}/`, then reference them
+     from the writeup by a relative Markdown path (`../../../../assets/...`) so astro:assets optimizes
+     + hashes them.
 3. Commit + push → Cloudflare deploys.
 
-### MDX conventions the script enforces
+### MDX conventions (applied by hand)
 - Writeups are stored as flat .mdx files under src/content/docs
   (<platform>/<difficulty>/<machine>.mdx), one file per writeup with no per-writeup
   folder. Writeup images live in a parallel non-routable tree under src/assets
