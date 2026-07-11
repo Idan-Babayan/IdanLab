@@ -42,12 +42,12 @@ export default defineConfig({
       },
       plugins: [starlightImageZoom()],
       head: [
-        // Self-hosted fonts (see src/styles/fonts.css + public/fonts/). Preload only the two most
-        // critical above-the-fold faces: JetBrains Mono 400 (body + code) and Syne 800 (the h1 page
-        // title and hero headline, the dominant display element). Other weights load on demand and stay
-        // shift-free via the metric-matched fallbacks. crossorigin is required on font preloads.
-        { tag: 'link', attrs: { rel: 'preload', as: 'font', type: 'font/woff2', href: '/fonts/jetbrains-mono-400.woff2', crossorigin: true } },
-        { tag: 'link', attrs: { rel: 'preload', as: 'font', type: 'font/woff2', href: '/fonts/syne-800.woff2', crossorigin: true } },
+        // Fonts are self-hosted via @font-face in src/styles/fonts.css (public/fonts/) with
+        // metric-matched fallbacks and font-display: swap, so first paint is shift-free with no
+        // preload. Font <link rel="preload"> was removed on purpose: Firefox does not credit a
+        // same-origin crossorigin font preload served from its own preload cache, so it warned
+        // "preloaded but not used" on every page even though both faces paint above the fold. The
+        // preload only shortened first-load FOUT (no CLS or LCP effect here). Do not re-add font preloads.
         // Reading-progress bar (styled by #tp-progress in custom.css)
         { tag: 'script', content: "window.addEventListener('DOMContentLoaded',function(){var b=document.createElement('div');b.id='tp-progress';document.body.appendChild(b);var u=function(){var h=document.documentElement,m=h.scrollHeight-h.clientHeight;b.style.width=(m>0?h.scrollTop/m*100:0)+'%';};document.addEventListener('scroll',u,{passive:true});window.addEventListener('resize',u);u();});" },
       ],

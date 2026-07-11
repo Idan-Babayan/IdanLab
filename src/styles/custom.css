@@ -96,6 +96,167 @@ html[data-theme="dark"] .task-title {
   color: var(--sl-color-gray-2);
 }
 
+/* ── Mobile TOC: gold flag entries (parity with the desktop right column) ─────
+   Ports the desktop gold-flag TOC treatment to the mobile TOC dropdown. Mobile renders as
+   <mobile-starlight-toc> (a <details> list) which the desktop .right-sidebar-panel rules never reach,
+   so flags were plain there. Same mechanism as desktop: match the deterministic slug anchors
+   (#user-flag / #root-flag), persistent muted gold, full --flag-gold on hover and when current. Href
+   matching is depth-independent, so this is a near-verbatim re-scope. Unlayered so it beats Starlight's
+   layered mobile active color. --flag-gold is theme-aware (no light override needed). Desktop untouched. */
+mobile-starlight-toc a[href="#user-flag"],
+mobile-starlight-toc a[href="#root-flag"] {
+  color: color-mix(in oklab, var(--flag-gold) 70%, var(--sl-color-gray-3));
+}
+mobile-starlight-toc a[href="#user-flag"]:hover,
+mobile-starlight-toc a[href="#root-flag"]:hover,
+mobile-starlight-toc a[href="#user-flag"][aria-current="true"],
+mobile-starlight-toc a[href="#root-flag"][aria-current="true"] {
+  color: var(--flag-gold);
+}
+
+/* ── Mobile TOC: h3 entries cyan when current (parity with desktop) ───────────
+   Desktop colors the CURRENT h3 TOC entry cyan by reading heading level from nested <ul> depth. The
+   mobile TOC is nested too, but under a different wrapper (mobile-starlight-toc > nav > details >
+   .dropdown > ul), so the desktop `nav > ul > li > ul` chain does not line up. Instead we match the
+   inline `--depth` custom property that Starlight emits per entry: verified in the real mobile DOM
+   (Starlight 0.39.2, 2026-07-10) that each <a> carries style="--depth: N;" with h2 = 0 and h3 = 1, so
+   `[style*="--depth: 1"]` selects exactly the h3 entries. Flags are also h3 (depth 1) and keep gold, so
+   they are excluded here. Unlayered so it beats Starlight's layered mobile active color. Light uses
+   --tp-cyan-ink, matching the desktop light variant. If Starlight changes the emitted format or the h3
+   depth number, update both selectors. */
+mobile-starlight-toc a[aria-current="true"][style*="--depth: 1"]:not([href="#user-flag"]):not([href="#root-flag"]) {
+  color: var(--tp-cyan);
+}
+:root[data-theme='light'] mobile-starlight-toc a[aria-current="true"][style*="--depth: 1"]:not([href="#user-flag"]):not([href="#root-flag"]) {
+  color: var(--tp-cyan-ink);
+}
+
+
+/* ── Writeup metadata badges: intentional color, restrained glow ──────────────
+   NAVIGATIONAL chips (Platform, OS, Environment) lead: pill chips, clickable, each colored with INTENT.
+   Platform = the brand's canonical --pf-accent (matches the sidebar and the rest of the site). OS = the
+   OS's own identity color (Linux Tux amber, Windows blue). Environment = the feel of that environment,
+   with Active Directory a deeper enterprise indigo kept distinct from the Windows-blue chip it usually
+   sits beside, and Standalone a solitary cool slate. A RESTRAINED halo gives life on dark; light uses a
+   hue-shadow (glow becomes haze on paper). EVALUATIVE Difficulty trails: a neutral, hue-free chip at the
+   SAME size/weight as the nav chips (a calm peer, not a heavier sibling), the word shown once, magnitude
+   carried only by pips that grow with level. Spacing: TIGHT under the title, OPEN before the body, no
+   divider. Chips are anchors to future filter routes. Both themes. */
+.writeup-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 0.55rem;    /* tight to the title */
+  margin-bottom: 2.1rem;  /* open before the body; no border/divider */
+}
+.writeup-meta .wm-nav { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+
+/* Base chip: color, tint, border, and glow all derive from --wm-c (set per value below). */
+.writeup-meta .wm-chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--sl-font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--wm-c);
+  background: color-mix(in oklab, var(--wm-c) 15%, transparent);
+  border: 1px solid color-mix(in oklab, var(--wm-c) 38%, transparent);
+  border-radius: 999px;
+  padding: 0.32rem 0.8rem;
+  box-shadow: 0 0 10px -2px color-mix(in oklab, var(--wm-glow, var(--wm-c)) 32%, transparent);
+}
+:root[data-theme="light"] .writeup-meta .wm-chip {
+  box-shadow: 0 3px 10px -5px color-mix(in oklab, var(--wm-c) 45%, transparent);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .writeup-meta .wm-chip { transition: border-color 0.15s ease, box-shadow 0.2s ease; }
+}
+.writeup-meta .wm-chip:hover {
+  border-color: color-mix(in oklab, var(--wm-c) 60%, transparent);
+  box-shadow: 0 0 14px -2px color-mix(in oklab, var(--wm-glow, var(--wm-c)) 45%, transparent);
+}
+:root[data-theme="light"] .writeup-meta .wm-chip:hover {
+  box-shadow: 0 4px 12px -4px color-mix(in oklab, var(--wm-c) 55%, transparent);
+}
+.writeup-meta .wm-ico { width: 15px; height: 15px; flex: none; display: inline-flex; color: var(--wm-c); }
+.writeup-meta .wm-ico svg { width: 100%; height: 100%; }
+/* Platform mark is a full-color brand logo served as <img> (native fills, not currentColor). Contain it
+   in the 15px box so non-square logos keep their aspect. color:var(--wm-c) on .wm-ico has no effect on an
+   <img>, so the logo renders in its own colors, as intended. */
+.writeup-meta img.wm-ico-logo { object-fit: contain; }
+
+/* Platform: canonical --pf-accent per platform (dark + light), with HTB's true brand green for glow. */
+.writeup-meta .pf-htb  { --wm-c: #b6ff3c; --wm-glow: #9fef00; }
+.writeup-meta .pf-vh   { --wm-c: #ff5c5c; }
+.writeup-meta .pf-pico { --wm-c: #d96bff; }
+.writeup-meta .pf-otw  { --wm-c: #ffc23d; }
+:root[data-theme="light"] .writeup-meta .pf-htb  { --wm-c: #4d7c0f; --wm-glow: #4d7c0f; }
+:root[data-theme="light"] .writeup-meta .pf-vh   { --wm-c: #d12f2f; }
+:root[data-theme="light"] .writeup-meta .pf-pico { --wm-c: #8b3dc4; }
+:root[data-theme="light"] .writeup-meta .pf-otw  { --wm-c: #a86f04; }
+
+/* OS: the OS's own identity color. */
+.writeup-meta .wm-os-linux   { --wm-c: #f0b429; }   /* Tux amber */
+.writeup-meta .wm-os-windows { --wm-c: #4ca3ff; }   /* Windows blue */
+:root[data-theme="light"] .writeup-meta .wm-os-linux   { --wm-c: #a86f04; }
+:root[data-theme="light"] .writeup-meta .wm-os-windows { --wm-c: #0a63c9; }
+
+/* Environment: the feel of the environment. AD enterprise indigo (distinct from Windows blue);
+   Standalone a solitary cool slate. */
+.writeup-meta .wm-env-standalone        { --wm-c: #8fa3b8; }
+.writeup-meta .wm-env-active-directory  { --wm-c: #7c9cff; }
+:root[data-theme="light"] .writeup-meta .wm-env-standalone       { --wm-c: #5a6b7d; }
+:root[data-theme="light"] .writeup-meta .wm-env-active-directory { --wm-c: #3b4fa8; }
+/* Progressive: the wargame ladder (OverTheWire Bandit, Natas...). Teal-leaning "progress/ascent" green,
+   pulled toward teal so it stays distinct from HackTheBox's lime brand green and carries a terminal tint
+   that fits the shell-based wargames. OverTheWire's platform color is amber, so this chip effectively
+   never sits beside the HTB green chip anyway. */
+.writeup-meta .wm-env-progressive { --wm-c: #3fd9a8; }
+:root[data-theme="light"] .writeup-meta .wm-env-progressive { --wm-c: #0f8a63; }
+
+/* Difficulty: neutral, hue-free, SAME size/weight as nav chips. Word once; magnitude via pips only. */
+.writeup-meta .wm-diff { display: inline-flex; align-items: center; }
+.writeup-meta .wm-diff-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-family: var(--sl-font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--sl-color-text);
+  background: color-mix(in oklab, var(--sl-color-text) 5%, transparent);
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 6px;
+  padding: 0.32rem 0.7rem;
+}
+.writeup-meta .wm-pips { display: inline-flex; align-items: center; gap: 3px; }
+.writeup-meta .wm-pips i {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--sl-color-gray-5); display: block;
+}
+/* Filled + growing per level: the filled count is the level, and the leading filled pip grows so
+   higher difficulty visibly outweighs lower beyond count alone. Achromatic (no hue). */
+.writeup-meta .wm-pips[data-level="1"] i:nth-child(1),
+.writeup-meta .wm-pips[data-level="2"] i:nth-child(-n+2),
+.writeup-meta .wm-pips[data-level="3"] i:nth-child(-n+3),
+.writeup-meta .wm-pips[data-level="4"] i:nth-child(-n+4) {
+  background: color-mix(in oklab, var(--sl-color-text) 80%, transparent);
+}
+.writeup-meta .wm-pips[data-level="1"] i:nth-child(1) { width: 6px; height: 6px; }
+.writeup-meta .wm-pips[data-level="2"] i:nth-child(2) { width: 6px; height: 6px; }
+.writeup-meta .wm-pips[data-level="3"] i:nth-child(3) { width: 7px; height: 7px; }
+.writeup-meta .wm-pips[data-level="4"] i:nth-child(4) { width: 8px; height: 8px; }
+
+/* Visually hidden difficulty text (keep if the file's .sr-only is not already global). */
+.writeup-meta .sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
 
 /* ── Port label: a cyan mono tag inside recon callouts ────────────────────────
    Was red, which clashed with the cyan recon callout it lives in and, like the old inline-code chip,
@@ -709,21 +870,35 @@ html[data-theme="light"] body:has(.home-stats) {
 }
 
 /* These pages render their own visual hero, so hide Starlight's frontmatter-driven
-   page title (kept for the browser tab + SEO) to avoid a duplicate heading, and widen
-   the content column so the grid is not cramped (TOC is off via frontmatter). */
+   page title (kept for the browser tab + SEO) to avoid a duplicate heading. */
 body:has(.pi-index) h1#_top {
   display: none;
 }
+/* ── Platform intro/landing pages: full-width, immersive ──────────────────────
+   {platform}/index.mdx render <PlatformIndex/> (root .pi-index) with tableOfContents:false, so they
+   inherit the prose reading cap (--sl-content-width, set to 50rem for writeups by the three-column
+   block below), which boxes the fluid hero + card grid and leaves large side gaps. Lift the cap to full
+   width ONLY on pages containing the PlatformIndex root, via this :has(.pi-index) scope: writeups keep
+   their 50rem reading cap, and the standalone home/About are unaffected (they do not load this
+   stylesheet). PlatformIndex is fluid (flex/percentages, no 100vw), so no breakout fix is needed; it
+   fills the freed width itself. Theme-neutral; native :has() (already used in this codebase). This
+   supersedes the earlier 60rem widen. */
 body:has(.pi-index) {
-  --sl-content-width: 60rem;
+  --sl-content-width: 100%;
 }
 
-/* The hidden title (above) leaves Starlight's ContentPanel divider, the border-top that sits
-   correctly UNDER a writeup title, floating as a stray line across the very top of an index page.
-   Remove that one top border on index pages only, both themes. Writeups have no .pi-index, so their
-   under-title line is kept; card and button borders are unaffected (this targets the panel only). */
+/* The hero panel is the SECOND ContentPanel (the first holds the hidden PageTitle; Starlight renders a
+   title panel + a markdown panel, and .pi-index lives in the markdown one). Two intro-only resets on it
+   so the full-bleed hero starts flush at the top and reads immersive:
+   1. border-top: none - the hidden title above otherwise leaves Starlight's ContentPanel divider as a
+      stray line across the top of an index page. Writeups keep their under-title line (no .pi-index).
+   2. padding-top: 0 - remove Starlight's default 1.5rem top padding on this panel so the hero background
+      reaches the top edge instead of sitting below a small dark band.
+   Both themes; scoped to intro pages, so writeups/home/About are untouched. Only this panel's TOP is
+   affected, so the side gutters and the full-width behavior above are unchanged. */
 body:has(.pi-index) .content-panel + .content-panel {
   border-top: none;
+  padding-top: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1076,6 +1251,52 @@ nav.sidebar details > ul > li {
    back to the article. Theme-agnostic Starlight token; nothing else needs to change. */
 :root {
   --sl-sidebar-width: 17rem;
+}
+
+/* ── Three-column proportions: content-first, tighter TOC, balanced gutters ────
+   Starlight allocates the right TOC roughly the same width as the left nav (--sl-sidebar-width + half
+   the free space), but the TOC holds short entries so most of it reads as empty, and it caps content at
+   45rem, a sans measure that feels cramped in our wide JetBrains Mono body. Rebalance: widen the content
+   cap so the writeup is the focus (50rem is about a 75-char measure in this mono, the top of the
+   comfortable reading range), and narrow the TOC toward its actual content. Widening the cap is required, not just narrowing
+   the TOC: Starlight caps content regardless of free space, so tightening the TOC alone would only add
+   empty margin. Theme-neutral. Desktop only (the three-column layout collapses below 72rem, so mobile is
+   unaffected). Intro pages (.pi-index, no TOC) are handled separately below and skip these rules because
+   they carry no [data-has-toc]. */
+:root {
+  --sl-content-width: 50rem;
+}
+@media (min-width: 72rem) {
+  /* Tightening the TOC needs TWO widths, not one. The visible TOC text column is `.right-sidebar-panel
+     .sl-container`, which Starlight derives from --sl-sidebar-width (our 17rem nav) as
+     `width: calc(--sl-sidebar-width - 2*--sl-sidebar-pad-x)` ≈ 15rem, plus 1rem panel padding each side
+     = a 17rem panel. `.right-sidebar-container` is only the reserved/layout column. So narrowing the
+     CONTAINER alone would leave the 17rem panel overflowing it (clipped past the screen edge). Narrow
+     BOTH, in sync: text 13rem + 2*1rem padding = a 15rem panel that fits a 15rem container exactly. This
+     also holds whether the fixed `.right-sidebar` sizes against the viewport or its container. Starlight
+     sets `overflow-wrap: anywhere` on TOC links, so longer entries wrap to ~2 lines rather than clip.
+     13rem/15rem are analysis-based starting targets; nudge up if an entry wraps badly in a real browser. */
+  .right-sidebar-panel .sl-container {
+    width: 13rem;
+  }
+  .right-sidebar-container {
+    width: 15rem;
+    flex: none;
+  }
+  /* Starlight sizes .main-pane to content-width + half the free space, assuming the wide default TOC.
+     With the TOC pinned narrow, let the pane fill the remaining width so the capped reading column can
+     center in it. Scoped exactly like Starlight's own rule so no-TOC intro pages are never touched. */
+  [data-has-sidebar][data-has-toc] .main-pane {
+    width: auto;
+    flex: 1;
+  }
+  /* Center the capped reading column in the pane, overriding Starlight's `auto 0` right-align, so the
+     nav-to-content gutter matches the content-to-TOC gutter (and centered in-content elements like the
+     Principle read as truly centered). Targets the CONTENT .sl-container (inside .main-pane), distinct
+     from the TOC .sl-container narrowed above. Unlayered, so it beats Starlight's layered rule. */
+  [data-has-sidebar][data-has-toc] .main-pane .sl-container {
+    margin-inline: auto;
+  }
 }
 
 /* ── Sidebar: taller rows so a sparse rail feels fuller (sidebar nav only) ──
