@@ -6,6 +6,142 @@
 
 ---
 
+## Badge icon sourcing: split by consumption mechanism
+
+Writeup badge marks are sourced by what each icon needs, not stored uniformly. The four
+platform logos render as native-color <img> from hashed ?url imports and, because the sidebar
+CSS backgrounds reference them by stable /icons/ path, also keep a public/icons copy: this
+duplication is forced by the CSS lock and is intentional. Linux is treated as a logo (native
+color <img>) because it is multicolor and cannot be a clean single-color glyph. The three
+single-fill category marks (Windows, Active Directory, Progressive) are recolored to
+currentColor, inlined, and tint to their chip accent in both themes; Standalone uses a
+purpose-drawn currentColor glyph. Category marks live only in src/assets/icons/ because
+inlining requires importing them, and public/ is not in the import graph.
+
+assetsInlineLimit is left at the Vite default: PicoCTF (65 KB) is emitted as a hashed cached
+asset while the sub-4 KB logos inline as data URIs, which is the desired size-based split.
+Forcing all assets to hashed files was rejected as a global change to solve a non-problem.
+The PicoCTF asset is an improvised raster-in-SVG (65 KB after SVGO); it is an accepted interim
+asset. A clean lightweight PicoCTF source is a Design follow-up.
+
+### 2026-07-10 · Mobile TOC parity: gold flag entries + cyan current-h3 (CSS-only, additive)
+- **Decision:** Extend the two desktop "On this page" treatments to the mobile TOC dropdown
+  (`<mobile-starlight-toc>`): flag entries (`#user-flag` / `#root-flag`) render muted gold at rest and
+  full `--flag-gold` on hover/current, and the current h3 entry turns cyan (`--tp-cyan` dark /
+  `--tp-cyan-ink` light). CSS-only, add-only, in `custom.css` right after the desktop TOC block. No
+  component override, and NO existing `.right-sidebar-panel` rule touched (the diff is purely additive),
+  so desktop renders identically. All new rules are scoped to `mobile-starlight-toc`, which cannot reach
+  the desktop column (a different `starlight-toc` element).
+- **Why the mobile cyan rule differs from desktop:** desktop reads heading level from the TOC nesting
+  chain (`nav > ul > li > ul > li > a`). Mobile uses the same recursive `TableOfContentsList` but wraps it
+  under `nav > details > .dropdown`, so that exact chain does not line up. Instead the mobile rule matches
+  Starlight's per-entry inline `--depth`. The gold rules are href-based (depth-independent) so they are a
+  near-verbatim re-scope.
+- **Verified in the REAL mobile DOM (Starlight 0.39.2), correcting an assumption:** the mobile TOC is
+  NOT flat, it is nested (`ul > li > ul`) like desktop, BUT Starlight also emits an inline
+  `style="--depth: N;"` on every `<a>` (via `define:vars` in `TableOfContentsList.astro`). Confirmed
+  h2 = `--depth: 0`, h3 = `--depth: 1` (with a space after the colon, so `[style*="--depth: 1"]` matches),
+  and that `#user-flag` / `#root-flag` are themselves h3 (depth 1), hence the `:not()` exclusions so flags
+  keep gold and never go cyan. If Starlight changes the emitted format or the h3 depth number, update both
+  cyan selectors.
+- **Behavior preserved:** rules set text `color` only. Starlight's mobile active checkmark (`::after`,
+  `background-color: --sl-color-text-accent`) and the white h2 active color are untouched; h2/other
+  non-flag entries keep Starlight's default active style. Unlayered so the flag/h3 colors beat Starlight's
+  layered mobile active color.
+- **Verification:** both themes, real mobile viewport (375px), computed styles + screenshots. Dark: flags
+  muted→full gold, current h3 `#41efff`, current h2 stays white, checkmark intact. Light: current h3
+  `#08697a`, flags `#C6A243`/muted, checkmark bg = light accent. Desktop right column unchanged (flag
+  `oklab(0.785…)` muted gold, h3-current `--tp-cyan`, both identical to before). `npm run build` passes
+  (45 pages). Uncommitted; part of the same working tree as the WriteupMeta work below.
+
+### 2026-07-10 · WriteupMeta revised: intentional per-axis color, restrained glow, growing pips (supersedes the two entries below)
+- **What changed from the first build (below):** the badge row was redesigned from platform-only *washes*
+  + a bordered divider to INTENTIONAL per-axis color with a restrained glow. Structure, guardrails, and
+  a11y are unchanged (`.not-content`, `data-astro-prefetch="false"`, runtime union guard, `sr-only`
+  "Difficulty N of 4"); only color, glow, difficulty rendering, and spacing changed.
+- **Single-token color model:** every chip derives color/tint/border/glow from one custom property
+  `--wm-c` (plus optional `--wm-glow`), set per value. New per-value classes on the chips: `pf-*`
+  (platform, already existed), `wm-os-*`, `wm-env-*`. This replaces the old `--wm-htb/--wm-vh/...`
+  globals, so the v1 "token scoping / bare-`:root` fallback" note no longer applies (dark values live on
+  unprefixed selectors, light overrides under `:root[data-theme="light"]`).
+- **Palette drift RESOLVED (closes the ROADMAP reconciliation item):** platform chips now use the
+  canonical `--pf-accent` hexes verbatim (HTB `#b6ff3c`/`#4d7c0f`, VulnHub `#ff5c5c`/`#d12f2f`, PicoCTF
+  `#d96bff`/`#8b3dc4`, OTW `#ffc23d`/`#a86f04`); they match the sidebar/site tokens, no drift. HTB alone
+  carries a `--wm-glow` (`#9fef00` dark / `#4d7c0f` light) so its halo is true brand green.
+- **OS + Environment are intentional identity colors** (dark / light): Linux `#f0b429`/`#a86f04` (Tux
+  amber), Windows `#4ca3ff`/`#0a63c9`; Environment Standalone `#8fa3b8`/`#5a6b7d` (solitary slate),
+  Active Directory `#7c9cff`/`#3b4fa8` (enterprise indigo, kept distinct from the Windows-blue chip it
+  sits beside).
+- **Progressive env color added by owner decision:** the shipped spec only colored 2 of the 3 `Environment`
+  union values, and the new base `.wm-chip` *requires* `--wm-c`, so a `Progressive` chip (the natural
+  value for the OTW Bandit content) rendered as a broken transparent pill with a hard ink outline and no
+  glow. Flagged it; owner chose a teal-green "wargame ladder" hue: `#3fd9a8` dark / `#0f8a63` light
+  (pulled toward teal to stay distinct from HTB lime; OTW's platform amber means it never sits beside the
+  HTB chip anyway).
+- **Restrained glow ("G1"):** dark = a soft halo `box-shadow: 0 0 10px -2px` at ~32% of the hue (45% on
+  hover); light = a clean hue-shadow `0 3px 10px -5px` (glow becomes haze on paper). Spread is deliberately
+  restrained; do not increase it.
+- **Difficulty chip:** now a calm PEER of the nav chips (same 0.75rem / 600 size+weight, was slightly
+  larger before), still neutral and hue-free. The visible "Difficulty" key label was REMOVED (the word in
+  the chip is the only visible label; `sr-only` "Difficulty N of 4" stays). Magnitude is carried by pips
+  that both FILL and GROW with level (the leading filled pip enlarges 6→8px as level rises), so higher
+  difficulty outweighs lower beyond count alone, still achromatic.
+- **Layout:** the bottom border/divider is GONE; the block is a single flex row, tight under the title
+  (`margin-top: 0.55rem`) with open space before the body (`margin-bottom: 2.1rem`).
+- **Status:** built clean (45 pages), verified both themes + the previously-broken Progressive chip now
+  renders correctly (teal fill/border/glow) in dark and light. Files uncommitted; still not wired to any
+  writeup (auto-injection vs manual placement remains an open ROADMAP call).
+
+### 2026-07-10 · WriteupMeta badge system (`src/components/badges/`) added
+- **Decision:** New additive component `WriteupMeta.astro` plus an icon registry `icons.ts` and a
+  `.writeup-meta` CSS block in `custom.css` (placed right after the flag-loot rules). It renders under a
+  writeup title as a two-tier metadata row: a NAVIGATIONAL group (Platform, OS, Environment) as tinted
+  pill chips that are `<a>` anchors to future filter routes, then a trailing EVALUATIVE Difficulty chip
+  (rectangular, hue-free, word + filled pips, NOT a link). Four axes are string-literal unions
+  (`Platform` / `OS` / `Environment` / `Difficulty`). Icons live only in `icons.ts` as inline 24x24
+  `currentColor` SVG strings (placeholder stubs today; Idan swaps the real marks in). Shape-codes intent:
+  pills navigate, the rectangle grades. Usage: `import WriteupMeta from '@components/badges/WriteupMeta.astro'`
+  under the title. NOT yet auto-injected or applied to any writeup (see ROADMAP).
+- **Four Starlight-integration conflicts found and fixed** (the naive spec would have shipped each):
+  1. **Prose-link bleed →** wrapper carries `.not-content`. Every `.sl-markdown-content a` rule is guarded
+     `:not(:where(.not-content *))`, and under `[data-theme='light']` that rule is specificity (0,3,1),
+     which outranks the chip's own `.writeup-meta .wm-chip` (0,2,0): without the opt-out, chip labels
+     rendered teal with a tinted bottom border in light mode (and lime/white on hover in both themes).
+  2. **Token scoping →** `--wm-*` platform tokens are declared on `:root, :root[data-theme='dark']` (not
+     `[data-theme="dark"]` only, as first drafted). This file's dark tokens use the bare-`:root` fallback
+     convention; scoping the wash tokens to the attribute alone would leave them undefined if `data-theme`
+     is ever absent, making every `color-mix()` invalid-at-computed-value and silently dropping the wash.
+  3. **Prefetch of dead routes →** chips carry `data-astro-prefetch="false"`. Starlight enables Astro
+     prefetch by default, so each writeup fired `<link rel=prefetch>` at `/platform|/os|/environment`
+     (all 404 today) just from the block entering the viewport. A click 404 is expected; silent 404
+     prefetch traffic on every page load is not. Remove the attrs when the routes exist.
+  4. **No build-time type check →** component throws on an unknown axis value. `astro build` does not
+     type-check `.astro` props and this repo has no `astro check` (adding `@astrojs/check` + `typescript`
+     is a new dep, forbidden). Without the guard, `difficulty="Hardd"` shipped silently: no pips filled,
+     href became `/platform/undefined`, and screen readers announced "Difficulty undefined of 4." The
+     guard turns a typo into a build failure (verified: exit 1, `npm run build`), honoring the type-safety
+     requirement without new deps.
+- **A11y:** the pip count has an `.sr-only` "Difficulty N of 4" text equivalent (not shape-only); icon
+  SVGs are `aria-hidden`; each chip's accessible name is just its label. Verified in the a11y tree.
+- **Difficulty is hue-free by design** (magnitude by pip count, no traffic-light color), deliberately
+  UNLIKE the existing `.difficulty-*` machine-meta badges (green/amber/red). The two badge systems now
+  coexist; `.machine-meta` is untouched and still used by every current writeup.
+- **Palette note (unresolved):** the spec's `--wm-*` hexes match the canonical unified platform palette
+  (see 2026-06-01) only for HTB; VulnHub/PicoCTF/OTW drift in both themes (PicoCTF most: canonical
+  `#d96bff`/`#8b3dc4` vs `--wm-pico` `#a78bfa`/`#6d28d9`). Implemented as specified (explicit design
+  values), flagged in ROADMAP for Idan to reconcile before this ships on real writeups.
+- **Status:** built (45 pages, clean), verified both themes + narrow-width wrap in the preview. Files are
+  in the tree, uncommitted; not wired to any writeup yet.
+
+### 2026-07-10 · `WriteupMeta` badge system: two tiers, shape-coded, navigational chips + a hue-free Difficulty
+- **Decision:** New additive component tree `src/components/badges/` (`icons.ts` + `WriteupMeta.astro`), styled
+  by a `.writeup-meta` block in `custom.css` placed after the flag/loot rules. Platform, OS and Environment
+  render as clickable pill chips (leading), Difficulty trails as a rectangular word-plus-pips chip that is
+  hue-free and never a link. Shape carries the job: pills navigate, the rectangle grades. Four string-literal
+  unions (`Platform`, `OS`, `Environment`, `Difficulty`) drive `Record<>` registries, so the icon set, the
+  route slug and the pip count all stay exhaustive. No new dependencies; Starlight is not forked.
+- **Why (icons):** `icons.ts` is the single home for the marks. Each is an inline 24x24 SVG string using
+  `fill="currentColor"`, so a
 ### 2026-07-07 · Font `<link rel=preload>` hints removed site-wide (Firefox "preloaded but not used")
 - **Decision:** The two font preload hints (`jetbrains-mono-400.woff2`, `syne-800.woff2`) are removed from
   all three sources that emitted them: the Starlight `head` config in `astro.config.mjs` (docs pages) and
