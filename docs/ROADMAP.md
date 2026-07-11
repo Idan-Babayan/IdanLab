@@ -5,19 +5,33 @@
 > Each item: `[area] description — owner-note`. Areas: DESIGN, CONTENT, ENG, PRODUCT.
 
 ## Now (in progress)
-- [ENG/INFRA] Enforce the CSP. It currently ships as `Content-Security-Policy-Report-Only` in
-  `public/_headers` (2026-07-05); Report-Only is a STAGING step, not the finish line. Cross-browser
-  verification is DONE and clean: Chromium 148, Firefox 152, and WebKit 26.5 (Safari's engine, via
-  Playwright), including the real Pagefind search / worker WASM and both themes. The one nice-to-have left
-  is a pass on real Safari hardware (this host is Windows): use a cloud lab (BrowserStack/LambdaTest) or any
-  Apple device (iPhone/iPad/Mac) against a deployed Pages preview, which already serves these headers; on
-  Mac Safari check the Web Inspector console, on iOS just confirm search returns results. Then flip: rename
-  `Content-Security-Policy-Report-Only` to `Content-Security-Policy` (this also activates `frame-ancestors`
-  and `upgrade-insecure-requests`, inert until then; X-Frame-Options already covers clickjacking meanwhile).
-  Notes: `script-src` includes `'wasm-unsafe-eval'` (required for Pagefind WASM) and keeps `'unsafe-inline'`
-  (18 distinct inline scripts; a hash would disable `'unsafe-inline'`; to drop it later enumerate all 18
-  hashes (brittle) or add a nonce edge-transform). Keep `style-src 'unsafe-inline'` (Starlight/EC). Do NOT
-  add Trusted Types (breaks the SecretTerminal `innerHTML`). See DECISIONS 2026-07-05.
+- [DESIGN/ENG] Three-column rebalance + full-width intro pages (custom.css), NEEDS A REAL-BROWSER FINE-TUNE.
+  Implemented and build-passes, but the browser tooling was down this session so the required Chrome/Firefox
+  visual pass did NOT run; the rem values are analysis-based starting targets. Changes: (1) writeup content
+  cap `--sl-content-width` 45rem -> 50rem (~75-char line); (2) right TOC tightened, which needs TWO widths because
+  the visible TOC text column is `.right-sidebar-panel .sl-container` (Starlight derives it from --sl-sidebar-width,
+  ~15rem), NOT `.right-sidebar-container` (the layout column) -- narrowing only the container would leave the 17rem
+  panel overflowing, so both are set in sync (text 13rem, container 15rem; `overflow-wrap:anywhere` makes entries wrap,
+  not clip); (3) `.main-pane` set to flex:1 + content `.sl-container` `margin-inline:auto` so the reading column
+  centers with matching gutters (fixes the Principle looking off-center); (4) intro pages (.pi-index) go full
+  width via `body:has(.pi-index){--sl-content-width:100%}` (superseded the old 60rem); (5) intro hero flush to
+  top: added `padding-top:0` to the hero panel rule `body:has(.pi-index) .content-panel + .content-panel`
+  (the 2nd ContentPanel, holding .pi-index; the 1st holds the hidden PageTitle). Diagnosed analytically, NOT
+  in a browser: `<main>` has no top padding (--sl-main-pad `0 0 3vh 0`), the hero's own top is only 0.5rem, so
+  the ~1.5rem "small gap" is Starlight's `.content-panel` top padding on the hero panel. OPEN QUESTION for the
+  browser pass: the 1st (hidden-title) panel is an empty `.content-panel` with 1.5rem top+bottom padding (~3rem);
+  the hero's `.pi-glow` is `position:absolute; top:-40%` and unclipped so it should bleed up and cover that, but
+  if a residual band remains above the hero, also collapse that panel
+  (`body:has(.pi-index) .content-panel:not(:has(.pi-index)){padding-block:0}`). To verify + finalize: wide
+  Chrome + Firefox, both themes -- confirm balanced gutters, no ugly TOC wrap at 13/15rem (nudge up if so),
+  50rem line length reads ~75 chars and comfortable (step down further only if it feels long), intro pages truly
+  full-width AND hero flush to the top with no dark band, homepage/About unchanged (they do not load custom.css).
+  Then move to DECISIONS. (Values updated 52->50 / 12,14->13,15 in a later tuning pass.)
+- [ENG/INFRA] Deploy the enforced CSP to production. The CSP is already ENFORCED on `dev` (flipped from
+  Report-Only, Permissions-Policy pruned of six unrecognized tokens; see DECISIONS 2026-07-06), verified
+  clean across Chromium 148, Firefox 152, WebKit 26.5, and real Safari hardware (iPhone, iPad, Safari 18.4,
+  Safari 16.5). Remaining: merge PR #9 (`dev` -> `main`), which deploys the enforced headers to production
+  (idanlab.dev via Cloudflare Pages); production stays Report-Only until then. Owner's call to merge.
 - [ENG] PR #5 (`dev` -> `main`): OPEN, MERGEABLE. Merging deploys to production (idanlab.dev via
   Cloudflare Pages on push to `main`), so it is the owner's call. Carries: the FlagCapture "Decrypt to
   Capture" flag component, a fine-tune pass over the OverTheWire Bandit writeups, 404.mdx tweaks, and
@@ -45,6 +59,27 @@
   `https://idanlab.dev/sitemap-index.xml` resolves after deploy.
 - [CONTENT] Verify the ToggleAll few-pixel shift fix in real browsers (see Open bugs), then it can be
   considered closed.
+- [ENG/DESIGN] WriteupMeta badge system (`src/components/badges/`, DECISIONS 2026-07-10, revised same day
+  to intentional per-axis color + restrained glow) is BUILT but parked on two owner calls before it ships
+  on real writeups. RESOLVED since first draft: the platform palette now uses the canonical `--pf-accent`
+  hexes verbatim (no drift), and the missing `Progressive` env color is set (teal `#3fd9a8`/`#0f8a63`).
+  Remaining:
+  1. **Icon marks:** `badges/icons.ts` ships placeholder-stub SVGs; Idan swaps in the real 24x24
+     `currentColor` platform/OS/environment marks (full-color hue comes from the `.wm-ico { color: var(--wm-c) }`
+     rule). The `Progressive` glyph is the placeholder steps mark (thematically a ladder, but on the same
+     swap list).
+  2. **Auto-injection vs manual:** decide with Engineering whether WriteupMeta is hand-placed under each
+     title or injected (and whether it replaces the current `.machine-meta` badge row; note WriteupMeta's
+     hue-free growing pips are a SECOND difficulty encoding vs the traffic-light `.difficulty-*` badge).
+     The filter routes the chips link to (`/platform`, `/os`, `/environment`) do not exist yet; remove the
+     chips' `data-astro-prefetch="false"` when they land.
+- Replace the improvised PicoCTF badge asset (65 KB raster-in-SVG) with a clean lightweight
+  source (optimized raster at icon size, or a redrawn vector). Design.
+- Wire WriteupMeta into the writeup and wargame-level pages (rollout: auto-inject vs manual).
+  It currently renders on no page. Content/Product.
+- Build the /platform, /os, /environment filter/aggregation routes the nav chips link to, and
+  remove the temporary data-astro-prefetch="false" from the chips once they exist. Same
+  machinery as the /principles index. Engineering.
 
 ## Next (committed)
 - [CONTENT] Mass-import ~50 existing writeups via the pipeline (HTB / VulnHub / PicoCTF / OTW), each as a

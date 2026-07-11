@@ -36,16 +36,28 @@
   NOT duplicated in `_headers` to avoid a conflicting max-age). Enforced now: `X-Content-Type-Options:
   nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `X-Frame-Options: DENY`, a deny-most
   `Permissions-Policy`, and immutable `Cache-Control` for `/_astro/*` and the self-hosted `/fonts/*`.
-  Content-Security-Policy ships as `Content-Security-Policy-Report-Only` (a STAGING step, not the final
-  state; the finish line is renaming it to `Content-Security-Policy` after real-browser validation):
-  `font-src 'self'` (fonts self-hosted, no external origins), `style-src 'self' 'unsafe-inline'`
-  (Starlight / Expressive Code inline styles, effectively permanent), `img-src 'self' data:` (icon data
-  URIs). `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'`: `'unsafe-inline'` because the build emits
-  18 distinct inline scripts (Starlight's own plus our marketing/writeup FX) and a hash would disable
-  `'unsafe-inline'` and block the rest; `'wasm-unsafe-eval'` because Starlight search (Pagefind)
-  instantiates WebAssembly in a Web Worker, which CSP blocks without it (see DECISIONS). The CSP must NOT
-  use Trusted Types (the SecretTerminal renders via `innerHTML`). Cache caveat: `/fonts/*` is immutable for
-  a year and filenames are not content-hashed, so replacing a font requires a new filename.
+  Content-Security-Policy is ENFORCED (flipped from `Content-Security-Policy-Report-Only` after full
+  cross-browser plus real-Safari verification): `font-src 'self'` (fonts self-hosted, no external origins),
+  `style-src 'self' 'unsafe-inline'` (Starlight / Expressive Code inline styles, effectively permanent),
+  `img-src 'self' data:` (icon data URIs), `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`,
+  plus `frame-ancestors 'none'` and `upgrade-insecure-requests`, which were inert under Report-Only and are
+  now ACTIVE (frame-ancestors backs up the enforced `X-Frame-Options: DENY`; upgrade-insecure-requests
+  upgrades same-origin subresources to HTTPS). `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'`:
+  `'unsafe-inline'` because the build emits 18 distinct inline scripts (Starlight's own plus our
+  marketing/writeup FX) and a hash would disable `'unsafe-inline'` and block the rest; `'wasm-unsafe-eval'`
+  because Starlight search (Pagefind) instantiates WebAssembly in a Web Worker, which CSP blocks without it
+  (see DECISIONS). No third-party script origin, so `script-src 'self'` is honest: the site loads only
+  same-origin scripts (see the Web Analytics bullet below). No reporting endpoint (report-to / report-uri)
+  by design. The CSP must NOT use Trusted Types (the SecretTerminal renders via `innerHTML`). The
+  `Permissions-Policy` was pruned of six tokens current browsers no longer recognize (ambient-light-sensor,
+  battery, document-domain, execution-while-not-rendered, execution-while-out-of-viewport,
+  speaker-selection). Cache caveat: `/fonts/*` is immutable for a year and filenames are not
+  content-hashed, so replacing a font requires a new filename.
+- Cloudflare Web Analytics (RUM) is disabled and removed (deleted at the dashboard, not just
+  toggled off); no static.cloudflareinsights.com beacon is injected. Consequently the
+  Content-Security-Policy keeps script-src 'self' with no third-party script origin, and the
+  site loads no external scripts (all scripts are same-origin). Re-enabling analytics in any
+  mode would require allowlisting static.cloudflareinsights.com in script-src.
 - **Local dev:** `npm run dev` → `localhost:4321`.
 
 ## 3. Tech Stack (pinned)
@@ -65,7 +77,7 @@
 
 ```
 C:\dev\idanlab\                       # chosen to avoid Hebrew chars in C:\Users\אידן\
-├─ astro.config.mjs                   # Starlight config: site, sidebar, self-hosted font preloads(head) + customCss[fonts.css, custom.css], EC themes + pluginPrivCommand, reading-progress head script, image-zoom, vite alias, components overrides (PageSidebar + Footer), markdown remarkPlugins (PasswordReveal import injection) + rehypePlugins (content image loading)
+├─ astro.config.mjs                   # Starlight config: site, sidebar, customCss[fonts.css, custom.css], EC themes + pluginPrivCommand, reading-progress head script (no font preloads, see DECISIONS 2026-07-07), image-zoom, vite alias, components overrides (PageSidebar + Footer), markdown remarkPlugins (PasswordReveal import injection) + rehypePlugins (content image loading)
 ├─ src/
 │  ├─ content.config.ts               # docs collection (docsLoader + docsSchema), extended with optional os/tags/principle
 │  ├─ pages/
@@ -166,7 +178,13 @@ Two surfaces, deliberately different:
 - Content-embedded (in `src/components/`): `PlatformIndex` (animated hero + difficulty filter rail
   + writeup-card grid; reuses the homepage effects), `WriteupCard` (presentational, `showPlatform`
   prop for a future mixed grid), `Callout` (icon-based tagged callout, used in writeup bodies),
-  `NotFound` (404 body), `SecretTerminal` (vanilla-TS terminal).
+  `NotFound` (404 body), `SecretTerminal` (vanilla-TS terminal), `badges/WriteupMeta` (navigational
+  Platform/OS/Environment chip row + trailing hue-free Difficulty pip chip, under a writeup title;
+  each nav chip is intentionally colored via a single `--wm-c` per value (platform = canonical
+  `--pf-accent`, OS/Env = identity colors), with a restrained glow (halo on dark, hue-shadow on light);
+  Difficulty magnitude is filled+growing pips; chips are `<a>` to future filter routes, `.not-content`
+  + `data-astro-prefetch="false"`; icons live in `badges/icons.ts`; runtime-validates its four union
+  props. Not yet applied to any writeup. See DECISIONS 2026-07-10).
 - Chrome (Starlight override): `ToggleAll` (Expand/Collapse-all control) auto-injected into the right
   "On this page" sidebar by `overrides/PageSidebar.astro` (renders `<Default/>` then the control).
 
@@ -247,9 +265,10 @@ since Starlight has no shield). Icons via Starlight's `<Icon>`. Authored as `<Ca
 
 ### Flag loot gold (User Flag / Root Flag)
 One gold signal across the flag's states via the `--flag-gold` token (`#ffc23d` dark / `#C6A243` light):
-the body heading (gold, with a flag-SVG mask icon; replaces the brown `.task-title`) and the right TOC
-entry (muted gold at rest, full gold on hover/current; non-flag TOC entries follow the active-color
-ladder below). Flag headings have no dedicated class yet, so the CSS targets the slug ids
+the body heading (gold, with a flag-SVG mask icon; replaces the brown `.task-title`) and the TOC entry
+(muted gold at rest, full gold on hover/current; non-flag TOC entries follow the active-color ladder
+below). The TOC treatment applies on both the desktop right column and the mobile dropdown (mobile added
+DECISIONS 2026-07-10). Flag headings have no dedicated class yet, so the CSS targets the slug ids
 `#user-flag` / `#root-flag` (interim; a `.flag-title` from the pipeline is the clean hook). The same two
 slug ids are what the active-color ladder excludes, so flags keep gold instead of going cyan. See
 DECISIONS 2026-06-20.
@@ -287,10 +306,14 @@ The right "On this page" entry the reader is currently on (`aria-current="true"`
 heading it points to, so the column mirrors the in-page hierarchy: h1/h2 keep Starlight's green
 `--sl-color-text-accent`, h3 turns cyan (`--tp-cyan` / `--tp-cyan-ink`, the same tokens as the `###`
 heading), and h4/h5/h6 go muted gray (`--sl-color-gray-2`, the h4 heading color). Flags stay gold (above).
-Only the current entry recolors; inactive entries keep the muted default. Heading level is read from
-Starlight's TOC nesting depth (h3 nested under h2, etc.), desktop column only (the mobile TOC keeps
-Starlight's white + checkmark active style). Unlayered CSS so it beats Starlight's layered green; parity
-with the heading rules is by shared tokens. See DECISIONS 2026-06-29.
+Only the current entry recolors; inactive entries keep the muted default. On the desktop right column
+heading level is read from Starlight's TOC nesting depth (h3 nested under h2, etc.). The mobile TOC
+dropdown (`<mobile-starlight-toc>`) now gets the SAME gold-flag + cyan-current-h3 treatment
+(DECISIONS 2026-07-10); it is nested too but under a different wrapper (`nav > details > .dropdown`), so
+the cyan rule instead matches Starlight's per-entry inline `--depth` (`[style*="--depth: 1"]` = h3,
+verified in the real DOM). Mobile still keeps Starlight's white + checkmark active style for h2/other
+entries (only flags and the current h3 are recolored). Unlayered CSS so it beats Starlight's layered
+green/white; parity with the heading rules is by shared tokens. See DECISIONS 2026-06-29, 2026-07-10.
 
 The flag VALUE is now the **FlagCapture** "Decrypt to Capture" control under the heading (DECISIONS
 2026-06-27), which supersedes the old `.toggle-flag` reveal. The heading + gold TOC entry are unchanged;
@@ -382,6 +405,16 @@ Preserves reading position: anchors on the current heading and corrects scroll s
   Today writeups encode OS in the body `.machine-meta` badge row, so these stay undefined and
   `WriteupCard` omits the OS/tag chips gracefully. When the pipeline promotes os/tags to
   frontmatter, the cards render them with no component change (a content-lane enhancement).
+
+### Badge icon sourcing
+
+Badge icon sourcing follows consumption mechanism. Platform logos: native-color <img> via
+hashed ?url import, with a forced public/icons copy for the CSS sidebar backgrounds. Linux:
+native-color <img> (multicolor, not a tintable glyph). Category marks (Windows, Active
+Directory, Progressive, Standalone): inline SVG with currentColor so they tint to the chip
+accent in both themes, sourced from src/assets/icons/ (import-graph requirement). The registry
+src/components/badges/icons.ts is the single source of truth mapping each enum value to its one
+icon. assetsInlineLimit stays at the Vite default (size-based inline vs hashed-file split).
 
 ## 8. Conventions & Non-Negotiables
 
