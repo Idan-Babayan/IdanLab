@@ -5,9 +5,9 @@
 > Each item: `[area] description — owner-note`. Areas: DESIGN, CONTENT, ENG, PRODUCT.
 
 ## Now (in progress)
-- [DESIGN/ENG] Three-column rebalance + full-width intro pages (custom.css), NEEDS A REAL-BROWSER FINE-TUNE.
-  Implemented and build-passes, but the browser tooling was down this session so the required Chrome/Firefox
-  visual pass did NOT run; the rem values are analysis-based starting targets. Changes: (1) writeup content
+- [DESIGN/ENG] Three-column rebalance + full-width intro pages (custom.css): SHIPPED to production (commit
+  `723c2ab`, PR #9 merged 2026-07-11) but STILL NEEDS A REAL-BROWSER FINE-TUNE. The rem values are
+  analysis-based starting targets and the required Chrome/Firefox visual pass has not yet run. Changes: (1) writeup content
   cap `--sl-content-width` 45rem -> 50rem (~75-char line); (2) right TOC tightened, which needs TWO widths because
   the visible TOC text column is `.right-sidebar-panel .sl-container` (Starlight derives it from --sl-sidebar-width,
   ~15rem), NOT `.right-sidebar-container` (the layout column) -- narrowing only the container would leave the 17rem
@@ -27,22 +27,11 @@
   50rem line length reads ~75 chars and comfortable (step down further only if it feels long), intro pages truly
   full-width AND hero flush to the top with no dark band, homepage/About unchanged (they do not load custom.css).
   Then move to DECISIONS. (Values updated 52->50 / 12,14->13,15 in a later tuning pass.)
-- [ENG/INFRA] Deploy the enforced CSP to production. The CSP is already ENFORCED on `dev` (flipped from
-  Report-Only, Permissions-Policy pruned of six unrecognized tokens; see DECISIONS 2026-07-06), verified
-  clean across Chromium 148, Firefox 152, WebKit 26.5, and real Safari hardware (iPhone, iPad, Safari 18.4,
-  Safari 16.5). Remaining: merge PR #9 (`dev` -> `main`), which deploys the enforced headers to production
-  (idanlab.dev via Cloudflare Pages); production stays Report-Only until then. Owner's call to merge.
-- [ENG] PR #5 (`dev` -> `main`): OPEN, MERGEABLE. Merging deploys to production (idanlab.dev via
-  Cloudflare Pages on push to `main`), so it is the owner's call. Carries: the FlagCapture "Decrypt to
-  Capture" flag component, a fine-tune pass over the OverTheWire Bandit writeups, 404.mdx tweaks, and
-  (committed `c59be70`) the inline-code chip system + TOC active-color ladder + code/toggle polish. (PR
-  #3 and PR #4 already merged.)
-- [ENG] Writeup-structure migration is complete LOCALLY but UNCOMMITTED (not yet in PR #5): writeups are
-  flat `.mdx` under lowercase `hackthebox/easy/` (busqueda + return), screenshots moved to `src/assets`
-  with relative `../` refs (astro:assets), `astro.config.mjs` autogenerate restored to `hackthebox/easy`,
-  and `plugins/rehype-content-image-loading.mjs` lazy-loads content images. Build verified (hashed images
-  under `_astro`); the busqueda case-rename is staged via `git mv`. Needs commit + push. See DECISIONS
-  2026-06-30.
+- [ENG/INFRA] Post-deploy verification (PR #9 merged 2026-07-11, `dev` -> `main`): confirm the Cloudflare
+  Pages production build for `main` went green and spot-check idanlab.dev (CSP enforced with no console
+  violations, fonts load and cache from `/fonts/*`, no visual regressions from the layout rebalance). The
+  enforced-CSP deploy, PR #5, and the writeup-structure migration are all done now (see DECISIONS
+  2026-07-11 / 2026-07-06 / 2026-06-30).
 - [CONTENT] Apply PasswordReveal (NOT FlagCapture, see DECISIONS 2026-07-05) to the Bandit "Reveal
   Password" toggles across all 34 pages, replacing `<Toggle class="spoiler-toggle">`: component +
   styling shipped 2026-07-05 (amber waypoint identity, blur-to-reveal then copy-in-place, non-selectable
@@ -60,9 +49,10 @@
 - [CONTENT] Verify the ToggleAll few-pixel shift fix in real browsers (see Open bugs), then it can be
   considered closed.
 - [ENG/DESIGN] WriteupMeta badge system (`src/components/badges/`, DECISIONS 2026-07-10, revised same day
-  to intentional per-axis color + restrained glow) is BUILT but parked on two owner calls before it ships
-  on real writeups. RESOLVED since first draft: the platform palette now uses the canonical `--pf-accent`
-  hexes verbatim (no drift), and the missing `Progressive` env color is set (teal `#3fd9a8`/`#0f8a63`).
+  to intentional per-axis color + restrained glow) is SHIPPED to production (commits `7fa5d82` + docs
+  `02e8bab`, PR #9 merged 2026-07-11) but renders on NO page yet; two calls remain before it goes on real
+  writeups. RESOLVED earlier: the platform palette now uses the canonical `--pf-accent` hexes verbatim (no
+  drift), and the missing `Progressive` env color is set (teal `#3fd9a8`/`#0f8a63`).
   Remaining:
   1. **Icon marks:** `badges/icons.ts` ships placeholder-stub SVGs; Idan swaps in the real 24x24
      `currentColor` platform/OS/environment marks (full-color hue comes from the `.wm-ico { color: var(--wm-c) }`

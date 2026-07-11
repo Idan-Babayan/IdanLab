@@ -6,6 +6,56 @@
 
 ---
 
+### 2026-07-11 · Mobile TOC: current top-level (h2) entry green (completes desktop parity)
+- **Decision:** One add-only, mobile-scoped rule in `custom.css` (directly after the existing mobile
+  gold-flag and cyan-h3 blocks): the current top-level (h2) entry in the mobile TOC dropdown turns green
+  via `--sl-color-text-accent`, matching the desktop right column. This completes mobile/desktop TOC
+  active-color parity (green h2, cyan h3, gold flags).
+- **Why:** on desktop the current h2 is green only because Starlight's DEFAULT `a[aria-current="true"]`
+  color (`--sl-color-text-accent`) shows through, and the custom rules override only deeper levels. The
+  mobile TOC uses a different default active style (white + checkmark), so the green had to be added
+  explicitly. The theme-aware token (green `#b6ff3c` dark / `#4d7c0f` light) means no light override.
+- **Selector / depth model:** `mobile-starlight-toc a[aria-current="true"][style*="--depth: 0"]:not([href="#user-flag"]):not([href="#root-flag"])`.
+  Verified in the real mobile DOM (Starlight 0.39.2): h2 entries carry `style="--depth: 0;"`, h3 entries
+  `--depth: 1;`. NOTE the flags (`#user-flag` / `#root-flag`) render at `--depth: 1`, NOT h2-level, so the
+  `--depth: 0` selector never matches them; the `:not()` flag exclusions are a harmless safeguard kept for
+  parity with the sibling cyan-h3 rule. Scoped strictly to `mobile-starlight-toc`, so the desktop
+  `<starlight-toc>` is structurally unreachable (confirmed: a desktop anchor does not match the rule).
+- **Verified** on a real 375px mobile viewport, both themes, by computed color: current h2 green
+  (`#b6ff3c` dark / `#4d7c0f` light), current h3 cyan (`#41efff` / `#08697a`), current flag gold
+  (`#ffc23d` / `#C6A243`), inactive entries muted default; desktop TOC unchanged (its current h2 stays
+  green via the Starlight default, and the new rule does not match it). No console errors. `npm run build`
+  green (45 pages). No new deps, no motion.
+- **Status:** Adopted; committed to `dev`, then merged to `main` (production) via PR the same day
+  (2026-07-11).
+
+### 2026-07-11 · Commit split into 4 atomic commits, then dev merged to production (PR #9)
+- **Commit split:** the single working commit `1fdac10` (WriteupMeta badges + badge icons + reoptimized
+  `picoctf.svg` + docs sync + mobile TOC + three-column layout) was re-partitioned into four atomic,
+  individually-building commits with the EXACT same final tree (verified: `git diff 1fdac10 HEAD` empty,
+  identical tree hash `04b803fb`): `7fa5d82` feat(badges) WriteupMeta system (component, `icons.ts`, the
+  interim `picoctf.svg`, `.writeup-meta` styles), `3045505` feat(toc) mobile TOC parity, `02e8bab` docs
+  (badge icon sourcing + spec/roadmap sync), `723c2ab` style(layout) three-column rebalance + full-width
+  intro pages. `custom.css` spanned three concerns (badge, mobile TOC, layout) and was split by hunk across
+  commits 1, 2, and 4. The pre-split tip stays recoverable from the reflog if ever needed.
+- **Merged to production:** `dev` (9 commits ahead of `main`, which was a clean ancestor) merged into `main`
+  via PR #9 as a history-preserving merge commit `998af50` (two parents `546165c` + `723c2ab`, NOT a
+  squash), so all 9 commits stay individually on `main`. The push to `main` triggers the Cloudflare Pages
+  production deploy of idanlab.dev.
+- **What went live** (previously dev-only or uncommitted): CSP is now ENFORCED IN PRODUCTION (was enforced on
+  `dev` only, see 2026-07-06); the font `<link rel=preload>` hints are removed site-wide (2026-07-07); the
+  WriteupMeta badge system is in the repo (still not wired to any writeup, icons still placeholder); the
+  mobile TOC parity is live; and the three-column rebalance + full-width intro pages shipped, though its rem
+  values remain analysis-based and still want a real-browser fine-tune (see ROADMAP).
+- **Font first-paint follow-up (nothing shipped):** the post-preload-removal Chromium first-paint swap was
+  investigated. Three candidate states (preload + swap / `font-display: optional` / preload + optional) were
+  built for the owner to compare, but NONE was adopted, so `font-display: swap` and the no-preload state are
+  unchanged. A separate diagnosis established that the self-hosted fonts DO cache correctly in production: the
+  `/fonts/*` immutable `Cache-Control` from `_headers` is served on the deployed site (verified by curl), so
+  any swap-on-every-navigation is a `npm run dev` artifact (dev applies no `_headers`), not a production bug.
+- **Status:** Adopted + shipped to production. PRs #5 and #9 are both merged; the "deploy enforced CSP to
+  production" and "writeup-structure migration uncommitted" ROADMAP items are resolved and removed from ROADMAP.
+
 ## Badge icon sourcing: split by consumption mechanism
 
 Writeup badge marks are sourced by what each icon needs, not stored uniformly. The four
@@ -52,7 +102,7 @@ asset. A clean lightweight PicoCTF source is a Design follow-up.
   muted→full gold, current h3 `#41efff`, current h2 stays white, checkmark intact. Light: current h3
   `#08697a`, flags `#C6A243`/muted, checkmark bg = light accent. Desktop right column unchanged (flag
   `oklab(0.785…)` muted gold, h3-current `--tp-cyan`, both identical to before). `npm run build` passes
-  (45 pages). Uncommitted; part of the same working tree as the WriteupMeta work below.
+  (45 pages). Committed as `3045505` and shipped to production via PR #9 (2026-07-11).
 
 ### 2026-07-10 · WriteupMeta revised: intentional per-axis color, restrained glow, growing pips (supersedes the two entries below)
 - **What changed from the first build (below):** the badge row was redesigned from platform-only *washes*
@@ -89,8 +139,9 @@ asset. A clean lightweight PicoCTF source is a Design follow-up.
 - **Layout:** the bottom border/divider is GONE; the block is a single flex row, tight under the title
   (`margin-top: 0.55rem`) with open space before the body (`margin-bottom: 2.1rem`).
 - **Status:** built clean (45 pages), verified both themes + the previously-broken Progressive chip now
-  renders correctly (teal fill/border/glow) in dark and light. Files uncommitted; still not wired to any
-  writeup (auto-injection vs manual placement remains an open ROADMAP call).
+  renders correctly (teal fill/border/glow) in dark and light. Committed as `7fa5d82` + docs `02e8bab` and
+  shipped to production via PR #9 (2026-07-11); still not wired to any writeup (auto-injection vs manual
+  placement remains an open ROADMAP call).
 
 ### 2026-07-10 · WriteupMeta badge system (`src/components/badges/`) added
 - **Decision:** New additive component `WriteupMeta.astro` plus an icon registry `icons.ts` and a
@@ -131,7 +182,7 @@ asset. A clean lightweight PicoCTF source is a Design follow-up.
   `#d96bff`/`#8b3dc4` vs `--wm-pico` `#a78bfa`/`#6d28d9`). Implemented as specified (explicit design
   values), flagged in ROADMAP for Idan to reconcile before this ships on real writeups.
 - **Status:** built (45 pages, clean), verified both themes + narrow-width wrap in the preview. Files are
-  in the tree, uncommitted; not wired to any writeup yet.
+  committed as `7fa5d82` (+ docs `02e8bab`) and shipped to production via PR #9 (2026-07-11); not wired to any writeup yet.
 
 ### 2026-07-10 · `WriteupMeta` badge system: two tiers, shape-coded, navigational chips + a hue-free Difficulty
 - **Decision:** New additive component tree `src/components/badges/` (`icons.ts` + `WriteupMeta.astro`), styled
@@ -163,14 +214,14 @@ asset. A clean lightweight PicoCTF source is a Design follow-up.
 - **Verified:** `npm run build` green; zero `<link rel="preload" ... fonts/>` anywhere in `dist/`; the
   reading-progress head script is byte-for-byte unchanged; theme-orthogonal (identical hints in dark and
   light), so both themes are unaffected.
-- **Status:** Adopted (in working tree; owner commits).
+- **Status:** Adopted; committed as `6920802` (+ docs `c14fc32`) and shipped to production via PR #9 (2026-07-11).
 
 ### 2026-07-06 · CSP flipped from Report-Only to enforced (Permissions-Policy pruned; site loads only self scripts)
 - **Decision:** `public/_headers` now serves `Content-Security-Policy` (enforced), replacing
   `Content-Security-Policy-Report-Only`. Only the header NAME changed: the policy value is byte-identical to
   the Report-Only version verified clean across Chromium 148, Firefox 152, WebKit 26.5, and real Safari
   hardware (iPhone, iPad, BrowserStack Safari 18.4, Safari 16.5). Shipped on dev (commit `132a1da`),
-  deploying to production via PR #9.
+  merged to production via PR #9 (2026-07-11).
 - **Now active (were inert under Report-Only):** `frame-ancestors 'none'` (clickjacking defense alongside
   the enforced `X-Frame-Options: DENY`) and `upgrade-insecure-requests` (upgrades same-origin subresources
   to HTTPS). The three Report-Only console notices (frame-ancestors ignored, upgrade-insecure-requests
@@ -193,7 +244,7 @@ asset. A clean lightweight PicoCTF source is a Design follow-up.
   Report-Only notices, the six Permissions-Policy errors, and any beacon. Chromium + Firefox clean; WebKit
   main-thread clean (its Playwright worker sandbox on Windows is a test-harness limit, not CSP); real Safari
   confirmed on device.
-- **Status:** Adopted; enforced on dev, production deploy via PR #9 (owner merges).
+- **Status:** Adopted; enforced on dev, then merged to production via PR #9 (2026-07-11), so the CSP is now enforced in production.
 
 ### 2026-07-06 · Cloudflare Web Analytics disabled; CSP stays script-src 'self' (no third-party beacon)
 
