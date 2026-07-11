@@ -870,21 +870,35 @@ html[data-theme="light"] body:has(.home-stats) {
 }
 
 /* These pages render their own visual hero, so hide Starlight's frontmatter-driven
-   page title (kept for the browser tab + SEO) to avoid a duplicate heading, and widen
-   the content column so the grid is not cramped (TOC is off via frontmatter). */
+   page title (kept for the browser tab + SEO) to avoid a duplicate heading. */
 body:has(.pi-index) h1#_top {
   display: none;
 }
+/* ── Platform intro/landing pages: full-width, immersive ──────────────────────
+   {platform}/index.mdx render <PlatformIndex/> (root .pi-index) with tableOfContents:false, so they
+   inherit the prose reading cap (--sl-content-width, set to 50rem for writeups by the three-column
+   block below), which boxes the fluid hero + card grid and leaves large side gaps. Lift the cap to full
+   width ONLY on pages containing the PlatformIndex root, via this :has(.pi-index) scope: writeups keep
+   their 50rem reading cap, and the standalone home/About are unaffected (they do not load this
+   stylesheet). PlatformIndex is fluid (flex/percentages, no 100vw), so no breakout fix is needed; it
+   fills the freed width itself. Theme-neutral; native :has() (already used in this codebase). This
+   supersedes the earlier 60rem widen. */
 body:has(.pi-index) {
-  --sl-content-width: 60rem;
+  --sl-content-width: 100%;
 }
 
-/* The hidden title (above) leaves Starlight's ContentPanel divider, the border-top that sits
-   correctly UNDER a writeup title, floating as a stray line across the very top of an index page.
-   Remove that one top border on index pages only, both themes. Writeups have no .pi-index, so their
-   under-title line is kept; card and button borders are unaffected (this targets the panel only). */
+/* The hero panel is the SECOND ContentPanel (the first holds the hidden PageTitle; Starlight renders a
+   title panel + a markdown panel, and .pi-index lives in the markdown one). Two intro-only resets on it
+   so the full-bleed hero starts flush at the top and reads immersive:
+   1. border-top: none - the hidden title above otherwise leaves Starlight's ContentPanel divider as a
+      stray line across the top of an index page. Writeups keep their under-title line (no .pi-index).
+   2. padding-top: 0 - remove Starlight's default 1.5rem top padding on this panel so the hero background
+      reaches the top edge instead of sitting below a small dark band.
+   Both themes; scoped to intro pages, so writeups/home/About are untouched. Only this panel's TOP is
+   affected, so the side gutters and the full-width behavior above are unchanged. */
 body:has(.pi-index) .content-panel + .content-panel {
   border-top: none;
+  padding-top: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1237,6 +1251,52 @@ nav.sidebar details > ul > li {
    back to the article. Theme-agnostic Starlight token; nothing else needs to change. */
 :root {
   --sl-sidebar-width: 17rem;
+}
+
+/* ── Three-column proportions: content-first, tighter TOC, balanced gutters ────
+   Starlight allocates the right TOC roughly the same width as the left nav (--sl-sidebar-width + half
+   the free space), but the TOC holds short entries so most of it reads as empty, and it caps content at
+   45rem, a sans measure that feels cramped in our wide JetBrains Mono body. Rebalance: widen the content
+   cap so the writeup is the focus (50rem is about a 75-char measure in this mono, the top of the
+   comfortable reading range), and narrow the TOC toward its actual content. Widening the cap is required, not just narrowing
+   the TOC: Starlight caps content regardless of free space, so tightening the TOC alone would only add
+   empty margin. Theme-neutral. Desktop only (the three-column layout collapses below 72rem, so mobile is
+   unaffected). Intro pages (.pi-index, no TOC) are handled separately below and skip these rules because
+   they carry no [data-has-toc]. */
+:root {
+  --sl-content-width: 50rem;
+}
+@media (min-width: 72rem) {
+  /* Tightening the TOC needs TWO widths, not one. The visible TOC text column is `.right-sidebar-panel
+     .sl-container`, which Starlight derives from --sl-sidebar-width (our 17rem nav) as
+     `width: calc(--sl-sidebar-width - 2*--sl-sidebar-pad-x)` ≈ 15rem, plus 1rem panel padding each side
+     = a 17rem panel. `.right-sidebar-container` is only the reserved/layout column. So narrowing the
+     CONTAINER alone would leave the 17rem panel overflowing it (clipped past the screen edge). Narrow
+     BOTH, in sync: text 13rem + 2*1rem padding = a 15rem panel that fits a 15rem container exactly. This
+     also holds whether the fixed `.right-sidebar` sizes against the viewport or its container. Starlight
+     sets `overflow-wrap: anywhere` on TOC links, so longer entries wrap to ~2 lines rather than clip.
+     13rem/15rem are analysis-based starting targets; nudge up if an entry wraps badly in a real browser. */
+  .right-sidebar-panel .sl-container {
+    width: 13rem;
+  }
+  .right-sidebar-container {
+    width: 15rem;
+    flex: none;
+  }
+  /* Starlight sizes .main-pane to content-width + half the free space, assuming the wide default TOC.
+     With the TOC pinned narrow, let the pane fill the remaining width so the capped reading column can
+     center in it. Scoped exactly like Starlight's own rule so no-TOC intro pages are never touched. */
+  [data-has-sidebar][data-has-toc] .main-pane {
+    width: auto;
+    flex: 1;
+  }
+  /* Center the capped reading column in the pane, overriding Starlight's `auto 0` right-align, so the
+     nav-to-content gutter matches the content-to-TOC gutter (and centered in-content elements like the
+     Principle read as truly centered). Targets the CONTENT .sl-container (inside .main-pane), distinct
+     from the TOC .sl-container narrowed above. Unlayered, so it beats Starlight's layered rule. */
+  [data-has-sidebar][data-has-toc] .main-pane .sl-container {
+    margin-inline: auto;
+  }
 }
 
 /* ── Sidebar: taller rows so a sparse rail feels fuller (sidebar nav only) ──
