@@ -1,0 +1,89 @@
+---
+import {
+  platformLogos, osLogos, osIcons, environmentIcons, platformSlug, difficultyLevel,
+  type Platform, type OS, type Environment, type Difficulty,
+} from './icons';
+
+interface Props {
+  platform: Platform;
+  os: OS;
+  environment: Environment;
+  difficulty: Difficulty;
+}
+const { platform, os, environment, difficulty } = Astro.props;
+
+const platformClass: Record<Platform, string> = {
+  HackTheBox: 'pf-htb', VulnHub: 'pf-vh', PicoCTF: 'pf-pico', OverTheWire: 'pf-otw',
+};
+
+// The four axes are string-literal unions, but `astro build` does not type-check .astro props and
+// this repo has no `astro check` (it would pull in @astrojs/check + typescript). So the unions are
+// only enforced in the editor, and a typo like difficulty="Hardd" would ship silently: data-level is
+// dropped so no pips fill, the href becomes /platform/undefined, and screen readers announce
+// "Difficulty undefined of 4". Fail the build instead of shipping that.
+const axes = [
+  ['platform', platform, platformLogos],
+  ['environment', environment, environmentIcons],
+  ['difficulty', difficulty, difficultyLevel],
+] as const;
+for (const [name, value, registry] of axes) {
+  if (!Object.prototype.hasOwnProperty.call(registry, value as string)) {
+    throw new Error(
+      `WriteupMeta: unknown ${name} "${value}". Expected one of: ${Object.keys(registry).join(', ')}.`,
+    );
+  }
+}
+// OS spans two maps: Linux is a logo (<img>), Windows is a tinting glyph (set:html).
+if (
+  !Object.prototype.hasOwnProperty.call(osLogos, os) &&
+  !Object.prototype.hasOwnProperty.call(osIcons, os)
+) {
+  throw new Error(
+    `WriteupMeta: unknown os "${os}". Expected one of: ${[...Object.keys(osLogos), ...Object.keys(osIcons)].join(', ')}.`,
+  );
+}
+
+const level = difficultyLevel[difficulty];
+const osSlug = os.toLowerCase();
+const envSlug = environment.toLowerCase().replace(/\s+/g, '-');
+// Per-value classes so CSS can color each chip (the slugs double as the class suffixes):
+const osClass = `wm-os-${osSlug}`;    // wm-os-linux | wm-os-windows
+const envClass = `wm-env-${envSlug}`; // wm-env-standalone | wm-env-active-directory
+---
+<!--
+  The filter routes do not exist yet, so a click 404s (expected, by design). Prefetch is opted out
+  because Starlight turns Astro prefetching on by default: without this every writeup page would fire
+  three <link rel="prefetch"> requests at those 404s just from the block scrolling into view. Delete
+  the data-astro-prefetch attributes once /platform, /os and /environment are built.
+-->
+<!--
+  `not-content` opts the chips out of Starlight's prose styling. Every .sl-markdown-content rule is
+  guarded with :not(:where(.not-content *)), so this is the framework's own escape hatch: without it
+  the prose-link rules (which reach (0,3,1) under :root[data-theme='light']) outrank the chip's own
+  color and border, painting the labels teal with a tinted bottom edge in light mode. The guard skips
+  descendants only, so .writeup-meta itself keeps its normal flow margins.
+-->
+<div class="writeup-meta not-content">
+  <div class="wm-nav">
+    <a class={`wm-chip ${platformClass[platform]}`} href={`/platform/${platformSlug[platform]}`} data-astro-prefetch="false">
+      <img class="wm-ico wm-ico-logo" src={platformLogos[platform]} alt="" width="15" height="15" loading="lazy" decoding="async" />{platform}
+    </a>
+    <a class={`wm-chip ${osClass}`} href={`/os/${osSlug}`} data-astro-prefetch="false">
+      {os === 'Linux'
+        ? <img class="wm-ico wm-ico-logo" src={osLogos.Linux} alt="" width="15" height="15" loading="lazy" decoding="async" />
+        : <span class="wm-ico" set:html={osIcons.Windows} />}{os}
+    </a>
+    <a class={`wm-chip ${envClass}`} href={`/environment/${envSlug}`} data-astro-prefetch="false">
+      <span class="wm-ico wm-ico-env" set:html={environmentIcons[environment]} />{environment}
+    </a>
+  </div>
+  <span class="wm-diff">
+    <span class="wm-diff-chip">
+      {difficulty}
+      <span class="wm-pips" data-level={level} aria-hidden="true">
+        <i></i><i></i><i></i><i></i>
+      </span>
+      <span class="sr-only">{`Difficulty ${level} of 4`}</span>
+    </span>
+  </span>
+</div>

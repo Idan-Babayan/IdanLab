@@ -96,6 +96,131 @@ html[data-theme="dark"] .task-title {
   color: var(--sl-color-gray-2);
 }
 
+/* ── Writeup metadata badges: intentional color, restrained glow ──────────────
+   NAVIGATIONAL chips (Platform, OS, Environment) lead: pill chips, clickable, each colored with INTENT.
+   Platform = the brand's canonical --pf-accent (matches the sidebar and the rest of the site). OS = the
+   OS's own identity color (Linux Tux amber, Windows blue). Environment = the feel of that environment,
+   with Active Directory a deeper enterprise indigo kept distinct from the Windows-blue chip it usually
+   sits beside, and Standalone a solitary cool slate. A RESTRAINED halo gives life on dark; light uses a
+   hue-shadow (glow becomes haze on paper). EVALUATIVE Difficulty trails: a neutral, hue-free chip at the
+   SAME size/weight as the nav chips (a calm peer, not a heavier sibling), the word shown once, magnitude
+   carried only by pips that grow with level. Spacing: TIGHT under the title, OPEN before the body, no
+   divider. Chips are anchors to future filter routes. Both themes. */
+.writeup-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 0.55rem;    /* tight to the title */
+  margin-bottom: 2.1rem;  /* open before the body; no border/divider */
+}
+.writeup-meta .wm-nav { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+
+/* Base chip: color, tint, border, and glow all derive from --wm-c (set per value below). */
+.writeup-meta .wm-chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--sl-font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--wm-c);
+  background: color-mix(in oklab, var(--wm-c) 15%, transparent);
+  border: 1px solid color-mix(in oklab, var(--wm-c) 38%, transparent);
+  border-radius: 999px;
+  padding: 0.32rem 0.8rem;
+  box-shadow: 0 0 10px -2px color-mix(in oklab, var(--wm-glow, var(--wm-c)) 32%, transparent);
+}
+:root[data-theme="light"] .writeup-meta .wm-chip {
+  box-shadow: 0 3px 10px -5px color-mix(in oklab, var(--wm-c) 45%, transparent);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .writeup-meta .wm-chip { transition: border-color 0.15s ease, box-shadow 0.2s ease; }
+}
+.writeup-meta .wm-chip:hover {
+  border-color: color-mix(in oklab, var(--wm-c) 60%, transparent);
+  box-shadow: 0 0 14px -2px color-mix(in oklab, var(--wm-glow, var(--wm-c)) 45%, transparent);
+}
+:root[data-theme="light"] .writeup-meta .wm-chip:hover {
+  box-shadow: 0 4px 12px -4px color-mix(in oklab, var(--wm-c) 55%, transparent);
+}
+.writeup-meta .wm-ico { width: 15px; height: 15px; flex: none; display: inline-flex; color: var(--wm-c); }
+.writeup-meta .wm-ico svg { width: 100%; height: 100%; }
+/* Platform mark is a full-color brand logo served as <img> (native fills, not currentColor). Contain it
+   in the 15px box so non-square logos keep their aspect. color:var(--wm-c) on .wm-ico has no effect on an
+   <img>, so the logo renders in its own colors, as intended. */
+.writeup-meta img.wm-ico-logo { object-fit: contain; }
+
+/* Platform: canonical --pf-accent per platform (dark + light), with HTB's true brand green for glow. */
+.writeup-meta .pf-htb  { --wm-c: #b6ff3c; --wm-glow: #9fef00; }
+.writeup-meta .pf-vh   { --wm-c: #ff5c5c; }
+.writeup-meta .pf-pico { --wm-c: #d96bff; }
+.writeup-meta .pf-otw  { --wm-c: #ffc23d; }
+:root[data-theme="light"] .writeup-meta .pf-htb  { --wm-c: #4d7c0f; --wm-glow: #4d7c0f; }
+:root[data-theme="light"] .writeup-meta .pf-vh   { --wm-c: #d12f2f; }
+:root[data-theme="light"] .writeup-meta .pf-pico { --wm-c: #8b3dc4; }
+:root[data-theme="light"] .writeup-meta .pf-otw  { --wm-c: #a86f04; }
+
+/* OS: the OS's own identity color. */
+.writeup-meta .wm-os-linux   { --wm-c: #f0b429; }   /* Tux amber */
+.writeup-meta .wm-os-windows { --wm-c: #4ca3ff; }   /* Windows blue */
+:root[data-theme="light"] .writeup-meta .wm-os-linux   { --wm-c: #a86f04; }
+:root[data-theme="light"] .writeup-meta .wm-os-windows { --wm-c: #0a63c9; }
+
+/* Environment: the feel of the environment. AD enterprise indigo (distinct from Windows blue);
+   Standalone a solitary cool slate. */
+.writeup-meta .wm-env-standalone        { --wm-c: #8fa3b8; }
+.writeup-meta .wm-env-active-directory  { --wm-c: #7c9cff; }
+:root[data-theme="light"] .writeup-meta .wm-env-standalone       { --wm-c: #5a6b7d; }
+:root[data-theme="light"] .writeup-meta .wm-env-active-directory { --wm-c: #3b4fa8; }
+/* Progressive: the wargame ladder (OverTheWire Bandit, Natas...). Teal-leaning "progress/ascent" green,
+   pulled toward teal so it stays distinct from HackTheBox's lime brand green and carries a terminal tint
+   that fits the shell-based wargames. OverTheWire's platform color is amber, so this chip effectively
+   never sits beside the HTB green chip anyway. */
+.writeup-meta .wm-env-progressive { --wm-c: #3fd9a8; }
+:root[data-theme="light"] .writeup-meta .wm-env-progressive { --wm-c: #0f8a63; }
+
+/* Difficulty: neutral, hue-free, SAME size/weight as nav chips. Word once; magnitude via pips only. */
+.writeup-meta .wm-diff { display: inline-flex; align-items: center; }
+.writeup-meta .wm-diff-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-family: var(--sl-font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--sl-color-text);
+  background: color-mix(in oklab, var(--sl-color-text) 5%, transparent);
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 6px;
+  padding: 0.32rem 0.7rem;
+}
+.writeup-meta .wm-pips { display: inline-flex; align-items: center; gap: 3px; }
+.writeup-meta .wm-pips i {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--sl-color-gray-5); display: block;
+}
+/* Filled + growing per level: the filled count is the level, and the leading filled pip grows so
+   higher difficulty visibly outweighs lower beyond count alone. Achromatic (no hue). */
+.writeup-meta .wm-pips[data-level="1"] i:nth-child(1),
+.writeup-meta .wm-pips[data-level="2"] i:nth-child(-n+2),
+.writeup-meta .wm-pips[data-level="3"] i:nth-child(-n+3),
+.writeup-meta .wm-pips[data-level="4"] i:nth-child(-n+4) {
+  background: color-mix(in oklab, var(--sl-color-text) 80%, transparent);
+}
+.writeup-meta .wm-pips[data-level="1"] i:nth-child(1) { width: 6px; height: 6px; }
+.writeup-meta .wm-pips[data-level="2"] i:nth-child(2) { width: 6px; height: 6px; }
+.writeup-meta .wm-pips[data-level="3"] i:nth-child(3) { width: 7px; height: 7px; }
+.writeup-meta .wm-pips[data-level="4"] i:nth-child(4) { width: 8px; height: 8px; }
+
+/* Visually hidden difficulty text (keep if the file's .sr-only is not already global). */
+.writeup-meta .sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
 
 /* ── Port label: a cyan mono tag inside recon callouts ────────────────────────
    Was red, which clashed with the cyan recon callout it lives in and, like the old inline-code chip,
