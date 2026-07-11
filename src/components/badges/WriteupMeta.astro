@@ -51,10 +51,11 @@ const osClass = `wm-os-${osSlug}`;    // wm-os-linux | wm-os-windows
 const envClass = `wm-env-${envSlug}`; // wm-env-standalone | wm-env-active-directory
 ---
 <!--
-  The filter routes do not exist yet, so a click 404s (expected, by design). Prefetch is opted out
-  because Starlight turns Astro prefetching on by default: without this every writeup page would fire
-  three <link rel="prefetch"> requests at those 404s just from the block scrolling into view. Delete
-  the data-astro-prefetch attributes once /platform, /os and /environment are built.
+  Metadata chips are intentionally NON-INTERACTIVE until the /platform, /os and /environment filter
+  routes ship (revisit after the mass writeup import). Those routes do not exist yet, so a clickable
+  chip would point at a dead route; the chips render as static <span> below instead of <a>. The
+  clickable <a> version is preserved as a comment right above the spans so it restores verbatim once
+  the routes exist. See DECISIONS 2026-07-11 (metadata system entry).
 -->
 <!--
   `not-content` opts the chips out of Starlight's prose styling. Every .sl-markdown-content rule is
@@ -65,6 +66,11 @@ const envClass = `wm-env-${envSlug}`; // wm-env-standalone | wm-env-active-direc
 -->
 <div class="writeup-meta not-content">
   <div class="wm-nav">
+    {/* Metadata chips are intentionally non-interactive until the /platform, /os and /environment
+        filter routes ship, to be revisited after the mass writeup import. The clickable <a> version
+        is kept here (commented) so it restores verbatim: swap the three static <span class="wm-chip">
+        below back to these anchors once the routes exist, and drop the data-astro-prefetch="false"
+        attrs then (they exist only to stop Starlight prefetching dead routes).
     <a class={`wm-chip ${platformClass[platform]}`} href={`/platform/${platformSlug[platform]}`} data-astro-prefetch="false">
       <img class="wm-ico wm-ico-logo" src={platformLogos[platform]} alt="" width="15" height="15" loading="lazy" decoding="async" />{platform}
     </a>
@@ -76,6 +82,18 @@ const envClass = `wm-env-${envSlug}`; // wm-env-standalone | wm-env-active-direc
     <a class={`wm-chip ${envClass}`} href={`/environment/${envSlug}`} data-astro-prefetch="false">
       <span class="wm-ico wm-ico-env" set:html={environmentIcons[environment]} />{environment}
     </a>
+    */}
+    <span class={`wm-chip ${platformClass[platform]}`}>
+      <img class="wm-ico wm-ico-logo" src={platformLogos[platform]} alt="" width="15" height="15" loading="lazy" decoding="async" />{platform}
+    </span>
+    <span class={`wm-chip ${osClass}`}>
+      {os === 'Linux'
+        ? <img class="wm-ico wm-ico-logo" src={osLogos.Linux} alt="" width="15" height="15" loading="lazy" decoding="async" />
+        : <span class="wm-ico" set:html={osIcons.Windows} />}{os}
+    </span>
+    <span class={`wm-chip ${envClass}`}>
+      <span class="wm-ico wm-ico-env" set:html={environmentIcons[environment]} />{environment}
+    </span>
   </div>
   <span class="wm-diff">
     <span class="wm-diff-chip">

@@ -6,6 +6,94 @@
 
 ---
 
+### 2026-07-11 · Constellation hero canvas pauses off-screen (IntersectionObserver, perf-only)
+- **Decision:** The constellation canvas `draw()` loop on the two marketing heroes now stops its per-frame
+  work while the canvas is scrolled out of the viewport and resumes on re-entry. Implemented in
+  `src/pages/index.astro` and `src/pages/about.astro` only (the two files that carry the effect;
+  `PlatformIndex.astro` has no constellation canvas, confirmed, so it was not touched). The loop tracks its
+  own `rafId`, a `running` guard prevents double-scheduling or an orphaned frame, and an
+  `IntersectionObserver` on the canvas calls `start()` / `stop()` (`cancelAnimationFrame`) on
+  enter/leave. A `pagehide` handler stops the loop and disconnects the observer for a clean lifecycle.
+- **Why:** the loop previously called `requestAnimationFrame(draw)` unconditionally and ran forever, so the
+  hero kept consuming CPU/GPU/battery even when off-screen. The observer itself is cheap and always-on; only
+  the draw work is gated.
+- **No visual change while visible, and the reduced-motion gate is unchanged:** the `draw()` body is
+  untouched, `init(); start()` schedules the identical first frame, and the observer's initial callback is a
+  no-op via the `running` guard, so an on-screen hero renders exactly as before. The whole observer lives
+  inside the existing `if(!reduce)` block, so `prefers-reduced-motion` users still get no animation and no
+  observer. Stepping is per-frame (no time deltas), so resume continues from the current node positions with
+  no jump and no catch-up burst.
+- **Verified:** `npm run build` green (45 pages; this is the type-check gate for the `.astro` `<script>`
+  blocks, and it passed clean). Both compiled bundles carry the lifecycle logic (home page inline script and
+  the `about` script bundle each show one `cancelAnimationFrame`, the added `IntersectionObserver`, and the
+  `pagehide` teardown). The off-screen pause is a scroll behavior that headless checks report false negatives
+  on (documented project learning), so it was NOT verified headlessly: the owner should confirm on the
+  deployed preview by scrolling the hero out of view (loop stops) and back (resumes smoothly, no visual jump).
+- **Status:** Adopted (working tree; not committed). No new dependencies, pinned versions unchanged.
+
+### 2026-07-11 · PasswordReveal migration complete
+- Status update superseding the 2026-07-05 in-progress note. PasswordReveal is now the reveal mechanism
+  on 32 of 34 Bandit level pages. The first level's spoiler-toggle has been removed and the migration
+  commit landed. Two pages are deliberately excluded: one uses a private-key reveal that remains a
+  spoiler-toggle, and one has no password to reveal. The rollout is done; no further per-page migration
+  is pending.
+
+### 2026-07-11 · Content pipeline is manual editorial polish, not a script (retires notion_cleaner.py)
+- **Decision:** The writeup content pipeline is deliberate manual editorial polish against a Notion
+  template. The previously referenced Python cleaning script (notion_cleaner.py) is retired and is not
+  the mechanism. It never provided the finishing quality intended for published writeups.
+- **Why:** The gap between a raw Notion export and the intended finished writeup is an editorial-judgment
+  problem, not a mechanical text-transformation problem. A script can normalize syntax but cannot make
+  the editorial calls that define the site's writeup quality. Long-term correctness and voice consistency
+  outweigh the short-term convenience of automation.
+- **Revivability:** This is a deferral, not a permanent abandonment. If manual polish proves not to scale
+  as the writeup count grows, a scripted pre-clean pass may be reconsidered as a first step feeding manual
+  polish, never as a replacement for it. Docs no longer cite the script as active.
+
+### 2026-07-11 · Metadata system: committing to WriteupMeta, remark-plugin injection chosen (build deferred), chips non-clickable until filter routes ship
+- **Decision:** WriteupMeta replaces the hand-authored .machine-meta badge row as the writeup metadata
+  system. .machine-meta remains live for now and is retired page by page as the mass writeup import/polish
+  pass proceeds, so the two systems never both act as a live source of truth on the same page.
+- **Rollout mechanism:** Metadata will be auto-injected via a remark plugin. This is a deliberate
+  short-term loss for a long-term gain: building auto-inject plumbing is upfront cost with no immediate
+  payoff, but at writeup scale it removes per-page metadata boilerplate. The plugin is the chosen
+  mechanism; its implementation is deferred and is NOT built as part of this decision. It is separate
+  framework-pipeline work to be scoped on its own.
+- **Interactive layer deferred separately:** Injecting the metadata (the plugin) and rendering it as
+  clickable filter chips are separate layers. The chips are rendered non-interactive for now because their
+  target filter routes (/platform, /os, /environment) do not yet exist; shipping clickable chips to dead
+  routes would be worse than static ones. The clickable layer, and the filter routes it depends on, get a
+  real review AFTER the mass writeup import. Those routes share machinery with the deferred /principles
+  index and are intended to be built together.
+- **Net:** Build the injection pipe (later), leave the interactive tap off until after the import.
+  Extending metadata behavior before that review should not be treated as settled just because the
+  mechanism is chosen.
+
+### 2026-07-11 · picoCTF icon rebuilt as a true vector (815 B, replaces 65 KB raster-in-SVG)
+- **Decision:** both copies of the picoCTF badge (`public/icons/picoctf.svg` and
+  `src/assets/icons/picoctf.svg`) are replaced by a hand-constructed 815-byte true-vector SVG:
+  4 elements (disc `<circle>`, shadow `<path>`, letterform `<path>`, dot `<circle>`), flat colors
+  `#c4a0cb` / `#c50a2c` / `#fff`, no embedded bitmap, no clipPath, no filters. This resolves the
+  ROADMAP item "replace the improvised PicoCTF badge asset" and supersedes the interim asset noted
+  on 2026-07-08 (the 65 KB SVGO-optimized Inkscape trace, which was a base64 PNG plus 829
+  one-pixel trace-artifact paths).
+- **How it was rebuilt (method, reusable for other icons):** the embedded PNG was extracted as the
+  measurement source of truth; every edge was measured to sub-pixel precision from the raster
+  (50% coverage crossings), then intended geometry was inferred and refit: the bowl is a wide oval
+  (rx 101.5, ry 93.6) drawn as quadrant cubics (flanks flatter than an ellipse, so handle lengths
+  were least-squares fitted per quadrant, max error about 1 px); the long shadow's edges are exactly
+  45 degrees (upper edge tangent to the bowl, lower edge through the stem tip), closed by an arc of
+  the badge circle instead of a clipPath; shadow edges that sit under the white letterform ride
+  2 to 3 px inside it so no anti-aliasing seams can appear. Verified by rendering with Inkscape CLI
+  and pixel-diffing against the original raster: 15 structural pixels differ image-wide (all
+  single-pixel edge placement, out of 262,144), invisible at any size including the 18 px sidebar dot.
+- **Deployment checks done:** CSP already allows `img-src data:` (the new file is under Vite's 4 KB
+  `assetsInlineLimit`, so the `src/assets` copy may inline as a data URI once WriteupMeta ships);
+  `/icons/*` carries no immutable cache rule (only `/_astro/*` and `/fonts/*` do), so the in-place
+  replacement cannot serve stale to returning visitors. The 2026-07-08 note that `assetsInlineLimit`
+  hashing matters for a 65 KB pico asset is moot now.
+- **Status:** Adopted; on `dev`, uncommitted.
+
 ### 2026-07-11 · Mobile TOC: current top-level (h2) entry green (completes desktop parity)
 - **Decision:** One add-only, mobile-scoped rule in `custom.css` (directly after the existing mobile
   gold-flag and cyan-h3 blocks): the current top-level (h2) entry in the mobile TOC dropdown turns green
@@ -73,6 +161,11 @@ asset while the sub-4 KB logos inline as data URIs, which is the desired size-ba
 Forcing all assets to hashed files was rejected as a global change to solve a non-problem.
 The PicoCTF asset is an improvised raster-in-SVG (65 KB after SVGO); it is an accepted interim
 asset. A clean lightweight PicoCTF source is a Design follow-up.
+
+**SUPERSEDED 2026-07-11:** the PicoCTF badge is no longer a 65 KB raster-in-SVG interim asset. It was
+rebuilt as an 815-byte true-vector SVG and is design-final, closing that Design follow-up (see the
+"picoCTF icon rebuilt as a true vector" entry above, which also notes the new sub-4 KB file now inlines
+as a data URI rather than hashing).
 
 ### 2026-07-10 · Mobile TOC parity: gold flag entries + cyan current-h3 (CSS-only, additive)
 - **Decision:** Extend the two desktop "On this page" treatments to the mobile TOC dropdown
