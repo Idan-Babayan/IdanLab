@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-07-05.
+> Last updated: 2026-07-11.
 
 ---
 
@@ -36,7 +36,7 @@
   NOT duplicated in `_headers` to avoid a conflicting max-age). Enforced now: `X-Content-Type-Options:
   nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `X-Frame-Options: DENY`, a deny-most
   `Permissions-Policy`, and immutable `Cache-Control` for `/_astro/*` and the self-hosted `/fonts/*`.
-  Content-Security-Policy is ENFORCED (flipped from `Content-Security-Policy-Report-Only` after full
+  Content-Security-Policy is ENFORCED IN PRODUCTION (live since PR #9 merged 2026-07-11; flipped from `Content-Security-Policy-Report-Only` after full
   cross-browser plus real-Safari verification): `font-src 'self'` (fonts self-hosted, no external origins),
   `style-src 'self' 'unsafe-inline'` (Starlight / Expressive Code inline styles, effectively permanent),
   `img-src 'self' data:` (icon data URIs), `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`,
@@ -309,11 +309,14 @@ heading), and h4/h5/h6 go muted gray (`--sl-color-gray-2`, the h4 heading color)
 Only the current entry recolors; inactive entries keep the muted default. On the desktop right column
 heading level is read from Starlight's TOC nesting depth (h3 nested under h2, etc.). The mobile TOC
 dropdown (`<mobile-starlight-toc>`) now gets the SAME gold-flag + cyan-current-h3 treatment
-(DECISIONS 2026-07-10); it is nested too but under a different wrapper (`nav > details > .dropdown`), so
-the cyan rule instead matches Starlight's per-entry inline `--depth` (`[style*="--depth: 1"]` = h3,
-verified in the real DOM). Mobile still keeps Starlight's white + checkmark active style for h2/other
-entries (only flags and the current h3 are recolored). Unlayered CSS so it beats Starlight's layered
-green/white; parity with the heading rules is by shared tokens. See DECISIONS 2026-06-29, 2026-07-10.
+(DECISIONS 2026-07-10), and the current top-level h2 entry now turns green (`--sl-color-text-accent`,
+matching desktop) as of 2026-07-11; it is nested too but under a different wrapper
+(`nav > details > .dropdown`), so the depth rules match Starlight's per-entry inline `--depth`
+(`[style*="--depth: 1"]` = h3 cyan, `[style*="--depth: 0"]` = h2 green; flags render at `--depth: 1` and
+are excluded so they stay gold, verified in the real DOM). Mobile now mirrors the full desktop
+active-color set (current h2 green, current h3 cyan, flags gold); non-current entries keep Starlight's
+white + checkmark default. Unlayered CSS so it beats Starlight's layered green/white; parity with the
+heading rules is by shared tokens. See DECISIONS 2026-06-29, 2026-07-10, 2026-07-11.
 
 The flag VALUE is now the **FlagCapture** "Decrypt to Capture" control under the heading (DECISIONS
 2026-06-27), which supersedes the old `.toggle-flag` reveal. The heading + gold TOC entry are unchanged;
