@@ -131,6 +131,21 @@ mobile-starlight-toc a[aria-current="true"][style*="--depth: 1"]:not([href="#use
   color: var(--tp-cyan-ink);
 }
 
+/* ── Mobile TOC: top-level (h2) entries green when current (parity with desktop) ──
+   On desktop, the current top-level TOC entry is green because Starlight's default active color
+   (--sl-color-text-accent) shows through there. The mobile TOC's default active style is white +
+   checkmark, so the green is added explicitly here. Top-level = h2 (the h1 title is not in the TOC),
+   which in the flat mobile list are the --depth: 0 items (same depth model as the mobile cyan-h3 rule
+   at --depth: 1). Confirmed --depth: 0 for a top-level entry in the real mobile DOM (Starlight 0.39.2),
+   same as the depth model verified for the cyan-h3 rule. Flags render at --depth: 1 (confirmed in the
+   DOM), so this --depth: 0 selector never matches them anyway; the flag :not() exclusions are a harmless
+   safeguard kept for parity with the cyan-h3 rule. --sl-color-text-accent is theme-aware (green #b6ff3c dark / #4d7c0f
+   light), so no separate light override is needed. Unlayered so it beats Starlight's mobile active
+   color. Desktop TOC untouched. */
+mobile-starlight-toc a[aria-current="true"][style*="--depth: 0"]:not([href="#user-flag"]):not([href="#root-flag"]) {
+  color: var(--sl-color-text-accent);
+}
+
 
 /* ── Writeup metadata badges: intentional color, restrained glow ──────────────
    NAVIGATIONAL chips (Platform, OS, Environment) lead: pill chips, clickable, each colored with INTENT.
