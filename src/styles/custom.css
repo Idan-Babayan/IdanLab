@@ -96,6 +96,42 @@ html[data-theme="dark"] .task-title {
   color: var(--sl-color-gray-2);
 }
 
+/* ── Mobile TOC: gold flag entries (parity with the desktop right column) ─────
+   Ports the desktop gold-flag TOC treatment to the mobile TOC dropdown. Mobile renders as
+   <mobile-starlight-toc> (a <details> list) which the desktop .right-sidebar-panel rules never reach,
+   so flags were plain there. Same mechanism as desktop: match the deterministic slug anchors
+   (#user-flag / #root-flag), persistent muted gold, full --flag-gold on hover and when current. Href
+   matching is depth-independent, so this is a near-verbatim re-scope. Unlayered so it beats Starlight's
+   layered mobile active color. --flag-gold is theme-aware (no light override needed). Desktop untouched. */
+mobile-starlight-toc a[href="#user-flag"],
+mobile-starlight-toc a[href="#root-flag"] {
+  color: color-mix(in oklab, var(--flag-gold) 70%, var(--sl-color-gray-3));
+}
+mobile-starlight-toc a[href="#user-flag"]:hover,
+mobile-starlight-toc a[href="#root-flag"]:hover,
+mobile-starlight-toc a[href="#user-flag"][aria-current="true"],
+mobile-starlight-toc a[href="#root-flag"][aria-current="true"] {
+  color: var(--flag-gold);
+}
+
+/* ── Mobile TOC: h3 entries cyan when current (parity with desktop) ───────────
+   Desktop colors the CURRENT h3 TOC entry cyan by reading heading level from nested <ul> depth. The
+   mobile TOC is nested too, but under a different wrapper (mobile-starlight-toc > nav > details >
+   .dropdown > ul), so the desktop `nav > ul > li > ul` chain does not line up. Instead we match the
+   inline `--depth` custom property that Starlight emits per entry: verified in the real mobile DOM
+   (Starlight 0.39.2, 2026-07-10) that each <a> carries style="--depth: N;" with h2 = 0 and h3 = 1, so
+   `[style*="--depth: 1"]` selects exactly the h3 entries. Flags are also h3 (depth 1) and keep gold, so
+   they are excluded here. Unlayered so it beats Starlight's layered mobile active color. Light uses
+   --tp-cyan-ink, matching the desktop light variant. If Starlight changes the emitted format or the h3
+   depth number, update both selectors. */
+mobile-starlight-toc a[aria-current="true"][style*="--depth: 1"]:not([href="#user-flag"]):not([href="#root-flag"]) {
+  color: var(--tp-cyan);
+}
+:root[data-theme='light'] mobile-starlight-toc a[aria-current="true"][style*="--depth: 1"]:not([href="#user-flag"]):not([href="#root-flag"]) {
+  color: var(--tp-cyan-ink);
+}
+
+
 /* ── Writeup metadata badges: intentional color, restrained glow ──────────────
    NAVIGATIONAL chips (Platform, OS, Environment) lead: pill chips, clickable, each colored with INTENT.
    Platform = the brand's canonical --pf-accent (matches the sidebar and the rest of the site). OS = the
