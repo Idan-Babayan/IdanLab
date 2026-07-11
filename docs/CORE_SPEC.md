@@ -163,7 +163,9 @@ Two surfaces, deliberately different:
   `--sl-font` = JetBrains Mono. Headings forced to Syne via CSS.
 
 ### Signature effects
-- Interactive **constellation canvas** (nodes drift, react to cursor) in heroes.
+- Interactive **constellation canvas** (nodes drift, react to cursor) in heroes. Its `draw()` loop pauses
+  off-screen via an `IntersectionObserver` (perf-only; no visual change while visible, reduced-motion gate
+  intact). See DECISIONS 2026-07-11.
 - **Decode/scramble** text animation on one headline keyword.
 - **Count-up** stats, **3D-tilt cards** with cursor-tracking glare, **magnetic buttons**.
 - **Scroll-reveal** (IntersectionObserver), film **grain** overlay, atmospheric **glows**.
