@@ -6,6 +6,31 @@
 
 ---
 
+### 2026-07-11 · Constellation hero canvas pauses off-screen (IntersectionObserver, perf-only)
+- **Decision:** The constellation canvas `draw()` loop on the two marketing heroes now stops its per-frame
+  work while the canvas is scrolled out of the viewport and resumes on re-entry. Implemented in
+  `src/pages/index.astro` and `src/pages/about.astro` only (the two files that carry the effect;
+  `PlatformIndex.astro` has no constellation canvas, confirmed, so it was not touched). The loop tracks its
+  own `rafId`, a `running` guard prevents double-scheduling or an orphaned frame, and an
+  `IntersectionObserver` on the canvas calls `start()` / `stop()` (`cancelAnimationFrame`) on
+  enter/leave. A `pagehide` handler stops the loop and disconnects the observer for a clean lifecycle.
+- **Why:** the loop previously called `requestAnimationFrame(draw)` unconditionally and ran forever, so the
+  hero kept consuming CPU/GPU/battery even when off-screen. The observer itself is cheap and always-on; only
+  the draw work is gated.
+- **No visual change while visible, and the reduced-motion gate is unchanged:** the `draw()` body is
+  untouched, `init(); start()` schedules the identical first frame, and the observer's initial callback is a
+  no-op via the `running` guard, so an on-screen hero renders exactly as before. The whole observer lives
+  inside the existing `if(!reduce)` block, so `prefers-reduced-motion` users still get no animation and no
+  observer. Stepping is per-frame (no time deltas), so resume continues from the current node positions with
+  no jump and no catch-up burst.
+- **Verified:** `npm run build` green (45 pages; this is the type-check gate for the `.astro` `<script>`
+  blocks, and it passed clean). Both compiled bundles carry the lifecycle logic (home page inline script and
+  the `about` script bundle each show one `cancelAnimationFrame`, the added `IntersectionObserver`, and the
+  `pagehide` teardown). The off-screen pause is a scroll behavior that headless checks report false negatives
+  on (documented project learning), so it was NOT verified headlessly: the owner should confirm on the
+  deployed preview by scrolling the hero out of view (loop stops) and back (resumes smoothly, no visual jump).
+- **Status:** Adopted (working tree; not committed). No new dependencies, pinned versions unchanged.
+
 ### 2026-07-11 · Mobile TOC: current top-level (h2) entry green (completes desktop parity)
 - **Decision:** One add-only, mobile-scoped rule in `custom.css` (directly after the existing mobile
   gold-flag and cyan-h3 blocks): the current top-level (h2) entry in the mobile TOC dropdown turns green

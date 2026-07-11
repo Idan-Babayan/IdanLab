@@ -367,6 +367,11 @@ import '../styles/fonts.css';
     const mouse = {x:-999,y:-999};
     let A = '#41efff', B = '#b6ff3c';
     let nodeA = .5, lineA = .16, mouseA = .38;
+    // Off-screen pause: track this loop's own frame id + running state so an IntersectionObserver
+    // can stop the per-frame draw work when the hero scrolls out of view and resume it on return.
+    // Stepping is per-frame (no time deltas), so a plain resume continues smoothly with no time jump.
+    let rafId = 0;
+    let running = false;
     const readColors = () => {
       const cs = getComputedStyle(document.documentElement);
       A = cs.getPropertyValue('--cyan').trim() || '#41efff';
@@ -411,14 +416,24 @@ import '../styles/fonts.css';
           ctx.strokeStyle=B; ctx.globalAlpha=(1-md/140)*mouseA; ctx.lineWidth=.8; ctx.stroke();
         }
       }
-      ctx.globalAlpha=1; requestAnimationFrame(draw);
+      ctx.globalAlpha=1; rafId = requestAnimationFrame(draw);
     };
+    // start/stop guard the loop so the observer never double-schedules or orphans a frame.
+    const start = () => { if(running) return; running = true; rafId = requestAnimationFrame(draw); };
+    const stop  = () => { running = false; cancelAnimationFrame(rafId); };
     if(!reduce){
-      init(); draw();
+      init(); start();
       window.addEventListener('resize', init);
       const host = cv.parentElement!;
       host.addEventListener('mousemove', e=>{ const r=cv.getBoundingClientRect(); mouse.x=e.clientX-r.left; mouse.y=e.clientY-r.top; });
       host.addEventListener('mouseleave', ()=>{ mouse.x=-999; mouse.y=-999; });
+      // Pause the per-frame draw work while the canvas is off-screen (the observer itself is cheap
+      // and always-on); resume on re-entry. The running guard keeps it to a single loop.
+      const heroVis = new IntersectionObserver((entries)=>{
+        for(const entry of entries){ if(entry.isIntersecting) start(); else stop(); }
+      });
+      heroVis.observe(cv);
+      window.addEventListener('pagehide', ()=>{ stop(); heroVis.disconnect(); }, { once: true });
     }
   }
 
