@@ -5,6 +5,7 @@ import path from 'path';
 import { pluginPrivCommand } from './src/lib/ec-priv-command.mjs';
 import rehypeContentImageLoading from './plugins/rehype-content-image-loading.mjs';
 import remarkInjectPasswordReveal from './plugins/remark-inject-passwordreveal.mjs';
+import remarkValidateContentTaxonomy from './plugins/remark-validate-content-taxonomy.mjs';
 
 export default defineConfig({
   site: 'https://idanlab.dev',
@@ -21,8 +22,12 @@ export default defineConfig({
   // rest lazy). Covers raw /public absolute-path images that skip astro:assets. See plugins/.
   // remarkInjectPasswordReveal: a remark pass that auto-injects the PasswordReveal import into
   // any MDX file that uses <PasswordReveal /> inline, so writeups need no per-file import.
+  // remarkValidateContentTaxonomy: a read-only remark pass that fails the build on an unknown
+  // hand-authored badge/metadata class token or component metadata value (a content typo that would
+  // otherwise ship as a silently unstyled element). Runs first so it validates the pristine authored
+  // tree; ordering is not otherwise significant since it only reads and never mutates. See plugins/.
   markdown: {
-    remarkPlugins: [remarkInjectPasswordReveal],
+    remarkPlugins: [remarkValidateContentTaxonomy, remarkInjectPasswordReveal],
     rehypePlugins: [rehypeContentImageLoading],
   },
 
