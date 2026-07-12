@@ -79,6 +79,10 @@
 - [DESIGN] Replace `ethical-hacking.png` about portrait with a transparent custom SVG.
 - [ENG] Extract repeated UI into reusable Astro components (cards, badges, buttons, hero FX).
 - [ENG] CI on push: type-check, build, link-check, (later) visual-regression screenshots.
+- [ENG] Content-taxonomy build guard (`plugins/remark-validate-content-taxonomy.mjs`) shipped as the
+  astro-check alternative (DECISIONS 2026-07-12). Follow-ups: extend it to frontmatter `os`/`tags` if the
+  pipeline ever promotes those to frontmatter, and narrow or remove the `meta-badge` / `platform-` /
+  `difficulty-` / `os-` / `machine-` class families when WriteupMeta retires the `.machine-meta` badge row.
 - [CONTENT] Writeup `_template.mdx` so every new writeup starts consistent.
 - [ENV] Change Windows username from Hebrew to English (new admin account).
 - [ENG] Real platform-logo SVGs in sidebar via a Starlight Sidebar component override
