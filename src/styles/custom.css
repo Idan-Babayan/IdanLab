@@ -1314,6 +1314,30 @@ nav.sidebar details > ul > li {
   }
 }
 
+/* ── Code-block width containment: long lines scroll, they never widen the column ──
+   A <pre> with a long unwrapped line has a large min-content width. A flex child defaults to
+   min-width: auto (= min-content), which outranks overflow-x: auto, so that width can leak UP through
+   the flex ancestors and push Starlight's content track past --sl-content-width: the column widens, the
+   TOC shifts, body text reflows, and ToggleAll jumps. Most visible when a spoiler <details> reveals the
+   <pre> (layout re-runs on open), but the cause is general to any code block.
+
+   Leak vector confirmed in the browser, not assumed (Busqueda docker-inspect block): with the content
+   cap momentarily removed to expose the latent leak, the long line's min-content propagated to
+   .main-pane (Starlight's flex child in the three-column row, default min-width: auto), which shifted the
+   right TOC by about 200px. min-width: 0 on the block chain (.expressive-code / pre / figure /
+   .toggle-body / details) did NOT contain it: those are block boxes whose min-width: auto is already 0.
+   min-width: 0 on .main-pane DID: the TOC snapped back and the column held at 50rem. .main-frame was
+   tested and did not additionally leak, so it is deliberately left out. Chromium clamps the min-content
+   by the cap's own max-width and so masks this; engines that do not clamp it that way still leak, so the
+   fix is the engine-neutral one. The code block itself is also pinned so its overflow-x: auto is
+   authoritative. Scrollbar stays, code does not wrap, --sl-content-width is unchanged. */
+.sl-markdown-content :is(.expressive-code, pre) {
+  min-width: 0;
+}
+.main-pane {
+  min-width: 0;
+}
+
 /* ── Sidebar: taller rows so a sparse rail feels fuller (sidebar nav only) ──
    Starlight links/summaries ship a compact ~0.3em vertical padding; raise the per-item
    block padding and line-height so each row has more presence and a bigger touch target.
