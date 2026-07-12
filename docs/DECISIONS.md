@@ -6,6 +6,42 @@
 
 ---
 
+### 2026-07-12 · Code-block min-content width leak contained at `.main-pane` (min-width: 0), verified in-browser
+- **Decision:** Two additive rules in `custom.css` (placed right after the three-column layout block):
+  `.sl-markdown-content :is(.expressive-code, pre) { min-width: 0 }` and `.main-pane { min-width: 0 }`.
+  A `<pre>` with a long unwrapped line has a large min-content width; a flex child defaults to
+  `min-width: auto` (= min-content), which outranks `overflow-x: auto`, so that width can leak up through
+  the flex ancestors and push Starlight's content track past `--sl-content-width` (the column widens, the
+  TOC shifts, body text reflows, ToggleAll jumps). Most visible when a spoiler `<details>` reveals the
+  `<pre>`, but the cause is general to any code block. The `overflow-x: auto` scrollbar stays, the code
+  does NOT wrap (`white-space: pre` untouched), and `--sl-content-width` stays 50rem: the block scrolls
+  inside a fixed column instead of widening it.
+- **Leak vector confirmed by browser layout inspection, not assumed** (Busqueda `docker-inspect` block,
+  the wide-line spoilers under "What can user svc run as root?"): momentarily removing the content cap to
+  expose the latent leak, the long line's min-content propagated to `.main-pane` (Starlight's flex child
+  in the three-column row, default `min-width: auto`), shifting the right TOC ~205px (left 1189.6 to
+  1394.9). `min-width: 0` on the block chain (`.expressive-code` / `pre` / `figure` / `.toggle-body` /
+  `details`) did NOT contain it: those are block boxes whose `min-width: auto` already resolves to 0.
+  `min-width: 0` on `.main-pane` DID (TOC snapped back to 1189.6, column held at 800px = 50rem).
+  `.main-frame` (the other flex item on the chain) was tested and did not additionally leak, so it is
+  deliberately left out (minimal set). The code block itself is still pinned so its `overflow-x: auto`
+  stays authoritative.
+- **Why Chromium masks it (and why the fix is still needed):** Chromium clamps a box's min-content
+  contribution by its own `max-width`, and `.sl-container` carries `max-width: --sl-content-width` (50rem),
+  so with the cap on, the current in-app (Chromium) browser shows NO leak at any width, open or closed.
+  Engines that do not clamp min-content by an inner `max-width` still leak; the `min-width: 0` fix is the
+  standard, engine-neutral containment. The cap-removal proxy is exactly how the latent leak was exposed
+  and measured in a real browser.
+- **Verified (real browser, measurable criterion, both themes):** with the fix live, opening the
+  `docker-inspect` spoiler leaves the column at 800px and the TOC at 1189.6 (columnDelta 0, tocDelta 0);
+  the pre shows a horizontal scrollbar (clientWidth 771 vs scrollWidth 1046) and does not wrap; a thin
+  code block is unchanged (delta 0, no scrollbar); the cap-removal proxy now yields tocShift 0 in BOTH
+  dark and light (was +205px pre-fix); a long-line EC block appended directly into prose (general case,
+  not in a `<details>`) scrolls internally with tocShift 0; no page-level horizontal scroll; safety check
+  confirmed the rules change nothing with the cap intact. `npm run build` green (45 pages). No new deps,
+  pinned versions unchanged, no Starlight fork, no motion.
+- **Status:** Adopted (working tree; not committed). CSS-only, additive.
+
 ### 2026-07-12 · Build-time content-taxonomy guard (remark plugin) as the ruled-out astro check alternative
 - **Decision:** New additive build-time plugin `plugins/remark-validate-content-taxonomy.mjs`, wired FIRST in
   `astro.config.mjs` `markdown.remarkPlugins` (before the PasswordReveal injector; it only reads, never
