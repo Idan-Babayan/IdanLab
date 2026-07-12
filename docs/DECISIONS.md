@@ -6,6 +6,43 @@
 
 ---
 
+### 2026-07-12 · Build-time content-taxonomy guard (remark plugin) as the ruled-out astro check alternative
+- **Decision:** New additive build-time plugin `plugins/remark-validate-content-taxonomy.mjs`, wired FIRST in
+  `astro.config.mjs` `markdown.remarkPlugins` (before the PasswordReveal injector; it only reads, never
+  mutates, so order is not otherwise significant). It FAILS the build when a writeup uses an unknown
+  hand-authored badge/metadata class token or an unknown component metadata value, so a content typo (for
+  example `platform-hacktheboxx`, or `<FlagCapture type="usr">`) becomes a loud error with a source position
+  and a "did you mean" suggestion instead of a silently unstyled render that ships green.
+- **Why:** `astro check` (plus `@astrojs/check` + `typescript`) was deliberately ruled out (pinned-deps
+  posture). This is the alternative, and it targets the string/value surface authored by hand in MDX, which
+  is the part that actually grows during the manual writeup pass. Zero new dependencies: it uses only
+  `unist-util-visit` (already transitive via `@astrojs/mdx`, same as the PasswordReveal plugin) plus a
+  hand-rolled Levenshtein for the suggestions. Nothing was added to `package.json` or the lockfile.
+- **What it validates (the allow-lists in the plugin are the single source of truth):** owned class-token
+  families by prefix (`meta-` to meta-badge; `platform-` / `difficulty-` / `os-` to the badge modifiers;
+  `port-` to port-label; `task-` to task-title; `machine-` to machine-meta); a structural rule that a
+  `meta-badge` element carries exactly one platform/difficulty/os modifier; and component metadata enums on
+  `Callout` (type recon/loot/intel/defense/vuln), `WriteupMeta` (the four typed unions), and `FlagCapture`
+  (type user/root).
+- **Boundary (why it cannot false-positive on component output):** it runs at the remark/mdast stage on the
+  `.mdx` SOURCE, so it only ever sees HAND-AUTHORED markup. Component-generated classes (Callout's `cl-*`,
+  WriteupMeta's `wm-*` / `pf-*`) are produced later during `.astro` rendering and are never visible here;
+  marketing `.astro` pages are not markdown, so their `platform-card` / `platform-grid` never reach it; and
+  dynamic `class={expr}` plus any token outside the owned families are ignored.
+- **Callout set verified complete (neither narrowed nor widened):** re-read `custom.css`, which defines
+  exactly five callout TYPE classes (`cl-recon`, `cl-loot`, `cl-intel`, `cl-defense`, `cl-vuln`; the other
+  `cl-*` are structural chrome), and `Callout.astro`'s `CalloutType` union matches those five.
+- **Verified:** `npm run build` green (45 pages) on current content, so there are no pre-existing taxonomy
+  typos (the guard cleared every writeup, including the four existing `<FlagCapture type="user"|"root">`
+  usages). Demonstrated a failing build on a scratch `platform-hacktheboxx` and on `<FlagCapture type="usr">`
+  (clear error naming the token, file, `line:column`, and the suggestion), then removed the scratch and
+  rebuilt green.
+- **Retirement note:** the `meta-badge` / `platform-` / `difficulty-` / `os-` / `machine-` class families are
+  expected to be RETIRED when WriteupMeta fully rolls out and the `.machine-meta` badge row is dropped; narrow
+  the allow-lists then and keep the component-enum checks. Frontmatter os/tags validation was considered and
+  deferred (no writeup sets those in frontmatter today, and the remark stage does not see frontmatter cleanly).
+- **Status:** Adopted; committed to `dev` (not pushed). No new deps, pinned versions unchanged.
+
 ### 2026-07-11 · Constellation hero canvas pauses off-screen (IntersectionObserver, perf-only)
 - **Decision:** The constellation canvas `draw()` loop on the two marketing heroes now stops its per-frame
   work while the canvas is scrolled out of the viewport and resumes on re-entry. Implemented in
