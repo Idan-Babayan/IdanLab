@@ -6,6 +6,49 @@
 
 ---
 
+### 2026-07-13 · Site-wide focus-ring token (--focus-ring) on content pages: one color, identity where it exists, lime default
+- **Decision:** A single `--focus-ring` custom property now drives every keyboard focus-ring COLOR on
+  Starlight CONTENT pages (`custom.css`). Default is the theme-aware site accent
+  `var(--sl-color-text-accent)` (lime `#b6ff3c` dark / `#4d7c0f` light). A zero-specificity shared base
+  rule draws the rectangular ring: `:where(a, button, [role="button"], input, select, textarea, summary,
+  [tabindex]):focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px }`. Identity
+  elements set `--focus-ring` to their own accent so the ring echoes what they already express: platform
+  cards (`--pf-accent`), the four platform sidebar groups (positional nth-child, theme-aware), the
+  flag/password reveals (gold/amber), and the badge chips (`--wm-c`, an inert hook for the WriteupMeta
+  rollout). Everything else inherits lime. `:focus-visible` only (keyboard), never on mouse click.
+  Additive, no component fork, no Starlight fork, no new deps.
+- **Premise corrections (the task assumed a different codebase; checked against source before building):**
+  - FlagCapture/PasswordReveal were said to ring via `box-shadow`; they actually ring via `outline`
+    (box-shadow is none) and are `border-radius: 6px`, so the outline already follows their corners in
+    current engines. Kept them as OUTLINE (no conversion, owner's choice), routed the color through the
+    token; corners stay rounded and the rings are preserved exactly (pw amber `#ffc23d`/`#a86f04`; flagcap
+    gold `color-mix(--fc-id 65%/60%)`).
+  - The task's "~8 generic non-identity outline rings to collapse" do not exist in `custom.css`: it had
+    exactly 3 focus rings, all identity (the two reveals). The only generic rings live inline on the two
+    marketing pages, which `custom.css` does not load.
+  - Starlight 0.39.2 ships NO `:focus-visible` outline of its own (only a few `:focus` color changes plus a
+    1px search-clear outline), so the shared rule is the branded ring for all content-page controls, not an
+    override war. `custom.css` is unlayered, so even the zero-specificity `:where` base beats Starlight's
+    layered styles.
+  - The "homepage platform cards" named in the task are on a standalone marketing page
+    (`.card.htb {--accent}`), which `custom.css` cannot reach; the content-page analog is `WriteupCard`
+    (`<a class="wc-card pf-*">`, carries `--pf-accent`), which is what this pass rings. Sidebar links do not
+    carry `--pf-accent` (platform color is a positional nth-child dot), so the hook is added by the same
+    nth-child pattern, not "already there."
+- **Scope (owner decision):** content pages only this pass; folding the two marketing pages into the same
+  token (de-hardcoding their inline lime/accent rings from the prior focus-states work) is a deliberate
+  SECOND step (see ROADMAP), not forced now.
+- **Verified (real browser, keyboard + pointer, both themes):** the shared rule renders lime on content
+  chrome (skip link, prose links, TOC entries, header link, search button, theme select). Sidebar groups
+  render their identity: VulnHub red `#ff5c5c`/`#d12f2f`, PicoCTF purple `#d96bff`/`#8b3dc4`, OTW amber
+  `#ffc23d`/`#a86f04`, HTB + About lime; writeup links inside a group inherit it. WriteupCard rings
+  `--pf-accent` (lime for HTB), radius 16px. FlagCapture gold (65% mix) and PasswordReveal amber render
+  rounded (radius 6px, outline follows). On a fresh load, plain/pointer focus gives `:focus-visible` false
+  + `outline: none` (no ring on mouse click). Code blocks have no `tabindex`, so they are untouched. Every
+  identity ring is legible against its background in both themes (bright on the near-black rail, darkened
+  values on paper); none needed strengthening. `npm run build` green (45 pages).
+- **Status:** Adopted; committed to `dev` (not pushed). CSS-only, additive, `custom.css` only.
+
 ### 2026-07-13 · Marketing-page keyboard focus rings (:focus-visible), matching the component-ring pattern
 - **Decision:** Both standalone marketing pages now define a `:focus-visible` ring on every interactive
   control, CSS-only inside each page's `<style is:global>` (`src/pages/index.astro` and

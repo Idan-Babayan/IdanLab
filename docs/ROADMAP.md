@@ -62,6 +62,13 @@
   machinery as the /principles index. Engineering.
 
 ## Next (committed)
+- [ENG/DESIGN] Unify the two marketing pages (home, about) under the `--focus-ring` token established for
+  content pages (DECISIONS 2026-07-13). The token system is content-only by decision; this second step
+  folds the marketing pages' inline `:focus-visible` rings (currently `outline: 2px solid var(--lime)` +
+  per-card `outline-color: var(--accent)` from the 2026-07-13 focus-states work) into the same model:
+  an inline `:root{--focus-ring:var(--lime)}` default + the shared `:where(...)` rule + `--focus-ring:
+  var(--accent)` on the platform cards, in EACH page's `<style is:global>` (they do not load custom.css).
+  Net: no ring color hardcoded anywhere. Keep both themes, `:focus-visible` only, no motion.
 - [CONTENT] Mass-import ~50 existing writeups via the pipeline (HTB / VulnHub / PicoCTF / OTW), each as a
   flat `.mdx` with images under the parallel `src/assets` tree (DECISIONS 2026-06-30). Once HTB
   Medium/Hard folders have content, uncomment those (lowercase) sidebar groups in `astro.config.mjs`.
