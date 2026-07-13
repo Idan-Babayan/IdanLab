@@ -232,13 +232,19 @@ import '../styles/fonts.css';
   .hud { position: relative; z-index: 5; display: flex; align-items: center; justify-content: space-between;
     max-width: 1100px; margin: 0 auto; padding: 1rem 1.5rem; border-bottom: 1px solid var(--panel-brd);
     font-family: var(--mono); font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; }
-  .hud-home { color: var(--text); text-decoration: none; transition: color .2s; }
+  /* HUD controls carry a >=24px pointer target (WCAG 2.2 target-size min). Block padding
+     grows the hit area while the equal negative margin keeps the compact bar height and the
+     label/icon positions unchanged: only the invisible hit area grows, nothing reflows. */
+  .hud-home { color: var(--text); text-decoration: none; transition: color .2s;
+    padding-block: 3px; margin-block: -3px; }
   .hud-home:hover { color: var(--lime); }
   .hud-sub { color: var(--muted); }
   .hud-nav { display: flex; gap: 1.4rem; align-items: center; }
-  .hud-nav a { color: var(--muted); text-decoration: none; transition: color .2s; }
+  .hud-nav a { color: var(--muted); text-decoration: none; transition: color .2s;
+    padding-block: 3px; margin-block: -3px; }
   .hud-nav a:hover, .hud-nav a.active { color: var(--lime); }
   .theme-toggle { background: none; border: none; cursor: pointer; color: var(--muted); display: inline-flex;
+    align-items: center; justify-content: center; min-width: 24px; min-height: 24px; margin: -4px;
     padding: 0; transition: color .2s; }
   .theme-toggle:hover { color: var(--lime); }
   .theme-toggle .ico { width: 16px; height: 16px; }
