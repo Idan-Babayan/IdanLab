@@ -3,6 +3,40 @@
    ══════════════════════════════════════════════ */
 
 
+/* ══════════════════════════════════════════════
+   FOCUS RING SYSTEM — one color token, identity where it exists, lime default
+   ══════════════════════════════════════════════
+   Every keyboard focus ring reads its COLOR from --focus-ring, which defaults to the theme-aware site
+   accent (--sl-color-text-accent: lime #b6ff3c dark / #4d7c0f light). Identity-bearing elements set
+   --focus-ring to their own accent so the ring echoes the color they already express (matching hover):
+   platform cards (--pf-accent), platform sidebar groups, the flag/password reveals (gold/amber), and
+   the badge chips (--wm-c, hooked for rollout). Everything else inherits the lime default. Same
+   intentional-color idea as the badges: the ring tells the truth about what the element is, and never
+   invents an identity that is not there.
+
+   This unifies the ring COLOR only, not how it is DRAWN. Rectangular elements use the shared outline
+   rule below. A rounded component that needed the ring to follow its border-radius would keep its own
+   box-shadow rule (still colored via --focus-ring); none do today, because the flag/password reveals
+   are <button>s whose outline already follows their 6px radius in current engines, so they collapse
+   into the shared rule. Adding a new identity element later is just setting --focus-ring on it.
+
+   SCOPE: custom.css themes Starlight CONTENT pages only. The two standalone marketing pages (home,
+   about) carry their own equivalent rings inline; folding them into this same token is a deliberate
+   follow-up, not part of this pass. */
+:root {
+  --focus-ring: var(--sl-color-text-accent);
+}
+/* Shared, zero-specificity base for the general (rectangular) case. :where() holds specificity at 0 so
+   any element that intentionally needs a different width/offset still wins, and unlayered custom.css
+   already beats Starlight's layered styles. Starlight 0.39 ships no :focus-visible outline of its own,
+   so this becomes the ring for every content-page control (nav, TOC, prose links, buttons, the theme
+   toggle), lime unless an ancestor set --focus-ring. Keyboard only (:focus-visible), never on click. */
+:where(a, button, [role="button"], input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+
 /* ── Brighter body text in dark mode ─────────── */
 
 html[data-theme="dark"] {
@@ -178,6 +212,10 @@ mobile-starlight-toc a[aria-current="true"][style*="--depth: 0"]:not([href="#use
   font-weight: 600;
   text-decoration: none;
   color: var(--wm-c);
+  /* Focus-ring hook for the WriteupMeta rollout: when the chips become <a> (once the filter routes
+     ship), each rings in its own --wm-c identity via the shared :where(a,...):focus-visible rule.
+     Inert now (chips render as non-interactive <span>s and appear on no page yet). */
+  --focus-ring: var(--wm-c);
   background: color-mix(in oklab, var(--wm-c) 15%, transparent);
   border: 1px solid color-mix(in oklab, var(--wm-c) 38%, transparent);
   border-radius: 999px;
@@ -871,6 +909,12 @@ html[data-theme="light"] body:has(.home-stats) {
    cyan on ink, darkened cyan-ink on paper (both clear AA for the small text that uses it). */
 :root { --pf-accent-2: var(--tp-cyan); }
 :root[data-theme='light'] { --pf-accent-2: var(--tp-cyan-ink); }
+
+/* Focus ring: platform cards ring in their platform identity (echoes the accent bar + hover border).
+   Each card is <a class="wc-card pf-*"> and already carries --pf-accent from the .pf-* token above, so
+   the shared :where(a,...):focus-visible rule draws a platform-colored ring. (The homepage's marketing
+   cards are a separate surface, folded into the same token in a later pass.) */
+.wc-card { --focus-ring: var(--pf-accent); }
 
 /* Scroll-reveal infra (shared by hero + cards; the component script toggles .in).
    Same easing as index.astro / about.astro so the motion feels identical. */
@@ -1655,6 +1699,20 @@ ul.top-level > li:nth-child(3) > details > summary .group-label::before  { backg
 ul.top-level > li:nth-child(4) > details > summary .group-label::before  { background: #d96bff; box-shadow: 0 0 7px rgba(217,107,255,.55); } /* PicoCTF */
 ul.top-level > li:nth-child(5) > details > summary .group-label::before  { background: #ffc23d; box-shadow: 0 0 7px rgba(255,194,61,.55); }  /* OverTheWire */
 
+/* Focus ring: each platform group rings in its own identity (matches the dot above + the cards),
+   scoped to the whole platform <li> so its summary and writeup links share the color. Theme-aware:
+   bright hues on the dark rail, and the darkened --pf-accent light values on the pale paper rail so the
+   ring stays legible there (the pale-on-pale case). About (nth-child 1) is not a platform, so it keeps
+   the lime default. Positional like the dots: if the sidebar is reordered, update these too. */
+ul.top-level > li:nth-child(2) { --focus-ring: #b6ff3c; }  /* HackTheBox */
+ul.top-level > li:nth-child(3) { --focus-ring: #ff5c5c; }  /* VulnHub */
+ul.top-level > li:nth-child(4) { --focus-ring: #d96bff; }  /* PicoCTF */
+ul.top-level > li:nth-child(5) { --focus-ring: #ffc23d; }  /* OverTheWire */
+:root[data-theme='light'] ul.top-level > li:nth-child(2) { --focus-ring: #4d7c0f; }
+:root[data-theme='light'] ul.top-level > li:nth-child(3) { --focus-ring: #d12f2f; }
+:root[data-theme='light'] ul.top-level > li:nth-child(4) { --focus-ring: #8b3dc4; }
+:root[data-theme='light'] ul.top-level > li:nth-child(5) { --focus-ring: #a86f04; }
+
 /* ── ALTERNATIVE: real platform logos instead of circles ──
    To use your actual SVGs from /public/icons instead of the dots,
    comment out the four platform color rules just above, then
@@ -1923,13 +1981,10 @@ html[data-theme] .sl-markdown-content details.spoiler-toggle[open] {
 :root[data-theme="light"] .sl-markdown-content .pwreveal .pw-action:hover {
   background: rgba(245, 158, 11, 0.2);
 }
-.sl-markdown-content .pwreveal .pw-action:focus-visible {
-  outline: 2px solid #ffc23d;
-  outline-offset: 2px;
-}
-:root[data-theme="light"] .sl-markdown-content .pwreveal .pw-action:focus-visible {
-  outline-color: #a86f04;
-}
+/* Focus ring routed through the token (amber identity, matching the control's own color); the shared
+   :where(...button...):focus-visible rule draws it, outline following the button's 6px radius. */
+.sl-markdown-content .pwreveal .pw-action { --focus-ring: #ffc23d; }
+:root[data-theme="light"] .sl-markdown-content .pwreveal .pw-action { --focus-ring: #a86f04; }
 .sl-markdown-content .pwreveal .pw-action-ico { width: 15px; height: 15px; flex: none; }
 
 /* Visually hidden aria-live region (omit if an .sr-only utility already exists in the file). */
@@ -2046,10 +2101,9 @@ html[data-theme] .sl-markdown-content details.spoiler-toggle[open] {
   border-radius: inherit;
   cursor: pointer;
 }
-.sl-markdown-content .flagcap-btn:focus-visible {
-  outline: 2px solid color-mix(in oklab, var(--fc-id) 65%, transparent);
-  outline-offset: 2px;
-}
+/* Focus ring routed through the token (gold identity, preserving the 65% mix); drawn by the shared
+   :where(...button...):focus-visible rule, outline following the button's inherited radius. */
+.sl-markdown-content .flagcap-btn { --focus-ring: color-mix(in oklab, var(--fc-id) 65%, transparent); }
 /* Captured: the prize sits there inert (copy is the live control); reserve right space for the copy icon. */
 .flagcap.is-captured .flagcap-btn {
   cursor: default;
@@ -2141,10 +2195,8 @@ html[data-theme] .sl-markdown-content details.spoiler-toggle[open] {
   border-color: color-mix(in oklab, var(--fc-id) 60%, transparent);
   background: color-mix(in oklab, var(--fc-id) 16%, var(--sl-color-bg));
 }
-.sl-markdown-content .flagcap-copy:focus-visible {
-  outline: 2px solid color-mix(in oklab, var(--fc-id) 60%, transparent);
-  outline-offset: 2px;
-}
+/* Focus ring routed through the token (gold identity, preserving the 60% mix); drawn by the shared rule. */
+.sl-markdown-content .flagcap-copy { --focus-ring: color-mix(in oklab, var(--fc-id) 60%, transparent); }
 .flagcap-copy[hidden] {
   display: none;
 }
