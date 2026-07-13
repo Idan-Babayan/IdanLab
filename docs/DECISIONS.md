@@ -6,6 +6,40 @@
 
 ---
 
+### 2026-07-13 · Marketing-page keyboard focus rings (:focus-visible), matching the component-ring pattern
+- **Decision:** Both standalone marketing pages now define a `:focus-visible` ring on every interactive
+  control, CSS-only inside each page's `<style is:global>` (`src/pages/index.astro` and
+  `src/pages/about.astro`; Starlight content pages and the existing component focus rings were NOT
+  touched). The ring reuses the design-system pattern from the component rings in `custom.css`
+  (PasswordReveal, FlagCapture): `outline: 2px solid <accent>; outline-offset: 2px;`, keyed with
+  `:focus-visible` (not `:focus`) so it shows for keyboard nav and not on mouse click.
+- **Token, not a hardcode:** the accent is `var(--lime)`, the pages' own theme-aware token, which is
+  byte-identical to what content pages resolve for the ring. `custom.css` sets `--sl-color-accent:
+  #b6ff3c` and `--sl-color-text-accent` is green `#b6ff3c` dark / `#4d7c0f` light; the marketing `--lime`
+  is `#b6ff3c` dark / `#4d7c0f` light, so no light override is needed. The task's example token
+  `var(--sl-color-text-accent)` does NOT exist on the marketing pages (they live outside Starlight and
+  define only `--ink/--lime/--cyan/--magenta/...`), so using it verbatim would have produced an
+  invalid/undefined outline color; `var(--lime)` is the correct equivalent.
+- **Platform cards key the ring to their own identity accent:** the four homepage `.card` and the four
+  About `.practice` links use `outline-color: var(--accent)` (HTB lime, VulnHub red, PicoCTF purple, OTW
+  amber), echoing their hover border and mirroring how the component rings use each component's identity
+  color (FlagCapture `--fc-id`). Every other control (buttons, HUD links, theme toggle) uses the uniform
+  lime ring. (Owner chose this over a single uniform lime everywhere.)
+- **Premise checked before building:** confirmed the marketing pages defined no focus styles at all (no
+  `:focus`/`:focus-visible`/`outline`, and no `outline:none` suppression, so they fell back to the generic
+  browser default ring), and that the only `:focus-visible` rules in `custom.css` are the three component
+  rings (all `.sl-markdown-content`-scoped, 2px solid + 2px offset): not one global rule, but a consistent
+  geometry to match.
+- **Verified (real browser, both themes, real keyboard + pointer input):** every interactive control is
+  covered by a focus selector (8 homepage: 4 `.btn` + 4 `.card`; 10 About: hud-home + 2 nav links + toggle
+  + 4 `.practice` + 2 `.btn`; 0 uncovered; the 6 About skill cards are non-interactive `<div>`s, correctly
+  excluded). Real hardware Tab presses give `matches(':focus-visible')` true with the ring rendered:
+  homepage btn lime `#b6ff3c` and VulnHub card red `#ff5c5c`; About dark nav link `#b6ff3c`; About light
+  hud-home and toggle `#4d7c0f`. A non-keyboard (programmatic/pointer) focus gives `:focus-visible` false
+  and `outline: none`, so no ring appears on mouse click. `npm run build` green (45 pages). No new deps,
+  pinned versions unchanged, no motion added.
+- **Status:** Adopted (working tree; not committed). CSS-only, additive, marketing pages only.
+
 ### 2026-07-13 · Marketing About-page touch targets meet WCAG 2.2 minimum (24px) via layout-neutral hit-area growth
 - **Decision:** The four interactive controls in the About page HUD now carry a >= 24x24px pointer
   target. CSS-only, inside the `<style is:global>` block of `src/pages/about.astro` (the theme layer and
