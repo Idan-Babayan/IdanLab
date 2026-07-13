@@ -6,6 +6,32 @@
 
 ---
 
+### 2026-07-13 · Marketing About-page touch targets meet WCAG 2.2 minimum (24px) via layout-neutral hit-area growth
+- **Decision:** The four interactive controls in the About page HUD now carry a >= 24x24px pointer
+  target. CSS-only, inside the `<style is:global>` block of `src/pages/about.astro` (the theme layer and
+  Starlight content pages were NOT touched, no shared component changed). The two nav links (`.hud-nav a`)
+  and the home link (`.hud-home`) get `padding-block: 3px; margin-block: -3px;`; the theme toggle
+  (`.theme-toggle`) gets `align-items/justify-content: center; min-width: 24px; min-height: 24px;
+  margin: -4px;` while the icon stays 16px.
+- **Why the paired negative margin:** block padding (or a min-size floor) grows the clickable box, and the
+  equal negative margin keeps the flex item's margin box at its natural size, so the compact HUD height and
+  every label/icon position stay pixel-identical. Only the invisible hit area grows: no glyph is enlarged
+  and nothing below the bar shifts.
+- **Scope confirmed by live measurement, not assumed:** at a real 375px viewport the only failing controls
+  were the theme toggle (16x16) and the three HUD links (~18.4px tall). Every other control on both
+  marketing pages already passes (homepage `.btn` >= 50px, platform `.card` 240px, About `.practice`
+  120px, footer buttons ~50px); the homepage carries no nav links or toggle, so it needed no change. The
+  About skill cards are non-interactive `<div>`s (cursor-tilt decoration only, no href/handler), so they
+  are out of scope.
+- **Verified (real browser, both themes):** all four controls report >= 24px (hud-home 83x24.4, Writeups
+  66.4x24.4, About 41.5x24.4, toggle 24x24) in dark and light; HUD height unchanged at 51.2px; the visible
+  toggle glyph is still 16x16; no horizontal overflow (documentElement scrollWidth == 375); no hit-box
+  overlap (18.4px clearance between the toggle and the About link); each control is the topmost element at
+  its own center; the toggle flips theme light/dark and persists to `localStorage['starlight-theme']`; the
+  Writeups link navigates to /hackthebox/. `npm run build` green (45 pages). No new dependencies, pinned
+  versions unchanged, no motion added.
+- **Status:** Adopted (working tree; not committed). CSS-only, additive, `about.astro` only.
+
 ### 2026-07-12 · Code-block min-content width leak contained at `.main-pane` (min-width: 0), verified in-browser
 - **Decision:** Two additive rules in `custom.css` (placed right after the three-column layout block):
   `.sl-markdown-content :is(.expressive-code, pre) { min-width: 0 }` and `.main-pane { min-width: 0 }`.
