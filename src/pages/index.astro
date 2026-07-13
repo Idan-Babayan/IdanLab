@@ -260,6 +260,18 @@ import '../styles/fonts.css';
     transition: opacity .8s cubic-bezier(.2,.7,.2,1), transform .8s cubic-bezier(.2,.7,.2,1); }
   .reveal.in { opacity: 1; transform: none; }
 
+  /* Keyboard focus: the site's :focus-visible ring (2px solid accent, 2px offset),
+     matching the component rings in custom.css. :focus-visible only, so it shows for
+     keyboard nav and not on mouse click. var(--lime) is byte-identical to the Starlight
+     content-page accent (--sl-color-text-accent), so these pages read as the same system. */
+  .btn:focus-visible,
+  .card:focus-visible {
+    outline: 2px solid var(--lime);
+    outline-offset: 2px;
+  }
+  /* Platform cards key the ring to their own identity accent (echoes the hover border). */
+  .card:focus-visible { outline-color: var(--accent); }
+
   @media (max-width: 720px){ .stats{grid-template-columns:1fr} .phase::after{display:none} .hud-spacer{display:none} }
   @media (prefers-reduced-motion: reduce){
     .reveal{opacity:1;transform:none;transition:none} .dot{animation:none} * { scroll-behavior: auto; }
