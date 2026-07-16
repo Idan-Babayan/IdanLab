@@ -9,8 +9,9 @@
    Every keyboard focus ring reads its COLOR from --focus-ring, which defaults to the theme-aware site
    accent (--sl-color-text-accent: lime #b6ff3c dark / #4d7c0f light). Identity-bearing elements set
    --focus-ring to their own accent so the ring echoes the color they already express (matching hover):
-   platform cards (--pf-accent), platform sidebar groups, the flag/password reveals (gold/amber), and
-   the badge chips (--wm-c, hooked for rollout). Everything else inherits the lime default. Same
+   platform cards (--pf-accent), platform sidebar groups, the flag/password reveals (gold/amber), the
+   badge chips (--wm-c, hooked for rollout), and the ToggleAll control (--pf-accent-2 cyan, assigned in its
+   own component style). Everything else inherits the lime default. Same
    intentional-color idea as the badges: the ring tells the truth about what the element is, and never
    invents an identity that is not there.
 

@@ -162,6 +162,15 @@
     font-family: var(--sl-font-mono, ui-monospace, monospace);
     font-size: 0.78rem;
     line-height: 1;
+    /* Focus ring: route through the site's --focus-ring token (see the focus-ring system block at the top
+       of custom.css) instead of drawing a local outline, so the shared zero-specificity
+       :where(...button...):focus-visible rule paints it at the standard 2px / 2px offset. The control's
+       identity IS this cyan (its hover color, border and wash all read --pf-accent-2), so the ring echoes
+       what it already expresses. --pf-accent-2 is ALREADY theme-aware (:root maps it to --tp-cyan, the
+       light block to --tp-cyan-ink), so this one declaration covers both themes with no light variant.
+       A custom property set directly on the element wins over :root inheritance regardless of Astro's
+       :where() scoping. */
+    --focus-ring: var(--pf-accent-2);
     color: var(--sl-color-gray-2);
     background: transparent;
     border: 1px solid var(--sl-color-gray-5);
@@ -174,10 +183,6 @@
     color: var(--pf-accent-2);
     border-color: color-mix(in oklab, var(--pf-accent-2) 55%, transparent);
     background: color-mix(in oklab, var(--pf-accent-2) 8%, transparent);
-  }
-  .toggle-all:focus-visible {
-    outline: 2px solid color-mix(in oklab, var(--pf-accent-2) 60%, transparent);
-    outline-offset: 2px;
   }
   .ta-chev {
     flex: none;
