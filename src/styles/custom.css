@@ -180,6 +180,49 @@ mobile-starlight-toc a[aria-current="true"][style*="--depth: 0"]:not([href="#use
   color: var(--sl-color-text-accent);
 }
 
+/* ── TOC focus rings echo the heading ladder ──────────────────────────────────
+   The TOC already takes its heading's hue when an entry is CURRENT (flags gold, h3 cyan, h2 green).
+   The focus ring echoes that same identity through --focus-ring, so tabbing to an entry rings in the
+   color of the heading it points to. Keyed off the heading the entry POINTS TO (slug for flags,
+   nesting/--depth for level) and NOT aria-current, so the ring is right whether or not the entry is the
+   active one. Reuses the existing tokens (no new colors); the shared :where(a,...):focus-visible rule
+   still does the drawing. h2 entries need no rule: the lime default already equals the green they take
+   when current (--sl-color-text-accent). h4+ entries sit deeper than the h3 chain below, so they are
+   unmatched and keep the lime default too. */
+
+/* Flags (gold), desktop + mobile. Same slug anchors the gold color rules above use. */
+.right-sidebar-panel a[href="#user-flag"],
+.right-sidebar-panel a[href="#root-flag"],
+mobile-starlight-toc a[href="#user-flag"],
+mobile-starlight-toc a[href="#root-flag"] {
+  --focus-ring: var(--flag-gold);
+}
+
+/* h3 entries (cyan): desktop by the nesting chain, mobile by Starlight's inline --depth: 1. Flags are
+   h3-level, so they are excluded here exactly as in the cyan color rules, and keep their gold. */
+.right-sidebar-panel nav > ul > li > ul > li > a:not([href="#user-flag"]):not([href="#root-flag"]),
+mobile-starlight-toc a[style*="--depth: 1"]:not([href="#user-flag"]):not([href="#root-flag"]) {
+  --focus-ring: var(--tp-cyan);
+}
+:root[data-theme='light'] .right-sidebar-panel nav > ul > li > ul > li > a:not([href="#user-flag"]):not([href="#root-flag"]),
+:root[data-theme='light'] mobile-starlight-toc a[style*="--depth: 1"]:not([href="#user-flag"]):not([href="#root-flag"]) {
+  --focus-ring: var(--tp-cyan-ink);
+}
+
+/* Legibility exception, measured not assumed: the light flag gold (--flag-gold #C6A243) rings at only
+   2.00:1 against the paper TOC, under the 3:1 that a non-text indicator wants (dark is 12.39:1, and the
+   light cyan 5.22:1 / lime 4.11:1 are both fine, so this is the one faint case). Per the focus-ring
+   convention, keep the identity and strengthen the ring instead of falling back to lime: widen to 3px in
+   light only, desktop + mobile. The zero-specificity :where base is designed to let this win. NOTE width
+   raises perceivability, not the contrast ratio; a deeper existing gold (--flag-gold-val, already AA on
+   paper) would fix the ratio itself if the gold ever needs to clear 3:1 properly. */
+:root[data-theme='light'] .right-sidebar-panel a[href="#user-flag"]:focus-visible,
+:root[data-theme='light'] .right-sidebar-panel a[href="#root-flag"]:focus-visible,
+:root[data-theme='light'] mobile-starlight-toc a[href="#user-flag"]:focus-visible,
+:root[data-theme='light'] mobile-starlight-toc a[href="#root-flag"]:focus-visible {
+  outline-width: 3px;
+}
+
 
 /* ── Writeup metadata badges: intentional color, restrained glow ──────────────
    NAVIGATIONAL chips (Platform, OS, Environment) lead: pill chips, clickable, each colored with INTENT.
@@ -1203,6 +1246,10 @@ h1#_top {
 /* ── Prose links: cyan, lime on hover (guarded off .not-content subtrees, see h3 note) ── */
 .sl-markdown-content a:not(:where(.not-content *)) {
   color: var(--tp-cyan);
+  /* Focus ring echoes the link's own cyan identity rather than the lime default, reusing the same token
+     pair as the color above; the shared :where(a,...):focus-visible rule draws it. The .not-content
+     guard keeps this off component links (WriteupCard etc.), so those keep their own --focus-ring. */
+  --focus-ring: var(--tp-cyan);
   text-decoration: none;
   border-bottom: 1px solid color-mix(in oklab, var(--tp-cyan) 40%, transparent);
   transition: color .15s, border-color .15s;
@@ -1213,6 +1260,7 @@ h1#_top {
 }
 :root[data-theme='light'] .sl-markdown-content a:not(:where(.not-content *)) {
   color: var(--tp-cyan-ink);
+  --focus-ring: var(--tp-cyan-ink);
   border-bottom-color: color-mix(in oklab, var(--tp-cyan-ink) 40%, transparent);
 }
 
