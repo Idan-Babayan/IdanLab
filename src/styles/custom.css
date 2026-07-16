@@ -1935,6 +1935,37 @@ html[data-theme] .sl-markdown-content details.spoiler-toggle[open] {
   font-family: var(--sl-font-mono);
   font-weight: 700;
 }
+/* Focus-ring alignment: re-pair Starlight's marker/outline pair, which our base summary rule half-cancels.
+   markdown.css (@layer starlight.content) ships a MATCHED pair on every content summary:
+   `margin-inline-start: -0.5rem` + `padding-inline-start: 0.5rem`, commented upstream as "Expand the
+   outline so that the marker cannot distort it". The padding grows the border box leftward so the outline
+   encloses the negatively-margined ::before marker (that marker carries its own `margin-inline: -0.3125rem`),
+   and the margin cancels the resulting layout shift so nothing moves visually. Our unlayered
+   `.sl-markdown-content details > summary { padding: 0.3rem 0 }` beats that layer and zeroes the padding
+   half, but declares no margin, so the -0.5rem survives ORPHANED (starlight.content outranks
+   starlight.reset's `* { margin: 0 }`, and an unlayered rule that never mentions margin cannot compete).
+   Net before this rule: the summary's border box, and its label with it, sat 8px LEFT of the card's content
+   box while the right edge stayed flush, so the ring was 8px off-center (measured deltas to the card's
+   border box: left 3, right 11, against top/bottom 5.4).
+
+   Declaring margin-inline HERE re-pairs it and keeps the fix on the spoiler toggle: the shared
+   :where(...):focus-visible rule and the base `details > summary` rule are untouched. The inset is the
+   card's own padding difference (0.75rem inline minus 0.4rem block = 5.6px), so the summary's border box
+   sits the same distance inside the card horizontally as it already does vertically. That makes all four
+   ring deltas EQUAL (5.4px at dpr 1: 1px card border + 6.4px card block padding - 2px outline-offset) with
+   NO outline-offset override needed. The equality is what holds; the absolute number shifts slightly on
+   fractional-dpr displays because the 1px border and the 2px ring both snap to device pixels.
+
+   The ring is drawn on the SUMMARY, so opening the toggle cannot balloon it around the revealed body.
+   padding-inline restores the label to the card's content box, where it now aligns with the .toggle-body
+   text below it (it previously sat 5.6px left of it). Only the inline sides are set, so the base rule's
+   vertical padding and the tightened [open] padding-bottom both survive intact. The 4px radius plus the
+   shared 2px offset paints the ring at a 6px corner radius, echoing the card's own 6px. */
+.sl-markdown-content details.spoiler-toggle > summary {
+  margin-inline: calc(-1 * (0.75rem - 0.4rem));
+  padding-inline: calc(0.75rem - 0.4rem);
+  border-radius: 4px;
+}
 .sl-markdown-content details.spoiler-toggle > summary::before {
   transition: none;
 }
