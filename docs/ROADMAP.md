@@ -62,6 +62,13 @@
   machinery as the /principles index. Engineering.
 
 ## Next (committed)
+- [ENG] Fold `ToggleAll.astro`'s hardcoded cyan focus ring into `--focus-ring` (DECISIONS 2026-07-13). It is
+  the one element still bypassing the token: its scoped style carries
+  `.toggle-all:focus-visible { outline: 2px solid color-mix(in oklab, var(--pf-accent-2) 60%, transparent) }`.
+  The convention lists ToggleAll as a non-identity control that should ring the lime default, so dropping the
+  bespoke outline (KEEPING its cyan hover/focus color + border + background state, which is its hover design)
+  would let it inherit lime. Decide first whether the cyan ring was deliberate; if it was, record that instead
+  and leave it.
 - [ENG/DESIGN] Unify the two marketing pages (home, about) under the `--focus-ring` token established for
   content pages (DECISIONS 2026-07-13). The token system is content-only by decision; this second step
   folds the marketing pages' inline `:focus-visible` rings (currently `outline: 2px solid var(--lime)` +

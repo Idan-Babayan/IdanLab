@@ -6,6 +6,46 @@
 
 ---
 
+### 2026-07-13 · Focus ring extended to TOC entries + prose links; spoiler-toggle already correct; light flag gold strengthened
+- **Decision:** `--focus-ring` now also carries the TOC's heading-ladder identity and the prose-link cyan.
+  Set per element only: no new outline rules, no new colors, every ring still drawn by the shared
+  zero-specificity `:where(...):focus-visible` rule.
+  - **TOC entries** ring in the hue of the heading they point to, on BOTH the desktop
+    `.right-sidebar-panel` and the `mobile-starlight-toc` dropdown: flags `--flag-gold`, h3 `--tp-cyan` /
+    `--tp-cyan-ink`, h2 (and h4+) the lime default, which already equals the green h2 takes when current
+    (`--sl-color-text-accent`). Keyed off the heading the entry POINTS TO (slug for flags, the nesting
+    chain on desktop, inline `--depth: 1` on mobile) and deliberately WITHOUT the `aria-current` condition
+    the color rules use, so the ring is right whether or not the entry is the active section. Flags are
+    excluded from the h3 rule exactly as in the color rules, so they never ring cyan.
+  - **In-prose links** ring cyan: `--focus-ring` added to the existing
+    `.sl-markdown-content a:not(:where(.not-content *))` rule and its light variant, reusing the same
+    `--tp-cyan` / `--tp-cyan-ink` pair the link color already uses. The `.not-content` guard means
+    component links keep their own token (verified: WriteupCard still rings `--pf-accent`, not cyan).
+- **Premise corrections (checked against source before editing):**
+  - **The spoiler-toggle has no green focus ring, and no focus rule at all.** Its block defines only
+    `--spoiler-color` (amber), the border, and the summary color; there is no hardcoded ring to remove. It
+    ALREADY rings the lime default through the shared rule (measured `#b6ff3c` dark / `#4d7c0f` light, with
+    the amber staying text/border only), which is exactly the requested end state. The "green" is most
+    likely the light lime `#4d7c0f`, which reads as an olive green. NO change was needed or made.
+  - **`ToggleAll.astro` hardcodes a cyan ring** (`outline: 2px solid color-mix(in oklab,
+    var(--pf-accent-2) 60%, transparent)`), a component-level rule the token pass below missed (it grepped
+    `src/styles/*.css`, not components). It is the one element still bypassing `--focus-ring`, and it
+    contradicts that pass's own "ToggleAll stays lime" note. Left as-is (outside this pass); see ROADMAP.
+- **Legibility, measured not assumed** (ring vs its own effective background): dark is strong across the
+  board (flag gold 12.39:1, h3 cyan 14.27:1, h2 lime 16.49:1, prose cyan 14.27:1). Light: cyan 5.22:1 and
+  lime 4.11:1 are fine, but the flag gold `#C6A243` rings at only **2.00:1** on the paper TOC, under the
+  3:1 a non-text indicator wants. Per the convention (keep the identity, strengthen the ring, never fall
+  back to lime), the light flag ring is widened to `outline-width: 3px`, desktop + mobile; every other ring
+  stays 2px and dark is untouched. Caveat recorded in the CSS: width raises perceivability, not the ratio;
+  `--flag-gold-val` (an existing deeper gold, already AA on paper) is the option if the gold must actually
+  clear 3:1.
+- **Verified (real browser, keyboard, both themes, desktop 1280 + mobile 375):** desktop and mobile TOC each
+  ring flag gold / h3 cyan / h2 lime, every measured entry with `aria-current` ABSENT (proving the ring does
+  not depend on active state); prose links ring cyan; the spoiler-toggle rings lime (not amber, not green);
+  WriteupCard still rings `--pf-accent`; on a fresh load, pointer/plain focus gives `:focus-visible` false
+  and `outline: none`, so nothing rings on mouse click. `npm run build` green (45 pages).
+- **Status:** Adopted; committed to `dev` (not pushed). CSS-only, additive, `custom.css` only.
+
 ### 2026-07-13 · Site-wide focus-ring token (--focus-ring) on content pages: one color, identity where it exists, lime default
 - **Decision:** A single `--focus-ring` custom property now drives every keyboard focus-ring COLOR on
   Starlight CONTENT pages (`custom.css`). Default is the theme-aware site accent
