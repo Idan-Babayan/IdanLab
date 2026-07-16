@@ -190,12 +190,18 @@ mobile-starlight-toc a[aria-current="true"][style*="--depth: 0"]:not([href="#use
    when current (--sl-color-text-accent). h4+ entries sit deeper than the h3 chain below, so they are
    unmatched and keep the lime default too. */
 
-/* Flags (gold), desktop + mobile. Same slug anchors the gold color rules above use. */
+/* Flags (gold), desktop + mobile. Same slug anchors the gold color rules above use. Reads the AA-grade
+   --flag-gold-val rather than the decorative --flag-gold: on dark the two are the SAME value (#ffc23d, the
+   bright loot gold already clears AA there, so dark is unchanged), but on paper --flag-gold (#C6A243) rings
+   at only 2.00:1, while the deeper antique --flag-gold-val (#7a5a12) measures ~5.2:1. This keeps the gold
+   identity and fixes the contrast ratio itself, rather than thickening a faint line, so the ring stays 2px
+   everywhere. Both flags use the one value-gold, matching the TOC color rules, which likewise do not tier
+   user vs root. */
 .right-sidebar-panel a[href="#user-flag"],
 .right-sidebar-panel a[href="#root-flag"],
 mobile-starlight-toc a[href="#user-flag"],
 mobile-starlight-toc a[href="#root-flag"] {
-  --focus-ring: var(--flag-gold);
+  --focus-ring: var(--flag-gold-val);
 }
 
 /* h3 entries (cyan): desktop by the nesting chain, mobile by Starlight's inline --depth: 1. Flags are
@@ -207,20 +213,6 @@ mobile-starlight-toc a[style*="--depth: 1"]:not([href="#user-flag"]):not([href="
 :root[data-theme='light'] .right-sidebar-panel nav > ul > li > ul > li > a:not([href="#user-flag"]):not([href="#root-flag"]),
 :root[data-theme='light'] mobile-starlight-toc a[style*="--depth: 1"]:not([href="#user-flag"]):not([href="#root-flag"]) {
   --focus-ring: var(--tp-cyan-ink);
-}
-
-/* Legibility exception, measured not assumed: the light flag gold (--flag-gold #C6A243) rings at only
-   2.00:1 against the paper TOC, under the 3:1 that a non-text indicator wants (dark is 12.39:1, and the
-   light cyan 5.22:1 / lime 4.11:1 are both fine, so this is the one faint case). Per the focus-ring
-   convention, keep the identity and strengthen the ring instead of falling back to lime: widen to 3px in
-   light only, desktop + mobile. The zero-specificity :where base is designed to let this win. NOTE width
-   raises perceivability, not the contrast ratio; a deeper existing gold (--flag-gold-val, already AA on
-   paper) would fix the ratio itself if the gold ever needs to clear 3:1 properly. */
-:root[data-theme='light'] .right-sidebar-panel a[href="#user-flag"]:focus-visible,
-:root[data-theme='light'] .right-sidebar-panel a[href="#root-flag"]:focus-visible,
-:root[data-theme='light'] mobile-starlight-toc a[href="#user-flag"]:focus-visible,
-:root[data-theme='light'] mobile-starlight-toc a[href="#root-flag"]:focus-visible {
-  outline-width: 3px;
 }
 
 
