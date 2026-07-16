@@ -6,6 +6,29 @@
 
 ---
 
+### 2026-07-13 · Homepage hero subline is NOT screen-reader fragmented (investigated, no change made)
+- **Finding:** the reported fragmentation of the homepage hero subline does not exist. The subline is plain
+  semantic markup, `<p class="sub reveal">` containing one `<b>Recon to root</b>` between two text nodes.
+  Verified in the browser: NO per-word or per-character spans (`hasSpans: 0`, the decode/scramble animation
+  is on the `<h1>`, not the subline), NO `<br>`, no decorative wrappers, and no pre-existing
+  `aria-label` / `aria-hidden`. `<b>` carries no ARIA role (implicit generic) and is inline, so it creates
+  no boundary: the paragraph's announced text is already the full, coherent sentence ("A living lab notebook
+  of machine walkthroughs and capture-the-flag solutions. Recon to root, documented in full, including the
+  dead ends that taught me the most."). NO CHANGE MADE.
+- **Where the "ref_8/ref_9 fragments" came from:** the accessibility-tree DUMP, not the page. The tree
+  serializer lists a child element's text as its own node, so the parent prints with a gap where the `<b>`
+  was: `"...solutions. , documented in full, "` (ref_8) plus `"Recon to root"` (ref_9). That is a rendering
+  artifact of the tool, not what a screen reader announces.
+- **Why the prescribed fix was NOT applied (it would have caused the defect it was meant to cure):**
+  `aria-label` on a `<p>` is invalid, role=paragraph is in ARIA's name-prohibited list, so screen readers
+  ignore it. And `aria-hidden="true"` on the inner `<b>` would REMOVE "Recon to root" from the accessible
+  text, making the subline actually announce as `"...solutions. , documented in full, ..."`, which is
+  precisely the broken ref_8 string. The artifact and the proposed-fix outcome are the same string.
+- **Note (unrelated, unchanged):** the `.reveal` scroll-reveal animates `opacity`, which does not remove
+  content from the accessibility tree (unlike `display:none` / `visibility:hidden`), so the subline is
+  exposed throughout. Untouched.
+- **Status:** Investigated, closed with no code change. Recorded so it is not re-litigated.
+
 ### 2026-07-13 · Focus ring extended to TOC entries + prose links; spoiler-toggle already correct; light flag gold strengthened
 - **Decision:** `--focus-ring` now also carries the TOC's heading-ladder identity and the prose-link cyan.
   Set per element only: no new outline rules, no new colors, every ring still drawn by the shared
@@ -33,12 +56,15 @@
     contradicts that pass's own "ToggleAll stays lime" note. Left as-is (outside this pass); see ROADMAP.
 - **Legibility, measured not assumed** (ring vs its own effective background): dark is strong across the
   board (flag gold 12.39:1, h3 cyan 14.27:1, h2 lime 16.49:1, prose cyan 14.27:1). Light: cyan 5.22:1 and
-  lime 4.11:1 are fine, but the flag gold `#C6A243` rings at only **2.00:1** on the paper TOC, under the
-  3:1 a non-text indicator wants. Per the convention (keep the identity, strengthen the ring, never fall
-  back to lime), the light flag ring is widened to `outline-width: 3px`, desktop + mobile; every other ring
-  stays 2px and dark is untouched. Caveat recorded in the CSS: width raises perceivability, not the ratio;
-  `--flag-gold-val` (an existing deeper gold, already AA on paper) is the option if the gold must actually
-  clear 3:1.
+  lime 4.11:1 are fine, but the decorative `--flag-gold` (`#C6A243`) rings at only **2.00:1** on the paper
+  TOC, under the 3:1 a non-text indicator wants. Per the convention (keep the identity, never fall back to
+  lime), the flag ring reads the AA-grade **`--flag-gold-val`** instead: on dark that token IS `#ffc23d`,
+  so dark is byte-identical (12.39:1, unchanged), while on paper it is the deeper antique `#7a5a12` and
+  measures **5.24:1**, in line with the cyan. That fixes the contrast RATIO rather than thickening a faint
+  line, so every ring stays a uniform 2px and no width override exists anywhere. Both flag slugs use the
+  one value-gold, matching the TOC color rules, which likewise do not tier user vs root. (An interim
+  light-only `outline-width: 3px` was tried first and removed in favour of this: width raises
+  perceivability but not the ratio.)
 - **Verified (real browser, keyboard, both themes, desktop 1280 + mobile 375):** desktop and mobile TOC each
   ring flag gold / h3 cyan / h2 lime, every measured entry with `aria-current` ABSENT (proving the ring does
   not depend on active state); prose links ring cyan; the spoiler-toggle rings lime (not amber, not green);
