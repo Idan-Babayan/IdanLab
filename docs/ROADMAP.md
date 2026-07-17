@@ -81,12 +81,23 @@
 - [CONTENT] Author `principle:` frontmatter on writeups to surface the coda (the auto-append mechanism,
   footer silence, and true italic face all shipped 2026-07-04, see DECISIONS). Migrate busqueda's body
   `<Principle>` to frontmatter (remove the inline component + import, add `principle:`).
+- [CONTENT/ENG] Promote `os` to a typed frontmatter enum (Linux | Windows, matching the `WriteupMeta` OS
+  axis) and tighten the content-collection schema from a loose string to a two-value enum. Unlike tags this
+  is a closed dimension, not a browsable tag, and it is cheap and renders today: it lights up the OS chip on
+  the writeup cards via `WriteupCard`'s existing `os` read. Reconcile the value casing across the
+  `WriteupCard` and `WriteupMeta` consumers when wiring it. Best folded into the mass-import pass so every
+  imported writeup carries it, then backfill the existing few. Owner/ENG for the schema, CONTENT for the values.
 - [PRODUCT] Global `/writeups` index (path 3): reuse `WriteupCard` with `showPlatform` true for a
   mixed cross-platform grid (the card was built for this).
 
 ## Later (parked)
 - [CONTENT] Revisit a scripted content-cleaning pass only if manual polish proves to not scale; deliberately deferred, not abandoned.
-- [CONTENT] Surface topic tags as a browsable index (filter writeups by technique).
+- [CONTENT] Surface topic tags as a browsable index (filter writeups by technique). DEFERRED by decision,
+  not abandoned: a canonical tag taxonomy is drafted and parked as a spelling reference, but tags stay out
+  of frontmatter until writeup volume (~30 to 40) makes a filter earn its place. Below that a tag maps to
+  one or two writeups and a filter returns a dead end, so it is pure invisible metadata for now. When it
+  activates, tag emission + validation ride the import pipeline (see the content-taxonomy guard follow-up
+  in this section) so there is no separate backfill.
 - [ENG] Starlight plugins: scroll-to-top button, mobile sidebar swipe, fullscreen code blocks.
 - [DESIGN] Replace `ethical-hacking.png` about portrait with a transparent custom SVG.
 - [ENG] Extract repeated UI into reusable Astro components (cards, badges, buttons, hero FX).
