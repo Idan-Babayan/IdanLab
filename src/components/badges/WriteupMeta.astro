@@ -1,6 +1,6 @@
 ---
 import {
-  platformLogos, osLogos, osIcons, environmentIcons, platformSlug, difficultyLevel,
+  platformLogos, platformIcons, osLogos, osIcons, environmentIcons, platformSlug, difficultyLevel,
   type Platform, type OS, type Environment, type Difficulty,
 } from './icons';
 
@@ -21,26 +21,21 @@ const platformClass: Record<Platform, string> = {
 // only enforced in the editor, and a typo like difficulty="Hardd" would ship silently: data-level is
 // dropped so no pips fill, the href becomes /platform/undefined, and screen readers announce
 // "Difficulty undefined of 4". Fail the build instead of shipping that.
-const axes = [
-  ['platform', platform, platformLogos],
-  ['environment', environment, environmentIcons],
-  ['difficulty', difficulty, difficultyLevel],
-] as const;
-for (const [name, value, registry] of axes) {
-  if (!Object.prototype.hasOwnProperty.call(registry, value as string)) {
-    throw new Error(
-      `WriteupMeta: unknown ${name} "${value}". Expected one of: ${Object.keys(registry).join(', ')}.`,
-    );
+// Platform and OS each span TWO registries (polychrome <img> vs monochrome set:html), so every axis
+// is checked against the union of its registries. This replaces the previous per-axis check plus a
+// bespoke OS block: without it, platform="HackTheBox" would now throw, because HackTheBox has moved
+// out of platformLogos and into platformIcons.
+const axes: ReadonlyArray<readonly [string, string, readonly object[]]> = [
+  ['platform', platform, [platformLogos, platformIcons]],
+  ['os', os, [osLogos, osIcons]],
+  ['environment', environment, [environmentIcons]],
+  ['difficulty', difficulty, [difficultyLevel]],
+];
+for (const [name, value, registries] of axes) {
+  if (!registries.some((r) => Object.prototype.hasOwnProperty.call(r, value))) {
+    const known = registries.flatMap((r) => Object.keys(r));
+    throw new Error(`WriteupMeta: unknown ${name} "${value}". Expected one of: ${known.join(', ')}.`);
   }
-}
-// OS spans two maps: Linux is a logo (<img>), Windows is a tinting glyph (set:html).
-if (
-  !Object.prototype.hasOwnProperty.call(osLogos, os) &&
-  !Object.prototype.hasOwnProperty.call(osIcons, os)
-) {
-  throw new Error(
-    `WriteupMeta: unknown os "${os}". Expected one of: ${[...Object.keys(osLogos), ...Object.keys(osIcons)].join(', ')}.`,
-  );
 }
 
 const level = difficultyLevel[difficulty];
@@ -72,7 +67,9 @@ const envClass = `wm-env-${envSlug}`; // wm-env-standalone | wm-env-active-direc
         below back to these anchors once the routes exist, and drop the data-astro-prefetch="false"
         attrs then (they exist only to stop Starlight prefetching dead routes).
     <a class={`wm-chip ${platformClass[platform]}`} href={`/platform/${platformSlug[platform]}`} data-astro-prefetch="false">
-      <img class="wm-ico wm-ico-logo" src={platformLogos[platform]} alt="" width="15" height="15" loading="lazy" decoding="async" />{platform}
+      {platform === 'HackTheBox'
+        ? <span class="wm-ico" set:html={platformIcons.HackTheBox} />
+        : <img class="wm-ico wm-ico-logo" src={platformLogos[platform]} alt="" width="15" height="15" loading="lazy" decoding="async" />}{platform}
     </a>
     <a class={`wm-chip ${osClass}`} href={`/os/${osSlug}`} data-astro-prefetch="false">
       {os === 'Linux'
@@ -84,7 +81,9 @@ const envClass = `wm-env-${envSlug}`; // wm-env-standalone | wm-env-active-direc
     </a>
     */}
     <span class={`wm-chip ${platformClass[platform]}`}>
-      <img class="wm-ico wm-ico-logo" src={platformLogos[platform]} alt="" width="15" height="15" loading="lazy" decoding="async" />{platform}
+      {platform === 'HackTheBox'
+        ? <span class="wm-ico" set:html={platformIcons.HackTheBox} />
+        : <img class="wm-ico wm-ico-logo" src={platformLogos[platform]} alt="" width="15" height="15" loading="lazy" decoding="async" />}{platform}
     </span>
     <span class={`wm-chip ${osClass}`}>
       {os === 'Linux'
