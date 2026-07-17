@@ -298,9 +298,17 @@ mobile-starlight-toc a[style*="--depth: 1"]:not([href="#user-flag"]):not([href="
 :root[data-theme="light"] .writeup-meta .pf-otw  { --wm-c: #794e00; } /* 2.97 -> 4.80, chroma 79% (amber browns when darkened) */
 
 /* OS: the OS's own identity color. */
-.writeup-meta .wm-os-linux   { --wm-c: #f0b429; }   /* Tux amber */
+.writeup-meta .wm-os-linux   { --wm-c: #ffa95d; }   /* Tux amber, H60 (his own beak/feet are #FFA63F H65.6 / #E68C3F H57.9) */
 .writeup-meta .wm-os-windows { --wm-c: #4ca3ff; }   /* Windows blue */
-:root[data-theme="light"] .writeup-meta .wm-os-linux   { --wm-c: #794e00; } /* 2.97 -> 4.80, chroma 79% (shares OTW's amber; independent value, not consolidated) */
+/* Linux is re-hued to H60 in BOTH themes (was dark #f0b429 H82.5 / light #794e00 H73, the latter
+   identical to OverTheWire), moving it into Tux's own amber family (#FFA63F H65.6 / #E68C3F H57.9) and
+   away from OTW's gold. OTW is untouched; the two chips sit adjacent on a Bandit row, so they must read
+   distinct. Dark separates on TWO axes (hue + lightness: OTW L0.85 vs Linux L0.80, plus ~60% more
+   chroma) and already reads distinct at dEOK 0.073. Light had matched lightness, so hue alone carried
+   it at low chroma and it read as one colour (dEOK 0.022). So light DROPS lightness to L0.40 to add the
+   second axis: dEOK 0.065, near dark's, without exceeding it. AA is a floor not a target here; darker
+   only raises contrast (4.85 -> 6.13). Gamut-map chroma (palette-pass method). Dark holds its lightness. */
+:root[data-theme="light"] .writeup-meta .wm-os-linux   { --wm-c: #6b3900; } /* H60, L0.40; 6.13, sep 0.065 vs OTW */
 :root[data-theme="light"] .writeup-meta .wm-os-windows { --wm-c: #0053af; } /* 3.85 -> 4.80, chroma 92% */
 
 /* Environment: the feel of the environment. AD enterprise indigo (distinct from Windows blue);
