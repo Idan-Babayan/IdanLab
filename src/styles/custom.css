@@ -273,9 +273,11 @@ mobile-starlight-toc a[style*="--depth: 1"]:not([href="#user-flag"]):not([href="
 }
 .writeup-meta .wm-ico { width: 15px; height: 15px; flex: none; display: inline-flex; color: var(--wm-c); }
 .writeup-meta .wm-ico svg { width: 100%; height: 100%; }
-/* Platform mark is a full-color brand logo served as <img> (native fills, not currentColor). Contain it
-   in the 15px box so non-square logos keep their aspect. color:var(--wm-c) on .wm-ico has no effect on an
-   <img>, so the logo renders in its own colors, as intended. */
+/* POLYCHROME marks (VulnHub, PicoCTF, OverTheWire, Linux) are served as <img> in their native fills.
+   Contain them in the 15px box so a non-square logo keeps its aspect. color:var(--wm-c) on .wm-ico has
+   no effect on an <img>, so those logos render in their own colors, as intended. HackTheBox is NOT one
+   of them: it is the one monochrome platform mark, so it is inlined and tints from --wm-c like the
+   other glyphs, and this rule does not apply to it. See icons.ts. */
 .writeup-meta img.wm-ico-logo { object-fit: contain; }
 
 /* Platform: canonical --pf-accent per platform (dark + light), with HTB's true brand green for glow. */
