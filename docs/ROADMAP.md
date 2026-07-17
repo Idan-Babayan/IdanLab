@@ -62,20 +62,18 @@
   machinery as the /principles index. Engineering.
 
 ## Next (committed)
-- [ENG] Fold `ToggleAll.astro`'s hardcoded cyan focus ring into `--focus-ring` (DECISIONS 2026-07-13). It is
-  the one element still bypassing the token: its scoped style carries
-  `.toggle-all:focus-visible { outline: 2px solid color-mix(in oklab, var(--pf-accent-2) 60%, transparent) }`.
-  The convention lists ToggleAll as a non-identity control that should ring the lime default, so dropping the
-  bespoke outline (KEEPING its cyan hover/focus color + border + background state, which is its hover design)
-  would let it inherit lime. Decide first whether the cyan ring was deliberate; if it was, record that instead
-  and leave it.
 - [ENG/DESIGN] Unify the two marketing pages (home, about) under the `--focus-ring` token established for
-  content pages (DECISIONS 2026-07-13). The token system is content-only by decision; this second step
-  folds the marketing pages' inline `:focus-visible` rings (currently `outline: 2px solid var(--lime)` +
-  per-card `outline-color: var(--accent)` from the 2026-07-13 focus-states work) into the same model:
-  an inline `:root{--focus-ring:var(--lime)}` default + the shared `:where(...)` rule + `--focus-ring:
-  var(--accent)` on the platform cards, in EACH page's `<style is:global>` (they do not load custom.css).
-  Net: no ring color hardcoded anywhere. Keep both themes, `:focus-visible` only, no motion.
+  content pages (CORE_SPEC §6 "Focus ring system"; DECISIONS 2026-07-13). This is now the LAST gap in the
+  token system: every content-page ring flows through `--focus-ring` (ToggleAll was the final holdout and
+  landed 2026-07-17, see DECISIONS), so the marketing pages are the only place a ring color is still
+  hardcoded. The token system is content-only by decision; this second step folds their inline
+  `:focus-visible` rings (currently `outline: 2px solid var(--lime)` + per-card `outline-color:
+  var(--accent)` from the 2026-07-13 focus-states work) into the same model: an inline
+  `:root{--focus-ring:var(--lime)}` default + the shared `:where(...)` rule + `--focus-ring: var(--accent)`
+  on the platform cards, in EACH page's `<style is:global>` (they do not load custom.css). Net: no ring
+  color hardcoded anywhere. Keep both themes, `:focus-visible` only, no motion. Note the marketing pages
+  have no Starlight `markdown.css` under them, so the orphaned-margin geometry bug fixed on content toggles
+  (DECISIONS 2026-07-17) does not apply there.
 - [CONTENT] Mass-import ~50 existing writeups via the pipeline (HTB / VulnHub / PicoCTF / OTW), each as a
   flat `.mdx` with images under the parallel `src/assets` tree (DECISIONS 2026-06-30). Once HTB
   Medium/Hard folders have content, uncomment those (lowercase) sidebar groups in `astro.config.mjs`.

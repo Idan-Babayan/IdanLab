@@ -1503,6 +1503,31 @@ nav.sidebar summary {
   border-radius: 0;
 }
 
+/* Keyboard focus ring wraps the WHOLE code frame, not just the <pre>.
+   EC core ships a "Scrollable block tabindex" JS module that sets tabindex="0" + role="region" on any
+   <pre> whose content overflows (driven by a 250ms-debounced ResizeObserver, so it lands after load and
+   re-evaluates on resize). That is what makes a wide, unwrapped block keyboard-scrollable, and that
+   tabindex is what the shared :where(..., [tabindex]):focus-visible rule matches, so the ring was drawn
+   on the PRE. Two problems, both because the pre is only the LOWER part of the frame (figcaption.header,
+   the language tab, is a sibling ABOVE it): the ring enclosed the code but not the tab, and its top edge
+   landed exactly 2px inside the header's box (the shared outline-offset), where it was PAINTED OVER. The
+   header is position:relative + z-index:1 while the pre is static, so the header paints later; measured
+   live, elementFromPoint at the ring's top edge returns the header, and .title carries an opaque
+   background (#16161e dark), so under the tab the edge vanished completely.
+   Fix: suppress the ring on the pre and draw it on figure.frame, whose border box already spans the
+   header plus the pre exactly (verified: same top as the header, same bottom as the pre). :has() is used
+   deliberately rather than :focus-within, which would also fire on pointer clicks. The color still reads
+   --focus-ring and the geometry matches the shared rule (2px solid, 2px offset), so this changes only
+   WHICH element is ringed, not how the ring looks. No ancestor clips it, and the frame radius is 0
+   (above), so the ring stays square like the frame it traces. */
+.expressive-code .frame > pre:focus-visible {
+  outline: none;
+}
+.expressive-code .frame:has(> pre:focus-visible) {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
 /* ── Command highlight by category (.ec-cmd-*) ──
    The ec-priv-command plugin tags command words by semantic category (see
    astro.config.mjs / src/lib/ec-priv-command.mjs). EC sets each token color inline per theme, so

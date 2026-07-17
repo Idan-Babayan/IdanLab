@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-07-12.
+> Last updated: 2026-07-17.
 
 ---
 
@@ -164,6 +164,84 @@ Two surfaces, deliberately different:
   size-adjust fallbacks so the font swap is shift-free; no Google Fonts origin. See DECISIONS 2026-07-04.
 - **Starlight var overrides:** `--sl-color-accent` = lime, `--sl-color-bg` = ink,
   `--sl-font` = JetBrains Mono. Headings forced to Syne via CSS.
+
+### Focus ring system (keyboard accessibility)
+
+The site's keyboard focus indicator. One token drives every ring COLOR; one shared rule draws every ring.
+Both live at the very top of `custom.css`. This is an accessibility feature first: it is how a keyboard
+user knows where they are, so it is never removed, only aimed. See DECISIONS 2026-07-13 (the token system)
+and 2026-07-17 (the geometry fixes).
+
+**The token.** `--focus-ring` defaults on `:root` to the theme-aware site accent
+`var(--sl-color-text-accent)` (lime `#b6ff3c` dark / `#4d7c0f` light). Nothing else needs to know a color.
+
+**The shared rule.** One zero-specificity base rule paints the rectangular ring for every control:
+
+```css
+:where(a, button, [role="button"], input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+```
+
+- `:focus-visible`, never `:focus`, so the ring is keyboard-only and does not fire on a mouse click.
+- **`:where()` holds it at specificity 0 on purpose:** any element with a real geometric need can out-rank
+  it without `!important` and without editing the shared rule. That escape hatch is load-bearing (see the
+  code-frame exception below). Never add specificity to this rule.
+- `custom.css` is unlayered, so this beats Starlight's layered styles. Starlight 0.39.2 ships no
+  `:focus-visible` outline of its own, so this IS the ring for every content-page control.
+- Uniform 2px width everywhere. Contrast problems are fixed by changing the COLOR to an AA-grade token,
+  never by thickening the line (see the light flag gold below).
+
+**Identity, where it exists.** An element that already expresses a color sets `--focus-ring` to it, so the
+ring echoes what the element is rather than inventing an identity. Everything else inherits lime.
+
+| Element | `--focus-ring` |
+| --- | --- |
+| `WriteupCard` (`.wc-card`) | `--pf-accent` (its platform color) |
+| The 4 platform sidebar groups | positional `nth-child`, theme-aware (HTB lime, VulnHub red, PicoCTF purple, OTW amber) |
+| `FlagCapture` / `PasswordReveal` | gold `color-mix(--fc-id)` / amber `#ffc23d` dark, `#a86f04` light |
+| `ToggleAll` | `--pf-accent-2` cyan (its own hover identity; set in the component's scoped style) |
+| TOC entries | the hue of the heading they point to: flags `--flag-gold-val`, h3 cyan, h2/h4+ lime |
+| In-prose links | `--tp-cyan` / `--tp-cyan-ink` |
+| `WriteupMeta` chips | `--wm-c` (inert hook until the rollout) |
+
+**Light flag gold is the one contrast carve-out.** The decorative `--flag-gold` (`#C6A243`) rings at only
+2.00:1 on paper, under the 3:1 a non-text indicator needs, so the flag ring reads the AA-grade
+`--flag-gold-val` instead (dark is byte-identical `#ffc23d` at 12.39:1; light becomes the deeper antique
+`#7a5a12` at 5.24:1). Identity kept, ratio fixed, width untouched.
+
+**Geometry: the ring is drawn on the focused element, with two deliberate exceptions.**
+
+1. **Content toggles** (`details > summary`). Starlight's `markdown.css` pairs
+   `margin-inline-start: -0.5rem` with `padding-inline-start: 0.5rem` so the outline encloses the
+   negatively-margined `::before` marker without moving it. Our unlayered summary padding once cancelled
+   only the padding half, orphaning the margin and throwing every ring 8px off-center. The base summary
+   rule now re-declares the pair, inset by the card's own padding difference
+   (`0.75rem` inline minus `0.4rem` block = 5.6px), so the summary's box sits the same distance inside the
+   card horizontally as vertically and all four ring deltas are equal. **If you ever change the toggle
+   card's padding, this inset must change with it.**
+2. **Expressive Code blocks.** EC core's "Scrollable block tabindex" JS module adds `tabindex="0"` plus
+   `role="region"` to any `<pre>` that overflows (debounced ResizeObserver, so it appears after load and
+   re-evaluates on resize). That tabindex is what the shared rule matches. But the `<pre>` is only the
+   lower half of the frame (`figcaption.header`, the language tab, is a sibling above it), and the header
+   is `position: relative; z-index: 1` over a static `pre`, so a ring on the pre both excluded the tab and
+   had its top edge painted over. The ring is therefore moved to `figure.frame` via
+   `:has(> pre:focus-visible)`, which spans header plus pre exactly. **Use `:has()`, never `:focus-within`**
+   (that fires on pointer clicks too).
+
+**Known behavior, not a bug:** clicking a wide code block DOES show the ring. Chromium matches
+`:focus-visible` on a keyboard-scrollable region even for pointer focus, because arrow keys scroll it.
+That predates the token system and is correct a11y.
+
+**The one deliberate suppression:** `SecretTerminal`'s `.term-input` sets `outline: none`. That is
+intentional and should stay: it is a fake terminal's command line, where the conventional focus indicator
+is the caret (`caret-color: var(--t-lime)`), not a box around the input. It is the only interactive
+element in that terminal and it is auto-focused. Nowhere else on the site is a focus indicator removed.
+
+**Scope:** `custom.css` themes Starlight CONTENT pages only. The two standalone marketing pages carry
+their own equivalent inline rings (`var(--lime)` + per-card `var(--accent)`); folding them into the same
+token is an open ROADMAP item, not a bug.
 
 ### Signature effects
 - Interactive **constellation canvas** (nodes drift, react to cursor) in heroes. Its `draw()` loop pauses

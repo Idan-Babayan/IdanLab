@@ -6,6 +6,125 @@
 
 ---
 
+### 2026-07-17 · Code-block focus ring wraps the whole EC frame, not just the `<pre>`
+- **Decision:** two add-only rules in `custom.css` (right after the sharp-frame radius block): the ring is
+  suppressed on `.expressive-code .frame > pre:focus-visible` and drawn instead on
+  `.expressive-code .frame:has(> pre:focus-visible)` at the shared geometry (`2px solid var(--focus-ring)`,
+  `outline-offset: 2px`). Only WHICH element is ringed changes; the color and geometry are the shared
+  system's. The shared `:where(...)` rule is untouched (its zero specificity is exactly what let a
+  `pre:focus-visible` selector override it cleanly).
+- **Why (measured, not assumed):** EC core ships a "Scrollable block tabindex" JS module that sets
+  `tabindex="0"` + `role="region"` on a `<pre>` whose content overflows, which is what makes a wide
+  unwrapped block keyboard-scrollable. That tabindex is what the shared `:where(..., [tabindex])` rule
+  matches, so the ring landed on the PRE. But the pre is only the LOWER half of the frame:
+  `figcaption.header` (the language tab) is a SIBLING above it, not a parent. So the ring excluded the tab,
+  and worse, its top edge landed exactly 2px inside the header's box (precisely the shared outline-offset)
+  where it was painted over: the header is `position: relative; z-index: 1` against a static `pre`, so it
+  paints later. Confirmed live: `elementFromPoint` at the ring's top edge returned `FIGCAPTION.header`, the
+  overlap measured exactly 2px, and `.title` carries an opaque `rgb(22,22,30)` background, so under the tab
+  the edge vanished completely. `figure.frame` was the right target because its border box already spans
+  header plus pre exactly (same top as the header, same bottom as the pre, verified).
+- **`:has()` not `:focus-within`:** `:focus-within` also fires on pointer clicks. `:has(> pre:focus-visible)`
+  is the precise form and keeps the keyboard-only contract.
+- **Premise correction (supersedes a line in the 2026-07-13 token entry):** that entry recorded "Code blocks
+  have no `tabindex`, so they are untouched." That is FALSE. It is true of the static HTML and true if the
+  DOM is inspected too early, which is how it was missed: EC's module runs on a 250ms-debounced
+  ResizeObserver plus `requestIdleCallback`, so the attribute appears after load and re-evaluates on resize.
+  Measured on busqueda: 3 focusable pres one moment, 0 the next, and 16 of 16 once settled with the toggles
+  open. Any future audit of this must WAIT for the observer to settle before counting.
+- **Known behavior, deliberately not "fixed":** clicking a wide code block shows the ring. Chromium matches
+  `:focus-visible` on a keyboard-scrollable region even for pointer focus (arrow keys scroll it, so
+  indicating focus is correct). Proven pre-existing by reconstructing the old rules against the same
+  pointer-focus state: the pre rang on click before this change too. This change relocates a ring, it does
+  not add one.
+- **Verified (real browser, real Tab, both themes):** `:focus-visible` true on the pre, `outline-style: none`
+  on the pre, and the ring on the figure (`#b6ff3c` dark / `#4d7c0f` light). The ring now sits ABOVE the tab
+  (clearance 1.6px at dpr 1.25, was 2px INSIDE it) and `RING_WRAPS_WHOLE_FRAME` is true, with symmetric
+  deltas on all four sides. No ancestor clips it and the frame radius is 0, so the ring stays square like
+  the frame. Both rules survive minification in `dist`. `npm run build` green (45 pages).
+- **Status:** Adopted. CSS-only, additive, `custom.css` only. No new deps, pinned versions unchanged.
+
+### 2026-07-17 · Toggle focus ring aligns to its tab (re-pairs Starlight's orphaned summary margin)
+- **Decision:** the base `.sl-markdown-content details > summary` rule changes `padding: 0.3rem 0` to
+  `padding-block: 0.3rem` plus a re-declared `margin-inline` / `padding-inline` pair, inset by the card's own
+  padding difference (`calc(0.75rem - 0.4rem)` = 5.6px), plus `border-radius: 4px`. Applies to EVERY content
+  toggle. The ring COLOR is unchanged (still the inherited lime default; the amber identity question stays
+  deferred), and the shared `:where(...)` rule is untouched.
+- **Why:** Starlight's `markdown.css` ships a MATCHED pair on every content summary,
+  `margin-inline-start: -0.5rem` + `padding-inline-start: 0.5rem`, commented upstream as "Expand the outline
+  so that the marker cannot distort it": the padding grows the border box leftward so the outline encloses
+  the negatively-margined `::before` marker, and the margin cancels the layout shift. Our unlayered
+  `padding: 0.3rem 0` beat that layer and zeroed the padding half while declaring NO margin, so the `-0.5rem`
+  survived ORPHANED (`starlight.content` outranks `starlight.reset`'s `* { margin: 0 }`, and a rule that
+  never mentions margin cannot compete). Net: every summary's border box, and its label with it, sat 8px LEFT
+  of the card's content box while the right edge stayed flush. Measured deltas to the card's border box:
+  left 3, right 11, against top/bottom 5.4.
+- **Why this inset (and the constraint it creates):** 5.6px makes the summary's border box sit the same
+  distance inside the card horizontally as it already does vertically, so all four ring deltas are EQUAL
+  (5.4px at dpr 1 = 1px card border + 6.4px card block padding - 2px outline-offset) with NO
+  `outline-offset` override anywhere. The equality is the invariant; the absolute number moves on
+  fractional-dpr displays because the 1px border and 2px ring both snap to device pixels (5.2px at dpr 1.25).
+  **This inset is derived from the card's padding, so changing `.sl-markdown-content details`'s padding means
+  changing it too.**
+- **Second latent bug fixed (owner-approved, visible):** the orphan dragged the summary's CONTENT, not just
+  its border box, so every toggle label sat 8px left of where Starlight intends. Restoring the pair moves each
+  label 8px right, onto the card's content box, where it now aligns with the `.toggle-body` text below it
+  (measured 28.8 vs 28.8; it previously sat 5.6px left of it). Treated as a fix, not a regression.
+- **Scope correction (the reason this took two commits):** the first pass (`0fc1864`) was scoped to
+  `.spoiler-toggle` and fixed 1 of 27 toggles, because the brief fenced the base rule on the premise that the
+  defect was spoiler-specific. It never was: the orphan is CREATED by the base rule, so all 27 were broken.
+  The owner spotted a still-misaligned plain toggle on busqueda; `34417ee` moved the pair to the base rule and
+  deleted the now-redundant `.spoiler-toggle` geometry rule (a net simplification: one rule for every toggle
+  instead of one for an exception). **Lesson recorded: when a cause is traced to a SHARED rule, the blast
+  radius is every consumer of that rule, and the report must say so even if the brief scopes the fix
+  narrower.**
+- **Premise correction (supersedes the 2026-07-13 TOC/prose entry):** that entry concluded the spoiler-toggle
+  "ALREADY rings the lime default ... which is exactly the requested end state. NO change was needed or made."
+  That was true of the ring's COLOR only. Its GEOMETRY was wrong the whole time (8px off-center), which a
+  color-only check could not see.
+- **Verified (real browser, both themes, closed and open):** all 27 toggles across the 5 pages that use them
+  are now symmetric (was 1 of 27; 0 of 13 on busqueda). Every toggle reports identical deltas. A real mouse
+  click leaves `:focus-visible` false with `outline-style: none`. The ring stays on the tab when open and
+  clears the revealed body by 14px. The `[open]` padding-bottom tightening still wins on specificity
+  (4.8px to 2.4px) and leaves the ring top identical, so it reintroduces no vertical shift. The spoiler
+  toggle's amber border logic is untouched. `npm run build` green (45 pages).
+- **Status:** Adopted; committed as `0fc1864` then `34417ee`. CSS-only, `custom.css` only.
+
+### 2026-07-17 · ToggleAll keeps its cyan ring, routed through `--focus-ring` (resolves the ROADMAP item)
+- **Decision:** `ToggleAll.astro`'s scoped style drops its hardcoded
+  `outline: 2px solid color-mix(in oklab, var(--pf-accent-2) 60%, transparent)` and sets
+  `--focus-ring: var(--pf-accent-2)` instead, letting the shared rule paint it at the standard 2px / 2px
+  offset. Its cyan hover/focus color, border and background wash are KEPT (that is its hover design).
+- **Why cyan was kept rather than dropped to lime:** the ROADMAP item posed this as a question ("decide first
+  whether the cyan ring was deliberate"). It is: `--pf-accent-2` cyan IS this control's identity, the same
+  color its hover state, border and wash already read, so under the system's own rule (identity elements ring
+  in what they already express) it qualifies exactly like `WriteupCard` or the reveals. The 2026-07-13 note
+  calling ToggleAll a "non-identity control that should ring lime" is superseded. `--pf-accent-2` is already
+  theme-aware (`:root` maps it to `--tp-cyan`, the light block to `--tp-cyan-ink`), so one declaration covers
+  both themes with no light variant. A custom property set directly on the element wins over `:root`
+  inheritance regardless of Astro's `:where()` scoping.
+- **Net:** no ring color is hardcoded anywhere on content pages; every content-page ring now flows through
+  `--focus-ring`. The marketing pages remain outside the token by decision (still a ROADMAP item).
+- **Status:** Adopted; committed as `c0171f3`. Resolves the "[ENG] Fold ToggleAll's hardcoded cyan focus ring
+  into --focus-ring" ROADMAP item, which is removed from ROADMAP.
+
+### 2026-07-17 · Gate landing-page stat count-up under prefers-reduced-motion
+- **Decision:** In `src/pages/index.astro`, `countUp` short-circuits when `prefers-reduced-motion: reduce`
+  is set, rendering each stat's final value (4, 50+, and the infinity stat) with no numeric animation.
+  Non-reduced-motion behavior is unchanged.
+- **Why:** "prefers-reduced-motion respected" is a standing project rule, and the count-up previously
+  animated regardless, so this closes an existing gap. Safe because the resting HTML already holds the
+  final values (see the flash-fix entry below).
+- **Status:** Adopted, verified in-browser; committed as `1e4fb4f` (was recorded as uncommitted).
+
+### 2026-07-17 · Landing stats: resting HTML holds final values, no flash
+- **Decision:** The three stat elements render their final values (4, 50+, and the infinity stat) as
+  resting HTML, and `countUp` writes the '0' start value synchronously (not in the first
+  `requestAnimationFrame`) so the final value is never painted while `.reveal` is at opacity 0.
+- **Why:** No-JS visitors, social/OG crawlers, and non-executing search engines now see the real numbers
+  instead of 0, and there is no one-frame flash of the final value before the count-up begins.
+- **Status:** Adopted, verified in-browser; committed as `1e4fb4f` (was recorded as uncommitted).
+
 ### 2026-07-13 · Homepage hero subline is NOT screen-reader fragmented (investigated, no change made)
 - **Finding:** the reported fragmentation of the homepage hero subline does not exist. The subline is plain
   semantic markup, `<p class="sub reveal">` containing one `<b>Recon to root</b>` between two text nodes.
@@ -50,6 +169,10 @@
     ALREADY rings the lime default through the shared rule (measured `#b6ff3c` dark / `#4d7c0f` light, with
     the amber staying text/border only), which is exactly the requested end state. The "green" is most
     likely the light lime `#4d7c0f`, which reads as an olive green. NO change was needed or made.
+    **CORRECTED 2026-07-17:** true of the ring's COLOR only. Its GEOMETRY was wrong at the time of this
+    entry and stayed wrong: an orphaned Starlight `margin-inline-start` threw the ring 8px off-center, on
+    this toggle and on all 26 others. A color-only check could not see it. See the 2026-07-17
+    toggle-alignment entry.
   - **`ToggleAll.astro` hardcodes a cyan ring** (`outline: 2px solid color-mix(in oklab,
     var(--pf-accent-2) 60%, transparent)`), a component-level rule the token pass below missed (it grepped
     `src/styles/*.css`, not components). It is the one element still bypassing `--focus-ring`, and it
@@ -113,6 +236,11 @@
   + `outline: none` (no ring on mouse click). Code blocks have no `tabindex`, so they are untouched. Every
   identity ring is legible against its background in both themes (bright on the near-black rail, darkened
   values on paper); none needed strengthening. `npm run build` green (45 pages).
+- **CORRECTED 2026-07-17 ("code blocks have no `tabindex`"):** FALSE. EC core's "Scrollable block tabindex"
+  JS module adds `tabindex="0"` + `role="region"` to any `<pre>` that overflows, so wide code blocks DO
+  match the shared rule and were ringed all along. It went unnoticed because the module runs on a
+  250ms-debounced ResizeObserver, so the attribute is absent from the static HTML and from any DOM check
+  made too early. Wait for the observer to settle before counting. See the 2026-07-17 code-frame entry.
 - **Status:** Adopted; committed to `dev` (not pushed). CSS-only, additive, `custom.css` only.
 
 ### 2026-07-13 · Marketing-page keyboard focus rings (:focus-visible), matching the component-ring pattern
