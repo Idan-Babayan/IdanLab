@@ -49,9 +49,12 @@ import '../styles/fonts.css';
   <div class="sec-label reveal">// Index</div>
   <h2 class="sec-title reveal">By the numbers</h2>
   <div class="stats reveal">
-    <div class="stat"><div class="num" data-count="4">0</div><div class="lbl">Platforms</div></div>
-    <div class="stat"><div class="num" data-count="50" data-suffix="+">0</div><div class="lbl">Writeups</div></div>
-    <div class="stat"><div class="num" data-text="∞">0</div><div class="lbl">Curiosity</div></div>
+    <!-- Resting text is each stat's FINAL value (4 / 50+ / infinity) so no-JS visitors, social
+         crawlers, and search engines see the real numbers, not 0. countUp resets to the start
+         value and animates up as a progressive enhancement (see the script below). -->
+    <div class="stat"><div class="num" data-count="4">4</div><div class="lbl">Platforms</div></div>
+    <div class="stat"><div class="num" data-count="50" data-suffix="+">50+</div><div class="lbl">Writeups</div></div>
+    <div class="stat"><div class="num" data-text="∞">∞</div><div class="lbl">Curiosity</div></div>
   </div>
 </section>
 
@@ -359,10 +362,17 @@ import '../styles/fonts.css';
     },45);
   }
 
-  /* Count up */
+  /* Count up. The resting HTML now carries each stat's FINAL value (4 / 50+ / infinity) so no-JS
+     visitors and crawlers see the real number. When countUp runs it snaps back to the start value
+     and animates up to that same final value. The start value is set synchronously here (not in the
+     first rAF frame, which is the next frame) so it lands in the same paint as the .reveal .in class
+     that reveals the stats, meaning the final value never flashes before the count begins. */
   function countUp(el: HTMLElement){
     const text = el.dataset.text; if(text){ el.textContent=text; return; }
     const end = +(el.dataset.count ?? '0'), suf = el.dataset.suffix ?? ''; const dur=1400; let s: number | null = null;
+    /* Reduced motion: show the final value with no counting animation. */
+    if(reduce){ el.textContent = String(end)+suf; return; }
+    el.textContent = '0';
     const step = (t: number) => { if(!s)s=t; const p=Math.min((t-s!)/dur,1); const e=1-Math.pow(1-p,3);
       el.textContent = Math.floor(e*end)+(p===1?suf:''); if(p<1) requestAnimationFrame(step); };
     requestAnimationFrame(step);
