@@ -263,11 +263,13 @@ token is an open ROADMAP item, not a bug.
   prop for a future mixed grid), `Callout` (icon-based tagged callout, used in writeup bodies),
   `NotFound` (404 body), `SecretTerminal` (vanilla-TS terminal), `badges/WriteupMeta` (navigational
   Platform/OS/Environment chip row + trailing hue-free Difficulty pip chip, under a writeup title;
-  each nav chip is intentionally colored via a single `--wm-c` per value (platform = canonical
-  `--pf-accent`, OS/Env = identity colors), with a restrained glow (halo on dark, hue-shadow on light);
-  Difficulty magnitude is filled+growing pips; chips are `<a>` to future filter routes, `.not-content`
-  + `data-astro-prefetch="false"`; icons live in `badges/icons.ts`; runtime-validates its four union
-  props. Not yet applied to any writeup. See DECISIONS 2026-07-10).
+  each nav chip is coloured via a single `--wm-c` per value, with a restrained glow (halo on dark,
+  hue-shadow on light); Difficulty magnitude is filled+growing pips; chips render as non-interactive
+  `<span>` today (the commented `<a>` + `data-astro-prefetch="false"` restore verbatim once the filter
+  routes ship), `.not-content`; icons live in `badges/icons.ts` on a 14px grid; runtime-validates its
+  four union props. Colour model, icon sourcing, geometry and the light-mode AA palette are documented
+  in the "Badge system (WriteupMeta)" blocks in §6 and §7. Live on the `busquedav2.mdx` testbed; not yet
+  rolled out to real writeups. See DECISIONS 2026-07-17 (three badge entries) and 2026-07-10).
 - Chrome (Starlight override): `ToggleAll` (Expand/Collapse-all control) auto-injected into the right
   "On this page" sidebar by `overrides/PageSidebar.astro` (renders `<Default/>` then the control).
 
@@ -282,6 +284,37 @@ One palette everywhere: HTB **lime**, VulnHub **red**, PicoCTF **purple**, OTW *
 homepage cards, sidebar dots, about-page accents, and writeup badges). The old badge set (blue /
 cyan / violet / orange) is retired. Because HTB lime overlaps Easy green, every `.platform-*` badge
 carries a leading glowing dot so it never reads as a difficulty pill. (See DECISIONS 2026-06-01.)
+
+### Badge system (WriteupMeta): colour model + light-mode AA palette
+The `WriteupMeta` chip row (Platform / OS / Environment nav chips + a hue-free Difficulty chip) is
+driven by ONE custom property per chip value, `--wm-c`. That single token drives the chip's label,
+its monochrome icon (via `currentColor`), border (38%), fill (`color-mix(--wm-c 15%, transparent)`,
+i.e. 15% identity over 85% surface), glow, and focus ring. There is deliberately NO separate text/ink
+token (unlike `--flag-gold` / `--flag-gold-val`): everything `--wm-c` paints wants to move together.
+- **Per-value hues:** platform = the canonical `--pf-accent` (HTB lime, VulnHub red, PicoCTF purple, OTW
+  amber); OS/Env = identity colours (Windows blue, AD indigo, Standalone slate, Progressive teal, Linux
+  a Tux amber). Dark values live on unprefixed selectors, light under `:root[data-theme='light']`.
+- **Light labels are solved to WCAG AA, not eyeballed.** Each 12px/600 label must clear 4.5:1 on its own
+  composited fill (over paper `#ece9e0`, no card); the light values are solved in OKLCH by holding hue,
+  dropping lightness to ~4.8:1 (antialiasing margin), and holding chroma where sRGB allows / clamping to
+  the gamut boundary where it does not. Hue is NEVER shifted to reach AA and chroma is never dropped as a
+  shortcut (the §6 "chroma not contrast" lesson in reverse). Dark already passed everywhere and is
+  untouched. **Amber is the structural worst case:** its sRGB gamut collapses as it darkens, so amber
+  keeps only ~79% of its chroma at AA vs 88 to 100% for other hues; that loss is the price of AA itself,
+  not a solver limit. See DECISIONS 2026-07-17.
+- **`--wm-glow`** is set only where it earns its keep: the DARK `pf-htb --wm-glow` (`#9fef00`) holds HTB's
+  true brand green while the label carries palette lime. No light `--wm-glow` exists (the light glows read
+  `--wm-c` directly, so one would never render).
+- **Linux vs OverTheWire (two ambers, adjacent on a Bandit row):** the Linux OS chip is re-hued to OKLCH
+  H60 in BOTH themes (Tux's own beak/feet family, `#FFA63F` H65.6 / `#E68C3F` H57.9) so it never shares
+  OTW's gold. Because light separates on fewer axes than dark, the Linux light value is also DEEPENED to
+  L0.40: dark already separated on hue AND lightness, but light had matched lightness, so hue alone at low
+  chroma did not read. Deepening restores the second axis (separation dEOK 0.065 light / 0.073 dark). The
+  finding: an amber slot CAN hold two identities on paper, but only separating on lightness as well as hue.
+- **The seven-way `#a86f04` fork:** OTW, Linux, `.platform-overthewire`, `.pf-overthewire`, the sidebar
+  focus ring, the spoiler toggle and PasswordReveal independently used the same light amber. They are
+  semantically unrelated ambers that coincided on a hex, NOT a shared token, so they stay forked (this pass
+  moved the two badge ambers off it). The five non-badge ambers are unaudited for light AA (see ROADMAP).
 
 ### Light-mode identity (paper-native "risograph")
 Light is art-directed on its own terms (dark is unchanged). All rules scoped to
@@ -489,15 +522,34 @@ Preserves reading position: anchors on the current heading and corrects scroll s
   `WriteupCard` omits the OS/tag chips gracefully. When the pipeline promotes os/tags to
   frontmatter, the cards render them with no component change (a content-lane enhancement).
 
-### Badge icon sourcing
+### Badge system (WriteupMeta): icon sourcing, geometry, a11y
 
-Badge icon sourcing follows consumption mechanism. Platform logos: native-color <img> via
-hashed ?url import, with a forced public/icons copy for the CSS sidebar backgrounds. Linux:
-native-color <img> (multicolor, not a tintable glyph). Category marks (Windows, Active
-Directory, Progressive, Standalone): inline SVG with currentColor so they tint to the chip
-accent in both themes, sourced from src/assets/icons/ (import-graph requirement). The registry
-src/components/badges/icons.ts is the single source of truth mapping each enum value to its one
-icon. assetsInlineLimit stays at the Vite default (size-based inline vs hashed-file split).
+Icon sourcing splits by **POLYCHROME vs MONOCHROME**, not logo vs glyph (corrected 2026-07-17; see
+DECISIONS). `src/components/badges/icons.ts` is the single source of truth mapping each enum value to one
+icon.
+- **Polychrome marks** (VulnHub, PicoCTF, OverTheWire, Linux): native-color `<img>` via hashed `?url`
+  import. They carry 3 to 16 fills (Linux is Tux plus gradients), so `currentColor` would flatten them.
+- **Monochrome marks** (HackTheBox, Windows, Active Directory, Progressive, Standalone): inlined via `?raw`
+  + `set:html` and tinted from `--wm-c` (`currentColor`) in both themes. Sourced only from
+  `src/assets/icons/` (inlining requires importing, and `public/` is not in the import graph); Standalone is
+  authored inline in `icons.ts` (no file). HackTheBox is a platform LOGO but is monochrome (one path, one
+  fill), so it lives here, not with the `<img>` logos.
+- **Geometry: a 14px grid.** Every glyph's larger ink dimension renders at ~14px in the 15px `.wm-ico` box,
+  measured by rasterizing each glyph alone and taking its ALPHA bounding box (not path data). Only HackTheBox
+  (letterboxed by a non-square viewBox) and Linux (a backdrop disc that defined its box) were off; the other
+  seven already clustered. Standalone and Active Directory are slated for an artwork redraw ONTO this grid.
+- **`public/icons` copies:** the three polychrome PLATFORM logos (VulnHub, PicoCTF, OverTheWire) are ALSO
+  copied under `public/icons`, consumed by `PlatformIndex.astro` and `about.astro` by literal `/icons/` path
+  (NOT by the sidebar, whose logo CSS is commented out; the sidebar uses colored dots). `public/icons/htb.svg`
+  is RETAINED as the brand mark for those marketing surfaces and now deliberately DIVERGES from the inlined
+  monochrome `src/assets/icons/htb.svg`; the former byte-identity was coincidental.
+- **Accessibility:** every inline glyph carries `aria-hidden="true"`, so each chip's accessible name is
+  exactly its text label. A build-time `inline()` normalizer in `icons.ts` strips comments, inter-element
+  whitespace and the XML prolog from inlined glyphs (an `<?xml?>` prolog becomes a bogus comment node in an
+  HTML document), keeping chip `textContent` clean. `active-directory.svg`'s `<metadata>` creator credit
+  (Amido Limited / Richard Slater, upstream CC0-1.0) is KEPT: it does not enter the accessibility tree, and a
+  comment is not a safe home for it (the normalizer strips comments).
+- `assetsInlineLimit` stays at the Vite default (size-based inline-vs-hashed split for the `<img>` assets).
 
 ## 8. Conventions & Non-Negotiables
 

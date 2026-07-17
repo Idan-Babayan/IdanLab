@@ -40,26 +40,23 @@
   `https://idanlab.dev/sitemap-index.xml` resolves after deploy.
 - [CONTENT] Verify the ToggleAll few-pixel shift fix in real browsers (see Open bugs), then it can be
   considered closed.
-- [ENG/DESIGN] WriteupMeta badge system (`src/components/badges/`, DECISIONS 2026-07-10, revised same day
-  to intentional per-axis color + restrained glow) is SHIPPED to production (commits `7fa5d82` + docs
-  `02e8bab`, PR #9 merged 2026-07-11) but renders on NO page yet; two calls remain before it goes on real
-  writeups. RESOLVED earlier: the platform palette now uses the canonical `--pf-accent` hexes verbatim (no
-  drift), and the missing `Progressive` env color is set (teal `#3fd9a8`/`#0f8a63`).
-  Remaining:
-  1. **Icon marks:** `badges/icons.ts` ships placeholder-stub SVGs; Idan swaps in the real 24x24
-     `currentColor` platform/OS/environment marks (full-color hue comes from the `.wm-ico { color: var(--wm-c) }`
-     rule). The `Progressive` glyph is the placeholder steps mark (thematically a ladder, but on the same
-     swap list).
-  2. **Auto-injection vs manual:** decide with Engineering whether WriteupMeta is hand-placed under each
+- [ENG/DESIGN] WriteupMeta badge system (`src/components/badges/`, DECISIONS 2026-07-10) shipped to
+  production (commits `7fa5d82` + `02e8bab`, PR #9) and renders on the `busquedav2.mdx` testbed. The DESIGN
+  is now complete and documented (CORE_SPEC §6/§7 "Badge system"): real icon marks on a 14px grid (polychrome
+  `<img>` vs monochrome inline `currentColor`, HackTheBox inlined), light-mode labels solved to WCAG AA in
+  OKLCH, the Linux OS chip re-hued off OverTheWire's amber, accessibility clean. See DECISIONS 2026-07-17
+  (three badge entries), committed `bdb06c4` + `4325533` + `3de625a` to `dev`, NOT yet pushed to `main`.
+  RESOLVED earlier: canonical `--pf-accent` hexes verbatim, `Progressive` env colour set. RESOLVED now: the
+  "placeholder-stub SVGs" item (icons are real, gridded, and colour-plumbed) and "renders on no page yet"
+  (it renders on the testbed).
+  Remaining (rollout + interactivity only, no design work left):
+  1. **Auto-injection vs manual:** decide with Engineering whether WriteupMeta is hand-placed under each
      title or injected (and whether it replaces the current `.machine-meta` badge row; note WriteupMeta's
      hue-free growing pips are a SECOND difficulty encoding vs the traffic-light `.difficulty-*` badge).
-     The filter routes the chips link to (`/platform`, `/os`, `/environment`) do not exist yet; remove the
-     chips' `data-astro-prefetch="false"` when they land.
-- Wire WriteupMeta into the writeup and wargame-level pages (rollout: auto-inject vs manual).
-  It currently renders on no page. Content/Product.
-- Build the /platform, /os, /environment filter/aggregation routes the nav chips link to, and
-  remove the temporary data-astro-prefetch="false" from the chips once they exist. Same
-  machinery as the /principles index. Engineering.
+  2. **Filter routes:** the chips render as non-interactive `<span>` until `/platform`, `/os`,
+     `/environment` exist; restore the commented `<a>` and drop `data-astro-prefetch="false"` when they land.
+     Same machinery as the `/principles` index. Engineering.
+  Then wire WriteupMeta into the writeup + wargame-level pages (Content/Product).
 
 ## Next (committed)
 - [ENG/DESIGN] Unify the two marketing pages (home, about) under the `--focus-ring` token established for
@@ -119,6 +116,14 @@
   color tokens. Owner wants to try options later.
 
 ## Open bugs / known issues
+- [DESIGN/A11y] Non-badge `#a86f04` ambers unaudited for light-mode WCAG AA. The badge light palette pass
+  (DECISIONS 2026-07-17) solved the OTW/Linux CHIP labels to AA and left the seven-way `#a86f04` collision
+  forked (correctly: they are unrelated ambers). But the five NON-badge users of that hex were failing at
+  2.97:1 on paper when the badges were, and nothing about their surfaces makes them pass: `.platform-overthewire`
+  (the old machine-meta badge label), `.pf-overthewire` (platform-index accent), and PasswordReveal's button
+  text are body-size text needing 4.5:1; the sidebar `nth-child(5)` focus ring and the spoiler-toggle border
+  are non-text (3:1). Audit each on light and solve the text ones in OKLCH the same way (hold hue, drop
+  lightness), leaving the forks independent. Small, self-contained, after the glyph pass.
 - [ENG] ToggleAll few-pixel shift: expand/collapse can leave a small reversible content offset in real
   Chromium (Chrome/Edge/Opera GX), from native scroll anchoring fighting the manual correction. Fix
   applied: suppress `overflow-anchor` for the operation, restored next frame (DECISIONS 2026-06-20). NOT

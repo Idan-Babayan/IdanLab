@@ -6,6 +6,120 @@
 
 ---
 
+### 2026-07-17 · Linux OS badge separated from OverTheWire (H60 re-hue + L0.40 deepen)
+- **Decision:** `wm-os-linux` gets its own hue in both themes, distinct from `pf-otw`. Dark `#f0b429` ->
+  `#ffa95d`, light `#794e00` -> `#6b3900`. `pf-otw` and every other amber in the file are untouched.
+  Committed as `3de625a` (not pushed).
+- **Why they collided:** the light palette pass (entry below) drove BOTH the OTW platform chip and the
+  Linux OS chip to the same `#794e00`, because both are amber and light's AA floor had pinned both to the
+  same lightness. On a Bandit row (`OverTheWire | Linux | Progressive`) the platform and OS chips then read
+  as one colour on paper; on dark they differed only by lightness.
+- **Why H60:** it is Tux's OWN family. His beak and feet in `linux.svg` are `#FFA63F` (H65.6) and `#E68C3F`
+  (H57.9); the old dark `#f0b429` was H82.5, a generic yellow-gold that never matched the penguin it labels.
+  One hue at two lightnesses, not a different identity per theme.
+- **Why deepen light to L0.40 (the load-bearing correction):** re-hue alone bought only dEOK 0.022 from OTW
+  on light, which did NOT read at real chip size. The cause is axis count: dark separates on TWO axes (hue
+  AND lightness, OTW L0.85 vs Linux L0.80, plus ~60% more chroma) and reads clearly at dEOK 0.073; light had
+  matched lightness, leaving hue alone to work at low chroma. AA is a FLOOR not a target, so Linux can go
+  darker freely and darker only raises contrast (4.85 -> 6.13). Dropping light to OKLCH L0.40 restores the
+  second axis: dEOK 0.065, which reads. Held at L0.40 without chasing past dark's 0.073 (exceeding it would
+  be its own inconsistency).
+- **Finding (counter to the amber-cannot-be-ink note in the palette entry):** the amber slot CAN carry two
+  identities on paper, but only when it separates on lightness as well as hue. A single-axis (hue-only)
+  separation at low chroma does not read.
+- **Tux is unmoved:** the Linux mark is a polychrome `<img>` (native fills), not tinted by `--wm-c`, so the
+  token change moves the chip's label/border/fill/glow but not the penguin. Confirmed live.
+- **Verified live (canvas readback, both themes):** Linux light 6.10, dark 8.30; OTW unchanged 4.80 / 9.56;
+  separation light 0.065, dark 0.073; both chips read distinct at real chip size. `npm run build` green (46
+  pages). custom.css only, no new deps.
+- **Status:** Adopted; committed as `3de625a` to `dev` (not pushed).
+
+### 2026-07-17 · Badge light-mode label palette solved to WCAG AA in OKLCH
+- **Decision:** the nine WriteupMeta light `--wm-c` values are re-solved so each 12px/600 chip label clears
+  WCAG AA (4.5:1) on its own composited fill. Eight changed; Active Directory already passed (4.85) and is
+  untouched. Every DARK value is byte-identical (this is a light-only pass). Committed as `4325533` (not
+  pushed); the Linux value is then re-hued off the shared amber by the entry above.
+- **Why:** the light values were eyeballed and eight failed AA (2.97 to 4.85:1, measured live). Every chip
+  derives label, icon, border, fill and glow from ONE `--wm-c`, so the label cannot be darkened in isolation,
+  but the fill is only 15% identity over 85% paper, so darkening `--wm-c` barely moves the fill (2 to 7 RGB
+  points per channel) while lifting the label clear. There is NO separate `-ink` token and none was added:
+  unlike `--flag-gold` (which paints decoration and text at once, needing two values), all six things
+  `--wm-c` drives want to move together.
+- **Method:** solve in OKLCH holding HUE, dropping LIGHTNESS only, targeting ~4.8 for antialiasing margin.
+  Hold CHROMA where sRGB allows, clamp to the gamut boundary only where the hue cannot carry it at the
+  required lightness. A value reaching AA by desaturating to gray would defeat the badge, so hue is never
+  shifted; the chroma kept is recorded per line in `custom.css`. This is the §6 "chroma not contrast" lesson
+  run in reverse: fix contrast with L, never by desaturating the hue.
+- **Amber is the structural worst case (recorded finding):** amber's sRGB gamut collapses as it darkens (a
+  saturated dark amber does not exist, it browns), so OTW/Linux keep only ~79% chroma at AA, versus 88 to
+  100% for the reds/greens/blues/violets. Physics, not a solver limit. The ~21% loss is the price of AA (4.5)
+  itself; the ~4.8 margin costs only ~3 more chroma points.
+- **Light `--wm-glow` deleted, not synced:** the light box-shadows read `--wm-c` directly, so a light
+  `--wm-glow` never rendered. The DARK `pf-htb --wm-glow` (`#9fef00`) stays because the dark glow DOES read
+  it (it holds HTB's true brand green while the label carries palette lime), a distinction that only reads on
+  dark. Keeping a dead line in sync would teach the next reader it is load-bearing, so it is removed.
+- **Measurement discipline:** contrast was measured by CANVAS READBACK (the browser's own oklab -> sRGB and
+  alpha compositing), not by string-parsing `getComputedStyle`. This browser returns `color-mix(in oklab,
+  ...)` as an `oklab(...)` string, so a naive number-regex reads the oklab coordinates as RGB and reports
+  fills ~0.5 too dark. The canvas method is authoritative and matched the offline OKLCH solver to 0.01 on all
+  nine values (two-method agreement, the same discipline as the icon pass).
+- **Deliberately NOT touched:** the seven-way `#a86f04` collision across the file (OTW, Linux,
+  `.platform-overthewire`, `.pf-overthewire`, the sidebar focus ring, the spoiler toggle, PasswordReveal)
+  stays FORKED. Those are semantically unrelated ambers that coincided on a hex, never a shared token;
+  consolidating would have dragged the spoiler toggle and PasswordReveal along. The five NON-badge ambers are
+  unaudited for light AA (see ROADMAP).
+- **Verified live (canvas, both themes):** every light label 4.80 to 4.90, every dark 5.66 to 12.01; backdrop
+  `#ece9e0`, no card; every dark value byte-identical (confirmed by diff). `npm run build` green (46 pages).
+- **Status:** Adopted; committed as `4325533` to `dev` (not pushed). custom.css only.
+
+### 2026-07-17 · Badge glyphs normalized to a 14px grid; HackTheBox to currentColor; polychrome/monochrome sourcing axis
+- **Decision:** the WriteupMeta glyph set is normalized so every icon's larger ink dimension renders at ~14px
+  in the 15px `.wm-ico` box, and HackTheBox moves from a native-colour `<img>` to an inline `currentColor`
+  glyph. Geometry and colour plumbing only, never artwork (Standalone and Active Directory are slated for a
+  later redraw onto this grid). Committed as `bdb06c4` (not pushed).
+- **The spread was internal padding, not CSS:** nine glyphs shared one 15px box but rendered across a 2.40x
+  spread (HackTheBox ~6px tall to Windows 15px). Cause was per-file padding inside each `viewBox`, measured by
+  rasterizing each glyph alone at high resolution and taking its ALPHA bounding box (cross-checked in librsvg
+  via `sharp` and in Blink, agreeing to 0.001x; a disc icon measuring 78.1% against pi/4 = 78.54% validated
+  the rig). Only the two outliers changed; the other seven already clustered within 1.14x. New spread ~1.14x
+  (excluding Standalone, on the redraw list).
+- **HackTheBox is the one monochrome platform mark:** a single path with a single fill, so it is inlined and
+  tints from `--wm-c` in both themes. On dark it lands within a hair of its brand `#9fef00`; on paper it
+  becomes the deep lime ink instead of a 1.20:1 ghost, and it inherits the light-ink tier for free. Its
+  `viewBox` was squared (was `0 0 1024 791.27` with no width/height, so `object-fit: contain` letterboxed it,
+  forfeiting 23% of the box). Its `<style>` block, `.st0` class and `id="Layer_1"` were dropped: an inlined
+  SVG's `<style>` and ids are DOCUMENT-scoped, and those Illustrator defaults would collide with the next
+  Illustrator export inlined the same way.
+- **Sourcing axis redrawn, polychrome vs monochrome (supersedes "logo vs glyph"):** POLYCHROME marks
+  (VulnHub, PicoCTF, OverTheWire, Linux) stay native-colour `<img>` from hashed `?url` imports (currentColor
+  would flatten their 3 to 16 fills). MONOCHROME marks (HackTheBox, Windows, Active Directory, Progressive,
+  Standalone) inline via `?raw` + `set:html` and tint from `--wm-c`. HackTheBox was only in the native-colour
+  group because it was a logo, never because native colour was right for it.
+- **Linux disc:** `linux.svg` carried a full-bleed white circle-as-path behind Tux that defined its bounding
+  box (28x28 vs Tux's 16x20). Deleted FIRST (so measurement sizes Tux, not the disc), then the `viewBox`
+  retightened around Tux; he stays full colour with his belly/eyes/beak intact.
+- **`public/icons` correction (the docs were wrong):** the `public/icons` platform copies do NOT serve the
+  sidebar (its logo CSS is commented out; the sidebar uses colored dots). Their real consumers are
+  `PlatformIndex.astro` and `about.astro`, which reference `/icons/*.svg` by literal path.
+  `public/icons/htb.svg` therefore now deliberately DIVERGES from `src/assets/icons/htb.svg`: the src copy is
+  a monochrome chip glyph, the public copy is the untouched brand mark on marketing surfaces. The former
+  byte-identity was coincidental. `public/` was not touched by this pass. This supersedes the "forced
+  public/icons copy for the CSS sidebar backgrounds" claim in the earlier "Badge icon sourcing" section below.
+- **Accessibility (folded in):** `progressive.svg` carried `<title>1050</title>` (a real SVG accessible name,
+  announced) and `active-directory.svg` a `<metadata>` RDF block (not an a11y defect, but it polluted the
+  chip's textContent). Both are handled: `<title>` stripped; every inline glyph now carries
+  `aria-hidden="true"` (so each chip's accessible name is exactly its label); the AD `<metadata>` is KEPT
+  (creator credit, Amido Limited / Richard Slater, verified CC0-1.0 upstream, so provenance not obligation)
+  because it does not enter the accessibility tree and a shipped credit satisfies CC0/CC-BY alike. An
+  `icons.ts` build-time `inline()` normalizer strips comments, inter-element whitespace and the XML prolog
+  from inlined glyphs (an `<?xml?>` prolog becomes a bogus comment node in an HTML document). **Property to
+  know:** the normalizer strips comments, so a comment is no longer a safe home for load-bearing text, which
+  is exactly why the credit lives in `<metadata>`.
+- **Verified live (both themes):** all nine glyphs within ~1.14x; HackTheBox icon and label compute identical
+  in both themes; no disc behind Tux and his light regions survive; no `.st0` leaked globally; every chip's
+  textContent is exactly its label. `npm run build` green (46 pages). No new deps.
+- **Status:** Adopted; committed as `bdb06c4` to `dev` (not pushed).
+
 ### 2026-07-17 · Code-block focus ring wraps the whole EC frame, not just the `<pre>`
 - **Decision:** two add-only rules in `custom.css` (right after the sharp-frame radius block): the ring is
   suppressed on `.expressive-code .frame > pre:focus-visible` and drawn instead on
@@ -515,6 +629,15 @@
   production" and "writeup-structure migration uncommitted" ROADMAP items are resolved and removed from ROADMAP.
 
 ## Badge icon sourcing: split by consumption mechanism
+
+**SUPERSEDED IN PART 2026-07-17** (see the "polychrome/monochrome sourcing axis" entry above). Two
+premises here are now wrong: (1) the axis is polychrome vs monochrome, NOT logo vs glyph, so HackTheBox
+(a single-fill logo) is now an inlined `currentColor` glyph, leaving three native-colour platform `<img>`
+logos (VulnHub, PicoCTF, OverTheWire) plus Linux; (2) the `public/icons` copies do NOT serve "the sidebar
+CSS backgrounds" (the sidebar uses colored dots; its logo CSS is commented out), they serve
+`PlatformIndex.astro` and `about.astro` by literal `/icons/` path, and `public/icons/htb.svg` now
+deliberately diverges from the inlined `src/assets/icons/htb.svg`. The consumption-mechanism split itself
+still stands; only the axis label and the public-copy rationale are corrected.
 
 Writeup badge marks are sourced by what each icon needs, not stored uniformly. The four
 platform logos render as native-color <img> from hashed ?url imports and, because the sidebar
