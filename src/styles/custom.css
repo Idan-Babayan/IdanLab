@@ -285,29 +285,36 @@ mobile-starlight-toc a[style*="--depth: 1"]:not([href="#user-flag"]):not([href="
 .writeup-meta .pf-vh   { --wm-c: #ff5c5c; }
 .writeup-meta .pf-pico { --wm-c: #d96bff; }
 .writeup-meta .pf-otw  { --wm-c: #ffc23d; }
-:root[data-theme="light"] .writeup-meta .pf-htb  { --wm-c: #4d7c0f; --wm-glow: #4d7c0f; }
-:root[data-theme="light"] .writeup-meta .pf-vh   { --wm-c: #d12f2f; }
-:root[data-theme="light"] .writeup-meta .pf-pico { --wm-c: #8b3dc4; }
-:root[data-theme="light"] .writeup-meta .pf-otw  { --wm-c: #a86f04; }
+/* Light values solved in OKLCH to clear WCAG AA (4.5:1) for the 12px/600 label on its own composited
+   chip fill, targeting ~4.8 for antialiasing margin. Method: hold hue, drop lightness, hold chroma
+   where sRGB allows and clamp to the gamut boundary where it does not (dark saturated hues cannot keep
+   full chroma; the loss is reported per value below, never a hue shift). Dark values are untouched.
+   No light --wm-glow is set: the light box-shadows read --wm-c directly, so a light --wm-glow would
+   never render. Only the DARK pf-htb --wm-glow (#9fef00) is read (by the dark glow), where it holds
+   HTB's true brand green while the label carries palette lime; that distinction only reads on dark. */
+:root[data-theme="light"] .writeup-meta .pf-htb  { --wm-c: #3a6100; } /* 3.41 -> 4.80, chroma 88% */
+:root[data-theme="light"] .writeup-meta .pf-vh   { --wm-c: #aa0013; } /* 3.35 -> 4.80, chroma 96% */
+:root[data-theme="light"] .writeup-meta .pf-pico { --wm-c: #7a29b1; } /* 3.94 -> 4.85, chroma 100% */
+:root[data-theme="light"] .writeup-meta .pf-otw  { --wm-c: #794e00; } /* 2.97 -> 4.80, chroma 79% (amber browns when darkened) */
 
 /* OS: the OS's own identity color. */
 .writeup-meta .wm-os-linux   { --wm-c: #f0b429; }   /* Tux amber */
 .writeup-meta .wm-os-windows { --wm-c: #4ca3ff; }   /* Windows blue */
-:root[data-theme="light"] .writeup-meta .wm-os-linux   { --wm-c: #a86f04; }
-:root[data-theme="light"] .writeup-meta .wm-os-windows { --wm-c: #0a63c9; }
+:root[data-theme="light"] .writeup-meta .wm-os-linux   { --wm-c: #794e00; } /* 2.97 -> 4.80, chroma 79% (shares OTW's amber; independent value, not consolidated) */
+:root[data-theme="light"] .writeup-meta .wm-os-windows { --wm-c: #0053af; } /* 3.85 -> 4.80, chroma 92% */
 
 /* Environment: the feel of the environment. AD enterprise indigo (distinct from Windows blue);
    Standalone a solitary cool slate. */
 .writeup-meta .wm-env-standalone        { --wm-c: #8fa3b8; }
 .writeup-meta .wm-env-active-directory  { --wm-c: #7c9cff; }
-:root[data-theme="light"] .writeup-meta .wm-env-standalone       { --wm-c: #5a6b7d; }
-:root[data-theme="light"] .writeup-meta .wm-env-active-directory { --wm-c: #3b4fa8; }
+:root[data-theme="light"] .writeup-meta .wm-env-standalone       { --wm-c: #475869; } /* 3.75 -> 4.85, chroma 100% */
+:root[data-theme="light"] .writeup-meta .wm-env-active-directory { --wm-c: #3b4fa8; } /* 4.85 already AA, unchanged */
 /* Progressive: the wargame ladder (OverTheWire Bandit, Natas...). Teal-leaning "progress/ascent" green,
    pulled toward teal so it stays distinct from HackTheBox's lime brand green and carries a terminal tint
    that fits the shell-based wargames. OverTheWire's platform color is amber, so this chip effectively
    never sits beside the HTB green chip anyway. */
 .writeup-meta .wm-env-progressive { --wm-c: #3fd9a8; }
-:root[data-theme="light"] .writeup-meta .wm-env-progressive { --wm-c: #0f8a63; }
+:root[data-theme="light"] .writeup-meta .wm-env-progressive { --wm-c: #006345; } /* 3.00 -> 4.80, chroma 81% */
 
 /* Difficulty: neutral, hue-free, SAME size/weight as nav chips. Word once; magnitude via pips only. */
 .writeup-meta .wm-diff { display: inline-flex; align-items: center; }
