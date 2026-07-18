@@ -6,6 +6,446 @@
 
 ---
 
+### 2026-07-17 · busquedav2 testbed dropped before push; badge commits rebased + pushed; merged to main (PR #16)
+- **Decision:** the `busquedav2.mdx` design testbed is NOT pushed and is kept out of the `dev` -> `main` PR.
+  It is a local-only testing page (a re-created successor to the June testbed that the 2026-06-27 FlagCapture
+  entry recorded as deleted), used to verify the WriteupMeta badge work. Keeping it off `origin` and out of
+  the PR keeps it off every path to production.
+- **How (owner-approved edit of UNPUSHED commits only):** it sat in exactly one isolated, unpushed commit,
+  `fd43eb7` (a 467-line pure add touching only that file), third in the 7-commit unpushed stack. It was
+  dropped with `git rebase --onto fd43eb7~1 fd43eb7 dev` (interactive rebase is unavailable in the harness;
+  `--onto` is more precise anyway). The two commits before it kept their hashes (`c793fe7`, `d615f98`); the
+  four after it were replayed onto the new base and so got NEW hashes: `bdb06c4` -> `304c97e` (glyph 14px
+  grid), `4325533` -> `1fcf53e` (light-mode label palette), `3de625a` -> `d7b1550` (Linux OS chip re-hue),
+  `7f492db` -> `00da3cb` (the docs-badges commit). `git diff 7f492db dev` was exactly the 467-line busquedav2
+  deletion and nothing else, proving the four replayed commits are byte-identical in content.
+- **Then pushed, PR'd, and merged to production:** because only an UNPUSHED commit was removed, `origin/dev`
+  stayed a clean ancestor, so `git push origin dev` fast-forwarded (no force). Opened PR #16 (`dev` -> `main`,
+  22 commits / 15 files, +983 / -152), where `origin/main` was a clean ancestor of `dev`, then on the owner's
+  go-ahead merged it to `main` as a history-preserving merge commit (the PR #9 convention, not a squash),
+  triggering the Cloudflare Pages production deploy of idanlab.dev.
+- **Docs reconciled (this pass):** the removed testbed's CURRENT-STATE references are corrected in CORE_SPEC
+  §6 (component inventory) and ROADMAP (the WriteupMeta Now item): the badge system is built and documented
+  but is not currently wired to any page. This entry SUPERSEDES the "(not pushed)" status and the old hashes
+  in the three 2026-07-17 badge entries below (remap above). The historical busquedav2 entries (2026-06-20,
+  2026-06-27) stand as accurate June history and are untouched.
+- **Verified:** `npm run build` green at 45 pages (was 46; the one fewer page IS busquedav2, confirming
+  nothing else was lost). Local `main` was also fast-forwarded to `origin/main` (`cb0a696`) to clear a stale
+  local ref; no `main` history was changed.
+- **Status:** Adopted + shipped to production. `dev` pushed to `origin` and merged to `main` via PR #16. Git
+  plus this docs reconciliation only; no source or dependency changes.
+
+### 2026-07-17 · Linux OS badge separated from OverTheWire (H60 re-hue + L0.40 deepen)
+- **Decision:** `wm-os-linux` gets its own hue in both themes, distinct from `pf-otw`. Dark `#f0b429` ->
+  `#ffa95d`, light `#794e00` -> `#6b3900`. `pf-otw` and every other amber in the file are untouched.
+  Committed as `3de625a` (not pushed).
+- **Why they collided:** the light palette pass (entry below) drove BOTH the OTW platform chip and the
+  Linux OS chip to the same `#794e00`, because both are amber and light's AA floor had pinned both to the
+  same lightness. On a Bandit row (`OverTheWire | Linux | Progressive`) the platform and OS chips then read
+  as one colour on paper; on dark they differed only by lightness.
+- **Why H60:** it is Tux's OWN family. His beak and feet in `linux.svg` are `#FFA63F` (H65.6) and `#E68C3F`
+  (H57.9); the old dark `#f0b429` was H82.5, a generic yellow-gold that never matched the penguin it labels.
+  One hue at two lightnesses, not a different identity per theme.
+- **Why deepen light to L0.40 (the load-bearing correction):** re-hue alone bought only dEOK 0.022 from OTW
+  on light, which did NOT read at real chip size. The cause is axis count: dark separates on TWO axes (hue
+  AND lightness, OTW L0.85 vs Linux L0.80, plus ~60% more chroma) and reads clearly at dEOK 0.073; light had
+  matched lightness, leaving hue alone to work at low chroma. AA is a FLOOR not a target, so Linux can go
+  darker freely and darker only raises contrast (4.85 -> 6.13). Dropping light to OKLCH L0.40 restores the
+  second axis: dEOK 0.065, which reads. Held at L0.40 without chasing past dark's 0.073 (exceeding it would
+  be its own inconsistency).
+- **Finding (counter to the amber-cannot-be-ink note in the palette entry):** the amber slot CAN carry two
+  identities on paper, but only when it separates on lightness as well as hue. A single-axis (hue-only)
+  separation at low chroma does not read.
+- **Tux is unmoved:** the Linux mark is a polychrome `<img>` (native fills), not tinted by `--wm-c`, so the
+  token change moves the chip's label/border/fill/glow but not the penguin. Confirmed live.
+- **Verified live (canvas readback, both themes):** Linux light 6.10, dark 8.30; OTW unchanged 4.80 / 9.56;
+  separation light 0.065, dark 0.073; both chips read distinct at real chip size. `npm run build` green (46
+  pages). custom.css only, no new deps.
+- **Status:** Adopted; committed as `3de625a` to `dev` (not pushed). **CORRECTED 2026-07-17 (push):** rebased to `d7b1550` and pushed when the busquedav2 testbed commit was dropped; shipped to main via PR #16 (see the top entry).
+
+### 2026-07-17 · Badge light-mode label palette solved to WCAG AA in OKLCH
+- **Decision:** the nine WriteupMeta light `--wm-c` values are re-solved so each 12px/600 chip label clears
+  WCAG AA (4.5:1) on its own composited fill. Eight changed; Active Directory already passed (4.85) and is
+  untouched. Every DARK value is byte-identical (this is a light-only pass). Committed as `4325533` (not
+  pushed); the Linux value is then re-hued off the shared amber by the entry above.
+- **Why:** the light values were eyeballed and eight failed AA (2.97 to 4.85:1, measured live). Every chip
+  derives label, icon, border, fill and glow from ONE `--wm-c`, so the label cannot be darkened in isolation,
+  but the fill is only 15% identity over 85% paper, so darkening `--wm-c` barely moves the fill (2 to 7 RGB
+  points per channel) while lifting the label clear. There is NO separate `-ink` token and none was added:
+  unlike `--flag-gold` (which paints decoration and text at once, needing two values), all six things
+  `--wm-c` drives want to move together.
+- **Method:** solve in OKLCH holding HUE, dropping LIGHTNESS only, targeting ~4.8 for antialiasing margin.
+  Hold CHROMA where sRGB allows, clamp to the gamut boundary only where the hue cannot carry it at the
+  required lightness. A value reaching AA by desaturating to gray would defeat the badge, so hue is never
+  shifted; the chroma kept is recorded per line in `custom.css`. This is the §6 "chroma not contrast" lesson
+  run in reverse: fix contrast with L, never by desaturating the hue.
+- **Amber is the structural worst case (recorded finding):** amber's sRGB gamut collapses as it darkens (a
+  saturated dark amber does not exist, it browns), so OTW/Linux keep only ~79% chroma at AA, versus 88 to
+  100% for the reds/greens/blues/violets. Physics, not a solver limit. The ~21% loss is the price of AA (4.5)
+  itself; the ~4.8 margin costs only ~3 more chroma points.
+- **Light `--wm-glow` deleted, not synced:** the light box-shadows read `--wm-c` directly, so a light
+  `--wm-glow` never rendered. The DARK `pf-htb --wm-glow` (`#9fef00`) stays because the dark glow DOES read
+  it (it holds HTB's true brand green while the label carries palette lime), a distinction that only reads on
+  dark. Keeping a dead line in sync would teach the next reader it is load-bearing, so it is removed.
+- **Measurement discipline:** contrast was measured by CANVAS READBACK (the browser's own oklab -> sRGB and
+  alpha compositing), not by string-parsing `getComputedStyle`. This browser returns `color-mix(in oklab,
+  ...)` as an `oklab(...)` string, so a naive number-regex reads the oklab coordinates as RGB and reports
+  fills ~0.5 too dark. The canvas method is authoritative and matched the offline OKLCH solver to 0.01 on all
+  nine values (two-method agreement, the same discipline as the icon pass).
+- **Deliberately NOT touched:** the seven-way `#a86f04` collision across the file (OTW, Linux,
+  `.platform-overthewire`, `.pf-overthewire`, the sidebar focus ring, the spoiler toggle, PasswordReveal)
+  stays FORKED. Those are semantically unrelated ambers that coincided on a hex, never a shared token;
+  consolidating would have dragged the spoiler toggle and PasswordReveal along. The five NON-badge ambers are
+  unaudited for light AA (see ROADMAP).
+- **Verified live (canvas, both themes):** every light label 4.80 to 4.90, every dark 5.66 to 12.01; backdrop
+  `#ece9e0`, no card; every dark value byte-identical (confirmed by diff). `npm run build` green (46 pages).
+- **Status:** Adopted; committed as `4325533` to `dev` (not pushed). **CORRECTED 2026-07-17 (push):** rebased to `1fcf53e` and pushed when the busquedav2 testbed commit was dropped; shipped to main via PR #16 (see the top entry). custom.css only.
+
+### 2026-07-17 · Badge glyphs normalized to a 14px grid; HackTheBox to currentColor; polychrome/monochrome sourcing axis
+- **Decision:** the WriteupMeta glyph set is normalized so every icon's larger ink dimension renders at ~14px
+  in the 15px `.wm-ico` box, and HackTheBox moves from a native-colour `<img>` to an inline `currentColor`
+  glyph. Geometry and colour plumbing only, never artwork (Standalone and Active Directory are slated for a
+  later redraw onto this grid). Committed as `bdb06c4` (not pushed).
+- **The spread was internal padding, not CSS:** nine glyphs shared one 15px box but rendered across a 2.40x
+  spread (HackTheBox ~6px tall to Windows 15px). Cause was per-file padding inside each `viewBox`, measured by
+  rasterizing each glyph alone at high resolution and taking its ALPHA bounding box (cross-checked in librsvg
+  via `sharp` and in Blink, agreeing to 0.001x; a disc icon measuring 78.1% against pi/4 = 78.54% validated
+  the rig). Only the two outliers changed; the other seven already clustered within 1.14x. New spread ~1.14x
+  (excluding Standalone, on the redraw list).
+- **HackTheBox is the one monochrome platform mark:** a single path with a single fill, so it is inlined and
+  tints from `--wm-c` in both themes. On dark it lands within a hair of its brand `#9fef00`; on paper it
+  becomes the deep lime ink instead of a 1.20:1 ghost, and it inherits the light-ink tier for free. Its
+  `viewBox` was squared (was `0 0 1024 791.27` with no width/height, so `object-fit: contain` letterboxed it,
+  forfeiting 23% of the box). Its `<style>` block, `.st0` class and `id="Layer_1"` were dropped: an inlined
+  SVG's `<style>` and ids are DOCUMENT-scoped, and those Illustrator defaults would collide with the next
+  Illustrator export inlined the same way.
+- **Sourcing axis redrawn, polychrome vs monochrome (supersedes "logo vs glyph"):** POLYCHROME marks
+  (VulnHub, PicoCTF, OverTheWire, Linux) stay native-colour `<img>` from hashed `?url` imports (currentColor
+  would flatten their 3 to 16 fills). MONOCHROME marks (HackTheBox, Windows, Active Directory, Progressive,
+  Standalone) inline via `?raw` + `set:html` and tint from `--wm-c`. HackTheBox was only in the native-colour
+  group because it was a logo, never because native colour was right for it.
+- **Linux disc:** `linux.svg` carried a full-bleed white circle-as-path behind Tux that defined its bounding
+  box (28x28 vs Tux's 16x20). Deleted FIRST (so measurement sizes Tux, not the disc), then the `viewBox`
+  retightened around Tux; he stays full colour with his belly/eyes/beak intact.
+- **`public/icons` correction (the docs were wrong):** the `public/icons` platform copies do NOT serve the
+  sidebar (its logo CSS is commented out; the sidebar uses colored dots). Their real consumers are
+  `PlatformIndex.astro` and `about.astro`, which reference `/icons/*.svg` by literal path.
+  `public/icons/htb.svg` therefore now deliberately DIVERGES from `src/assets/icons/htb.svg`: the src copy is
+  a monochrome chip glyph, the public copy is the untouched brand mark on marketing surfaces. The former
+  byte-identity was coincidental. `public/` was not touched by this pass. This supersedes the "forced
+  public/icons copy for the CSS sidebar backgrounds" claim in the earlier "Badge icon sourcing" section below.
+- **Accessibility (folded in):** `progressive.svg` carried `<title>1050</title>` (a real SVG accessible name,
+  announced) and `active-directory.svg` a `<metadata>` RDF block (not an a11y defect, but it polluted the
+  chip's textContent). Both are handled: `<title>` stripped; every inline glyph now carries
+  `aria-hidden="true"` (so each chip's accessible name is exactly its label); the AD `<metadata>` is KEPT
+  (creator credit, Amido Limited / Richard Slater, verified CC0-1.0 upstream, so provenance not obligation)
+  because it does not enter the accessibility tree and a shipped credit satisfies CC0/CC-BY alike. An
+  `icons.ts` build-time `inline()` normalizer strips comments, inter-element whitespace and the XML prolog
+  from inlined glyphs (an `<?xml?>` prolog becomes a bogus comment node in an HTML document). **Property to
+  know:** the normalizer strips comments, so a comment is no longer a safe home for load-bearing text, which
+  is exactly why the credit lives in `<metadata>`.
+- **Verified live (both themes):** all nine glyphs within ~1.14x; HackTheBox icon and label compute identical
+  in both themes; no disc behind Tux and his light regions survive; no `.st0` leaked globally; every chip's
+  textContent is exactly its label. `npm run build` green (46 pages). No new deps.
+- **Status:** Adopted; committed as `bdb06c4` to `dev` (not pushed). **CORRECTED 2026-07-17 (push):** rebased to `304c97e` and pushed when the busquedav2 testbed commit was dropped; shipped to main via PR #16 (see the top entry).
+
+### 2026-07-17 · Code-block focus ring wraps the whole EC frame, not just the `<pre>`
+- **Decision:** two add-only rules in `custom.css` (right after the sharp-frame radius block): the ring is
+  suppressed on `.expressive-code .frame > pre:focus-visible` and drawn instead on
+  `.expressive-code .frame:has(> pre:focus-visible)` at the shared geometry (`2px solid var(--focus-ring)`,
+  `outline-offset: 2px`). Only WHICH element is ringed changes; the color and geometry are the shared
+  system's. The shared `:where(...)` rule is untouched (its zero specificity is exactly what let a
+  `pre:focus-visible` selector override it cleanly).
+- **Why (measured, not assumed):** EC core ships a "Scrollable block tabindex" JS module that sets
+  `tabindex="0"` + `role="region"` on a `<pre>` whose content overflows, which is what makes a wide
+  unwrapped block keyboard-scrollable. That tabindex is what the shared `:where(..., [tabindex])` rule
+  matches, so the ring landed on the PRE. But the pre is only the LOWER half of the frame:
+  `figcaption.header` (the language tab) is a SIBLING above it, not a parent. So the ring excluded the tab,
+  and worse, its top edge landed exactly 2px inside the header's box (precisely the shared outline-offset)
+  where it was painted over: the header is `position: relative; z-index: 1` against a static `pre`, so it
+  paints later. Confirmed live: `elementFromPoint` at the ring's top edge returned `FIGCAPTION.header`, the
+  overlap measured exactly 2px, and `.title` carries an opaque `rgb(22,22,30)` background, so under the tab
+  the edge vanished completely. `figure.frame` was the right target because its border box already spans
+  header plus pre exactly (same top as the header, same bottom as the pre, verified).
+- **`:has()` not `:focus-within`:** `:focus-within` also fires on pointer clicks. `:has(> pre:focus-visible)`
+  is the precise form and keeps the keyboard-only contract.
+- **Premise correction (supersedes a line in the 2026-07-13 token entry):** that entry recorded "Code blocks
+  have no `tabindex`, so they are untouched." That is FALSE. It is true of the static HTML and true if the
+  DOM is inspected too early, which is how it was missed: EC's module runs on a 250ms-debounced
+  ResizeObserver plus `requestIdleCallback`, so the attribute appears after load and re-evaluates on resize.
+  Measured on busqueda: 3 focusable pres one moment, 0 the next, and 16 of 16 once settled with the toggles
+  open. Any future audit of this must WAIT for the observer to settle before counting.
+- **Known behavior, deliberately not "fixed":** clicking a wide code block shows the ring. Chromium matches
+  `:focus-visible` on a keyboard-scrollable region even for pointer focus (arrow keys scroll it, so
+  indicating focus is correct). Proven pre-existing by reconstructing the old rules against the same
+  pointer-focus state: the pre rang on click before this change too. This change relocates a ring, it does
+  not add one.
+- **Verified (real browser, real Tab, both themes):** `:focus-visible` true on the pre, `outline-style: none`
+  on the pre, and the ring on the figure (`#b6ff3c` dark / `#4d7c0f` light). The ring now sits ABOVE the tab
+  (clearance 1.6px at dpr 1.25, was 2px INSIDE it) and `RING_WRAPS_WHOLE_FRAME` is true, with symmetric
+  deltas on all four sides. No ancestor clips it and the frame radius is 0, so the ring stays square like
+  the frame. Both rules survive minification in `dist`. `npm run build` green (45 pages).
+- **Status:** Adopted. CSS-only, additive, `custom.css` only. No new deps, pinned versions unchanged.
+
+### 2026-07-17 · Toggle focus ring aligns to its tab (re-pairs Starlight's orphaned summary margin)
+- **Decision:** the base `.sl-markdown-content details > summary` rule changes `padding: 0.3rem 0` to
+  `padding-block: 0.3rem` plus a re-declared `margin-inline` / `padding-inline` pair, inset by the card's own
+  padding difference (`calc(0.75rem - 0.4rem)` = 5.6px), plus `border-radius: 4px`. Applies to EVERY content
+  toggle. The ring COLOR is unchanged (still the inherited lime default; the amber identity question stays
+  deferred), and the shared `:where(...)` rule is untouched.
+- **Why:** Starlight's `markdown.css` ships a MATCHED pair on every content summary,
+  `margin-inline-start: -0.5rem` + `padding-inline-start: 0.5rem`, commented upstream as "Expand the outline
+  so that the marker cannot distort it": the padding grows the border box leftward so the outline encloses
+  the negatively-margined `::before` marker, and the margin cancels the layout shift. Our unlayered
+  `padding: 0.3rem 0` beat that layer and zeroed the padding half while declaring NO margin, so the `-0.5rem`
+  survived ORPHANED (`starlight.content` outranks `starlight.reset`'s `* { margin: 0 }`, and a rule that
+  never mentions margin cannot compete). Net: every summary's border box, and its label with it, sat 8px LEFT
+  of the card's content box while the right edge stayed flush. Measured deltas to the card's border box:
+  left 3, right 11, against top/bottom 5.4.
+- **Why this inset (and the constraint it creates):** 5.6px makes the summary's border box sit the same
+  distance inside the card horizontally as it already does vertically, so all four ring deltas are EQUAL
+  (5.4px at dpr 1 = 1px card border + 6.4px card block padding - 2px outline-offset) with NO
+  `outline-offset` override anywhere. The equality is the invariant; the absolute number moves on
+  fractional-dpr displays because the 1px border and 2px ring both snap to device pixels (5.2px at dpr 1.25).
+  **This inset is derived from the card's padding, so changing `.sl-markdown-content details`'s padding means
+  changing it too.**
+- **Second latent bug fixed (owner-approved, visible):** the orphan dragged the summary's CONTENT, not just
+  its border box, so every toggle label sat 8px left of where Starlight intends. Restoring the pair moves each
+  label 8px right, onto the card's content box, where it now aligns with the `.toggle-body` text below it
+  (measured 28.8 vs 28.8; it previously sat 5.6px left of it). Treated as a fix, not a regression.
+- **Scope correction (the reason this took two commits):** the first pass (`0fc1864`) was scoped to
+  `.spoiler-toggle` and fixed 1 of 27 toggles, because the brief fenced the base rule on the premise that the
+  defect was spoiler-specific. It never was: the orphan is CREATED by the base rule, so all 27 were broken.
+  The owner spotted a still-misaligned plain toggle on busqueda; `34417ee` moved the pair to the base rule and
+  deleted the now-redundant `.spoiler-toggle` geometry rule (a net simplification: one rule for every toggle
+  instead of one for an exception). **Lesson recorded: when a cause is traced to a SHARED rule, the blast
+  radius is every consumer of that rule, and the report must say so even if the brief scopes the fix
+  narrower.**
+- **Premise correction (supersedes the 2026-07-13 TOC/prose entry):** that entry concluded the spoiler-toggle
+  "ALREADY rings the lime default ... which is exactly the requested end state. NO change was needed or made."
+  That was true of the ring's COLOR only. Its GEOMETRY was wrong the whole time (8px off-center), which a
+  color-only check could not see.
+- **Verified (real browser, both themes, closed and open):** all 27 toggles across the 5 pages that use them
+  are now symmetric (was 1 of 27; 0 of 13 on busqueda). Every toggle reports identical deltas. A real mouse
+  click leaves `:focus-visible` false with `outline-style: none`. The ring stays on the tab when open and
+  clears the revealed body by 14px. The `[open]` padding-bottom tightening still wins on specificity
+  (4.8px to 2.4px) and leaves the ring top identical, so it reintroduces no vertical shift. The spoiler
+  toggle's amber border logic is untouched. `npm run build` green (45 pages).
+- **Status:** Adopted; committed as `0fc1864` then `34417ee`. CSS-only, `custom.css` only.
+
+### 2026-07-17 · ToggleAll keeps its cyan ring, routed through `--focus-ring` (resolves the ROADMAP item)
+- **Decision:** `ToggleAll.astro`'s scoped style drops its hardcoded
+  `outline: 2px solid color-mix(in oklab, var(--pf-accent-2) 60%, transparent)` and sets
+  `--focus-ring: var(--pf-accent-2)` instead, letting the shared rule paint it at the standard 2px / 2px
+  offset. Its cyan hover/focus color, border and background wash are KEPT (that is its hover design).
+- **Why cyan was kept rather than dropped to lime:** the ROADMAP item posed this as a question ("decide first
+  whether the cyan ring was deliberate"). It is: `--pf-accent-2` cyan IS this control's identity, the same
+  color its hover state, border and wash already read, so under the system's own rule (identity elements ring
+  in what they already express) it qualifies exactly like `WriteupCard` or the reveals. The 2026-07-13 note
+  calling ToggleAll a "non-identity control that should ring lime" is superseded. `--pf-accent-2` is already
+  theme-aware (`:root` maps it to `--tp-cyan`, the light block to `--tp-cyan-ink`), so one declaration covers
+  both themes with no light variant. A custom property set directly on the element wins over `:root`
+  inheritance regardless of Astro's `:where()` scoping.
+- **Net:** no ring color is hardcoded anywhere on content pages; every content-page ring now flows through
+  `--focus-ring`. The marketing pages remain outside the token by decision (still a ROADMAP item).
+- **Status:** Adopted; committed as `c0171f3`. Resolves the "[ENG] Fold ToggleAll's hardcoded cyan focus ring
+  into --focus-ring" ROADMAP item, which is removed from ROADMAP.
+
+### 2026-07-17 · Gate landing-page stat count-up under prefers-reduced-motion
+- **Decision:** In `src/pages/index.astro`, `countUp` short-circuits when `prefers-reduced-motion: reduce`
+  is set, rendering each stat's final value (4, 50+, and the infinity stat) with no numeric animation.
+  Non-reduced-motion behavior is unchanged.
+- **Why:** "prefers-reduced-motion respected" is a standing project rule, and the count-up previously
+  animated regardless, so this closes an existing gap. Safe because the resting HTML already holds the
+  final values (see the flash-fix entry below).
+- **Status:** Adopted, verified in-browser; committed as `1e4fb4f` (was recorded as uncommitted).
+
+### 2026-07-17 · Landing stats: resting HTML holds final values, no flash
+- **Decision:** The three stat elements render their final values (4, 50+, and the infinity stat) as
+  resting HTML, and `countUp` writes the '0' start value synchronously (not in the first
+  `requestAnimationFrame`) so the final value is never painted while `.reveal` is at opacity 0.
+- **Why:** No-JS visitors, social/OG crawlers, and non-executing search engines now see the real numbers
+  instead of 0, and there is no one-frame flash of the final value before the count-up begins.
+- **Status:** Adopted, verified in-browser; committed as `1e4fb4f` (was recorded as uncommitted).
+
+### 2026-07-13 · Homepage hero subline is NOT screen-reader fragmented (investigated, no change made)
+- **Finding:** the reported fragmentation of the homepage hero subline does not exist. The subline is plain
+  semantic markup, `<p class="sub reveal">` containing one `<b>Recon to root</b>` between two text nodes.
+  Verified in the browser: NO per-word or per-character spans (`hasSpans: 0`, the decode/scramble animation
+  is on the `<h1>`, not the subline), NO `<br>`, no decorative wrappers, and no pre-existing
+  `aria-label` / `aria-hidden`. `<b>` carries no ARIA role (implicit generic) and is inline, so it creates
+  no boundary: the paragraph's announced text is already the full, coherent sentence ("A living lab notebook
+  of machine walkthroughs and capture-the-flag solutions. Recon to root, documented in full, including the
+  dead ends that taught me the most."). NO CHANGE MADE.
+- **Where the "ref_8/ref_9 fragments" came from:** the accessibility-tree DUMP, not the page. The tree
+  serializer lists a child element's text as its own node, so the parent prints with a gap where the `<b>`
+  was: `"...solutions. , documented in full, "` (ref_8) plus `"Recon to root"` (ref_9). That is a rendering
+  artifact of the tool, not what a screen reader announces.
+- **Why the prescribed fix was NOT applied (it would have caused the defect it was meant to cure):**
+  `aria-label` on a `<p>` is invalid, role=paragraph is in ARIA's name-prohibited list, so screen readers
+  ignore it. And `aria-hidden="true"` on the inner `<b>` would REMOVE "Recon to root" from the accessible
+  text, making the subline actually announce as `"...solutions. , documented in full, ..."`, which is
+  precisely the broken ref_8 string. The artifact and the proposed-fix outcome are the same string.
+- **Note (unrelated, unchanged):** the `.reveal` scroll-reveal animates `opacity`, which does not remove
+  content from the accessibility tree (unlike `display:none` / `visibility:hidden`), so the subline is
+  exposed throughout. Untouched.
+- **Status:** Investigated, closed with no code change. Recorded so it is not re-litigated.
+
+### 2026-07-13 · Focus ring extended to TOC entries + prose links; spoiler-toggle already correct; light flag gold strengthened
+- **Decision:** `--focus-ring` now also carries the TOC's heading-ladder identity and the prose-link cyan.
+  Set per element only: no new outline rules, no new colors, every ring still drawn by the shared
+  zero-specificity `:where(...):focus-visible` rule.
+  - **TOC entries** ring in the hue of the heading they point to, on BOTH the desktop
+    `.right-sidebar-panel` and the `mobile-starlight-toc` dropdown: flags `--flag-gold`, h3 `--tp-cyan` /
+    `--tp-cyan-ink`, h2 (and h4+) the lime default, which already equals the green h2 takes when current
+    (`--sl-color-text-accent`). Keyed off the heading the entry POINTS TO (slug for flags, the nesting
+    chain on desktop, inline `--depth: 1` on mobile) and deliberately WITHOUT the `aria-current` condition
+    the color rules use, so the ring is right whether or not the entry is the active section. Flags are
+    excluded from the h3 rule exactly as in the color rules, so they never ring cyan.
+  - **In-prose links** ring cyan: `--focus-ring` added to the existing
+    `.sl-markdown-content a:not(:where(.not-content *))` rule and its light variant, reusing the same
+    `--tp-cyan` / `--tp-cyan-ink` pair the link color already uses. The `.not-content` guard means
+    component links keep their own token (verified: WriteupCard still rings `--pf-accent`, not cyan).
+- **Premise corrections (checked against source before editing):**
+  - **The spoiler-toggle has no green focus ring, and no focus rule at all.** Its block defines only
+    `--spoiler-color` (amber), the border, and the summary color; there is no hardcoded ring to remove. It
+    ALREADY rings the lime default through the shared rule (measured `#b6ff3c` dark / `#4d7c0f` light, with
+    the amber staying text/border only), which is exactly the requested end state. The "green" is most
+    likely the light lime `#4d7c0f`, which reads as an olive green. NO change was needed or made.
+    **CORRECTED 2026-07-17:** true of the ring's COLOR only. Its GEOMETRY was wrong at the time of this
+    entry and stayed wrong: an orphaned Starlight `margin-inline-start` threw the ring 8px off-center, on
+    this toggle and on all 26 others. A color-only check could not see it. See the 2026-07-17
+    toggle-alignment entry.
+  - **`ToggleAll.astro` hardcodes a cyan ring** (`outline: 2px solid color-mix(in oklab,
+    var(--pf-accent-2) 60%, transparent)`), a component-level rule the token pass below missed (it grepped
+    `src/styles/*.css`, not components). It is the one element still bypassing `--focus-ring`, and it
+    contradicts that pass's own "ToggleAll stays lime" note. Left as-is (outside this pass); see ROADMAP.
+- **Legibility, measured not assumed** (ring vs its own effective background): dark is strong across the
+  board (flag gold 12.39:1, h3 cyan 14.27:1, h2 lime 16.49:1, prose cyan 14.27:1). Light: cyan 5.22:1 and
+  lime 4.11:1 are fine, but the decorative `--flag-gold` (`#C6A243`) rings at only **2.00:1** on the paper
+  TOC, under the 3:1 a non-text indicator wants. Per the convention (keep the identity, never fall back to
+  lime), the flag ring reads the AA-grade **`--flag-gold-val`** instead: on dark that token IS `#ffc23d`,
+  so dark is byte-identical (12.39:1, unchanged), while on paper it is the deeper antique `#7a5a12` and
+  measures **5.24:1**, in line with the cyan. That fixes the contrast RATIO rather than thickening a faint
+  line, so every ring stays a uniform 2px and no width override exists anywhere. Both flag slugs use the
+  one value-gold, matching the TOC color rules, which likewise do not tier user vs root. (An interim
+  light-only `outline-width: 3px` was tried first and removed in favour of this: width raises
+  perceivability but not the ratio.)
+- **Verified (real browser, keyboard, both themes, desktop 1280 + mobile 375):** desktop and mobile TOC each
+  ring flag gold / h3 cyan / h2 lime, every measured entry with `aria-current` ABSENT (proving the ring does
+  not depend on active state); prose links ring cyan; the spoiler-toggle rings lime (not amber, not green);
+  WriteupCard still rings `--pf-accent`; on a fresh load, pointer/plain focus gives `:focus-visible` false
+  and `outline: none`, so nothing rings on mouse click. `npm run build` green (45 pages).
+- **Status:** Adopted; committed to `dev` (not pushed). CSS-only, additive, `custom.css` only.
+
+### 2026-07-13 · Site-wide focus-ring token (--focus-ring) on content pages: one color, identity where it exists, lime default
+- **Decision:** A single `--focus-ring` custom property now drives every keyboard focus-ring COLOR on
+  Starlight CONTENT pages (`custom.css`). Default is the theme-aware site accent
+  `var(--sl-color-text-accent)` (lime `#b6ff3c` dark / `#4d7c0f` light). A zero-specificity shared base
+  rule draws the rectangular ring: `:where(a, button, [role="button"], input, select, textarea, summary,
+  [tabindex]):focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px }`. Identity
+  elements set `--focus-ring` to their own accent so the ring echoes what they already express: platform
+  cards (`--pf-accent`), the four platform sidebar groups (positional nth-child, theme-aware), the
+  flag/password reveals (gold/amber), and the badge chips (`--wm-c`, an inert hook for the WriteupMeta
+  rollout). Everything else inherits lime. `:focus-visible` only (keyboard), never on mouse click.
+  Additive, no component fork, no Starlight fork, no new deps.
+- **Premise corrections (the task assumed a different codebase; checked against source before building):**
+  - FlagCapture/PasswordReveal were said to ring via `box-shadow`; they actually ring via `outline`
+    (box-shadow is none) and are `border-radius: 6px`, so the outline already follows their corners in
+    current engines. Kept them as OUTLINE (no conversion, owner's choice), routed the color through the
+    token; corners stay rounded and the rings are preserved exactly (pw amber `#ffc23d`/`#a86f04`; flagcap
+    gold `color-mix(--fc-id 65%/60%)`).
+  - The task's "~8 generic non-identity outline rings to collapse" do not exist in `custom.css`: it had
+    exactly 3 focus rings, all identity (the two reveals). The only generic rings live inline on the two
+    marketing pages, which `custom.css` does not load.
+  - Starlight 0.39.2 ships NO `:focus-visible` outline of its own (only a few `:focus` color changes plus a
+    1px search-clear outline), so the shared rule is the branded ring for all content-page controls, not an
+    override war. `custom.css` is unlayered, so even the zero-specificity `:where` base beats Starlight's
+    layered styles.
+  - The "homepage platform cards" named in the task are on a standalone marketing page
+    (`.card.htb {--accent}`), which `custom.css` cannot reach; the content-page analog is `WriteupCard`
+    (`<a class="wc-card pf-*">`, carries `--pf-accent`), which is what this pass rings. Sidebar links do not
+    carry `--pf-accent` (platform color is a positional nth-child dot), so the hook is added by the same
+    nth-child pattern, not "already there."
+- **Scope (owner decision):** content pages only this pass; folding the two marketing pages into the same
+  token (de-hardcoding their inline lime/accent rings from the prior focus-states work) is a deliberate
+  SECOND step (see ROADMAP), not forced now.
+- **Verified (real browser, keyboard + pointer, both themes):** the shared rule renders lime on content
+  chrome (skip link, prose links, TOC entries, header link, search button, theme select). Sidebar groups
+  render their identity: VulnHub red `#ff5c5c`/`#d12f2f`, PicoCTF purple `#d96bff`/`#8b3dc4`, OTW amber
+  `#ffc23d`/`#a86f04`, HTB + About lime; writeup links inside a group inherit it. WriteupCard rings
+  `--pf-accent` (lime for HTB), radius 16px. FlagCapture gold (65% mix) and PasswordReveal amber render
+  rounded (radius 6px, outline follows). On a fresh load, plain/pointer focus gives `:focus-visible` false
+  + `outline: none` (no ring on mouse click). Code blocks have no `tabindex`, so they are untouched. Every
+  identity ring is legible against its background in both themes (bright on the near-black rail, darkened
+  values on paper); none needed strengthening. `npm run build` green (45 pages).
+- **CORRECTED 2026-07-17 ("code blocks have no `tabindex`"):** FALSE. EC core's "Scrollable block tabindex"
+  JS module adds `tabindex="0"` + `role="region"` to any `<pre>` that overflows, so wide code blocks DO
+  match the shared rule and were ringed all along. It went unnoticed because the module runs on a
+  250ms-debounced ResizeObserver, so the attribute is absent from the static HTML and from any DOM check
+  made too early. Wait for the observer to settle before counting. See the 2026-07-17 code-frame entry.
+- **Status:** Adopted; committed to `dev` (not pushed). CSS-only, additive, `custom.css` only.
+
+### 2026-07-13 · Marketing-page keyboard focus rings (:focus-visible), matching the component-ring pattern
+- **Decision:** Both standalone marketing pages now define a `:focus-visible` ring on every interactive
+  control, CSS-only inside each page's `<style is:global>` (`src/pages/index.astro` and
+  `src/pages/about.astro`; Starlight content pages and the existing component focus rings were NOT
+  touched). The ring reuses the design-system pattern from the component rings in `custom.css`
+  (PasswordReveal, FlagCapture): `outline: 2px solid <accent>; outline-offset: 2px;`, keyed with
+  `:focus-visible` (not `:focus`) so it shows for keyboard nav and not on mouse click.
+- **Token, not a hardcode:** the accent is `var(--lime)`, the pages' own theme-aware token, which is
+  byte-identical to what content pages resolve for the ring. `custom.css` sets `--sl-color-accent:
+  #b6ff3c` and `--sl-color-text-accent` is green `#b6ff3c` dark / `#4d7c0f` light; the marketing `--lime`
+  is `#b6ff3c` dark / `#4d7c0f` light, so no light override is needed. The task's example token
+  `var(--sl-color-text-accent)` does NOT exist on the marketing pages (they live outside Starlight and
+  define only `--ink/--lime/--cyan/--magenta/...`), so using it verbatim would have produced an
+  invalid/undefined outline color; `var(--lime)` is the correct equivalent.
+- **Platform cards key the ring to their own identity accent:** the four homepage `.card` and the four
+  About `.practice` links use `outline-color: var(--accent)` (HTB lime, VulnHub red, PicoCTF purple, OTW
+  amber), echoing their hover border and mirroring how the component rings use each component's identity
+  color (FlagCapture `--fc-id`). Every other control (buttons, HUD links, theme toggle) uses the uniform
+  lime ring. (Owner chose this over a single uniform lime everywhere.)
+- **Premise checked before building:** confirmed the marketing pages defined no focus styles at all (no
+  `:focus`/`:focus-visible`/`outline`, and no `outline:none` suppression, so they fell back to the generic
+  browser default ring), and that the only `:focus-visible` rules in `custom.css` are the three component
+  rings (all `.sl-markdown-content`-scoped, 2px solid + 2px offset): not one global rule, but a consistent
+  geometry to match.
+- **Verified (real browser, both themes, real keyboard + pointer input):** every interactive control is
+  covered by a focus selector (8 homepage: 4 `.btn` + 4 `.card`; 10 About: hud-home + 2 nav links + toggle
+  + 4 `.practice` + 2 `.btn`; 0 uncovered; the 6 About skill cards are non-interactive `<div>`s, correctly
+  excluded). Real hardware Tab presses give `matches(':focus-visible')` true with the ring rendered:
+  homepage btn lime `#b6ff3c` and VulnHub card red `#ff5c5c`; About dark nav link `#b6ff3c`; About light
+  hud-home and toggle `#4d7c0f`. A non-keyboard (programmatic/pointer) focus gives `:focus-visible` false
+  and `outline: none`, so no ring appears on mouse click. `npm run build` green (45 pages). No new deps,
+  pinned versions unchanged, no motion added.
+- **Status:** Adopted (working tree; not committed). CSS-only, additive, marketing pages only.
+
+### 2026-07-13 · Marketing About-page touch targets meet WCAG 2.2 minimum (24px) via layout-neutral hit-area growth
+- **Decision:** The four interactive controls in the About page HUD now carry a >= 24x24px pointer
+  target. CSS-only, inside the `<style is:global>` block of `src/pages/about.astro` (the theme layer and
+  Starlight content pages were NOT touched, no shared component changed). The two nav links (`.hud-nav a`)
+  and the home link (`.hud-home`) get `padding-block: 3px; margin-block: -3px;`; the theme toggle
+  (`.theme-toggle`) gets `align-items/justify-content: center; min-width: 24px; min-height: 24px;
+  margin: -4px;` while the icon stays 16px.
+- **Why the paired negative margin:** block padding (or a min-size floor) grows the clickable box, and the
+  equal negative margin keeps the flex item's margin box at its natural size, so the compact HUD height and
+  every label/icon position stay pixel-identical. Only the invisible hit area grows: no glyph is enlarged
+  and nothing below the bar shifts.
+- **Scope confirmed by live measurement, not assumed:** at a real 375px viewport the only failing controls
+  were the theme toggle (16x16) and the three HUD links (~18.4px tall). Every other control on both
+  marketing pages already passes (homepage `.btn` >= 50px, platform `.card` 240px, About `.practice`
+  120px, footer buttons ~50px); the homepage carries no nav links or toggle, so it needed no change. The
+  About skill cards are non-interactive `<div>`s (cursor-tilt decoration only, no href/handler), so they
+  are out of scope.
+- **Verified (real browser, both themes):** all four controls report >= 24px (hud-home 83x24.4, Writeups
+  66.4x24.4, About 41.5x24.4, toggle 24x24) in dark and light; HUD height unchanged at 51.2px; the visible
+  toggle glyph is still 16x16; no horizontal overflow (documentElement scrollWidth == 375); no hit-box
+  overlap (18.4px clearance between the toggle and the About link); each control is the topmost element at
+  its own center; the toggle flips theme light/dark and persists to `localStorage['starlight-theme']`; the
+  Writeups link navigates to /hackthebox/. `npm run build` green (45 pages). No new dependencies, pinned
+  versions unchanged, no motion added.
+- **Status:** Adopted (working tree; not committed). CSS-only, additive, `about.astro` only.
+
 ### 2026-07-12 · Code-block min-content width leak contained at `.main-pane` (min-width: 0), verified in-browser
 - **Decision:** Two additive rules in `custom.css` (placed right after the three-column layout block):
   `.sl-markdown-content :is(.expressive-code, pre) { min-width: 0 }` and `.main-pane { min-width: 0 }`.
@@ -218,6 +658,15 @@
   production" and "writeup-structure migration uncommitted" ROADMAP items are resolved and removed from ROADMAP.
 
 ## Badge icon sourcing: split by consumption mechanism
+
+**SUPERSEDED IN PART 2026-07-17** (see the "polychrome/monochrome sourcing axis" entry above). Two
+premises here are now wrong: (1) the axis is polychrome vs monochrome, NOT logo vs glyph, so HackTheBox
+(a single-fill logo) is now an inlined `currentColor` glyph, leaving three native-colour platform `<img>`
+logos (VulnHub, PicoCTF, OverTheWire) plus Linux; (2) the `public/icons` copies do NOT serve "the sidebar
+CSS backgrounds" (the sidebar uses colored dots; its logo CSS is commented out), they serve
+`PlatformIndex.astro` and `about.astro` by literal `/icons/` path, and `public/icons/htb.svg` now
+deliberately diverges from the inlined `src/assets/icons/htb.svg`. The consumption-mechanism split itself
+still stands; only the axis label and the public-copy rationale are corrected.
 
 Writeup badge marks are sourced by what each icon needs, not stored uniformly. The four
 platform logos render as native-color <img> from hashed ?url imports and, because the sidebar
