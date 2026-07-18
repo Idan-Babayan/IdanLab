@@ -268,8 +268,9 @@ token is an open ROADMAP item, not a bug.
   `<span>` today (the commented `<a>` + `data-astro-prefetch="false"` restore verbatim once the filter
   routes ship), `.not-content`; icons live in `badges/icons.ts` on a 14px grid; runtime-validates its
   four union props. Colour model, icon sourcing, geometry and the light-mode AA palette are documented
-  in the "Badge system (WriteupMeta)" blocks in §6 and §7. Live on the `busquedav2.mdx` testbed; not yet
-  rolled out to real writeups. See DECISIONS 2026-07-17 (three badge entries) and 2026-07-10).
+  in the "Badge system (WriteupMeta)" blocks in §6 and §7. Built and documented but not currently wired to
+  any page (the `busquedav2.mdx` testbed it was verified on was dropped from the branch before push). See
+  DECISIONS 2026-07-17 (the three badge entries plus the testbed-drop entry) and 2026-07-10).
 - Chrome (Starlight override): `ToggleAll` (Expand/Collapse-all control) auto-injected into the right
   "On this page" sidebar by `overrides/PageSidebar.astro` (renders `<Default/>` then the control).
 

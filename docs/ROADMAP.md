@@ -41,14 +41,16 @@
 - [CONTENT] Verify the ToggleAll few-pixel shift fix in real browsers (see Open bugs), then it can be
   considered closed.
 - [ENG/DESIGN] WriteupMeta badge system (`src/components/badges/`, DECISIONS 2026-07-10) shipped to
-  production (commits `7fa5d82` + `02e8bab`, PR #9) and renders on the `busquedav2.mdx` testbed. The DESIGN
+  production (commits `7fa5d82` + `02e8bab`, PR #9); the `busquedav2.mdx` testbed it was verified on was dropped before push, so it currently renders on no page. The DESIGN
   is now complete and documented (CORE_SPEC §6/§7 "Badge system"): real icon marks on a 14px grid (polychrome
   `<img>` vs monochrome inline `currentColor`, HackTheBox inlined), light-mode labels solved to WCAG AA in
   OKLCH, the Linux OS chip re-hued off OverTheWire's amber, accessibility clean. See DECISIONS 2026-07-17
-  (three badge entries), committed `bdb06c4` + `4325533` + `3de625a` to `dev`, NOT yet pushed to `main`.
+  (three badge entries plus the testbed-drop entry). The badge commits were rebased to `304c97e` + `1fcf53e`
+  + `d7b1550` (busquedav2-drop) and pushed to `origin/dev`, then merged to `main` via PR #16 (`dev` -> `main`).
   RESOLVED earlier: canonical `--pf-accent` hexes verbatim, `Progressive` env colour set. RESOLVED now: the
-  "placeholder-stub SVGs" item (icons are real, gridded, and colour-plumbed) and "renders on no page yet"
-  (it renders on the testbed).
+  "placeholder-stub SVGs" item (icons are real, gridded, and colour-plumbed). The "renders on no page yet"
+  item stands: the `busquedav2.mdx` testbed it briefly rendered on was dropped before push, so the badges
+  currently render on no page (see DECISIONS 2026-07-17; rollout is the remaining work below).
   Remaining (rollout + interactivity only, no design work left):
   1. **Auto-injection vs manual:** decide with Engineering whether WriteupMeta is hand-placed under each
      title or injected (and whether it replaces the current `.machine-meta` badge row; note WriteupMeta's

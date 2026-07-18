@@ -6,6 +6,35 @@
 
 ---
 
+### 2026-07-17 · busquedav2 testbed dropped before push; badge commits rebased + pushed; merged to main (PR #16)
+- **Decision:** the `busquedav2.mdx` design testbed is NOT pushed and is kept out of the `dev` -> `main` PR.
+  It is a local-only testing page (a re-created successor to the June testbed that the 2026-06-27 FlagCapture
+  entry recorded as deleted), used to verify the WriteupMeta badge work. Keeping it off `origin` and out of
+  the PR keeps it off every path to production.
+- **How (owner-approved edit of UNPUSHED commits only):** it sat in exactly one isolated, unpushed commit,
+  `fd43eb7` (a 467-line pure add touching only that file), third in the 7-commit unpushed stack. It was
+  dropped with `git rebase --onto fd43eb7~1 fd43eb7 dev` (interactive rebase is unavailable in the harness;
+  `--onto` is more precise anyway). The two commits before it kept their hashes (`c793fe7`, `d615f98`); the
+  four after it were replayed onto the new base and so got NEW hashes: `bdb06c4` -> `304c97e` (glyph 14px
+  grid), `4325533` -> `1fcf53e` (light-mode label palette), `3de625a` -> `d7b1550` (Linux OS chip re-hue),
+  `7f492db` -> `00da3cb` (the docs-badges commit). `git diff 7f492db dev` was exactly the 467-line busquedav2
+  deletion and nothing else, proving the four replayed commits are byte-identical in content.
+- **Then pushed, PR'd, and merged to production:** because only an UNPUSHED commit was removed, `origin/dev`
+  stayed a clean ancestor, so `git push origin dev` fast-forwarded (no force). Opened PR #16 (`dev` -> `main`,
+  22 commits / 15 files, +983 / -152), where `origin/main` was a clean ancestor of `dev`, then on the owner's
+  go-ahead merged it to `main` as a history-preserving merge commit (the PR #9 convention, not a squash),
+  triggering the Cloudflare Pages production deploy of idanlab.dev.
+- **Docs reconciled (this pass):** the removed testbed's CURRENT-STATE references are corrected in CORE_SPEC
+  §6 (component inventory) and ROADMAP (the WriteupMeta Now item): the badge system is built and documented
+  but is not currently wired to any page. This entry SUPERSEDES the "(not pushed)" status and the old hashes
+  in the three 2026-07-17 badge entries below (remap above). The historical busquedav2 entries (2026-06-20,
+  2026-06-27) stand as accurate June history and are untouched.
+- **Verified:** `npm run build` green at 45 pages (was 46; the one fewer page IS busquedav2, confirming
+  nothing else was lost). Local `main` was also fast-forwarded to `origin/main` (`cb0a696`) to clear a stale
+  local ref; no `main` history was changed.
+- **Status:** Adopted + shipped to production. `dev` pushed to `origin` and merged to `main` via PR #16. Git
+  plus this docs reconciliation only; no source or dependency changes.
+
 ### 2026-07-17 · Linux OS badge separated from OverTheWire (H60 re-hue + L0.40 deepen)
 - **Decision:** `wm-os-linux` gets its own hue in both themes, distinct from `pf-otw`. Dark `#f0b429` ->
   `#ffa95d`, light `#794e00` -> `#6b3900`. `pf-otw` and every other amber in the file are untouched.
@@ -32,7 +61,7 @@
 - **Verified live (canvas readback, both themes):** Linux light 6.10, dark 8.30; OTW unchanged 4.80 / 9.56;
   separation light 0.065, dark 0.073; both chips read distinct at real chip size. `npm run build` green (46
   pages). custom.css only, no new deps.
-- **Status:** Adopted; committed as `3de625a` to `dev` (not pushed).
+- **Status:** Adopted; committed as `3de625a` to `dev` (not pushed). **CORRECTED 2026-07-17 (push):** rebased to `d7b1550` and pushed when the busquedav2 testbed commit was dropped; shipped to main via PR #16 (see the top entry).
 
 ### 2026-07-17 · Badge light-mode label palette solved to WCAG AA in OKLCH
 - **Decision:** the nine WriteupMeta light `--wm-c` values are re-solved so each 12px/600 chip label clears
@@ -70,7 +99,7 @@
   unaudited for light AA (see ROADMAP).
 - **Verified live (canvas, both themes):** every light label 4.80 to 4.90, every dark 5.66 to 12.01; backdrop
   `#ece9e0`, no card; every dark value byte-identical (confirmed by diff). `npm run build` green (46 pages).
-- **Status:** Adopted; committed as `4325533` to `dev` (not pushed). custom.css only.
+- **Status:** Adopted; committed as `4325533` to `dev` (not pushed). **CORRECTED 2026-07-17 (push):** rebased to `1fcf53e` and pushed when the busquedav2 testbed commit was dropped; shipped to main via PR #16 (see the top entry). custom.css only.
 
 ### 2026-07-17 · Badge glyphs normalized to a 14px grid; HackTheBox to currentColor; polychrome/monochrome sourcing axis
 - **Decision:** the WriteupMeta glyph set is normalized so every icon's larger ink dimension renders at ~14px
@@ -118,7 +147,7 @@
 - **Verified live (both themes):** all nine glyphs within ~1.14x; HackTheBox icon and label compute identical
   in both themes; no disc behind Tux and his light regions survive; no `.st0` leaked globally; every chip's
   textContent is exactly its label. `npm run build` green (46 pages). No new deps.
-- **Status:** Adopted; committed as `bdb06c4` to `dev` (not pushed).
+- **Status:** Adopted; committed as `bdb06c4` to `dev` (not pushed). **CORRECTED 2026-07-17 (push):** rebased to `304c97e` and pushed when the busquedav2 testbed commit was dropped; shipped to main via PR #16 (see the top entry).
 
 ### 2026-07-17 · Code-block focus ring wraps the whole EC frame, not just the `<pre>`
 - **Decision:** two add-only rules in `custom.css` (right after the sharp-frame radius block): the ring is
