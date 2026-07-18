@@ -40,28 +40,39 @@
   `https://idanlab.dev/sitemap-index.xml` resolves after deploy.
 - [CONTENT] Verify the ToggleAll few-pixel shift fix in real browsers (see Open bugs), then it can be
   considered closed.
-- [ENG/DESIGN] WriteupMeta badge system (`src/components/badges/`, DECISIONS 2026-07-10, revised same day
-  to intentional per-axis color + restrained glow) is SHIPPED to production (commits `7fa5d82` + docs
-  `02e8bab`, PR #9 merged 2026-07-11) but renders on NO page yet; two calls remain before it goes on real
-  writeups. RESOLVED earlier: the platform palette now uses the canonical `--pf-accent` hexes verbatim (no
-  drift), and the missing `Progressive` env color is set (teal `#3fd9a8`/`#0f8a63`).
-  Remaining:
-  1. **Icon marks:** `badges/icons.ts` ships placeholder-stub SVGs; Idan swaps in the real 24x24
-     `currentColor` platform/OS/environment marks (full-color hue comes from the `.wm-ico { color: var(--wm-c) }`
-     rule). The `Progressive` glyph is the placeholder steps mark (thematically a ladder, but on the same
-     swap list).
-  2. **Auto-injection vs manual:** decide with Engineering whether WriteupMeta is hand-placed under each
+- [ENG/DESIGN] WriteupMeta badge system (`src/components/badges/`, DECISIONS 2026-07-10) shipped to
+  production (commits `7fa5d82` + `02e8bab`, PR #9); the `busquedav2.mdx` testbed it was verified on was dropped before push, so it currently renders on no page. The DESIGN
+  is now complete and documented (CORE_SPEC §6/§7 "Badge system"): real icon marks on a 14px grid (polychrome
+  `<img>` vs monochrome inline `currentColor`, HackTheBox inlined), light-mode labels solved to WCAG AA in
+  OKLCH, the Linux OS chip re-hued off OverTheWire's amber, accessibility clean. See DECISIONS 2026-07-17
+  (three badge entries plus the testbed-drop entry). The badge commits were rebased to `304c97e` + `1fcf53e`
+  + `d7b1550` (busquedav2-drop) and pushed to `origin/dev`, then merged to `main` via PR #16 (`dev` -> `main`).
+  RESOLVED earlier: canonical `--pf-accent` hexes verbatim, `Progressive` env colour set. RESOLVED now: the
+  "placeholder-stub SVGs" item (icons are real, gridded, and colour-plumbed). The "renders on no page yet"
+  item stands: the `busquedav2.mdx` testbed it briefly rendered on was dropped before push, so the badges
+  currently render on no page (see DECISIONS 2026-07-17; rollout is the remaining work below).
+  Remaining (rollout + interactivity only, no design work left):
+  1. **Auto-injection vs manual:** decide with Engineering whether WriteupMeta is hand-placed under each
      title or injected (and whether it replaces the current `.machine-meta` badge row; note WriteupMeta's
      hue-free growing pips are a SECOND difficulty encoding vs the traffic-light `.difficulty-*` badge).
-     The filter routes the chips link to (`/platform`, `/os`, `/environment`) do not exist yet; remove the
-     chips' `data-astro-prefetch="false"` when they land.
-- Wire WriteupMeta into the writeup and wargame-level pages (rollout: auto-inject vs manual).
-  It currently renders on no page. Content/Product.
-- Build the /platform, /os, /environment filter/aggregation routes the nav chips link to, and
-  remove the temporary data-astro-prefetch="false" from the chips once they exist. Same
-  machinery as the /principles index. Engineering.
+  2. **Filter routes:** the chips render as non-interactive `<span>` until `/platform`, `/os`,
+     `/environment` exist; restore the commented `<a>` and drop `data-astro-prefetch="false"` when they land.
+     Same machinery as the `/principles` index. Engineering.
+  Then wire WriteupMeta into the writeup + wargame-level pages (Content/Product).
 
 ## Next (committed)
+- [ENG/DESIGN] Unify the two marketing pages (home, about) under the `--focus-ring` token established for
+  content pages (CORE_SPEC §6 "Focus ring system"; DECISIONS 2026-07-13). This is now the LAST gap in the
+  token system: every content-page ring flows through `--focus-ring` (ToggleAll was the final holdout and
+  landed 2026-07-17, see DECISIONS), so the marketing pages are the only place a ring color is still
+  hardcoded. The token system is content-only by decision; this second step folds their inline
+  `:focus-visible` rings (currently `outline: 2px solid var(--lime)` + per-card `outline-color:
+  var(--accent)` from the 2026-07-13 focus-states work) into the same model: an inline
+  `:root{--focus-ring:var(--lime)}` default + the shared `:where(...)` rule + `--focus-ring: var(--accent)`
+  on the platform cards, in EACH page's `<style is:global>` (they do not load custom.css). Net: no ring
+  color hardcoded anywhere. Keep both themes, `:focus-visible` only, no motion. Note the marketing pages
+  have no Starlight `markdown.css` under them, so the orphaned-margin geometry bug fixed on content toggles
+  (DECISIONS 2026-07-17) does not apply there.
 - [CONTENT] Mass-import ~50 existing writeups via the pipeline (HTB / VulnHub / PicoCTF / OTW), each as a
   flat `.mdx` with images under the parallel `src/assets` tree (DECISIONS 2026-06-30). Once HTB
   Medium/Hard folders have content, uncomment those (lowercase) sidebar groups in `astro.config.mjs`.
@@ -69,12 +80,23 @@
 - [CONTENT] Author `principle:` frontmatter on writeups to surface the coda (the auto-append mechanism,
   footer silence, and true italic face all shipped 2026-07-04, see DECISIONS). Migrate busqueda's body
   `<Principle>` to frontmatter (remove the inline component + import, add `principle:`).
+- [CONTENT/ENG] Promote `os` to a typed frontmatter enum (Linux | Windows, matching the `WriteupMeta` OS
+  axis) and tighten the content-collection schema from a loose string to a two-value enum. Unlike tags this
+  is a closed dimension, not a browsable tag, and it is cheap and renders today: it lights up the OS chip on
+  the writeup cards via `WriteupCard`'s existing `os` read. Reconcile the value casing across the
+  `WriteupCard` and `WriteupMeta` consumers when wiring it. Best folded into the mass-import pass so every
+  imported writeup carries it, then backfill the existing few. Owner/ENG for the schema, CONTENT for the values.
 - [PRODUCT] Global `/writeups` index (path 3): reuse `WriteupCard` with `showPlatform` true for a
   mixed cross-platform grid (the card was built for this).
 
 ## Later (parked)
 - [CONTENT] Revisit a scripted content-cleaning pass only if manual polish proves to not scale; deliberately deferred, not abandoned.
-- [CONTENT] Surface topic tags as a browsable index (filter writeups by technique).
+- [CONTENT] Surface topic tags as a browsable index (filter writeups by technique). DEFERRED by decision,
+  not abandoned: a canonical tag taxonomy is drafted and parked as a spelling reference, but tags stay out
+  of frontmatter until writeup volume (~30 to 40) makes a filter earn its place. Below that a tag maps to
+  one or two writeups and a filter returns a dead end, so it is pure invisible metadata for now. When it
+  activates, tag emission + validation ride the import pipeline (see the content-taxonomy guard follow-up
+  in this section) so there is no separate backfill.
 - [ENG] Starlight plugins: scroll-to-top button, mobile sidebar swipe, fullscreen code blocks.
 - [DESIGN] Replace `ethical-hacking.png` about portrait with a transparent custom SVG.
 - [ENG] Extract repeated UI into reusable Astro components (cards, badges, buttons, hero FX).
@@ -96,6 +118,14 @@
   color tokens. Owner wants to try options later.
 
 ## Open bugs / known issues
+- [DESIGN/A11y] Non-badge `#a86f04` ambers unaudited for light-mode WCAG AA. The badge light palette pass
+  (DECISIONS 2026-07-17) solved the OTW/Linux CHIP labels to AA and left the seven-way `#a86f04` collision
+  forked (correctly: they are unrelated ambers). But the five NON-badge users of that hex were failing at
+  2.97:1 on paper when the badges were, and nothing about their surfaces makes them pass: `.platform-overthewire`
+  (the old machine-meta badge label), `.pf-overthewire` (platform-index accent), and PasswordReveal's button
+  text are body-size text needing 4.5:1; the sidebar `nth-child(5)` focus ring and the spoiler-toggle border
+  are non-text (3:1). Audit each on light and solve the text ones in OKLCH the same way (hold hue, drop
+  lightness), leaving the forks independent. Small, self-contained, after the glyph pass.
 - [ENG] ToggleAll few-pixel shift: expand/collapse can leave a small reversible content offset in real
   Chromium (Chrome/Edge/Opera GX), from native scroll anchoring fighting the manual correction. Fix
   applied: suppress `overflow-anchor` for the operation, restored next frame (DECISIONS 2026-06-20). NOT

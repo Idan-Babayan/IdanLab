@@ -3,6 +3,41 @@
    ══════════════════════════════════════════════ */
 
 
+/* ══════════════════════════════════════════════
+   FOCUS RING SYSTEM — one color token, identity where it exists, lime default
+   ══════════════════════════════════════════════
+   Every keyboard focus ring reads its COLOR from --focus-ring, which defaults to the theme-aware site
+   accent (--sl-color-text-accent: lime #b6ff3c dark / #4d7c0f light). Identity-bearing elements set
+   --focus-ring to their own accent so the ring echoes the color they already express (matching hover):
+   platform cards (--pf-accent), platform sidebar groups, the flag/password reveals (gold/amber), the
+   badge chips (--wm-c, hooked for rollout), and the ToggleAll control (--pf-accent-2 cyan, assigned in its
+   own component style). Everything else inherits the lime default. Same
+   intentional-color idea as the badges: the ring tells the truth about what the element is, and never
+   invents an identity that is not there.
+
+   This unifies the ring COLOR only, not how it is DRAWN. Rectangular elements use the shared outline
+   rule below. A rounded component that needed the ring to follow its border-radius would keep its own
+   box-shadow rule (still colored via --focus-ring); none do today, because the flag/password reveals
+   are <button>s whose outline already follows their 6px radius in current engines, so they collapse
+   into the shared rule. Adding a new identity element later is just setting --focus-ring on it.
+
+   SCOPE: custom.css themes Starlight CONTENT pages only. The two standalone marketing pages (home,
+   about) carry their own equivalent rings inline; folding them into this same token is a deliberate
+   follow-up, not part of this pass. */
+:root {
+  --focus-ring: var(--sl-color-text-accent);
+}
+/* Shared, zero-specificity base for the general (rectangular) case. :where() holds specificity at 0 so
+   any element that intentionally needs a different width/offset still wins, and unlayered custom.css
+   already beats Starlight's layered styles. Starlight 0.39 ships no :focus-visible outline of its own,
+   so this becomes the ring for every content-page control (nav, TOC, prose links, buttons, the theme
+   toggle), lime unless an ancestor set --focus-ring. Keyboard only (:focus-visible), never on click. */
+:where(a, button, [role="button"], input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+
 /* ── Brighter body text in dark mode ─────────── */
 
 html[data-theme="dark"] {
@@ -146,6 +181,41 @@ mobile-starlight-toc a[aria-current="true"][style*="--depth: 0"]:not([href="#use
   color: var(--sl-color-text-accent);
 }
 
+/* ── TOC focus rings echo the heading ladder ──────────────────────────────────
+   The TOC already takes its heading's hue when an entry is CURRENT (flags gold, h3 cyan, h2 green).
+   The focus ring echoes that same identity through --focus-ring, so tabbing to an entry rings in the
+   color of the heading it points to. Keyed off the heading the entry POINTS TO (slug for flags,
+   nesting/--depth for level) and NOT aria-current, so the ring is right whether or not the entry is the
+   active one. Reuses the existing tokens (no new colors); the shared :where(a,...):focus-visible rule
+   still does the drawing. h2 entries need no rule: the lime default already equals the green they take
+   when current (--sl-color-text-accent). h4+ entries sit deeper than the h3 chain below, so they are
+   unmatched and keep the lime default too. */
+
+/* Flags (gold), desktop + mobile. Same slug anchors the gold color rules above use. Reads the AA-grade
+   --flag-gold-val rather than the decorative --flag-gold: on dark the two are the SAME value (#ffc23d, the
+   bright loot gold already clears AA there, so dark is unchanged), but on paper --flag-gold (#C6A243) rings
+   at only 2.00:1, while the deeper antique --flag-gold-val (#7a5a12) measures ~5.2:1. This keeps the gold
+   identity and fixes the contrast ratio itself, rather than thickening a faint line, so the ring stays 2px
+   everywhere. Both flags use the one value-gold, matching the TOC color rules, which likewise do not tier
+   user vs root. */
+.right-sidebar-panel a[href="#user-flag"],
+.right-sidebar-panel a[href="#root-flag"],
+mobile-starlight-toc a[href="#user-flag"],
+mobile-starlight-toc a[href="#root-flag"] {
+  --focus-ring: var(--flag-gold-val);
+}
+
+/* h3 entries (cyan): desktop by the nesting chain, mobile by Starlight's inline --depth: 1. Flags are
+   h3-level, so they are excluded here exactly as in the cyan color rules, and keep their gold. */
+.right-sidebar-panel nav > ul > li > ul > li > a:not([href="#user-flag"]):not([href="#root-flag"]),
+mobile-starlight-toc a[style*="--depth: 1"]:not([href="#user-flag"]):not([href="#root-flag"]) {
+  --focus-ring: var(--tp-cyan);
+}
+:root[data-theme='light'] .right-sidebar-panel nav > ul > li > ul > li > a:not([href="#user-flag"]):not([href="#root-flag"]),
+:root[data-theme='light'] mobile-starlight-toc a[style*="--depth: 1"]:not([href="#user-flag"]):not([href="#root-flag"]) {
+  --focus-ring: var(--tp-cyan-ink);
+}
+
 
 /* ── Writeup metadata badges: intentional color, restrained glow ──────────────
    NAVIGATIONAL chips (Platform, OS, Environment) lead: pill chips, clickable, each colored with INTENT.
@@ -178,6 +248,10 @@ mobile-starlight-toc a[aria-current="true"][style*="--depth: 0"]:not([href="#use
   font-weight: 600;
   text-decoration: none;
   color: var(--wm-c);
+  /* Focus-ring hook for the WriteupMeta rollout: when the chips become <a> (once the filter routes
+     ship), each rings in its own --wm-c identity via the shared :where(a,...):focus-visible rule.
+     Inert now (chips render as non-interactive <span>s and appear on no page yet). */
+  --focus-ring: var(--wm-c);
   background: color-mix(in oklab, var(--wm-c) 15%, transparent);
   border: 1px solid color-mix(in oklab, var(--wm-c) 38%, transparent);
   border-radius: 999px;
@@ -199,9 +273,11 @@ mobile-starlight-toc a[aria-current="true"][style*="--depth: 0"]:not([href="#use
 }
 .writeup-meta .wm-ico { width: 15px; height: 15px; flex: none; display: inline-flex; color: var(--wm-c); }
 .writeup-meta .wm-ico svg { width: 100%; height: 100%; }
-/* Platform mark is a full-color brand logo served as <img> (native fills, not currentColor). Contain it
-   in the 15px box so non-square logos keep their aspect. color:var(--wm-c) on .wm-ico has no effect on an
-   <img>, so the logo renders in its own colors, as intended. */
+/* POLYCHROME marks (VulnHub, PicoCTF, OverTheWire, Linux) are served as <img> in their native fills.
+   Contain them in the 15px box so a non-square logo keeps its aspect. color:var(--wm-c) on .wm-ico has
+   no effect on an <img>, so those logos render in their own colors, as intended. HackTheBox is NOT one
+   of them: it is the one monochrome platform mark, so it is inlined and tints from --wm-c like the
+   other glyphs, and this rule does not apply to it. See icons.ts. */
 .writeup-meta img.wm-ico-logo { object-fit: contain; }
 
 /* Platform: canonical --pf-accent per platform (dark + light), with HTB's true brand green for glow. */
@@ -209,29 +285,44 @@ mobile-starlight-toc a[aria-current="true"][style*="--depth: 0"]:not([href="#use
 .writeup-meta .pf-vh   { --wm-c: #ff5c5c; }
 .writeup-meta .pf-pico { --wm-c: #d96bff; }
 .writeup-meta .pf-otw  { --wm-c: #ffc23d; }
-:root[data-theme="light"] .writeup-meta .pf-htb  { --wm-c: #4d7c0f; --wm-glow: #4d7c0f; }
-:root[data-theme="light"] .writeup-meta .pf-vh   { --wm-c: #d12f2f; }
-:root[data-theme="light"] .writeup-meta .pf-pico { --wm-c: #8b3dc4; }
-:root[data-theme="light"] .writeup-meta .pf-otw  { --wm-c: #a86f04; }
+/* Light values solved in OKLCH to clear WCAG AA (4.5:1) for the 12px/600 label on its own composited
+   chip fill, targeting ~4.8 for antialiasing margin. Method: hold hue, drop lightness, hold chroma
+   where sRGB allows and clamp to the gamut boundary where it does not (dark saturated hues cannot keep
+   full chroma; the loss is reported per value below, never a hue shift). Dark values are untouched.
+   No light --wm-glow is set: the light box-shadows read --wm-c directly, so a light --wm-glow would
+   never render. Only the DARK pf-htb --wm-glow (#9fef00) is read (by the dark glow), where it holds
+   HTB's true brand green while the label carries palette lime; that distinction only reads on dark. */
+:root[data-theme="light"] .writeup-meta .pf-htb  { --wm-c: #3a6100; } /* 3.41 -> 4.80, chroma 88% */
+:root[data-theme="light"] .writeup-meta .pf-vh   { --wm-c: #aa0013; } /* 3.35 -> 4.80, chroma 96% */
+:root[data-theme="light"] .writeup-meta .pf-pico { --wm-c: #7a29b1; } /* 3.94 -> 4.85, chroma 100% */
+:root[data-theme="light"] .writeup-meta .pf-otw  { --wm-c: #794e00; } /* 2.97 -> 4.80, chroma 79% (amber browns when darkened) */
 
 /* OS: the OS's own identity color. */
-.writeup-meta .wm-os-linux   { --wm-c: #f0b429; }   /* Tux amber */
+.writeup-meta .wm-os-linux   { --wm-c: #ffa95d; }   /* Tux amber, H60 (his own beak/feet are #FFA63F H65.6 / #E68C3F H57.9) */
 .writeup-meta .wm-os-windows { --wm-c: #4ca3ff; }   /* Windows blue */
-:root[data-theme="light"] .writeup-meta .wm-os-linux   { --wm-c: #a86f04; }
-:root[data-theme="light"] .writeup-meta .wm-os-windows { --wm-c: #0a63c9; }
+/* Linux is re-hued to H60 in BOTH themes (was dark #f0b429 H82.5 / light #794e00 H73, the latter
+   identical to OverTheWire), moving it into Tux's own amber family (#FFA63F H65.6 / #E68C3F H57.9) and
+   away from OTW's gold. OTW is untouched; the two chips sit adjacent on a Bandit row, so they must read
+   distinct. Dark separates on TWO axes (hue + lightness: OTW L0.85 vs Linux L0.80, plus ~60% more
+   chroma) and already reads distinct at dEOK 0.073. Light had matched lightness, so hue alone carried
+   it at low chroma and it read as one colour (dEOK 0.022). So light DROPS lightness to L0.40 to add the
+   second axis: dEOK 0.065, near dark's, without exceeding it. AA is a floor not a target here; darker
+   only raises contrast (4.85 -> 6.13). Gamut-map chroma (palette-pass method). Dark holds its lightness. */
+:root[data-theme="light"] .writeup-meta .wm-os-linux   { --wm-c: #6b3900; } /* H60, L0.40; 6.13, sep 0.065 vs OTW */
+:root[data-theme="light"] .writeup-meta .wm-os-windows { --wm-c: #0053af; } /* 3.85 -> 4.80, chroma 92% */
 
 /* Environment: the feel of the environment. AD enterprise indigo (distinct from Windows blue);
    Standalone a solitary cool slate. */
 .writeup-meta .wm-env-standalone        { --wm-c: #8fa3b8; }
 .writeup-meta .wm-env-active-directory  { --wm-c: #7c9cff; }
-:root[data-theme="light"] .writeup-meta .wm-env-standalone       { --wm-c: #5a6b7d; }
-:root[data-theme="light"] .writeup-meta .wm-env-active-directory { --wm-c: #3b4fa8; }
+:root[data-theme="light"] .writeup-meta .wm-env-standalone       { --wm-c: #475869; } /* 3.75 -> 4.85, chroma 100% */
+:root[data-theme="light"] .writeup-meta .wm-env-active-directory { --wm-c: #3b4fa8; } /* 4.85 already AA, unchanged */
 /* Progressive: the wargame ladder (OverTheWire Bandit, Natas...). Teal-leaning "progress/ascent" green,
    pulled toward teal so it stays distinct from HackTheBox's lime brand green and carries a terminal tint
    that fits the shell-based wargames. OverTheWire's platform color is amber, so this chip effectively
    never sits beside the HTB green chip anyway. */
 .writeup-meta .wm-env-progressive { --wm-c: #3fd9a8; }
-:root[data-theme="light"] .writeup-meta .wm-env-progressive { --wm-c: #0f8a63; }
+:root[data-theme="light"] .writeup-meta .wm-env-progressive { --wm-c: #006345; } /* 3.00 -> 4.80, chroma 81% */
 
 /* Difficulty: neutral, hue-free, SAME size/weight as nav chips. Word once; magnitude via pips only. */
 .writeup-meta .wm-diff { display: inline-flex; align-items: center; }
@@ -371,10 +462,38 @@ html[data-theme="light"] .sl-markdown-content details {
    never changes color. Each theme's closed rule above (gray-4 dark, --tp-divider light) already
    covers [open], so the old lime open edge is simply removed here (and in the light override below). */
 
+/* Focus-ring alignment: re-pair Starlight's marker/outline pair, which the padding here used to
+   half-cancel. markdown.css (@layer starlight.content) ships a MATCHED pair on every content summary:
+   `margin-inline-start: -0.5rem` + `padding-inline-start: 0.5rem`, commented upstream as "Expand the
+   outline so that the marker cannot distort it". The padding grows the border box leftward so the outline
+   encloses the negatively-margined ::before marker (that marker carries its own `margin-inline: -0.3125rem`),
+   and the margin cancels the resulting layout shift so nothing moves visually. This rule's old
+   `padding: 0.3rem 0` beat that layer and zeroed the padding half while declaring no margin, so the
+   -0.5rem survived ORPHANED (starlight.content outranks starlight.reset's `* { margin: 0 }`, and an
+   unlayered rule that never mentions margin cannot compete). Net: every toggle's summary border box, and
+   its label with it, sat 8px LEFT of the card's content box while the right edge stayed flush, so the
+   focus ring was 8px off-center (deltas to the card's border box: left 3, right 11, against top/bottom 5.4).
+
+   Declaring margin-inline HERE re-pairs it for EVERY content toggle at the source. The inset is the card's
+   own padding difference (0.75rem inline minus 0.4rem block, see the details rule above = 5.6px), so the
+   summary's border box sits the same distance inside the card horizontally as it already does vertically.
+   That makes all four ring deltas EQUAL (5.4px at dpr 1: 1px card border + 6.4px card block padding - 2px
+   outline-offset) with NO outline-offset override, so the shared :where(...):focus-visible rule is
+   untouched. The equality is what holds; the absolute number shifts slightly on fractional-dpr displays
+   because the 1px border and the 2px ring both snap to device pixels.
+
+   The ring is drawn on the SUMMARY, so opening a toggle cannot balloon it around the revealed body.
+   padding-inline restores each label to the card's content box, where it aligns with the .toggle-body text
+   below it (it previously sat 5.6px left of it). padding-block keeps the vertical padding this rule always
+   had, so the [open] padding-bottom tightening below still wins on specificity. The 4px radius plus the
+   shared 2px offset paints the ring at a 6px corner radius, echoing the card's own 6px. */
 .sl-markdown-content details > summary {
   cursor: pointer;
   font-weight: 500;
-  padding: 0.3rem 0;
+  padding-block: 0.3rem;
+  margin-inline: calc(-1 * (0.75rem - 0.4rem));
+  padding-inline: calc(0.75rem - 0.4rem);
+  border-radius: 4px;
   list-style: none;
   user-select: none;
 }
@@ -872,6 +991,12 @@ html[data-theme="light"] body:has(.home-stats) {
 :root { --pf-accent-2: var(--tp-cyan); }
 :root[data-theme='light'] { --pf-accent-2: var(--tp-cyan-ink); }
 
+/* Focus ring: platform cards ring in their platform identity (echoes the accent bar + hover border).
+   Each card is <a class="wc-card pf-*"> and already carries --pf-accent from the .pf-* token above, so
+   the shared :where(a,...):focus-visible rule draws a platform-colored ring. (The homepage's marketing
+   cards are a separate surface, folded into the same token in a later pass.) */
+.wc-card { --focus-ring: var(--pf-accent); }
+
 /* Scroll-reveal infra (shared by hero + cards; the component script toggles .in).
    Same easing as index.astro / about.astro so the motion feels identical. */
 .pi-index .reveal {
@@ -1159,6 +1284,10 @@ h1#_top {
 /* ── Prose links: cyan, lime on hover (guarded off .not-content subtrees, see h3 note) ── */
 .sl-markdown-content a:not(:where(.not-content *)) {
   color: var(--tp-cyan);
+  /* Focus ring echoes the link's own cyan identity rather than the lime default, reusing the same token
+     pair as the color above; the shared :where(a,...):focus-visible rule draws it. The .not-content
+     guard keeps this off component links (WriteupCard etc.), so those keep their own --focus-ring. */
+  --focus-ring: var(--tp-cyan);
   text-decoration: none;
   border-bottom: 1px solid color-mix(in oklab, var(--tp-cyan) 40%, transparent);
   transition: color .15s, border-color .15s;
@@ -1169,6 +1298,7 @@ h1#_top {
 }
 :root[data-theme='light'] .sl-markdown-content a:not(:where(.not-content *)) {
   color: var(--tp-cyan-ink);
+  --focus-ring: var(--tp-cyan-ink);
   border-bottom-color: color-mix(in oklab, var(--tp-cyan-ink) 40%, transparent);
 }
 
@@ -1388,6 +1518,31 @@ nav.sidebar summary {
 .expressive-code .frame .title,
 .expressive-code .frame pre {
   border-radius: 0;
+}
+
+/* Keyboard focus ring wraps the WHOLE code frame, not just the <pre>.
+   EC core ships a "Scrollable block tabindex" JS module that sets tabindex="0" + role="region" on any
+   <pre> whose content overflows (driven by a 250ms-debounced ResizeObserver, so it lands after load and
+   re-evaluates on resize). That is what makes a wide, unwrapped block keyboard-scrollable, and that
+   tabindex is what the shared :where(..., [tabindex]):focus-visible rule matches, so the ring was drawn
+   on the PRE. Two problems, both because the pre is only the LOWER part of the frame (figcaption.header,
+   the language tab, is a sibling ABOVE it): the ring enclosed the code but not the tab, and its top edge
+   landed exactly 2px inside the header's box (the shared outline-offset), where it was PAINTED OVER. The
+   header is position:relative + z-index:1 while the pre is static, so the header paints later; measured
+   live, elementFromPoint at the ring's top edge returns the header, and .title carries an opaque
+   background (#16161e dark), so under the tab the edge vanished completely.
+   Fix: suppress the ring on the pre and draw it on figure.frame, whose border box already spans the
+   header plus the pre exactly (verified: same top as the header, same bottom as the pre). :has() is used
+   deliberately rather than :focus-within, which would also fire on pointer clicks. The color still reads
+   --focus-ring and the geometry matches the shared rule (2px solid, 2px offset), so this changes only
+   WHICH element is ringed, not how the ring looks. No ancestor clips it, and the frame radius is 0
+   (above), so the ring stays square like the frame it traces. */
+.expressive-code .frame > pre:focus-visible {
+  outline: none;
+}
+.expressive-code .frame:has(> pre:focus-visible) {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
 }
 
 /* ── Command highlight by category (.ec-cmd-*) ──
@@ -1654,6 +1809,20 @@ ul.top-level > li:nth-child(2) > details > summary .group-label::before  { backg
 ul.top-level > li:nth-child(3) > details > summary .group-label::before  { background: #ff5c5c; box-shadow: 0 0 7px rgba(255,92,92,.55); }   /* VulnHub */
 ul.top-level > li:nth-child(4) > details > summary .group-label::before  { background: #d96bff; box-shadow: 0 0 7px rgba(217,107,255,.55); } /* PicoCTF */
 ul.top-level > li:nth-child(5) > details > summary .group-label::before  { background: #ffc23d; box-shadow: 0 0 7px rgba(255,194,61,.55); }  /* OverTheWire */
+
+/* Focus ring: each platform group rings in its own identity (matches the dot above + the cards),
+   scoped to the whole platform <li> so its summary and writeup links share the color. Theme-aware:
+   bright hues on the dark rail, and the darkened --pf-accent light values on the pale paper rail so the
+   ring stays legible there (the pale-on-pale case). About (nth-child 1) is not a platform, so it keeps
+   the lime default. Positional like the dots: if the sidebar is reordered, update these too. */
+ul.top-level > li:nth-child(2) { --focus-ring: #b6ff3c; }  /* HackTheBox */
+ul.top-level > li:nth-child(3) { --focus-ring: #ff5c5c; }  /* VulnHub */
+ul.top-level > li:nth-child(4) { --focus-ring: #d96bff; }  /* PicoCTF */
+ul.top-level > li:nth-child(5) { --focus-ring: #ffc23d; }  /* OverTheWire */
+:root[data-theme='light'] ul.top-level > li:nth-child(2) { --focus-ring: #4d7c0f; }
+:root[data-theme='light'] ul.top-level > li:nth-child(3) { --focus-ring: #d12f2f; }
+:root[data-theme='light'] ul.top-level > li:nth-child(4) { --focus-ring: #8b3dc4; }
+:root[data-theme='light'] ul.top-level > li:nth-child(5) { --focus-ring: #a86f04; }
 
 /* ── ALTERNATIVE: real platform logos instead of circles ──
    To use your actual SVGs from /public/icons instead of the dots,
@@ -1923,13 +2092,10 @@ html[data-theme] .sl-markdown-content details.spoiler-toggle[open] {
 :root[data-theme="light"] .sl-markdown-content .pwreveal .pw-action:hover {
   background: rgba(245, 158, 11, 0.2);
 }
-.sl-markdown-content .pwreveal .pw-action:focus-visible {
-  outline: 2px solid #ffc23d;
-  outline-offset: 2px;
-}
-:root[data-theme="light"] .sl-markdown-content .pwreveal .pw-action:focus-visible {
-  outline-color: #a86f04;
-}
+/* Focus ring routed through the token (amber identity, matching the control's own color); the shared
+   :where(...button...):focus-visible rule draws it, outline following the button's 6px radius. */
+.sl-markdown-content .pwreveal .pw-action { --focus-ring: #ffc23d; }
+:root[data-theme="light"] .sl-markdown-content .pwreveal .pw-action { --focus-ring: #a86f04; }
 .sl-markdown-content .pwreveal .pw-action-ico { width: 15px; height: 15px; flex: none; }
 
 /* Visually hidden aria-live region (omit if an .sr-only utility already exists in the file). */
@@ -2046,10 +2212,9 @@ html[data-theme] .sl-markdown-content details.spoiler-toggle[open] {
   border-radius: inherit;
   cursor: pointer;
 }
-.sl-markdown-content .flagcap-btn:focus-visible {
-  outline: 2px solid color-mix(in oklab, var(--fc-id) 65%, transparent);
-  outline-offset: 2px;
-}
+/* Focus ring routed through the token (gold identity, preserving the 65% mix); drawn by the shared
+   :where(...button...):focus-visible rule, outline following the button's inherited radius. */
+.sl-markdown-content .flagcap-btn { --focus-ring: color-mix(in oklab, var(--fc-id) 65%, transparent); }
 /* Captured: the prize sits there inert (copy is the live control); reserve right space for the copy icon. */
 .flagcap.is-captured .flagcap-btn {
   cursor: default;
@@ -2141,10 +2306,8 @@ html[data-theme] .sl-markdown-content details.spoiler-toggle[open] {
   border-color: color-mix(in oklab, var(--fc-id) 60%, transparent);
   background: color-mix(in oklab, var(--fc-id) 16%, var(--sl-color-bg));
 }
-.sl-markdown-content .flagcap-copy:focus-visible {
-  outline: 2px solid color-mix(in oklab, var(--fc-id) 60%, transparent);
-  outline-offset: 2px;
-}
+/* Focus ring routed through the token (gold identity, preserving the 60% mix); drawn by the shared rule. */
+.sl-markdown-content .flagcap-copy { --focus-ring: color-mix(in oklab, var(--fc-id) 60%, transparent); }
 .flagcap-copy[hidden] {
   display: none;
 }

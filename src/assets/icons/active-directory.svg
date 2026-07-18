@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?><!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
-<svg width="800px" height="800px" viewBox="-1.63 0 69.018 69.018" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg">
+<!-- Azure Active Directory mark by Richard Slater / Amido Limited, via SVG Repo.
+     Inlined via ?raw + set:html. aria-hidden is what keeps the chip's accessible name to its text
+     label: it removes this whole subtree from the accessibility tree.
+     The <metadata> RDF below is DELIBERATELY KEPT and must not be "cleaned up". It carries the only
+     creator/publisher credit that ships with the mark. It is NOT an accessibility defect: <metadata>
+     is not rendered and is not mapped into the accessibility tree, and aria-hidden covers the subtree
+     anyway. It does put its text in the chip's textContent, which is inert and does not matter.
+     Do not move this credit into a comment: icons.ts strips comments from inlined glyphs at build. -->
+<svg width="800px" height="800px" viewBox="-1.63 0 69.018 69.018" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <metadata>
         <rdf:RDF>
             <cc:Work>
