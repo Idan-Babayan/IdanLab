@@ -1,11 +1,13 @@
 <!-- HackTheBox mark. Inlined via ?raw + set:html and tinted by currentColor, so it follows the chip
      label in both themes. It is the only MONOCHROME platform mark, which is why it sits with the
      glyphs rather than the native-colour logos (the other three are 3 to 8 fills each).
-     viewBox is squared and padded so the ink renders at 14px in the 15px .wm-ico box.
+     viewBox is squared and sized so the ink equalizes convex-hull AREA against the other chip
+     glyphs (circle cap 1.128, 15px .wm-ico box), not bounding box. This hexagon is sparser than a
+     circle once its 0.876 aspect is counted, so it clamps at the cap and renders at 15px.
      Deliberately carries no <style> block, no class, and no id: an inlined SVG's <style> and ids are
      DOCUMENT-scoped, and the Illustrator defaults (.st0 / Layer_1) would collide with the next
      Illustrator export inlined the same way. -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="284.48 168.128 455.04 455.04" aria-hidden="true">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="299.648 183.296 424.704 424.704" aria-hidden="true">
 <path fill="currentColor" d="M697.93835,297.50143c0.00049-0.04691,0.00452-0.09305,0.00452-0.13995
 	c0-4.64658-2.05377-8.99628-5.51544-11.95172c-0.16724-0.14578-0.34021-0.28525-0.51428-0.42371
 	c-0.0517-0.04062-0.10291-0.08197-0.15509-0.12183c-0.59521-0.46054-1.22827-0.87796-1.89917-1.24747l-169.76471-98.01547
