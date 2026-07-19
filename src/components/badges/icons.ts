@@ -63,7 +63,7 @@ export const osIcons: Record<Extract<OS, 'Windows'>, string> = { Windows: inline
 
 // Environment marks are all tinting currentColor glyphs (set:html).
 export const environmentIcons: Record<Environment, string> = {
-  Standalone: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="8" opacity="0.35"/></svg>`,
+  Standalone: `<svg viewBox="3 3 18 18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="8" opacity="0.35"/></svg>`,
   'Active Directory': inline(activeDirectoryRaw),
   Progressive: inline(progressiveRaw),
 };
