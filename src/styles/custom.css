@@ -422,16 +422,6 @@ html[data-theme="light"] :not(pre) > code {
 }
 
 
-/* ── Machine metadata badges row ─────────────── */
-
-.machine-meta {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  margin-bottom: 0.75rem;
-}
-
-
 /* ── Toggle / details blocks ─────────────────── */
 
 /* Scoped to .sl-markdown-content so these content-Toggle styles never leak onto Starlight's
