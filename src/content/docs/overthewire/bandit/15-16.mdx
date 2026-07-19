@@ -7,11 +7,9 @@ sidebar:
 ---
 
 import Toggle from '@components/Toggle.astro';
+import WriteupMeta from '@components/badges/WriteupMeta.astro';
 
-<div class="machine-meta">
-  <span class="meta-badge platform-overthewire">OverTheWire</span>
-  <span class="meta-badge os-linux">Linux</span>
-</div>
+<WriteupMeta platform="OverTheWire" os="Linux" environment="Progressive" />
 
 > Goal: send the current password to the service on localhost port 30001, which only speaks TLS.
 

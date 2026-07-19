@@ -6,10 +6,9 @@ sidebar:
   order: 6
 ---
 
-<div class="machine-meta">
-  <span class="meta-badge platform-overthewire">OverTheWire</span>
-  <span class="meta-badge os-linux">Linux</span>
-</div>
+import WriteupMeta from '@components/badges/WriteupMeta.astro';
+
+<WriteupMeta platform="OverTheWire" os="Linux" environment="Progressive" />
 
 > Goal: find the password file owned by user bandit7 and group bandit6, sized 33 bytes, somewhere on the system.
 

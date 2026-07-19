@@ -8,11 +8,9 @@ sidebar:
 
 import Toggle from '@components/Toggle.astro';
 import { Steps } from '@astrojs/starlight/components';
+import WriteupMeta from '@components/badges/WriteupMeta.astro';
 
-<div class="machine-meta">
-  <span class="meta-badge platform-overthewire">OverTheWire</span>
-  <span class="meta-badge os-linux">Linux</span>
-</div>
+<WriteupMeta platform="OverTheWire" os="Linux" environment="Progressive" />
 
 > Goal: recover the password from data.txt, a hexdump of a file that was compressed many times over.
 
