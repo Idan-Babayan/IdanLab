@@ -40,25 +40,24 @@
   `https://idanlab.dev/sitemap-index.xml` resolves after deploy.
 - [CONTENT] Verify the ToggleAll few-pixel shift fix in real browsers (see Open bugs), then it can be
   considered closed.
-- [ENG/DESIGN] WriteupMeta badge system (`src/components/badges/`, DECISIONS 2026-07-10) shipped to
-  production (commits `7fa5d82` + `02e8bab`, PR #9); the `busquedav2.mdx` testbed it was verified on was dropped before push, so it currently renders on no page. The DESIGN
-  is now complete and documented (CORE_SPEC §6/§7 "Badge system"): real icon marks on a 14px grid (polychrome
-  `<img>` vs monochrome inline `currentColor`, HackTheBox inlined), light-mode labels solved to WCAG AA in
-  OKLCH, the Linux OS chip re-hued off OverTheWire's amber, accessibility clean. See DECISIONS 2026-07-17
-  (three badge entries plus the testbed-drop entry). The badge commits were rebased to `304c97e` + `1fcf53e`
-  + `d7b1550` (busquedav2-drop) and pushed to `origin/dev`, then merged to `main` via PR #16 (`dev` -> `main`).
-  RESOLVED earlier: canonical `--pf-accent` hexes verbatim, `Progressive` env colour set. RESOLVED now: the
-  "placeholder-stub SVGs" item (icons are real, gridded, and colour-plumbed). The "renders on no page yet"
-  item stands: the `busquedav2.mdx` testbed it briefly rendered on was dropped before push, so the badges
-  currently render on no page (see DECISIONS 2026-07-17; rollout is the remaining work below).
-  Remaining (rollout + interactivity only, no design work left):
-  1. **Auto-injection vs manual:** decide with Engineering whether WriteupMeta is hand-placed under each
-     title or injected (and whether it replaces the current `.machine-meta` badge row; note WriteupMeta's
-     hue-free growing pips are a SECOND difficulty encoding vs the traffic-light `.difficulty-*` badge).
-  2. **Filter routes:** the chips render as non-interactive `<span>` until `/platform`, `/os`,
+- [ENG/DESIGN] WriteupMeta badge system (`src/components/badges/`) is now the metadata row on EVERY
+  writeup, and the hand-authored `.machine-meta` row it replaced is gone from `src/content/docs` entirely
+  (busqueda / return / forest earlier, then all 34 OverTheWire Bandit pages on 2026-07-19). The DESIGN is
+  complete and documented (CORE_SPEC §6/§7 "Badge system"): real icon marks on a 14px grid, light-mode
+  labels solved to WCAG AA in OKLCH, the Linux OS chip re-hued off OverTheWire's amber, accessibility clean.
+  RESOLVED and recorded in DECISIONS: the palette reconciliation, the `Progressive` env colour, the
+  placeholder-stub icons, the "renders on no page" status, and the old rollout item 1 (WriteupMeta is
+  HAND-PLACED under the title and it DOES replace `.machine-meta`; see DECISIONS 2026-07-19, which also made
+  `difficulty` optional so a progressive wargame need not invent a rating). Remaining:
+  1. **Filter routes:** the chips render as non-interactive `<span>` until `/platform`, `/os`,
      `/environment` exist; restore the commented `<a>` and drop `data-astro-prefetch="false"` when they land.
      Same machinery as the `/principles` index. Engineering.
-  Then wire WriteupMeta into the writeup + wargame-level pages (Content/Product).
+  2. **Retire the dead badge taxonomy (newly unblocked 2026-07-19):** with `.machine-meta` gone from all
+     content, the `.machine-meta` / `.meta-badge` / `.platform-*` / `.difficulty-*` / `.os-*` rules in
+     `custom.css` and the matching `meta-` / `platform-` / `difficulty-` / `os-` / `machine-` allow-lists in
+     `plugins/remark-validate-content-taxonomy.mjs` are now dead code. Narrow the guard to its component-enum
+     checks and drop the unused CSS. This is exactly the trigger named in the 2026-07-12 guard entry and in
+     the Later item below. Keep the palette itself: `WriteupCard` and the sidebar still use those colors.
 
 ## Next (committed)
 - [ENG/DESIGN] Unify the two marketing pages (home, about) under the `--focus-ring` token established for
@@ -121,10 +120,12 @@
 - [DESIGN/A11y] Non-badge `#a86f04` ambers unaudited for light-mode WCAG AA. The badge light palette pass
   (DECISIONS 2026-07-17) solved the OTW/Linux CHIP labels to AA and left the seven-way `#a86f04` collision
   forked (correctly: they are unrelated ambers). But the five NON-badge users of that hex were failing at
-  2.97:1 on paper when the badges were, and nothing about their surfaces makes them pass: `.platform-overthewire`
-  (the old machine-meta badge label), `.pf-overthewire` (platform-index accent), and PasswordReveal's button
-  text are body-size text needing 4.5:1; the sidebar `nth-child(5)` focus ring and the spoiler-toggle border
-  are non-text (3:1). Audit each on light and solve the text ones in OKLCH the same way (hold hue, drop
+  2.97:1 on paper when the badges were, and nothing about their surfaces makes them pass. NARROWED
+  2026-07-19: `.platform-overthewire` (the old machine-meta badge label) is now MOOT, since `.machine-meta`
+  is gone from all content and that selector styles nothing (it goes away with the dead-taxonomy cleanup in
+  Now). That leaves `.pf-overthewire` (platform-index accent) and PasswordReveal's button text as body-size
+  text needing 4.5:1, plus the sidebar `nth-child(5)` focus ring and the spoiler-toggle border as non-text
+  (3:1). Audit each on light and solve the text ones in OKLCH the same way (hold hue, drop
   lightness), leaving the forks independent. Small, self-contained, after the glyph pass.
 - [ENG] ToggleAll few-pixel shift: expand/collapse can leave a small reversible content offset in real
   Chromium (Chrome/Edge/Opera GX), from native scroll anchoring fighting the manual correction. Fix
