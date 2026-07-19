@@ -6,12 +6,12 @@ export const collections = {
 	docs: defineCollection({
 		loader: docsLoader(),
 		schema: docsSchema({
-			// Optional machine metadata. Today this lives in each writeup's body
-			// `.machine-meta` badge row, NOT frontmatter, so these stay undefined and
-			// PlatformIndex/WriteupCard omit the OS + topic chips gracefully. Declaring
-			// them here (optional) is the forward-compatible hook: when the Notion -> MDX
-			// pipeline promotes os/tags into frontmatter, the cards render them with zero
-			// component changes. This is a content-lane enhancement, tracked separately.
+			// Optional machine metadata, read by PlatformIndex/WriteupCard to render the OS +
+			// topic chips on the platform landing cards. Both are optional and both are omitted
+			// gracefully when absent. `os` is partly adopted (busqueda, return, forest set it);
+			// `tags` is deliberately unused until writeup volume makes a tag filter earn its
+			// place (see ROADMAP). NOTE: the in-page metadata row is the WriteupMeta component,
+			// which takes its values as props, so it does NOT read these fields.
 			extend: z.object({
 				os: z.string().optional(),
 				tags: z.array(z.string()).optional(),

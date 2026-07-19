@@ -52,12 +52,9 @@
   1. **Filter routes:** the chips render as non-interactive `<span>` until `/platform`, `/os`,
      `/environment` exist; restore the commented `<a>` and drop `data-astro-prefetch="false"` when they land.
      Same machinery as the `/principles` index. Engineering.
-  2. **Retire the dead badge taxonomy (newly unblocked 2026-07-19):** with `.machine-meta` gone from all
-     content, the `.machine-meta` / `.meta-badge` / `.platform-*` / `.difficulty-*` / `.os-*` rules in
-     `custom.css` and the matching `meta-` / `platform-` / `difficulty-` / `os-` / `machine-` allow-lists in
-     `plugins/remark-validate-content-taxonomy.mjs` are now dead code. Narrow the guard to its component-enum
-     checks and drop the unused CSS. This is exactly the trigger named in the 2026-07-12 guard entry and in
-     the Later item below. Keep the palette itself: `WriteupCard` and the sidebar still use those colors.
+  (The "retire the dead badge taxonomy" item that sat here is DONE and moved to DECISIONS 2026-07-19,
+  with a correction: only `.machine-meta` was dead. The `.meta-badge` / `.difficulty-*` / `.os-*` /
+  `.platform-*` rules are still emitted by `WriteupCard` on the platform landing pages and were kept.)
 
 ## Next (committed)
 - [ENG/DESIGN] Unify the two marketing pages (home, about) under the `--focus-ring` token established for
@@ -101,9 +98,11 @@
 - [ENG] Extract repeated UI into reusable Astro components (cards, badges, buttons, hero FX).
 - [ENG] CI on push: type-check, build, link-check, (later) visual-regression screenshots.
 - [ENG] Content-taxonomy build guard (`plugins/remark-validate-content-taxonomy.mjs`) shipped as the
-  astro-check alternative (DECISIONS 2026-07-12). Follow-ups: extend it to frontmatter `os`/`tags` if the
-  pipeline ever promotes those to frontmatter, and narrow or remove the `meta-badge` / `platform-` /
-  `difficulty-` / `os-` / `machine-` class families when WriteupMeta retires the `.machine-meta` badge row.
+  astro-check alternative (DECISIONS 2026-07-12). Remaining follow-up: extend it to frontmatter `os`/`tags`,
+  which is now worth doing because `os:` IS in frontmatter on busqueda / return / forest and is a committed
+  Next item (a bad value there currently fails silently, since the guard does not see frontmatter). The
+  "narrow or remove the class families" half is CLOSED: only `machine-` was dead and it was removed
+  2026-07-19; the rest stay because `WriteupCard` still emits them (see DECISIONS 2026-07-19).
 - [CONTENT] Writeup `_template.mdx` so every new writeup starts consistent.
 - [ENV] Change Windows username from Hebrew to English (new admin account).
 - [ENG] Real platform-logo SVGs in sidebar via a Starlight Sidebar component override
