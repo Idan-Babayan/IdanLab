@@ -8,7 +8,10 @@ interface Props {
   platform: Platform;
   os: OS;
   environment: Environment;
-  difficulty: Difficulty;
+  // OPTIONAL, and the only optional axis. A progressive wargame (OverTheWire Bandit) carries no
+  // difficulty rating, and the union has no honest "none" member, so the axis is omitted rather than
+  // invented. Omit it and the Difficulty chip does not render at all; supply it and nothing changes.
+  difficulty?: Difficulty;
 }
 const { platform, os, environment, difficulty } = Astro.props;
 
@@ -25,11 +28,15 @@ const platformClass: Record<Platform, string> = {
 // is checked against the union of its registries. This replaces the previous per-axis check plus a
 // bespoke OS block: without it, platform="HackTheBox" would now throw, because HackTheBox has moved
 // out of platformLogos and into platformIcons.
+// `difficulty` joins the list only when it is supplied, because it is optional (see Props): an absent
+// value is a deliberate omission, while a value that IS present is still checked, so difficulty="Hardd"
+// fails the build exactly as before. Never give it a fallback; inventing a rating for content that has
+// none is the precise thing the omission exists to prevent.
 const axes: ReadonlyArray<readonly [string, string, readonly object[]]> = [
   ['platform', platform, [platformLogos, platformIcons]],
   ['os', os, [osLogos, osIcons]],
   ['environment', environment, [environmentIcons]],
-  ['difficulty', difficulty, [difficultyLevel]],
+  ...(difficulty === undefined ? [] : [['difficulty', difficulty, [difficultyLevel]] as const]),
 ];
 for (const [name, value, registries] of axes) {
   if (!registries.some((r) => Object.prototype.hasOwnProperty.call(r, value))) {
@@ -38,7 +45,7 @@ for (const [name, value, registries] of axes) {
   }
 }
 
-const level = difficultyLevel[difficulty];
+const level = difficulty === undefined ? undefined : difficultyLevel[difficulty];
 const osSlug = os.toLowerCase();
 const envSlug = environment.toLowerCase().replace(/\s+/g, '-');
 // Per-value classes so CSS can color each chip (the slugs double as the class suffixes):
@@ -94,13 +101,15 @@ const envClass = `wm-env-${envSlug}`; // wm-env-standalone | wm-env-active-direc
       <span class="wm-ico wm-ico-env" set:html={environmentIcons[environment]} />{environment}
     </span>
   </div>
-  <span class="wm-diff">
-    <span class="wm-diff-chip">
-      {difficulty}
-      <span class="wm-pips" data-level={level} aria-hidden="true">
-        <i></i><i></i><i></i><i></i>
+  {difficulty !== undefined && (
+    <span class="wm-diff">
+      <span class="wm-diff-chip">
+        {difficulty}
+        <span class="wm-pips" data-level={level} aria-hidden="true">
+          <i></i><i></i><i></i><i></i>
+        </span>
+        <span class="sr-only">{`Difficulty ${level} of 4`}</span>
       </span>
-      <span class="sr-only">{`Difficulty ${level} of 4`}</span>
     </span>
-  </span>
+  )}
 </div>
