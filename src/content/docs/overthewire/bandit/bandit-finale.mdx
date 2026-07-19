@@ -6,10 +6,9 @@ sidebar:
   order: 33
 ---
 
-<div class="machine-meta">
-  <span class="meta-badge platform-overthewire">OverTheWire</span>
-  <span class="meta-badge os-linux">Linux</span>
-</div>
+import WriteupMeta from '@components/badges/WriteupMeta.astro';
+
+<WriteupMeta platform="OverTheWire" os="Linux" environment="Progressive" />
 
 > Goal: read the closing message after clearing the last available level.
 

@@ -6,10 +6,9 @@ sidebar:
   order: 13
 ---
 
-<div class="machine-meta">
-  <span class="meta-badge platform-overthewire">OverTheWire</span>
-  <span class="meta-badge os-linux">Linux</span>
-</div>
+import WriteupMeta from '@components/badges/WriteupMeta.astro';
+
+<WriteupMeta platform="OverTheWire" os="Linux" environment="Progressive" />
 
 > Goal: use the private key in the home directory to log in as bandit14 and read its stored password.
 

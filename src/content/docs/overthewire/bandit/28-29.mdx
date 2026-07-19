@@ -6,10 +6,9 @@ sidebar:
   order: 28
 ---
 
-<div class="machine-meta">
-  <span class="meta-badge platform-overthewire">OverTheWire</span>
-  <span class="meta-badge os-linux">Linux</span>
-</div>
+import WriteupMeta from '@components/badges/WriteupMeta.astro';
+
+<WriteupMeta platform="OverTheWire" os="Linux" environment="Progressive" />
 
 > Goal: find the password in an earlier commit of the level's repository, after it was redacted in the latest one.
 

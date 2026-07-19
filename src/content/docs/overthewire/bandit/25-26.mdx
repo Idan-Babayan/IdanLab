@@ -7,11 +7,9 @@ sidebar:
 ---
 
 import { Steps } from '@astrojs/starlight/components';
+import WriteupMeta from '@components/badges/WriteupMeta.astro';
 
-<div class="machine-meta">
-  <span class="meta-badge platform-overthewire">OverTheWire</span>
-  <span class="meta-badge os-linux">Linux</span>
-</div>
+<WriteupMeta platform="OverTheWire" os="Linux" environment="Progressive" />
 
 > Goal: get a real shell as bandit26, whose login program is a pager, then read its password.
 

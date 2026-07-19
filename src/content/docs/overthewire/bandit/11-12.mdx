@@ -6,10 +6,9 @@ sidebar:
   order: 11
 ---
 
-<div class="machine-meta">
-  <span class="meta-badge platform-overthewire">OverTheWire</span>
-  <span class="meta-badge os-linux">Linux</span>
-</div>
+import WriteupMeta from '@components/badges/WriteupMeta.astro';
+
+<WriteupMeta platform="OverTheWire" os="Linux" environment="Progressive" />
 
 > Goal: decode a file where every letter has been rotated 13 places through the alphabet.
 
