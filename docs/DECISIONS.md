@@ -6,6 +6,56 @@
 
 ---
 
+### 2026-07-19 · WriteupMeta difficulty becomes optional; Bandit's 34 pages migrate off `.machine-meta` (retiring it site-wide)
+- **Decision:** `difficulty` is now the ONE optional prop on `WriteupMeta` (`difficulty?: Difficulty`), and
+  when it is absent the Difficulty chip does not render at all. All 34 OverTheWire Bandit pages (33 level
+  pages plus `bandit-finale.mdx`) drop their hand-authored `.machine-meta` badge row for
+  `<WriteupMeta platform="OverTheWire" os="Linux" environment="Progressive" />`.
+- **Why optional, rather than picking a value:** the task was specced as a badge-row swap only, but the old
+  Bandit row carries exactly two axes (platform + OS) while `WriteupMeta` required four. `Difficulty` is
+  `Easy | Medium | Hard | Insane` with no honest "none" member, and a progressive wargame has no difficulty
+  rating, so ANY available value would have been invented metadata on 34 published pages. It is also an
+  EVALUATIVE axis that announces "Difficulty N of 4" to screen readers, so a blanket value would be a spoken
+  falsehood, and Bandit genuinely ramps (0 to 1 is trivial, 32 to 33 is not), so one value is wrong at both
+  ends. Optionality is the same recognition that already put `Progressive` in the Environment union: a
+  wargame is a different SHAPE, not a machine with a missing field. Owner chose this over grading all 34
+  levels by hand and over leaving Bandit on `.machine-meta`.
+- **Required-ness was measured, not inferred:** a throwaway probe page passing only platform/os/environment
+  failed the build with `WriteupMeta: unknown difficulty "undefined". Expected one of: Easy, Medium, Hard,
+  Insane.` **Property to know:** the remark taxonomy guard validates only attributes that are PRESENT, so a
+  missing `difficulty` passes it silently and detonates later at render. The component's runtime guard is
+  the only gate on absence, and it reports at render time, not with a source position.
+- **The typo guard is preserved:** `difficulty` joins the validation loop only when supplied, so an absent
+  value is a deliberate omission while a present one is still checked and `difficulty="Hardd"` still fails
+  the build. It is never given a fallback: substituting a rating is the precise thing the omission exists to
+  prevent.
+- **No CSS change was needed (checked, not assumed):** `.wm-diff` is a self-contained `inline-flex` with no
+  sibling selector, `:has()`, or `margin-inline: auto` dependency, and `.writeup-meta`'s `gap: 1rem` has no
+  effect with a single remaining child. Verified live: the row has exactly one child, `.wm-nav` sits flush
+  to the row's left edge, and the 0.55rem / 2.1rem vertical rhythm is unchanged.
+- **Mixed line endings in the content tree (property to know):** 33 Bandit files are CRLF and 2 (`0-1.mdx`,
+  `10-11.mdx`) are LF, so an LF-anchored match silently matched only those 2 on the first pass. The
+  migration normalises per file and restores each file's OWN ending on write, so the diff is the content
+  change alone with zero line-ending churn (confirmed still 33 CRLF / 2 LF afterwards). Any future bulk
+  content edit on this tree must do the same.
+- **`.machine-meta` is now retired site-wide:** with Bandit migrated, the class no longer appears anywhere in
+  `src/content/docs`, completing the page-by-page retirement planned on 2026-07-11. This FIRES the trigger
+  recorded in the 2026-07-12 taxonomy-guard entry and parked in ROADMAP: the guard's `meta-` / `platform-` /
+  `difficulty-` / `os-` / `machine-` allow-lists and the `.machine-meta` / `.meta-badge` / `.platform-*` /
+  `.difficulty-*` / `.os-*` CSS are now dead. Deliberately NOT removed here (out of this task's scope, and a
+  separate blast radius); flagged as follow-up work. Note this also moots `.platform-overthewire` in the
+  ROADMAP light-AA amber bug, since that selector now styles nothing.
+- **Verified live (both themes) and in `dist`:** Bandit renders exactly three chips reading "OverTheWire
+  Linux Progressive", with no Difficulty chip, no pips, and no `sr-only` remnant. Dark `#ffc23d` / `#ffa95d`
+  / `#3fd9a8`, light `#794e00` / `#6b3900` / `#006345`, all byte-identical to the AA-solved palette. This is
+  the first time the 2026-07-17 Linux-vs-OverTheWire amber separation renders on the real Bandit row it was
+  designed for, and the two ambers read distinct in both themes. Regression checked on busqueda: still
+  "Easy" at `data-level="1"`, leading pip grown to 6px, "Difficulty 1 of 4" text equivalent intact. In
+  `dist`: 0 of 34 Bandit pages carry `machine-meta` or `wm-diff`, 34 carry the Progressive chip, busqueda
+  keeps its Difficulty chip. `npm run build` green (46 pages), no console errors, no horizontal overflow.
+- **Status:** Adopted (working tree; NOT committed). Component + content only: no CSS, no config, no new
+  deps, pinned versions unchanged.
+
 ### 2026-07-17 · busquedav2 testbed dropped before push; badge commits rebased + pushed; merged to main (PR #16)
 - **Decision:** the `busquedav2.mdx` design testbed is NOT pushed and is kept out of the `dev` -> `main` PR.
   It is a local-only testing page (a re-created successor to the June testbed that the 2026-06-27 FlagCapture

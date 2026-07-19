@@ -267,10 +267,15 @@ token is an open ROADMAP item, not a bug.
   hue-shadow on light); Difficulty magnitude is filled+growing pips; chips render as non-interactive
   `<span>` today (the commented `<a>` + `data-astro-prefetch="false"` restore verbatim once the filter
   routes ship), `.not-content`; icons live in `badges/icons.ts` on a 14px grid; runtime-validates its
-  four union props. Colour model, icon sourcing, geometry and the light-mode AA palette are documented
-  in the "Badge system (WriteupMeta)" blocks in §6 and §7. Built and documented but not currently wired to
-  any page (the `busquedav2.mdx` testbed it was verified on was dropped from the branch before push). See
-  DECISIONS 2026-07-17 (the three badge entries plus the testbed-drop entry) and 2026-07-10).
+  union props. Colour model, icon sourcing, geometry and the light-mode AA palette are documented
+  in the "Badge system (WriteupMeta)" blocks in §6 and §7. **`difficulty` is the one OPTIONAL prop**
+  (`difficulty?: Difficulty`): omit it and the Difficulty chip does not render at all, which is how a
+  progressive wargame with no difficulty rating (OverTheWire Bandit) is expressed. A difficulty that IS
+  supplied is still validated, so a typo still fails the build; it is never given a fallback. The other
+  three props are required. WriteupMeta is now the metadata row on EVERY writeup and has fully replaced
+  the hand-authored `.machine-meta` badge row, which no longer appears anywhere in `src/content/docs`.
+  See DECISIONS 2026-07-19 (optional difficulty + the 34-page Bandit migration), 2026-07-17 (the three
+  badge entries plus the testbed-drop entry) and 2026-07-10.
 - Chrome (Starlight override): `ToggleAll` (Expand/Collapse-all control) auto-injected into the right
   "On this page" sidebar by `overrides/PageSidebar.astro` (renders `<Default/>` then the control).
 
@@ -518,8 +523,13 @@ Preserves reading position: anchors on the current heading and corrects scroll s
 - Difficulty: easy green, medium amber, hard red, misc slate.
 - OS: linux slate, windows blue.
 - Topic `.tag-*`: web orange, crypto teal, forensics amber, reversing pink, pentest green, etc.
+- **RETIRED as of 2026-07-19:** the `.machine-meta` / `.meta-badge` row and its `.platform-*` /
+  `.difficulty-*` / `.os-*` modifiers are no longer used by ANY writeup (WriteupMeta replaced the last
+  of them, the 34 Bandit pages). The CSS above and the matching allow-lists in
+  `plugins/remark-validate-content-taxonomy.mjs` are now dead and are pending removal (see ROADMAP).
+  The colors are kept documented here because `WriteupCard` and the sidebar still use the same palette.
 - **Frontmatter os/tags:** `content.config.ts` extends `docsSchema` with optional `os` and `tags`.
-  Today writeups encode OS in the body `.machine-meta` badge row, so these stay undefined and
+  Writeups encode OS in the `WriteupMeta` `os` prop rather than frontmatter, so these stay undefined and
   `WriteupCard` omits the OS/tag chips gracefully. When the pipeline promotes os/tags to
   frontmatter, the cards render them with no component change (a content-lane enhancement).
 
