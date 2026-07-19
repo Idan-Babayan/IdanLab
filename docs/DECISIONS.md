@@ -6,6 +6,39 @@
 
 ---
 
+### 2026-07-19 · `.machine-meta` deleted; the REST of the badge family is not dead (corrects the entry below)
+- **Decision:** the `.machine-meta` rule is removed from `custom.css` and its `machine-` family from
+  `plugins/remark-validate-content-taxonomy.mjs`. Nothing else in the badge taxonomy is touched.
+- **Correction, and the load-bearing finding:** the entry below (and the ROADMAP item it spawned) claimed the
+  whole `.meta-badge` / `.platform-*` / `.difficulty-*` / `.os-*` family had gone dead with the Bandit
+  migration. That is FALSE, and true only of HAND-AUTHORED MDX. `WriteupCard.astro` still emits `meta-badge`,
+  `difficulty-*`, `os-*` and (behind `showPlatform`) `platform-*`, and `PlatformIndex` renders those cards on
+  every `{platform}/index.mdx`, so deleting that CSS would have stripped the badges off every writeup card on
+  all four platform landing pages, including the HackTheBox one that prompted the check.
+- **What caught it:** checking `dist`, the shipped artifact, instead of `src/content/docs` alone. A page's own
+  MDX authoring no more the whole story than a component's output. Exact class-token counts in `dist`:
+  `meta-badge` 6, `difficulty-easy` 2, `difficulty-medium` 1, `os-linux` 1, `os-windows` 2, `machine-meta` 0.
+  Only the last is genuinely unreferenced.
+- **Property to know (measurement trap):** a naive `\bos-linux\b` grep over `dist` reports 36, because the
+  `-` is a non-word character so the pattern also matches INSIDE WriteupMeta's own `wm-os-linux`. The class
+  token has to be anchored on a quote or whitespace or the old and new badge systems are indistinguishable.
+  The 36 vs 1 gap is what exposed it.
+- **`platform-*` is kept although it renders 0 times today:** it is the `showPlatform` path, reserved for the
+  planned global `/writeups` index (CORE_SPEC §6). Unused-but-wired is not dead.
+- **The guard's remaining families are kept too:** the guard only ever sees hand-authored MDX, so they match
+  nothing today, but they cost nothing and still catch a typo in any badge a future writeup hand-authors.
+  Only `machine-`, whose sole token is now unstyled everywhere, is removed. This narrows, and partly reverses,
+  the retirement note left in the 2026-07-12 guard entry, which assumed all five families would go together.
+- **Two stale docs corrected in passing:** `src/content.config.ts` said OS "lives in each writeup's body
+  `.machine-meta` badge row, NOT frontmatter, so these stay undefined". Both halves were wrong: the row is
+  gone, and three writeups (busqueda, return, forest) DO set `os:` in frontmatter, which is exactly the 1
+  `os-linux` plus 2 `os-windows` badges rendering. `CLAUDE.md` still instructed authors to hand-write a
+  `<div class="machine-meta">` row and now documents the WriteupMeta usage instead, including that
+  `difficulty` is optional.
+- **Verified:** `npm run build` green (46 pages); zero `machine-meta` in `src` and in `dist`; the landing-page
+  cards still render their difficulty and OS badges with styling intact in both themes.
+- **Status:** Adopted.
+
 ### 2026-07-19 · WriteupMeta difficulty becomes optional; Bandit's 34 pages migrate off `.machine-meta` (retiring it site-wide)
 - **Decision:** `difficulty` is now the ONE optional prop on `WriteupMeta` (`difficulty?: Difficulty`), and
   when it is absent the Difficulty chip does not render at all. All 34 OverTheWire Bandit pages (33 level
@@ -43,7 +76,9 @@
   recorded in the 2026-07-12 taxonomy-guard entry and parked in ROADMAP: the guard's `meta-` / `platform-` /
   `difficulty-` / `os-` / `machine-` allow-lists and the `.machine-meta` / `.meta-badge` / `.platform-*` /
   `.difficulty-*` / `.os-*` CSS are now dead. Deliberately NOT removed here (out of this task's scope, and a
-  separate blast radius); flagged as follow-up work. Note this also moots `.platform-overthewire` in the
+  separate blast radius); flagged as follow-up work. **CORRECTED same day (see the entry above): only
+  `.machine-meta` was dead.** `WriteupCard` still emits the other four families on the platform landing
+  pages, so they were kept; only the `machine-` family and its CSS rule were removed. Note this also moots `.platform-overthewire` in the
   ROADMAP light-AA amber bug, since that selector now styles nothing.
 - **Verified live (both themes) and in `dist`:** Bandit renders exactly three chips reading "OverTheWire
   Linux Progressive", with no Difficulty chip, no pips, and no `sr-only` remnant. Dark `#ffc23d` / `#ffa95d`

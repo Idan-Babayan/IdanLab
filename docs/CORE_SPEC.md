@@ -115,7 +115,7 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in C:\Users
 ├─ plugins/
 │  ├─ rehype-content-image-loading.mjs # rehype: sets loading/decoding on content <img> (first eager, rest lazy); wired via astro.config markdown.rehypePlugins
 │  ├─ remark-inject-passwordreveal.mjs # remark: conditionally injects `import PasswordReveal from '@components/PasswordReveal.astro'` into an MDX file's AST at build time, only when that file uses <PasswordReveal/> and has no import of its own; wired via astro.config markdown.remarkPlugins
-│  └─ remark-validate-content-taxonomy.mjs # remark: build-time guardrail that FAILS the build on an unknown hand-authored badge/metadata class token (meta-badge / platform-* / difficulty-* / os-* / port-label / task-title / machine-meta) or an unknown component metadata value (Callout type, WriteupMeta enums, FlagCapture type user|root), with a "did you mean" suggestion; the deliberate alternative to astro check; zero deps (unist-util-visit); its allow-lists are the single source of truth; wired via astro.config markdown.remarkPlugins. See DECISIONS 2026-07-12
+│  └─ remark-validate-content-taxonomy.mjs # remark: build-time guardrail that FAILS the build on an unknown hand-authored badge/metadata class token (meta-badge / platform-* / difficulty-* / os-* / port-label / task-title; the machine-meta family was removed 2026-07-19) or an unknown component metadata value (Callout type, WriteupMeta enums, FlagCapture type user|root), with a "did you mean" suggestion; the deliberate alternative to astro check; zero deps (unist-util-visit); its allow-lists are the single source of truth; wired via astro.config markdown.remarkPlugins. See DECISIONS 2026-07-12
 └─ public/
    ├─ robots.txt                      # in-repo; breadcrumb comment + Sitemap line (see §2)
    ├─ favicon.svg                     # site favicon
@@ -523,11 +523,14 @@ Preserves reading position: anchors on the current heading and corrects scroll s
 - Difficulty: easy green, medium amber, hard red, misc slate.
 - OS: linux slate, windows blue.
 - Topic `.tag-*`: web orange, crypto teal, forensics amber, reversing pink, pentest green, etc.
-- **RETIRED as of 2026-07-19:** the `.machine-meta` / `.meta-badge` row and its `.platform-*` /
-  `.difficulty-*` / `.os-*` modifiers are no longer used by ANY writeup (WriteupMeta replaced the last
-  of them, the 34 Bandit pages). The CSS above and the matching allow-lists in
-  `plugins/remark-validate-content-taxonomy.mjs` are now dead and are pending removal (see ROADMAP).
-  The colors are kept documented here because `WriteupCard` and the sidebar still use the same palette.
+- **`.machine-meta` RETIRED 2026-07-19; the REST of the family is LIVE.** No writeup hand-authors a badge
+  row any more (WriteupMeta replaced the last of them, the 34 Bandit pages), so the `.machine-meta`
+  container rule is deleted from `custom.css` and its `machine-` family from the taxonomy guard. Nothing
+  else went with it: `WriteupCard.astro` emits `meta-badge`, `difficulty-*`, `os-*` and (behind
+  `showPlatform`) `platform-*`, and `PlatformIndex` renders those cards on every `{platform}/index.mdx`,
+  so those rules are live on all four landing pages. `platform-*` renders 0 times today but is the
+  `showPlatform` path reserved for the planned `/writeups` index, so it is wired, not dead. Measured in
+  `dist`: `meta-badge` 6, `difficulty-*` 3, `os-*` 3, `machine-meta` 0. See DECISIONS 2026-07-19.
 - **Frontmatter os/tags:** `content.config.ts` extends `docsSchema` with optional `os` and `tags`.
   Writeups encode OS in the `WriteupMeta` `os` prop rather than frontmatter, so these stay undefined and
   `WriteupCard` omits the OS/tag chips gracefully. When the pipeline promotes os/tags to
