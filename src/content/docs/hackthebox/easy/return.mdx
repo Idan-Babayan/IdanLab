@@ -10,6 +10,7 @@ principle: "Never let a client choose where it authenticates."
 import Toggle from '@components/Toggle.astro';
 import Callout from '@components/Callout.astro';
 import FlagCapture from '@components/FlagCapture.astro';
+import AttackPath from '@components/AttackPath.astro';
 
 > An LDAP pass-back from the printer's admin panel hands over a service account, and a service-binary hijack as Server Operators turns that foothold into SYSTEM.
 
@@ -344,6 +345,17 @@ C:\Users\Administrator\Desktop> type root.txt
 ## Summary
 
 The whole path in one breath: an unauthenticated printer admin panel lets me repoint its LDAP server address at my own listener, and the printer obligingly authenticates to me in cleartext, handing over the `svc-printer` service account. Those credentials open a WinRM shell and the user flag. From there, svc-printer's membership in Server Operators lets me rewrite the binary path of a LocalSystem service, aim it at a reverse shell, and start it, which returns a SYSTEM shell and the root flag.
+
+<AttackPath
+  title="Attack Path · return.local"
+  nodes={[
+    { kind: 'Web', name: 'Printer Panel', detail: [ { k: 'port', v: '<code>80/tcp</code> IIS, unauthenticated' }, { k: 'holds', v: 'a directory bind for <code>svc-printer</code>' } ] },
+    { kind: 'User', name: 'svc-printer', edge: 'leaks via <b>LDAP pass-back</b>', detail: [ { k: 'via', v: 'cleartext bind caught on <code>nc -lvnp 389</code>' }, { k: 'shell', v: '<code>evil-winrm</code>, user.txt' } ] },
+    { kind: 'Group', name: 'Server Operators', edge: 'is <b>member of</b>', detail: [ { k: 'note', v: 'builtin group, can reconfigure services' } ] },
+    { kind: 'Service', name: 'vss (LocalSystem)', edge: 'can <b>reconfigure</b>', detail: [ { k: 'right', v: 'rewrite the <code>vss</code> binary path' }, { k: 'action', v: '<code>sc.exe config vss binpath=…</code>' } ] },
+    { kind: 'Root', name: 'SYSTEM', edge: 'on <b>service start</b>', detail: [ { k: 'via', v: '<code>sc.exe start vss</code> runs the payload' }, { k: 'flag', v: 'root.txt' } ] },
+  ]}
+/>
 
 ---
 
