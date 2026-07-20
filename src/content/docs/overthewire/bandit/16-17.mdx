@@ -1,15 +1,14 @@
 ---
 title: Bandit 16 → 17
 description: "OverTheWire Bandit 16 to 17: scan a port range, find the SSL service that accepts the password, and collect an RSA private key for the next user."
+os: Linux
+environment: Progressive
 sidebar:
   label: "16 → 17"
   order: 16
 ---
 
 import Toggle from '@components/Toggle.astro';
-import WriteupMeta from '@components/badges/WriteupMeta.astro';
-
-<WriteupMeta platform="OverTheWire" os="Linux" environment="Progressive" />
 
 > Goal: find which port in 31000 to 32000 returns a credential for the current password, then use what it returns to log in as bandit17.
 

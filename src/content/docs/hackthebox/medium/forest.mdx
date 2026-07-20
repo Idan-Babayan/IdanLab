@@ -2,16 +2,15 @@
 title: Forest
 description: AS-REP roasting cracks a pre-auth-disabled service account, then an Exchange Windows Permissions WriteDACL over the domain grants DCSync for Administrator.
 os: Windows
+environment: Active Directory
+difficulty: Medium
 principle: "Kerberos pre-authentication is not optional."
 ---
 
 import Toggle from '@components/Toggle.astro';
 import Callout from '@components/Callout.astro';
 import FlagCapture from '@components/FlagCapture.astro';
-import WriteupMeta from '@components/badges/WriteupMeta.astro';
 import AttackPath from '@components/AttackPath.astro';
-
-<WriteupMeta platform="HackTheBox" os="Windows" environment="Active Directory" difficulty="Medium" />
 
 > AS-REP roasting cracks the svc-alfresco service account, and an Exchange Windows Permissions WriteDACL over the domain turns that foothold into a DCSync for Administrator.
 
