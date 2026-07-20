@@ -92,12 +92,22 @@ const ARROW = `M ${CONN_W - 10} ${y1 - 5.5} L ${CONN_W - 2} ${y1} L ${CONN_W - 1
 // Generous enough to exceed the real path length, so dashoffset:<len> hides the stroke completely and
 // dashoffset:0 reveals it. A constant avoids a getTotalLength() measurement pass in JS.
 const DASH = 260;
+
+// Edge-label tilt. The verb label rides PARALLEL to its connector's chord, at a constant gap above it,
+// so its distance to the line stops depending on the three things that made a horizontally-centred label
+// read unevenly across the path: the segment's slope, the label's width, and how many lines it wraps to.
+// (Measured on the old rule: a 110px horizontal label cleared the line by +17px on the low-left but
+// CROSSED it by -2px on the high-right, and a two-line label floated ~8px further off than a one-line
+// one.) The chord runs from the curve's start (3, y0) to its end tip (CONN_W-2, y1), so its rise-over-run
+// is the angle; negative because the line climbs to the right (screen-up is a CCW rotation). One value
+// serves every connector because they all share `rise`, and it is derived, so it holds at any chain length.
+const EDGE_ANGLE = -(Math.atan2(rise, CONN_W - 5) * 180 / Math.PI);
 ---
 
 <div
   class="apath not-content"
   data-attack-path
-  style={`--ap-rise:${rise}px; --ap-climb:${climb}px; --ap-cw:${CONN_W}px; --ap-ch:${CONN_H}px; --ap-dash:${DASH};`}
+  style={`--ap-rise:${rise}px; --ap-climb:${climb}px; --ap-cw:${CONN_W}px; --ap-ch:${CONN_H}px; --ap-dash:${DASH}; --ap-edge-angle:${EDGE_ANGLE}deg;`}
 >
   <div class="ap-head">
     <p class="ap-title">{title}</p>
@@ -137,7 +147,7 @@ const DASH = 260;
               data-ap-node
               data-state={i === 0 ? 'active' : 'future'}
               aria-current={i === 0 ? 'step' : undefined}
-              style={`--i:${i}; --t:${lastIndex === 0 ? 0 : i / lastIndex}`}
+              style={`--i:${i}; --t:${lastIndex === 0 ? 0 : i / lastIndex}; --ap-nw:${(lastIndex === 0 ? 0 : i / lastIndex) >= 0.5 ? 700 : 500}`}
             >
               <span class="ap-node-kind">{node.kind}</span>
               <span class="ap-node-name">{node.name}</span>
@@ -376,6 +386,12 @@ const DASH = 260;
     --ap-line: var(--sl-color-hairline);
     --ap-quiet: var(--sl-color-gray-3);
     --ap-surface: color-mix(in oklab, var(--sl-color-white) 2%, var(--sl-color-bg));
+    /* ONE value drives BOTH the edge mask's band width and the spine's resting gutter (below), which is
+       what keeps the mask off the endpoint nodes: the gutter is exactly as wide as the band, so at either
+       scroll extreme the mask lands on empty gutter instead of on the start / goal node. It also makes the
+       affordance self-truthing: a mask over empty gutter is surface-on-surface, i.e. INVISIBLE, so a fade
+       only appears once real path is actually running under it. */
+    --ap-fade-w: 36px;
 
     position: relative;
     margin: 1.75rem 0 2.25rem;
@@ -461,22 +477,49 @@ const DASH = 260;
     width: max-content;
     /* Headroom for the FULL climb plus the active node's scale and glow. This reads the total climb, not
        the per-hop rise: rise shrinks as the chain lengthens (it is climb/hops), so sizing off rise would
-       under-pad and clip the top node on any chain longer than five hops. */
-    padding: calc(var(--ap-climb) + 26px) 0.4rem 30px;
+       under-pad and clip the top node on any chain longer than five hops.
+       The INLINE padding is the mask gutter: it matches --ap-fade-w exactly, so scrolled fully left the
+       start node rests precisely where the left band ends, and scrolled fully right the goal node rests
+       precisely where the right band ends. The two most important anchors in the chain therefore always
+       come to rest in the fully-legible zone (measured alpha 0), at any chain length, while mid-scroll the
+       mask still dissolves real content and the affordance is untouched. */
+    padding: calc(var(--ap-climb) + 26px) var(--ap-fade-w) 30px;
   }
 
   .ap-fade {
     position: absolute;
     top: 0;
     bottom: 0;
-    width: 52px;
+    width: var(--ap-fade-w);
     pointer-events: none;
     z-index: 2;
   }
   /* The masks dissolve the track edges INTO the container's own surface (--ap-surface flips per theme),
-     so "there is more path" reads as the content running under the panel edge, not fading to black. */
-  .ap-fade-l { left: 0; background: linear-gradient(90deg, var(--ap-surface) 14%, transparent); }
-  .ap-fade-r { right: 0; background: linear-gradient(270deg, var(--ap-surface) 14%, transparent); }
+     so "there is more path" reads as the content running under the panel edge, not fading to black.
+     The falloff is a SMOOTHSTEP (1 - (3t^2 - 2t^3)), not the previous `surface 14%, transparent` linear
+     ramp. Two things were wrong with that ramp: it held a fully OPAQUE plateau across its first 14% and
+     then smeared linearly, so a node's text could begin under ~78% wash (measured on the start node). The
+     eased curve drops the plateau, so the band is only truly opaque at the outermost edge, recovers most
+     of its legibility by mid-band, and has no hard cut-off at either end. Paired with the gutter above it
+     means the mask is gentler everywhere AND never falls on an endpoint at rest. */
+  .ap-fade-l {
+    left: 0;
+    background: linear-gradient(90deg,
+      var(--ap-surface) 0%,
+      color-mix(in oklab, var(--ap-surface) 84%, transparent) 25%,
+      color-mix(in oklab, var(--ap-surface) 50%, transparent) 50%,
+      color-mix(in oklab, var(--ap-surface) 16%, transparent) 75%,
+      transparent 100%);
+  }
+  .ap-fade-r {
+    right: 0;
+    background: linear-gradient(270deg,
+      var(--ap-surface) 0%,
+      color-mix(in oklab, var(--ap-surface) 84%, transparent) 25%,
+      color-mix(in oklab, var(--ap-surface) 50%, transparent) 50%,
+      color-mix(in oklab, var(--ap-surface) 16%, transparent) 75%,
+      transparent 100%);
+  }
 
   /* ── Node ── */
   .ap-node {
@@ -510,7 +553,12 @@ const DASH = 260;
   .ap-node-name {
     font-family: var(--sl-font-mono);
     font-size: calc(0.76rem + var(--t) * 0.14rem);
-    font-weight: calc(500 + var(--t) * 200);   /* 500 to 700: JetBrains Mono ships both */
+    /* Escalation weight uses ONLY the loaded JetBrains Mono faces (400/500/700). A continuous
+       calc(500 + --t*200) requested 540/580/620/660, none of which exist, so the browser snapped every
+       one to Bold 700 (measured: identical ink to 700) and the "ramp" was really a step at node 0. The
+       honest crescendo therefore rides the continuous font-SIZE above, plus one derived weight step:
+       Medium before the chain's midpoint, Bold from it on (--ap-nw, computed from the node's --t). */
+    font-weight: var(--ap-nw, 500);
     line-height: 1.28;
     color: var(--sl-color-white);
     overflow-wrap: anywhere;
@@ -633,12 +681,19 @@ const DASH = 260;
     .ap-conn-base { transition: opacity 0.3s ease; }
   }
 
-  /* The privilege verb rides ON the segment. */
+  /* The privilege verb rides ON the segment, parallel to it. Anchor: the label's BOTTOM edge sits a
+     constant gap above the connector's mid-line (translateY(-100%) lands the bottom edge on the anchor
+     no matter how many lines the label wraps to, so one- and two-line labels keep the same distance to
+     the line); then a rotation about that bottom-centre point tilts the label to the chord's angle, which
+     makes the gap independent of the slope and of the label's width. This is the single rule that holds
+     for any segment and any label, replacing the old horizontal translate(-50%,-160%) whose clearance
+     swung from +17px to crossing the line across one label. */
   .ap-edge {
     position: absolute;
     left: 50%;
-    top: calc(50% - var(--ap-rise) / 2);
-    transform: translate(-50%, -160%);
+    top: calc(50% - var(--ap-rise) / 2 - 0.4rem);
+    transform-origin: 50% 100%;
+    transform: translate(-50%, -100%) rotate(var(--ap-edge-angle, 0deg));
     width: calc(var(--ap-cw) - 6px);
     text-align: center;
     font-family: var(--sl-font-mono);
@@ -783,8 +838,9 @@ const DASH = 260;
     padding-top: 0.8rem;
     border-top: 1px solid var(--ap-line);
   }
-  .ap-dots { display: flex; align-items: center; gap: 0.42rem; }
+  .ap-dots { display: flex; align-items: center; gap: 0.7rem; }
   .ap-dot {
+    position: relative;
     width: 7px;
     height: 7px;
     padding: 0;
@@ -793,6 +849,22 @@ const DASH = 260;
     background: color-mix(in oklab, var(--ap-quiet) 45%, transparent);
     cursor: pointer;
     --focus-ring: var(--ap-accent);
+  }
+  /* Layout-neutral pointer target (WCAG 2.2 SC 2.5.8), the site's own hit-area convention (the About HUD
+     controls grow the target, not the layout): the visible dot and its focus ring stay the 7px border box,
+     while this absolutely positioned overflow grows only the invisible tap area, so nothing reflows. It is
+     24px tall (the standard) and one dot-plus-gap wide, so adjacent targets TILE the row edge to edge (no
+     overlap, no dead zone, symmetric per dot) instead of a fixed 24px box where later siblings would steal
+     a neighbour's overlap. The dots are a redundant control as well (every step is also reachable by its
+     full-size node, the Next button, and the arrow keys), so the row stays compact by design. */
+  .ap-dot::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: calc(100% + 0.7rem);
+    height: 24px;
+    transform: translate(-50%, -50%);
   }
   .ap-dot[data-state='done'] { background: color-mix(in oklab, var(--ap-accent) 60%, transparent); }
   .ap-dot[data-state='active'] {
@@ -848,8 +920,9 @@ const DASH = 260;
 
   /* Narrow screens: scrolling the path is the deliberate gesture, matching how code blocks scroll. */
   @media (max-width: 50rem) {
-    .apath { padding-inline: 0.75rem; }
-    .ap-fade { width: 34px; }
+    /* The band narrows on small screens (less of a scarce 318px stage spent on mask), and because the
+       gutter reads the same token it narrows with it, so the endpoints stay exactly as clear as on desktop. */
+    .apath { padding-inline: 0.75rem; --ap-fade-w: 24px; }
     .ap-foot { flex-wrap: wrap; }
   }
 </style>
