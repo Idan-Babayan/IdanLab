@@ -48,17 +48,19 @@ const BADGE_MODIFIER_FAMILIES = ['platform-', 'difficulty-', 'os-'];
 const BADGE_MODIFIERS = new Set(BADGE_MODIFIER_FAMILIES.flatMap((prefix) => CLASS_FAMILIES[prefix]));
 
 // --- Component metadata enums: string prop values authored on component JSX elements ---------------
-// The typed unions the components accept. WriteupMeta already throws at render on a bad value, but
-// validating here fails earlier with a source position and a suggestion, and it also covers Callout
-// and FlagCapture, whose .astro props are not type-checked at build. Only string-valued props are
-// checked; a dynamic `{expr}` value is skipped.
+// The typed unions the components accept, for components still HAND-AUTHORED in writeup bodies.
+// Validating here fails earlier than a component's own runtime guard, with a source position and a
+// suggestion, and it covers .astro props that are not type-checked at build. Only string-valued props
+// are checked; a dynamic `{expr}` value is skipped.
+//
+// WriteupMeta was RETIRED from this map (2026-07-20). Its metadata is no longer hand-authored: the
+// badge row is injected from frontmatter by plugins/remark-inject-writeupmeta.mjs, so no hand-written
+// <WriteupMeta> JSX remains in any writeup for this stage to see. That surface is now covered twice
+// over instead: the Zod enums in src/content.config.ts catch a bad frontmatter value with editor
+// support, and the component's own runtime guard still throws on an unknown axis. This is unrelated
+// to the platform- / difficulty- / os- CLASS families above, which stay live because WriteupCard
+// still emits them and a writeup can still hand-author a badge span.
 const COMPONENT_ENUMS = {
-  WriteupMeta: {
-    platform: ['HackTheBox', 'VulnHub', 'PicoCTF', 'OverTheWire'],
-    os: ['Linux', 'Windows'],
-    environment: ['Standalone', 'Active Directory', 'Progressive'],
-    difficulty: ['Easy', 'Medium', 'Hard', 'Insane'],
-  },
   Callout: {
     type: ['recon', 'loot', 'intel', 'defense', 'vuln'],
   },
@@ -173,7 +175,7 @@ export default function remarkValidateContentTaxonomy() {
         }
       }
 
-      // 2. Component metadata enum validation (Callout, WriteupMeta).
+      // 2. Component metadata enum validation (Callout, FlagCapture).
       const enumsForComponent = COMPONENT_ENUMS[node.name];
       if (enumsForComponent) {
         for (const attr of attributes) {
