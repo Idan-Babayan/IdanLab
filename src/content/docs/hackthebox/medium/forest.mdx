@@ -9,6 +9,7 @@ import Toggle from '@components/Toggle.astro';
 import Callout from '@components/Callout.astro';
 import FlagCapture from '@components/FlagCapture.astro';
 import WriteupMeta from '@components/badges/WriteupMeta.astro';
+import AttackPath from '@components/AttackPath.astro';
 
 <WriteupMeta platform="HackTheBox" os="Windows" environment="Active Directory" difficulty="Medium" />
 
@@ -309,6 +310,18 @@ C:\Users\Administrator\Desktop> type root.txt
 ## Summary
 
 The whole path in one breath: Forest answers anonymous LDAP queries, so I pull the domain's user list without credentials. One of those accounts, svc-alfresco, has Kerberos pre-authentication disabled, so I AS-REP roast it and crack `s3rvice` offline, which opens a WinRM shell and the user flag. BloodHound then draws the escalation: svc-alfresco can add a controlled account to Exchange Windows Permissions, that group holds WriteDACL over the domain, and WriteDACL grants DCSync. I replicate the Administrator hash, pass it back for a SYSTEM shell, and take the root flag.
+
+<AttackPath
+  title="Attack Path · htb.local"
+  nodes={[
+    { kind: 'User', name: 'svc-alfresco', detail: [ { k: 'via', v: 'AS-REP roast → <code>hashcat -m 18200</code>' }, { k: 'shell', v: '<code>evil-winrm</code>, user.txt' } ] },
+    { kind: 'Group', name: 'Account Operators', edge: 'is <b>member of</b>', detail: [ { k: 'note', v: 'non-protected group, can manage others' } ] },
+    { kind: 'Group', name: 'Exchange Windows Permissions', edge: '<b>adds members to</b>', detail: [ { k: 'edge', v: 'BloodHound: <code>WriteDACL → htb.local</code>' } ] },
+    { kind: 'Domain', name: 'htb.local', edge: 'holds <b>WriteDACL</b>', detail: [ { k: 'right', v: '<code>WriteDACL</code> on the domain object' }, { k: 'action', v: 'add DS-Replication rights to our user' } ] },
+    { kind: 'Account', name: 'Administrator', edge: 'grant <b>DCSync</b>', detail: [ { k: 'tool', v: '<code>secretsdump.py</code>' }, { k: 'result', v: 'replicated NTLM hash via DCSync' } ] },
+    { kind: 'Root', name: 'SYSTEM', edge: '<b>pass-the-hash</b>', detail: [ { k: 'via', v: '<code>evil-winrm</code> PtH as Administrator' }, { k: 'flag', v: 'root.txt' } ] },
+  ]}
+/>
 
 ---
 
