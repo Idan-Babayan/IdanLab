@@ -1,0 +1,855 @@
+---
+// src/components/AttackPath.astro
+//
+// AttackPath: a guided, interactive infographic that tells the story of a LINEAR privilege-escalation
+// chain. Reusable across multi-hop writeups (Forest is instance one). It renders an ascending
+// horizontal path whose nodes ESCALATE in width and type scale toward the goal, with STRUCTURAL
+// directional connectors (each departs one node and arrows INTO the next, the privilege verb riding on
+// the segment), a guided "Next step" progression (past = established, present = focal, future = quiet),
+// motion that communicates the change and then settles calm, and a one-time gold flourish on reaching
+// the goal. Linear chains only: one spine, no branching.
+//
+// TOKENS (verified against custom.css, not assumed):
+//   - Accent: --pf-accent is NOT global, it is only defined on the .pf-* classes, so this reads
+//     var(--pf-accent, var(--sl-color-text-accent)). Dropped into a .pf-* context it inherits that
+//     platform's colour; anywhere else it is the site lime. Same fallback idiom as PlatformIndex.
+//   - Gold: --flag-gold is DECORATIVE (only 2.00:1 on paper, per DECISIONS 2026-07-13), so it paints
+//     borders, glows, the runner and the bloom, while every gold TEXT run uses the AA-grade
+//     --flag-gold-val. That split is the whole reason both tokens exist; do not collapse them.
+//   - Fonts: --sl-font-mono (JetBrains Mono) and --tp-display (Syne, the real name; there is no
+//     --display). Syne ships only 600/700/800, so display type never asks for a lighter weight.
+//
+// STYLES are scoped to this component and the root carries `not-content`, the majority convention for a
+// content-embedded component here (NotFound / WriteupCard / PlatformIndex / SecretTerminal). Astro
+// scopes with :where() at specificity 0, which is safe precisely BECAUSE not-content makes every
+// .sl-markdown-content prose rule skip this subtree; nothing here needs to out-rank a global rule.
+
+interface AttackNode {
+  kind: string;                          // short category, e.g. "User", "Group", "Domain", "Root"
+  name: string;                          // the principal/object, e.g. "svc-alfresco", "SYSTEM"
+  edge?: string;                         // privilege verb from the PREVIOUS node; may contain <b>. Omit on the first.
+  detail?: { k: string; v: string }[];   // dossier rows; v may contain inline <code>
+}
+
+interface Props {
+  title?: string;
+  nodes: AttackNode[];
+}
+
+const { title = 'Attack Path', nodes } = Astro.props;
+
+// Runtime guard, matching how WriteupMeta guards its props: `astro build` does not type-check .astro
+// props and this repo deliberately has no `astro check`, so the interface above is editor-only. A
+// malformed chain would otherwise ship silently as a broken or half-empty graphic.
+if (!Array.isArray(nodes) || nodes.length < 2) {
+  throw new Error('AttackPath requires an ordered array of at least 2 nodes.');
+}
+nodes.forEach((n, i) => {
+  if (!n || typeof n.kind !== 'string' || !n.kind.trim() || typeof n.name !== 'string' || !n.name.trim()) {
+    throw new Error(`AttackPath: node ${i} needs a non-empty "kind" and "name".`);
+  }
+  if (n.detail && !Array.isArray(n.detail)) {
+    throw new Error(`AttackPath: node ${i} "detail" must be an array of { k, v } rows.`);
+  }
+});
+
+const lastIndex = nodes.length - 1;
+
+// ESCALATION + ASCENT are computed from the node count, never tuned to one chain, so the component reads
+// well from a 4-hop chain to a 12-hop one without editing. Two curves, both derived from `lastIndex`:
+//
+//  - Ascent: aim for a fixed TOTAL climb spread evenly across the hops, then CLAMP the per-hop rise to a
+//    sane band. Without the clamp a 2-node chain would climb the whole total in one hop (off the SVG box)
+//    and a 12-node chain would inch up invisibly. The clamp keeps any single step readable and any full
+//    chain inside a bounded vertical envelope. The headroom padding then reads the ACTUAL total
+//    (rise * hops), so the tallest node is never clipped however long the chain runs.
+//  - Weight/size: each node carries `--t` = index / lastIndex (0 at entry, 1 at goal), and the width and
+//    type-scale interpolate across that in CSS, so the crescendo is proportional to the chain, not a
+//    fixed per-node step. See the .ap-node rules.
+const RISE_TARGET_TOTAL = 96; // preferred total climb, evenly divided
+const RISE_MIN = 12;          // a step never smaller than this (keeps a long chain legible)
+const RISE_MAX = 30;          // a step never larger than this (keeps a short chain on the SVG box)
+const rise = Math.max(RISE_MIN, Math.min(RISE_MAX, RISE_TARGET_TOTAL / lastIndex));
+const climb = rise * lastIndex;
+
+// Connector box geometry, in px. CONN_H comfortably fits the steepest allowed rise (RISE_MAX): the curve
+// climbs from y0 = 38 to y1 = 38 - rise, so at the max the arrowhead sits near y 8, still inside the box.
+const CONN_W = 116;
+const CONN_H = 76;
+
+// One shared path shape for every connector: the box's vertical centre is aligned to the LEFT node's
+// centre (both are flex-centred and carry the same `bottom` offset), so the target node's centre sits
+// exactly `rise` higher, at y1. The curve therefore always departs a node edge and lands on a node
+// edge, and the arrowhead can never point at empty space.
+const y0 = CONN_H / 2;
+const y1 = y0 - rise;
+// The tip overshoots the box's right edge (paired with the connector's negative inline margin below) so
+// the stroke reaches the node in EVERY state. A node scales 0.955 while `future`, which pulls its left
+// edge inward by (0.045/2 * width), measurably 3 to 4px on this chain; without the overshoot the dashed
+// segment visibly falls short of the node it points at.
+const CURVE = `M 3 ${y0} C ${CONN_W * 0.45} ${y0}, ${CONN_W * 0.55} ${y1}, ${CONN_W - 2} ${y1}`;
+const ARROW = `M ${CONN_W - 10} ${y1 - 5.5} L ${CONN_W - 2} ${y1} L ${CONN_W - 10} ${y1 + 5.5}`;
+// Generous enough to exceed the real path length, so dashoffset:<len> hides the stroke completely and
+// dashoffset:0 reveals it. A constant avoids a getTotalLength() measurement pass in JS.
+const DASH = 260;
+---
+
+<div
+  class="apath not-content"
+  data-attack-path
+  style={`--ap-rise:${rise}px; --ap-climb:${climb}px; --ap-cw:${CONN_W}px; --ap-ch:${CONN_H}px; --ap-dash:${DASH};`}
+>
+  <div class="ap-head">
+    <p class="ap-title">{title}</p>
+    <div class="ap-meter">
+      {/* The step count is real TEXT, so the position is available to assistive tech without a
+          role=progressbar dance. The bar beside it is decoration and is hidden from the a11y tree. */}
+      <p class="ap-meter-text">Step <span data-ap-step>1</span> of {nodes.length}</p>
+      <div class="ap-bar" aria-hidden="true"><i data-ap-fill></i></div>
+    </div>
+  </div>
+
+  <div class="ap-stage">
+    <div class="ap-track" data-ap-track>
+      <div class="ap-spine" data-ap-spine>
+        {nodes.map((node, i) => (
+          <Fragment>
+            {i > 0 && (
+              <div
+                class:list={['ap-conn', { 'is-goal-conn': i === lastIndex }]}
+                data-ap-conn
+                data-state="future"
+                style={`--i:${i - 1}`}
+              >
+                <svg class="ap-conn-svg" width={CONN_W} height={CONN_H} viewBox={`0 0 ${CONN_W} ${CONN_H}`} aria-hidden="true">
+                  {/* Quiet dashed segment: the path not yet taken. Always present. */}
+                  <path class="ap-conn-base" d={CURVE} />
+                  {/* Solid segment + arrowhead: drawn in when the hop becomes `done`. */}
+                  <path class="ap-conn-live" d={CURVE} />
+                  <path class="ap-conn-head" d={ARROW} />
+                </svg>
+                {node.edge && <span class="ap-edge" set:html={node.edge} />}
+              </div>
+            )}
+            <button
+              type="button"
+              class:list={['ap-node', { 'is-start': i === 0, 'is-goal': i === lastIndex }]}
+              data-ap-node
+              data-state={i === 0 ? 'active' : 'future'}
+              aria-current={i === 0 ? 'step' : undefined}
+              style={`--i:${i}; --t:${lastIndex === 0 ? 0 : i / lastIndex}`}
+            >
+              <span class="ap-node-kind">{node.kind}</span>
+              <span class="ap-node-name">{node.name}</span>
+              {/* Non-colour cue for `done`, so state is never carried by hue alone. */}
+              <svg class="ap-check" viewBox="0 0 24 24" width="13" height="13" fill="none"
+                stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M5 13l4 4L19 7" />
+              </svg>
+            </button>
+          </Fragment>
+        ))}
+        <span class="ap-runner" data-ap-runner aria-hidden="true"></span>
+      </div>
+    </div>
+    {/* The "there is more path" affordance: the native scrollbar is hidden and these gradient masks
+        dissolve the past on the left while the next node peeks in under the right fade. */}
+    <div class="ap-fade ap-fade-l" aria-hidden="true"></div>
+    <div class="ap-fade ap-fade-r" aria-hidden="true"></div>
+  </div>
+
+  <div class="ap-dossier" data-ap-dossier aria-live="polite">
+    {nodes.map((node, i) => (
+      <div class="ap-panel" data-ap-panel hidden={i !== 0}>
+        <p class="ap-panel-head">
+          <span class="ap-panel-kind">{node.kind}</span>
+          <span class="ap-panel-name">{node.name}</span>
+        </p>
+        {node.edge && (
+          <p class="ap-panel-edge"><span class="ap-panel-via">via</span> <span set:html={node.edge} /></p>
+        )}
+        {node.detail && node.detail.length > 0 && (
+          <dl class="ap-rows">
+            {node.detail.map((row) => (
+              <Fragment>
+                <dt>{row.k}</dt>
+                <dd set:html={row.v} />
+              </Fragment>
+            ))}
+          </dl>
+        )}
+      </div>
+    ))}
+  </div>
+
+  <div class="ap-foot">
+    <div class="ap-dots">
+      {nodes.map((node, i) => (
+        <button
+          type="button"
+          class="ap-dot"
+          data-ap-dot
+          data-state={i === 0 ? 'active' : 'future'}
+          aria-current={i === 0 ? 'step' : undefined}
+          aria-label={`Step ${i + 1}: ${node.name}`}
+        ></button>
+      ))}
+    </div>
+    <button type="button" class="ap-next" data-ap-next>
+      <span data-ap-next-label>Next step</span>
+      <svg class="ap-next-ico" viewBox="0 0 24 24" width="14" height="14" fill="none"
+        stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 12h13M13 6l6 6-6 6" />
+      </svg>
+    </button>
+  </div>
+</div>
+
+<script>
+  // Every instance is wired independently, so a page may carry more than one chain.
+  function setupAttackPath(root: HTMLElement): void {
+    const nodes = Array.from(root.querySelectorAll('[data-ap-node]')) as HTMLButtonElement[];
+    const conns = Array.from(root.querySelectorAll('[data-ap-conn]')) as HTMLElement[];
+    const dots = Array.from(root.querySelectorAll('[data-ap-dot]')) as HTMLButtonElement[];
+    const panels = Array.from(root.querySelectorAll('[data-ap-panel]')) as HTMLElement[];
+    const track = root.querySelector('[data-ap-track]') as HTMLElement | null;
+    const spine = root.querySelector('[data-ap-spine]') as HTMLElement | null;
+    const runner = root.querySelector('[data-ap-runner]') as HTMLElement | null;
+    const nextBtn = root.querySelector('[data-ap-next]') as HTMLButtonElement | null;
+    const nextLabel = root.querySelector('[data-ap-next-label]') as HTMLElement | null;
+    const stepEl = root.querySelector('[data-ap-step]') as HTMLElement | null;
+    const fill = root.querySelector('[data-ap-fill]') as HTMLElement | null;
+    if (!nodes.length || !track || !spine || !nextBtn) return;
+
+    const last = nodes.length - 1;
+    let pos = 0;
+    let bloomed = false; // the goal flourish is one-time; revisiting must never replay it
+
+    // Read at interaction time, not once at load, so a mid-session OS change is honoured (the same
+    // approach FlagCapture takes).
+    const reduced = (): boolean => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function paint(): void {
+      nodes.forEach((n, i) => {
+        n.dataset.state = i < pos ? 'done' : i === pos ? 'active' : 'future';
+        if (i === pos) n.setAttribute('aria-current', 'step');
+        else n.removeAttribute('aria-current');
+      });
+      // Connector k sits between node k and node k+1, so it is `done` once we have moved past node k.
+      conns.forEach((c, k) => {
+        c.dataset.state = k + 1 <= pos ? 'done' : 'future';
+      });
+      dots.forEach((d, i) => {
+        d.dataset.state = i < pos ? 'done' : i === pos ? 'active' : 'future';
+        if (i === pos) d.setAttribute('aria-current', 'step');
+        else d.removeAttribute('aria-current');
+      });
+      panels.forEach((p, i) => {
+        p.hidden = i !== pos;
+      });
+      if (stepEl) stepEl.textContent = String(pos + 1);
+      if (fill) fill.style.width = `${(pos / last) * 100}%`;
+      nextBtn.disabled = pos >= last;
+      root.dataset.done = pos >= last ? 'true' : 'false';
+      if (nextLabel) nextLabel.textContent = pos >= last ? 'Compromised' : 'Next step';
+    }
+
+    // Re-trigger the dossier's fade-up. Reflow between remove and add restarts the animation.
+    // The class is cleared off every panel first, including under reduced motion: the keyframes are
+    // gated in CSS so a stale class cannot animate, but leaving one behind would mean the DOM claims a
+    // transition that is not happening, and it would light up the moment the user turned motion back on.
+    function fadeDossier(): void {
+      panels.forEach((p) => p.classList.remove('is-enter'));
+      const panel = panels[pos];
+      if (!panel || reduced()) return;
+      void panel.offsetWidth;
+      panel.classList.add('is-enter');
+    }
+
+    // Centre the active node in the viewport of the track.
+    function centre(): void {
+      const node = nodes[pos];
+      if (!node) return;
+      const nr = node.getBoundingClientRect();
+      const tr = track!.getBoundingClientRect();
+      const delta = nr.left + nr.width / 2 - (tr.left + tr.width / 2);
+      track!.scrollTo({ left: track!.scrollLeft + delta, behavior: reduced() ? 'auto' : 'smooth' });
+    }
+
+    // The gold runner travelling from the previous node to the new one. Coordinates are measured
+    // against the spine (not offsetLeft/offsetTop), because the nodes are relatively positioned to
+    // create the ascent and rects are unambiguous about where they actually ended up.
+    function runFromTo(from: number, to: number): void {
+      if (!runner || !spine) return;
+      // Under reduced motion the runner never travels, and any inline transform/transition left over
+      // from an earlier advance is cleared so nothing stale can play if the preference changes.
+      if (reduced() || from === to) {
+        runner.style.transition = 'none';
+        runner.style.opacity = '0';
+        return;
+      }
+      const sp = spine.getBoundingClientRect();
+      const a = nodes[from].getBoundingClientRect();
+      const b = nodes[to].getBoundingClientRect();
+      const ax = a.left - sp.left + a.width / 2;
+      const ay = a.top - sp.top + a.height / 2;
+      const bx = b.left - sp.left + b.width / 2;
+      const by = b.top - sp.top + b.height / 2;
+      runner.style.transition = 'none';
+      runner.style.opacity = '1';
+      runner.style.transform = `translate(${ax}px, ${ay}px)`;
+      void runner.offsetWidth;
+      runner.style.transition = 'transform 0.5s cubic-bezier(0.4, 0.05, 0.2, 1), opacity 0.24s ease 0.34s';
+      runner.style.opacity = '0';
+      runner.style.transform = `translate(${bx}px, ${by}px)`;
+    }
+
+    // One-time gold bloom on first arrival at the goal. Guarded, so clicking back and forward again
+    // never replays it, and skipped entirely under reduced motion.
+    function bloom(): void {
+      if (bloomed || reduced()) return;
+      bloomed = true;
+      const goal = nodes[last];
+      goal.classList.add('is-bloom');
+      window.setTimeout(() => goal.classList.remove('is-bloom'), 1400);
+    }
+
+    function go(to: number): void {
+      const target = Math.max(0, Math.min(last, to));
+      if (target === pos) return;
+      const from = pos;
+      pos = target;
+      paint();
+      runFromTo(from, target);
+      fadeDossier();
+      centre();
+      if (target === last) bloom();
+    }
+
+    nextBtn.addEventListener('click', () => go(pos + 1));
+    nodes.forEach((n, i) => n.addEventListener('click', () => go(i)));
+    dots.forEach((d, i) => d.addEventListener('click', () => go(i)));
+
+    // Arrow keys are scoped to the component, so they only act while focus is inside it and never
+    // hijack the page's own arrow-key scrolling.
+    root.addEventListener('keydown', (ev: KeyboardEvent) => {
+      if (ev.key === 'ArrowRight') {
+        ev.preventDefault();
+        go(pos + 1);
+      } else if (ev.key === 'ArrowLeft') {
+        ev.preventDefault();
+        go(pos - 1);
+      }
+    });
+
+    paint();
+  }
+
+  document
+    .querySelectorAll('[data-attack-path]')
+    .forEach((el) => setupAttackPath(el as HTMLElement));
+</script>
+
+<style>
+  /* Every surface, border, and accent here is the site's own fabric, so this reads as a rich region of
+     the writeup, not a widget dropped onto it. The aliases each map to an EXISTING token or the exact
+     derivation the site's own components use:
+       --ap-accent  the site's content accent. --pf-accent only exists on a .pf-* ancestor, so the
+                    fallback (--sl-color-text-accent, the theme-aware lime) is what actually resolves in a
+                    writeup body; the fallback idiom is PlatformIndex's. It is already AA as text in both
+                    themes (light is the deep #4d7c0f ink), so no separate ink token is needed for it.
+       --ap-gold /  the site's prize identity, split exactly like FlagCapture's --fc-id / --fc-val:
+       --ap-gold-ink  --flag-gold paints DECORATION (borders, glow, runner, bloom), --flag-gold-val is the
+                    AA-grade gold for any gold TEXT (the decorative gold is only 2.00:1 on paper).
+       --ap-line    the site's structural hairline (--tp-divider on light via the global override).
+       --ap-quiet   the muted label grey the site uses for eyebrows/meta.
+       --ap-surface the site's raised-panel FABRIC, taken straight from the Toggle / FlagCapture panel:
+                    a 2% white lift over the page on dark, the warm paper panel #f2ede0 on light. It is a
+                    solid colour (the dark value is the opaque equivalent of the Toggle's
+                    rgba(255,255,255,0.02) lift) so the edge fade-masks can dissolve INTO it cleanly. The
+                    #f2ede0 literal is the site's established panel value (Toggle + FlagCapture both use
+                    it, and there is no token for it), so matching it is reusing the convention. */
+  .apath {
+    --ap-accent: var(--pf-accent, var(--sl-color-text-accent));
+    --ap-gold: var(--flag-gold);
+    --ap-gold-ink: var(--flag-gold-val);
+    --ap-line: var(--sl-color-hairline);
+    --ap-quiet: var(--sl-color-gray-3);
+    --ap-surface: color-mix(in oklab, var(--sl-color-white) 2%, var(--sl-color-bg));
+
+    position: relative;
+    margin: 1.75rem 0 2.25rem;
+    padding: 1.1rem 1.1rem 0.9rem;
+    border: 1px solid var(--ap-line);
+    border-radius: 8px;               /* the site's card radius (Toggle/FlagCapture are 6px, cards 8px) */
+    background: var(--ap-surface);
+  }
+  :global(html[data-theme='light']) .apath {
+    --ap-surface: #f2ede0;
+    /* The same warm depth shadow the Toggle and FlagCapture panels use, so it lifts off the paper the
+       same way (V3 light surface depth), instead of glaring as a flat near-white block. */
+    box-shadow: 0 4px 14px -12px rgba(60, 50, 30, 0.4);
+  }
+
+  /* ── Header ── */
+  .ap-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.9rem;
+  }
+  .ap-title {
+    margin: 0;
+    font-family: var(--tp-display); /* Syne: display face, loaded at 600/700/800 only */
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.01em;
+    color: var(--sl-color-white);
+  }
+  .ap-meter {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+  }
+  .ap-meter-text {
+    margin: 0;
+    font-family: var(--sl-font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ap-quiet);
+    white-space: nowrap;
+  }
+  .ap-meter-text span {
+    color: var(--ap-accent);
+    font-weight: 700;
+  }
+  .ap-bar {
+    width: 92px;
+    height: 3px;
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--ap-quiet) 34%, transparent);
+    overflow: hidden;
+  }
+  .ap-bar i {
+    display: block;
+    height: 100%;
+    width: 0%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--ap-accent), var(--ap-gold));
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .ap-bar i { transition: width 0.45s cubic-bezier(0.4, 0.05, 0.2, 1); }
+  }
+
+  /* ── Stage: the masked window onto the scrolling track ── */
+  .ap-stage { position: relative; }
+  .ap-track {
+    overflow-x: auto;
+    overflow-y: visible;
+    scrollbar-width: none;              /* Firefox */
+    -ms-overflow-style: none;
+  }
+  .ap-track::-webkit-scrollbar { display: none; }
+
+  .ap-spine {
+    position: relative;
+    display: flex;
+    align-items: center;                /* every item shares one centre line, so `bottom` alone makes the ascent */
+    width: max-content;
+    /* Headroom for the FULL climb plus the active node's scale and glow. This reads the total climb, not
+       the per-hop rise: rise shrinks as the chain lengthens (it is climb/hops), so sizing off rise would
+       under-pad and clip the top node on any chain longer than five hops. */
+    padding: calc(var(--ap-climb) + 26px) 0.4rem 30px;
+  }
+
+  .ap-fade {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 52px;
+    pointer-events: none;
+    z-index: 2;
+  }
+  /* The masks dissolve the track edges INTO the container's own surface (--ap-surface flips per theme),
+     so "there is more path" reads as the content running under the panel edge, not fading to black. */
+  .ap-fade-l { left: 0; background: linear-gradient(90deg, var(--ap-surface) 14%, transparent); }
+  .ap-fade-r { right: 0; background: linear-gradient(270deg, var(--ap-surface) 14%, transparent); }
+
+  /* ── Node ── */
+  .ap-node {
+    position: relative;
+    bottom: calc(var(--ap-rise) * var(--i));   /* the ascent: each node sits one rise above the last */
+    flex: none;
+    /* Escalation: --t runs 0 to 1 across the chain, so width and type scale grow toward the goal
+       regardless of how many hops the chain has. */
+    width: calc(132px + var(--t) * 52px);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.24rem;
+    padding: 0.62rem 0.72rem;
+    text-align: left;
+    border: 1px solid var(--ap-line);
+    border-radius: 8px;
+    background: var(--sl-color-bg);
+    color: var(--sl-color-text);
+    cursor: pointer;
+    --focus-ring: var(--ap-accent);
+  }
+  .ap-node-kind {
+    font-family: var(--sl-font-mono);
+    font-size: 0.6rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ap-quiet);
+  }
+  .ap-node-name {
+    font-family: var(--sl-font-mono);
+    font-size: calc(0.76rem + var(--t) * 0.14rem);
+    font-weight: calc(500 + var(--t) * 200);   /* 500 to 700: JetBrains Mono ships both */
+    line-height: 1.28;
+    color: var(--sl-color-white);
+    overflow-wrap: anywhere;
+  }
+  .ap-check {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    opacity: 0;
+    color: var(--ap-accent);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .ap-node { transition: transform 0.34s cubic-bezier(0.4, 0.05, 0.2, 1), border-color 0.3s ease, box-shadow 0.34s ease, opacity 0.3s ease; }
+    .ap-check { transition: opacity 0.3s ease 0.12s; }
+  }
+
+  /* future: quiet and slightly smaller, clearly not yet reached */
+  .ap-node[data-state='future'] {
+    opacity: 0.4;
+    transform: scale(0.955);
+  }
+  /* active: the focal point. Accent-bordered, softly glowing, and STATIC once it settles.
+     The lift is carried by scale + the elevation shadow, deliberately NOT by translateY: scale keeps an
+     element's CENTRE fixed while translateY moves it off the rise ladder, and the connectors aim at node
+     centres. A 5px translate here measurably dropped the incoming arrowhead 5px below the node it points
+     at (rise 13.4px instead of 18.4px on the active hop), which breaks the one thing the connectors have
+     to get right. Geometry wins over the extra 5px of lift. */
+  /* active + done both carry a faint ACCENT fill derived the way the callouts and the FlagCapture hover
+     derive theirs (color-mix of the accent into the panel surface), so the tint intensity is the crescendo
+     active (12%) > done (7%) > future (none). The two are then told apart by non-tint cues as well: active
+     scales up, takes the full accent border + the FlagCapture-style glow, and reads its kind label in
+     accent; done settles to a softer border, no glow, and carries the check glyph (so state is never colour
+     alone). */
+  .ap-node[data-state='active'] {
+    opacity: 1;
+    transform: scale(1.045);
+    border-color: var(--ap-accent);
+    background: color-mix(in oklab, var(--ap-accent) 12%, var(--ap-surface));
+    box-shadow:
+      0 0 0 1px color-mix(in oklab, var(--ap-accent) 34%, transparent),
+      0 8px 26px -12px color-mix(in oklab, var(--ap-accent) 60%, transparent);
+  }
+  .ap-node[data-state='active'] .ap-node-kind { color: var(--ap-accent); }
+  /* done: established and illuminated, but calm enough not to compete with the active node */
+  .ap-node[data-state='done'] {
+    opacity: 1;
+    border-color: color-mix(in oklab, var(--ap-accent) 48%, var(--ap-line));
+    background: color-mix(in oklab, var(--ap-accent) 7%, var(--ap-surface));
+  }
+  .ap-node[data-state='done'] .ap-check { opacity: 1; }
+  .ap-node[data-state='done'] .ap-node-name { color: color-mix(in oklab, var(--ap-accent) 26%, var(--sl-color-white)); }
+
+  /* The goal wears the site's PRIZE identity (gold) in every state, derived exactly as FlagCapture derives
+     its frame: a flat gold tint over the panel surface (no gradient), a gold-mix border, and the AA text
+     gold for the label. Future = a quiet gold preview so the destination is legible from the start; reached
+     = the full gold frame + glow, the same treatment a captured flag gets. */
+  .ap-node.is-goal {
+    --focus-ring: var(--ap-gold-ink);
+    border-color: color-mix(in oklab, var(--ap-gold) 38%, var(--ap-line));
+    background: color-mix(in oklab, var(--ap-gold) 6%, var(--ap-surface));
+  }
+  .ap-node.is-goal .ap-node-name { color: var(--ap-gold-ink); font-weight: 700; }
+  .ap-node.is-goal .ap-check { color: var(--ap-gold-ink); }
+  .ap-node.is-goal[data-state='active'],
+  .ap-node.is-goal[data-state='done'] {
+    border-color: var(--ap-gold);
+    background: color-mix(in oklab, var(--ap-gold) 12%, var(--ap-surface));
+    box-shadow:
+      0 0 0 1px color-mix(in oklab, var(--ap-gold) 42%, transparent),
+      0 10px 30px -12px color-mix(in oklab, var(--ap-gold) 66%, transparent);
+  }
+  .ap-node.is-goal[data-state='active'] .ap-node-kind,
+  .ap-node.is-goal[data-state='done'] .ap-node-kind { color: var(--ap-gold-ink); }
+  /* The entry point gets a quiet accent tick so the chain has a visible beginning as well as an end. */
+  .ap-node.is-start { border-left: 2px solid color-mix(in oklab, var(--ap-accent) 55%, var(--ap-line)); }
+
+  /* ── Connector ── */
+  .ap-conn {
+    position: relative;
+    bottom: calc(var(--ap-rise) * var(--i));  /* aligned to the LEFT node, so the curve ends on the right node's centre */
+    flex: none;
+    width: var(--ap-cw);
+    height: var(--ap-ch);
+    margin: 0 -3px;   /* see the tip-overshoot note in the frontmatter */
+  }
+  .ap-conn-svg { display: block; overflow: visible; }
+  .ap-conn-base {
+    fill: none;
+    stroke: var(--ap-quiet);
+    stroke-width: 1.5;
+    stroke-dasharray: 3 5;
+    opacity: 0.45;
+  }
+  .ap-conn-live,
+  .ap-conn-head {
+    fill: none;
+    stroke: var(--ap-accent);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  /* Hidden until the hop is taken: the dash pattern is longer than the path, so a full offset hides
+     the whole stroke and offset 0 reveals it end to end. */
+  .ap-conn-live {
+    stroke-dasharray: var(--ap-dash);
+    stroke-dashoffset: var(--ap-dash);
+  }
+  .ap-conn-head { opacity: 0; }
+  .ap-conn[data-state='done'] .ap-conn-live { stroke-dashoffset: 0; }
+  .ap-conn[data-state='done'] .ap-conn-head { opacity: 1; }
+  .ap-conn[data-state='done'] .ap-conn-base { opacity: 0; }
+  /* The last hop lands in gold, matching the goal it arrives at. */
+  .ap-conn.is-goal-conn .ap-conn-live,
+  .ap-conn.is-goal-conn .ap-conn-head { stroke: var(--ap-gold); }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .ap-conn-live { transition: stroke-dashoffset 0.55s cubic-bezier(0.4, 0.05, 0.2, 1); }
+    .ap-conn-head { transition: opacity 0.2s ease 0.42s; }
+    .ap-conn-base { transition: opacity 0.3s ease; }
+  }
+
+  /* The privilege verb rides ON the segment. */
+  .ap-edge {
+    position: absolute;
+    left: 50%;
+    top: calc(50% - var(--ap-rise) / 2);
+    transform: translate(-50%, -160%);
+    width: calc(var(--ap-cw) - 6px);
+    text-align: center;
+    font-family: var(--sl-font-mono);
+    font-size: 0.605rem;
+    line-height: 1.35;
+    letter-spacing: 0.02em;
+    color: var(--ap-quiet);
+    pointer-events: none;
+  }
+  .ap-edge :global(b) { font-weight: 700; color: color-mix(in oklab, var(--sl-color-white) 72%, var(--ap-quiet)); }
+  .ap-conn[data-state='done'] .ap-edge { color: color-mix(in oklab, var(--ap-accent) 62%, var(--sl-color-text)); }
+  .ap-conn[data-state='done'] .ap-edge :global(b) { color: var(--ap-accent); }
+  .ap-conn.is-goal-conn[data-state='done'] .ap-edge :global(b) { color: var(--ap-gold-ink); }
+
+  /* ── Runner: the gold spark that carries the eye from the old node to the new one ── */
+  .ap-runner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 9px;
+    height: 9px;
+    margin: -4.5px 0 0 -4.5px;
+    border-radius: 50%;
+    background: var(--ap-gold);
+    box-shadow: 0 0 12px 2px color-mix(in oklab, var(--ap-gold) 70%, transparent);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 3;
+  }
+
+  /* ── Goal flourish: one bloom + one ripple, never looping ── */
+  .ap-node.is-bloom::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    border: 2px solid var(--ap-gold);
+    pointer-events: none;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .ap-node.is-bloom { animation: ap-bloom 1.1s ease-out 1; }
+    .ap-node.is-bloom::after { animation: ap-ripple 1.1s cubic-bezier(0.2, 0.6, 0.3, 1) 1 forwards; }
+  }
+  @keyframes ap-bloom {
+    0%   { box-shadow: 0 0 0 1px color-mix(in oklab, var(--ap-gold) 42%, transparent), 0 10px 30px -12px color-mix(in oklab, var(--ap-gold) 66%, transparent); }
+    38%  { box-shadow: 0 0 0 2px var(--ap-gold), 0 0 42px 6px color-mix(in oklab, var(--ap-gold) 78%, transparent); }
+    100% { box-shadow: 0 0 0 1px color-mix(in oklab, var(--ap-gold) 42%, transparent), 0 10px 30px -12px color-mix(in oklab, var(--ap-gold) 66%, transparent); }
+  }
+  @keyframes ap-ripple {
+    0%   { opacity: 0.85; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1.5); }
+  }
+
+  /* ── Dossier ── */
+  .ap-dossier {
+    margin-top: 0.5rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--ap-line);
+    min-height: 92px;
+  }
+  .ap-panel-head {
+    margin: 0 0 0.4rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.55rem;
+    flex-wrap: wrap;
+  }
+  .ap-panel-kind {
+    font-family: var(--sl-font-mono);
+    font-size: 0.6rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ap-accent);
+  }
+  .ap-panel-name {
+    font-family: var(--sl-font-mono);
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--sl-color-white);
+  }
+  .ap-panel-edge {
+    margin: 0 0 0.5rem;
+    font-family: var(--sl-font-mono);
+    font-size: 0.72rem;
+    color: var(--ap-quiet);
+  }
+  .ap-panel-via {
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 0.6rem;
+    margin-right: 0.3rem;
+  }
+  .ap-panel-edge :global(b) { color: var(--sl-color-text); font-weight: 700; }
+
+  .ap-rows {
+    margin: 0;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.24rem 0.85rem;
+    font-family: var(--sl-font-mono);
+    font-size: 0.735rem;
+  }
+  .ap-rows dt {
+    text-transform: uppercase;
+    letter-spacing: 0.13em;
+    font-size: 0.6rem;
+    color: var(--ap-quiet);
+    padding-top: 0.16rem;
+  }
+  .ap-rows dd {
+    margin: 0;
+    color: var(--sl-color-text);
+    overflow-wrap: anywhere;
+  }
+  /* Inline <code> inside a dossier row: the component is `not-content`, so the site's prose code chip
+     does not reach in here and this subtree styles its own. */
+  .ap-rows dd :global(code) {
+    font-family: var(--sl-font-mono);
+    font-size: 0.92em;
+    padding: 0.06em 0.34em;
+    border-radius: 4px;
+    background: color-mix(in oklab, var(--ap-accent) 12%, transparent);
+    color: color-mix(in oklab, var(--ap-accent) 78%, var(--sl-color-white));
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .ap-panel.is-enter { animation: ap-rise-in 0.34s cubic-bezier(0.4, 0.05, 0.2, 1) 1; }
+  }
+  @keyframes ap-rise-in {
+    from { opacity: 0; transform: translateY(5px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  /* ── Footer ── */
+  .ap-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 0.95rem;
+    padding-top: 0.8rem;
+    border-top: 1px solid var(--ap-line);
+  }
+  .ap-dots { display: flex; align-items: center; gap: 0.42rem; }
+  .ap-dot {
+    width: 7px;
+    height: 7px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: color-mix(in oklab, var(--ap-quiet) 45%, transparent);
+    cursor: pointer;
+    --focus-ring: var(--ap-accent);
+  }
+  .ap-dot[data-state='done'] { background: color-mix(in oklab, var(--ap-accent) 60%, transparent); }
+  .ap-dot[data-state='active'] {
+    background: var(--ap-accent);
+    transform: scale(1.5);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .ap-dot { transition: background-color 0.25s ease, transform 0.25s ease; }
+  }
+
+  /* The advance control follows the site's own accent-button pattern (PasswordReveal's .pw-action):
+     a TRANSPARENT rest fill with a coloured border and label, filling only on hover. That is not just
+     stylistic parity: putting accent text on an accent tint drops the small bold label to 3.79:1 on
+     paper (below AA), whereas the accent ink on the plain panel is the AA-safe pairing the site relies
+     on everywhere. So the transparent rest fill is what keeps the label legible in light. */
+  .ap-next {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.42rem 0.85rem;
+    font-family: var(--sl-font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--ap-accent);
+    background: transparent;
+    border: 1px solid color-mix(in oklab, var(--ap-accent) 45%, transparent);
+    border-radius: 6px;
+    cursor: pointer;
+    --focus-ring: var(--ap-accent);
+  }
+  /* On paper the ambient accent (#4d7c0f) sits at ~4.3:1 as small bold text, just under AA. The site's
+     own text-legible accent variant, --sl-color-accent-high (#2f4d09 light), clears it, and using it for
+     the PRIMARY control is right anyway: the CTA should read a step above the ambient accent. Light only,
+     because the dark accent is already ~13:1. */
+  :global(html[data-theme='light']) .ap-next { color: var(--sl-color-accent-high); }
+  .ap-next:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--ap-accent) 12%, transparent);
+    border-color: var(--ap-accent);
+  }
+  /* At the end the control stops being an instruction and becomes a state: gold ink + gold border on the
+     bare panel (same transparent-rest reasoning, so the gold label stays AA on paper). */
+  .apath[data-done='true'] .ap-next {
+    color: var(--ap-gold-ink);
+    background: transparent;
+    border-color: color-mix(in oklab, var(--ap-gold) 55%, transparent);
+    cursor: default;
+  }
+  .apath[data-done='true'] .ap-next-ico { display: none; }
+  @media (prefers-reduced-motion: no-preference) {
+    .ap-next { transition: background-color 0.22s ease, border-color 0.22s ease, color 0.22s ease; }
+  }
+
+  /* Narrow screens: scrolling the path is the deliberate gesture, matching how code blocks scroll. */
+  @media (max-width: 50rem) {
+    .apath { padding-inline: 0.75rem; }
+    .ap-fade { width: 34px; }
+    .ap-foot { flex-wrap: wrap; }
+  }
+</style>
