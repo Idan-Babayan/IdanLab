@@ -56,6 +56,12 @@
   with a correction: only `.machine-meta` was dead. The `.meta-badge` / `.difficulty-*` / `.os-*` /
   `.platform-*` rules are still emitted by `WriteupCard` on the platform landing pages and were kept.)
 
+- [CONTENT] Reuse `AttackPath` on the other multi-hop writeups (shipped 2026-07-19 on Forest, under
+  Summary; see DECISIONS). It is data-driven, so adding one is authoring a `nodes[]` array, no component
+  change. Good candidates are any chain with 3 or more hops. Deliberately NOT retrofitted onto single-hop
+  writeups, where a two-node path says less than the prose already does. Note it is linear only: a writeup
+  whose escalation genuinely branches needs a design decision first, not a quiet extension of this component.
+
 ## Next (committed)
 - [ENG/DESIGN] Unify the two marketing pages (home, about) under the `--focus-ring` token established for
   content pages (CORE_SPEC §6 "Focus ring system"; DECISIONS 2026-07-13). This is now the LAST gap in the

@@ -98,6 +98,7 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in C:\Users
 │  │  ├─ FlagCapture.astro            # "Decrypt to Capture" gold flag control (props: type user|root, flag); replaces the heading-plus-duplicate flag Toggle
 │  │  ├─ PasswordReveal.astro         # amber wargame password waypoint (prop: password); blur-to-reveal then copy-in-place, deliberately distinct from FlagCapture (no gold, no decode animation); no per-file import needed, see plugins/remark-inject-passwordreveal.mjs
 │  │  ├─ ToggleAll.astro              # Expand/Collapse-all control (vanilla TS, scroll-anchored); injected via PageSidebar override
+│  │  ├─ AttackPath.astro             # guided infographic for a LINEAR priv-esc chain (ascending escalating path, SVG connectors, Next-step progression, one-time gold flourish); data-driven from a nodes[] prop, scoped styles, not-content. See DECISIONS 2026-07-19
 │  │  ├─ Callout.astro                # icon-based tagged callout (recon/loot/intel/vuln/defense); .cl styles in custom.css
 │  │  ├─ Principle.astro              # closing epigraph (aside.principle, prop: text): centered italic mono maxim + dinkus + PRINCIPLE label; no card/border/bg; .principle styles in custom.css
 │  │  ├─ WriteupCard.astro            # presentational writeup card (props only, reusable for a future /writeups index)
@@ -261,7 +262,18 @@ token is an open ROADMAP item, not a bug.
 - Content-embedded (in `src/components/`): `PlatformIndex` (animated hero + difficulty filter rail
   + writeup-card grid; reuses the homepage effects), `WriteupCard` (presentational, `showPlatform`
   prop for a future mixed grid), `Callout` (icon-based tagged callout, used in writeup bodies),
-  `NotFound` (404 body), `SecretTerminal` (vanilla-TS terminal), `badges/WriteupMeta` (navigational
+  `NotFound` (404 body), `SecretTerminal` (vanilla-TS terminal), `AttackPath` (guided infographic for a
+  LINEAR privilege-escalation chain: an ascending horizontal path whose nodes escalate toward the goal,
+  structural SVG connectors that arrow into the next node with the privilege verb on the segment, a
+  "Next step" progression with past/present/future states, and a one-time gold flourish at root. Built
+  entirely from the site's own fabric so it reads as a native region, not a widget: the container is the
+  Toggle / FlagCapture panel surface (`#f2ede0` light, a subtle lift dark) and the gold goal is derived
+  exactly like FlagCapture's frame (decorative `--flag-gold`, AA text `--flag-gold-val`); accent is
+  `var(--pf-accent, --sl-color-text-accent)` since the site does not platform-scope the accent in a writeup
+  body. Escalation (size/weight ramp) and ascent are COMPUTED from the node count (verified at 4/6/8 hops),
+  so it is data-driven from `nodes: { kind, name, edge?, detail? }[]` with no chain hardcoded;
+  runtime-guarded, scoped styles + `not-content`, AA in both themes, no branching. See DECISIONS
+  2026-07-19), `badges/WriteupMeta` (navigational
   Platform/OS/Environment chip row + trailing hue-free Difficulty pip chip, under a writeup title;
   each nav chip is coloured via a single `--wm-c` per value, with a restrained glow (halo on dark,
   hue-shadow on light); Difficulty magnitude is filled+growing pips; chips render as non-interactive
