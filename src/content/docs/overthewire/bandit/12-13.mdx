@@ -1,6 +1,8 @@
 ---
 title: Bandit 12 → 13
 description: "OverTheWire Bandit 12 to 13: reverse an xxd hexdump, then peel repeated gzip, bzip2 and tar layers to recover the password."
+os: Linux
+environment: Progressive
 sidebar:
   label: "12 → 13"
   order: 12
@@ -8,9 +10,6 @@ sidebar:
 
 import Toggle from '@components/Toggle.astro';
 import { Steps } from '@astrojs/starlight/components';
-import WriteupMeta from '@components/badges/WriteupMeta.astro';
-
-<WriteupMeta platform="OverTheWire" os="Linux" environment="Progressive" />
 
 > Goal: recover the password from data.txt, a hexdump of a file that was compressed many times over.
 

@@ -2,15 +2,14 @@
 title: Return
 description: LDAP pass-back from a printer admin panel leaks a service account, then a Server Operators service-binary hijack escalates to SYSTEM.
 os: Windows
+environment: Active Directory
+difficulty: Easy
 principle: "Never let a client choose where it authenticates."
 ---
 
 import Toggle from '@components/Toggle.astro';
 import Callout from '@components/Callout.astro';
 import FlagCapture from '@components/FlagCapture.astro';
-import WriteupMeta from '@components/badges/WriteupMeta.astro';
-
-<WriteupMeta platform="HackTheBox" os="Windows" environment="Active Directory" difficulty="Easy" />
 
 > An LDAP pass-back from the printer's admin panel hands over a service account, and a service-binary hijack as Server Operators turns that foothold into SYSTEM.
 

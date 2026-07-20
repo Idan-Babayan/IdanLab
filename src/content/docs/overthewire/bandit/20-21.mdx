@@ -1,14 +1,12 @@
 ---
 title: Bandit 20 → 21
 description: "OverTheWire Bandit 20 to 21: serve the current password from a listener so a setuid client returns the next one."
+os: Linux
+environment: Progressive
 sidebar:
   label: "20 → 21"
   order: 20
 ---
-
-import WriteupMeta from '@components/badges/WriteupMeta.astro';
-
-<WriteupMeta platform="OverTheWire" os="Linux" environment="Progressive" />
 
 > Goal: get the next password from a setuid program that connects to a port and checks what it reads against the current password.
 
