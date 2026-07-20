@@ -6,6 +6,161 @@
 
 ---
 
+### 2026-07-20 · AttackPath production-readiness audit: 8 findings fixed (2 were real WCAG AA failures)
+- **Decision:** a full audit pass over the finished component, hunting for defects rather than confirming the
+  known ones were gone. Eight issues found and fixed; everything else measured clean. No redesign, no new
+  dependencies, component-scoped only.
+- **The two that mattered most were genuine WCAG 1.4.3 AA failures on live text:**
+  1. **The `future` state's `opacity: 0.4` was failing AA on real content.** Measured effective ratios (group
+     opacity composited over the panel): name **3.83:1 dark / 2.43:1 light**, kind **1.88 / 1.79**, and the
+     future GOAL worse at **2.69 / 1.76**, against the 4.5:1 this text needs. Crucially these are NOT inactive
+     controls, a future node is clickable to jump ahead, so WCAG's inactive-component exemption does not
+     apply. **Group opacity was the wrong instrument:** an opacity sweep showed the kind label needs ~0.88 to
+     reach AA, which erases the state entirely. Fixed by carrying the "quiet" in COLOUR and scale instead:
+     the future name drops to the muted grey (5.78 light / 5.93 dark) while done/active names stay
+     full-contrast white (10.8 to 16.8), so the three-tier hierarchy survives with the ratio intact.
+  2. **The active node's kind label read 3.94:1 on paper.** Ambient accent sitting on its own 12% accent
+     tint, the exact pairing the 2026-07-19 rework already solved for the "Next step" button and never
+     applied here. Same fix, same token: `--sl-color-accent-high`, light only, 7.09:1.
+- **A real focus-management bug:** `nextBtn.disabled = pos >= last` removed the button from the tab order at
+  the very moment the user pressed it, so a keyboard user advancing with Enter had **focus dumped to `<body>`**
+  on the final press (verified) and the next Tab restarted at the top of the document. Now `aria-disabled`
+  with a guarded click handler, so the control stays focusable and the position is preserved; the hover rule
+  was rekeyed from `:disabled` to `:not([aria-disabled='true'])` to match.
+- **Progress state was invisible to assistive tech.** The check glyph is `aria-hidden` and `aria-current`
+  marks only ONE node, so a screen reader heard an undifferentiated list of names. Each node and dot now
+  carries the state word in its accessible name ("Web nginx, completed"), with the visible label still inside
+  it so WCAG 2.5.3 Label in Name holds.
+- **Touch:** the track had `overscroll-behavior-x: auto`, so flicking past either end chained to the page and
+  could fire the browser's back-navigation gesture, throwing a reader off the writeup. Now `contain`.
+- **Three smaller ones:** an over-long `kind` ran underneath the absolutely-positioned check glyph (now
+  `max-width` reserves that gutter, so it wraps instead); the `is-enter` dossier class lingered between
+  advances and would have spuriously animated if a reader enabled motion mid-session, contradicting its own
+  code comment (now self-clears on `animationend`); and `--t` serialised 17 significant digits into every
+  node's style attribute (now rounded to 4, far below one device pixel of the 52px it interpolates).
+- **A regression the audit caught in its own fix (worth recording):** adding `html[data-theme='light']` to the
+  active-kind selector raised its specificity above the later `.is-goal[data-state='active']` gold rule, which
+  silently turned the GOAL's kind label green. Caught by asserting the computed colour equals the gold token
+  rather than by re-reading the ratio, which still "passed" at 7.59. `:not(.is-goal)` restores it. Lesson:
+  when a contrast fix changes a colour, assert the IDENTITY, not just the ratio.
+- **Measured clean, no action (recorded so it is not re-audited):** geometry holds from a 2-node to a 10-node
+  chain with **riseSpread 0** and nothing clipped; the parallel connector-label rule holds at both angle
+  extremes (-15.12deg to -6.17deg) and up to a **6-line** label; node and dossier text never overflow at
+  pathological content lengths; four instances on one page stay independent and arrow keys stay scoped to the
+  instance holding focus; `box-sizing: border-box` so the `is-start` border shifts nothing; performance is
+  **6.1ms per advance** on the longest chain with no page-scroll side effect; `centre()` clamps correctly at
+  both ends; zero ungated animation declarations.
+- **Verified after the fixes, both themes:** every node state and all chrome text returns **belowAA: []**
+  (light and dark), the goal keeps its gold identity in every state, focus is retained at the end of the
+  chain, reduced motion still advances as a static state machine with no runner, no bloom and no stale class,
+  and every earlier invariant still holds (edge gaps 6.7/6.2, endpoints clear of the mask, rise uniform,
+  focus rings intact, no page overflow). `npm run build` green (46 pages).
+- **Status:** Adopted (working tree). Component-scoped CSS + script only; no content, config, token, or
+  dependency changes.
+
+### 2026-07-20 · AttackPath edge mask overlays a GUTTER, not the endpoint nodes (one token drives band + inset)
+- **Decision:** the horizontal edge fade is kept as the no-scrollbar "more path off-screen" affordance, but it
+  no longer falls on the start and goal nodes. A single token `--ap-fade-w` now drives BOTH the mask's band
+  width AND the spine's inline padding, so the gutter is exactly as wide as the band and the endpoints come
+  to rest precisely where the mask ends. The band is also narrowed (52 -> 36px desktop, 34 -> 24px at the
+  existing 50rem breakpoint) and its falloff eased. Not a removal and not a redesign: same masks, same
+  surface derivation, same z-order, same purpose.
+- **The measured defect (the fade was eating the two most important anchors):** at scroll start the start
+  node sat with **48.6px of its 138px width under the 52px left band**, and its NAME TEXT began 34.9px inside
+  the band, where the old `linear-gradient(90deg, surface 14%, transparent)` still had **~78% alpha**. On the
+  light warm-paper surface that pulled the start node's name from **13.1:1 down to 1.54:1**, far below AA and
+  effectively unreadable. At scroll end the goal node had 41.1px under the right band; its text is
+  left-aligned so it escaped, but the node's right frame, padding and check glyph were washed.
+- **Why the gutter is the right lever (and why the other candidates were not enough alone):** narrowing the
+  band or easing the curve only REDUCE how badly the mask lands on an endpoint, they never remove it, and the
+  amount is a judgement call that changes with node width and chain length. Tying the gutter to the band is
+  structural: at either scroll extreme the mask lands on empty gutter instead of content, so endpoint
+  legibility stops depending on tuning. Narrowing and easing were still applied, because they make the mask
+  gentler everywhere ELSE (mid-scroll, where it does its actual job) and keep the gutter modest.
+- **The property that falls out of it, and is the real prize:** a mask over empty gutter is surface-on-surface,
+  i.e. INVISIBLE. So the fade now appears exactly when real path is running under it and vanishes when it is
+  not, which is the correct semantics for the affordance, achieved with zero JS and no scroll listeners.
+  Verified: at rest-left the LEFT band has nothing under it while the RIGHT band carries the peeking next
+  node; at rest-right the reverse; mid-scroll both are live.
+- **The falloff is a SMOOTHSTEP, replacing a plateau-plus-linear ramp.** The old gradient held FULL opacity
+  across its first 14% and then smeared linearly to transparent, which is what put text under ~78% wash. The
+  new stops approximate `1 - (3t^2 - 2t^3)` (84% at 25%, 50% at 50%, 16% at 75%), so the band is only truly
+  opaque at its outermost edge, recovers most legibility by mid-band, and has no hard edge at either end.
+- **Known and deliberately not fudged:** the ACTIVE node's `scale(1.045)` lift makes its box bleed ~3px past
+  its layout position, so the start node grazes the band's outermost 3px at rest. Measured alpha there is
+  **0.019 (1.9%)**, perceptually nil, and the node's TEXT is at alpha 0. Padding the gutter by a few extra px
+  to swallow the lift would be exactly the arbitrary offset this component avoids, so the graze is recorded
+  rather than patched.
+- **Verified across the full matrix (both themes; 375 / 600 / 768 / 1280; Forest 6-hop and Return 5-hop;
+  scrolled to start, mid, and end):** endpoint text alpha is **0 at every rest position in every combination**,
+  start node under-mask 48.6px -> 3px, goal node 41.1px -> 0px; light-theme endpoint contrast restored to
+  13.1:1 (start) and 5.23:1 (goal gold, AA) with zero fade wash; the mask still covers 24-71px of real path
+  at every scroll position, so the affordance never went away; the peek of the next node under the right fade
+  is intact; no page-level horizontal overflow at any width. Chain-length independent by construction (the
+  rest positions are set by the gutter, not by how long the chain is). `npm run build` green (46 pages).
+- **Status:** Adopted (working tree; NOT committed). Component-scoped CSS only, no new tokens beyond the one
+  alias, no JS, no dependency or version changes. Band width is the one number left to taste: `--ap-fade-w`
+  is the single knob if the owner wants the fade stronger or weaker.
+
+### 2026-07-20 · AttackPath production-polish pass (connector-label rhythm, honest weight ramp, dot touch targets) + Return instance
+- **Decision:** a refinement-only pass over the existing `AttackPath` component (concept, structure, and
+  interaction unchanged): fix the three things that fell short of signature quality, all diagnosed by
+  measurement in a real browser first, and add the component to `return.mdx` under `## Summary` (its second
+  instance, alongside Forest). No redesign, no new tokens, no new dependencies, component-scoped styles only.
+- **1. Connector labels now ride PARALLEL to their segment (the real root cause of the uneven rhythm).**
+  The verb label was a ~110px horizontal box centred on the connector, over a line that ASCENDS across that
+  same width. Measured on Forest: the label's bottom cleared the line by **+17.4px on the low-left, 7.7px at
+  centre, and -1.8px (crossing the line) on the high-right**. So the gap depended on the slope, on the
+  label's width (a short verb sat near centre and read detached; a wide one reached the crossing point and
+  read attached), AND on line count (the old `translate(-50%,-160%)` lifted a two-line label ~8px further off
+  than a one-line one, because -160% is a percentage of the label's own height). The systemic fix is the one
+  rule that removes all three dependencies at once: anchor the label's BOTTOM edge a constant gap above the
+  connector's mid-line (`translateY(-100%)` lands the bottom edge on the anchor regardless of line count),
+  then rotate it to the chord's angle (`rotate(var(--ap-edge-angle))`, computed once in the frontmatter as
+  `-atan2(rise, CONN_W-5)` since every connector shares `rise`). Because the S-curve passes almost exactly
+  through its own chord at centre (measured curve-vs-chord deviation < 0.2px), a straight tilted label hugs
+  the curve. Verified live: every label on both chains now sits at a uniform **~6.5px gap (6.7 left / 6.2
+  right)** end to end, one- and two-line alike. The tilt is 6-15deg across the clamped rise band, always
+  legible. This is layout, not motion, so it is deliberately NOT gated under reduced motion.
+- **2. The escalation weight ramp was a fiction; it now uses only loaded faces.** `calc(500 + --t*200)`
+  requested 540/580/620/660 across the chain, but JetBrains Mono is subset to **400/500/700 only**, so the
+  CSS font-matching algorithm snapped every value >500 straight to Bold 700 (measured by canvas ink density:
+  540/580/620/660/700 all rendered **2545 ink, identical to 700**; only 500 differed at 2160). The "smooth
+  ramp" was really a step from node 0 (Medium) to node 1+ (all Bold), and it requested four unloaded weights,
+  against the site's "only loaded weights" rule. The continuous font-SIZE ramp (12.16 to 14.4px, verified) is
+  the real, honest escalation cue; the weight now adds ONE derived step, Medium before the chain's midpoint
+  and Bold from it on (`--ap-nw = t >= 0.5 ? 700 : 500`, computed per node, robust at any chain length: a
+  2-node chain reads 500/700, a 12-node chain splits 6/6). The 2026-07-19 entries' "weight 500 to 700"
+  was measuring the COMPUTED calc value, not the rendered face; this corrects that.
+- **3. Dot touch targets grew from 7px to a 24px-tall tile (WCAG 2.2 SC 2.5.8), the site's own convention.**
+  The step dots were 7px, far under the 24px pointer minimum the About HUD established. Following that
+  layout-neutral pattern, a transparent `::after` overflow grows only the invisible tap area while the visible
+  dot and its focus ring stay the 7px border box (verified: the ring still wraps the 7px dot, not the hit
+  area). The `::after` is 24px tall and one-dot-plus-gap wide so adjacent targets TILE the row edge to edge
+  (symmetric ~18x24 per interior dot, no overlap, no dead zone) rather than a fixed 24px box where later
+  siblings would steal a neighbour's overlap; the row gap was nudged 0.42rem to 0.7rem for the room. The dots
+  are a redundant control (every step is also reachable by its full-size node, the Next button, and the arrow
+  keys), so the cluster stays compact by design.
+- **Return instance (a deliberate different-shaped test, not just reuse):** a 5-node chain
+  (`Printer Panel -> svc-printer -> Server Operators -> vss (LocalSystem) -> SYSTEM`) exercises what Forest's
+  6-node chain did not: a shorter chain (escalation recomputed, rise 24, angle -12.2deg), a non-account START
+  node (the unauthenticated web panel), a long node name (`vss (LocalSystem)`), and a genuine two-line verb
+  label (`leaks via LDAP pass-back`) that validates the height-decoupling on real content (its multi-line gap
+  measured the same uniform 6.5px). The BloodHound graph stays above it as evidence, matching Forest.
+- **Verified end to end (both themes, phone 375 / tablet 768 / desktop, touch + keyboard, reduced-motion on
+  and off):** uniform parallel label gap on every connector of both chains; weight renders only 500/700 in a
+  clean midpoint step; dots 24px tall with a tight focus ring; full guided walk drives states / connectors /
+  meter 0-100% / dossier then settles, "Compromised" disabled end state, revisit resets, and the one-time
+  gold bloom does not replay; arrow keys advance/retreat; every ring flows through `--focus-ring` (node lime,
+  goal gold `#7a5a12` light); reduced motion advances as a static state machine (runner never travels, no
+  bloom) with zero ungated animation declarations (re-verified programmatically); light surfaces read as the
+  warm paper `#f2ede0` with the depth shadow, all measured text pairings AA (title 15.2, meter/edge/dossier
+  6.0, Next 8.2, goal gold 5.2); no page-level horizontal overflow at any width, path scrolls internally with
+  the fade + peeking-next-node affordance intact on touch. `npm run build` green (46 pages), no console
+  errors. Both dist instances render; BloodHound evidence preserved in both.
+- **Status:** Adopted (working tree; NOT committed). Component-scoped styles + one content file (return.mdx);
+  no custom.css, config, token, or dependency changes; pinned versions unchanged.
+
 ### 2026-07-20 · WriteupMeta is injected from frontmatter, platform is derived from the directory
 - **Decision:** writeups no longer hand-place `<WriteupMeta />`. A new remark plugin
   `plugins/remark-inject-writeupmeta.mjs` injects the badge row (and its import) at build time, reading
