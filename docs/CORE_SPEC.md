@@ -285,10 +285,18 @@ token is an open ROADMAP item, not a bug.
   inline padding, so the start and goal nodes come to rest exactly where the band ends (measured alpha 0),
   and the falloff is a smoothstep rather than an opaque plateau. This also makes the affordance self-truthing:
   a mask over empty gutter is surface-on-surface, so a fade only appears once real path runs under it. That
-  token is the single knob for fade strength. Live on TWO writeups under `## Summary`: Forest (6 hops) and
-  Return (5 hops); both keep their BloodHound graph above as evidence. See DECISIONS 2026-07-19 (original
-  build + native-fabric rework) and 2026-07-20 (production-polish pass + Return instance; edge-mask
-  gutter)), `badges/WriteupMeta` (navigational
+  token is the single knob for fade strength. **The past/present/future hierarchy is carried by COLOUR and
+  scale, never by group `opacity`:** a future node is a clickable control, so fading its text with opacity put
+  it under AA (measured 2.43:1 light), and opacity cannot be tuned out of that (the kind label needs ~0.88 to
+  pass, which erases the state). Future names read the muted grey while done/active stay full-contrast.
+  **The advance control uses `aria-disabled`, never the `disabled` property**, because `disabled` removed it
+  from the tab order at the moment of the final keypress and dumped focus to `<body>`; the click path is
+  guarded instead, and the hover rule is keyed off `:not([aria-disabled='true'])`. Node and dot accessible
+  names carry the progress state word, since the check glyph is `aria-hidden` and `aria-current` marks only
+  one node. Every node state and all chrome text measures AA in BOTH themes. Live on TWO writeups under
+  `## Summary`: Forest (6 hops) and Return (5 hops); both keep their BloodHound graph above as evidence. See
+  DECISIONS 2026-07-19 (original build + native-fabric rework) and 2026-07-20 (production-polish pass +
+  Return instance; edge-mask gutter; production-readiness audit)), `badges/WriteupMeta` (navigational
   Platform/OS/Environment chip row + trailing hue-free Difficulty pip chip, under a writeup title;
   each nav chip is coloured via a single `--wm-c` per value, with a restrained glow (halo on dark,
   hue-shadow on light); Difficulty magnitude is filled+growing pips; chips render as non-interactive

@@ -6,6 +6,58 @@
 
 ---
 
+### 2026-07-20 · AttackPath production-readiness audit: 8 findings fixed (2 were real WCAG AA failures)
+- **Decision:** a full audit pass over the finished component, hunting for defects rather than confirming the
+  known ones were gone. Eight issues found and fixed; everything else measured clean. No redesign, no new
+  dependencies, component-scoped only.
+- **The two that mattered most were genuine WCAG 1.4.3 AA failures on live text:**
+  1. **The `future` state's `opacity: 0.4` was failing AA on real content.** Measured effective ratios (group
+     opacity composited over the panel): name **3.83:1 dark / 2.43:1 light**, kind **1.88 / 1.79**, and the
+     future GOAL worse at **2.69 / 1.76**, against the 4.5:1 this text needs. Crucially these are NOT inactive
+     controls, a future node is clickable to jump ahead, so WCAG's inactive-component exemption does not
+     apply. **Group opacity was the wrong instrument:** an opacity sweep showed the kind label needs ~0.88 to
+     reach AA, which erases the state entirely. Fixed by carrying the "quiet" in COLOUR and scale instead:
+     the future name drops to the muted grey (5.78 light / 5.93 dark) while done/active names stay
+     full-contrast white (10.8 to 16.8), so the three-tier hierarchy survives with the ratio intact.
+  2. **The active node's kind label read 3.94:1 on paper.** Ambient accent sitting on its own 12% accent
+     tint, the exact pairing the 2026-07-19 rework already solved for the "Next step" button and never
+     applied here. Same fix, same token: `--sl-color-accent-high`, light only, 7.09:1.
+- **A real focus-management bug:** `nextBtn.disabled = pos >= last` removed the button from the tab order at
+  the very moment the user pressed it, so a keyboard user advancing with Enter had **focus dumped to `<body>`**
+  on the final press (verified) and the next Tab restarted at the top of the document. Now `aria-disabled`
+  with a guarded click handler, so the control stays focusable and the position is preserved; the hover rule
+  was rekeyed from `:disabled` to `:not([aria-disabled='true'])` to match.
+- **Progress state was invisible to assistive tech.** The check glyph is `aria-hidden` and `aria-current`
+  marks only ONE node, so a screen reader heard an undifferentiated list of names. Each node and dot now
+  carries the state word in its accessible name ("Web nginx, completed"), with the visible label still inside
+  it so WCAG 2.5.3 Label in Name holds.
+- **Touch:** the track had `overscroll-behavior-x: auto`, so flicking past either end chained to the page and
+  could fire the browser's back-navigation gesture, throwing a reader off the writeup. Now `contain`.
+- **Three smaller ones:** an over-long `kind` ran underneath the absolutely-positioned check glyph (now
+  `max-width` reserves that gutter, so it wraps instead); the `is-enter` dossier class lingered between
+  advances and would have spuriously animated if a reader enabled motion mid-session, contradicting its own
+  code comment (now self-clears on `animationend`); and `--t` serialised 17 significant digits into every
+  node's style attribute (now rounded to 4, far below one device pixel of the 52px it interpolates).
+- **A regression the audit caught in its own fix (worth recording):** adding `html[data-theme='light']` to the
+  active-kind selector raised its specificity above the later `.is-goal[data-state='active']` gold rule, which
+  silently turned the GOAL's kind label green. Caught by asserting the computed colour equals the gold token
+  rather than by re-reading the ratio, which still "passed" at 7.59. `:not(.is-goal)` restores it. Lesson:
+  when a contrast fix changes a colour, assert the IDENTITY, not just the ratio.
+- **Measured clean, no action (recorded so it is not re-audited):** geometry holds from a 2-node to a 10-node
+  chain with **riseSpread 0** and nothing clipped; the parallel connector-label rule holds at both angle
+  extremes (-15.12deg to -6.17deg) and up to a **6-line** label; node and dossier text never overflow at
+  pathological content lengths; four instances on one page stay independent and arrow keys stay scoped to the
+  instance holding focus; `box-sizing: border-box` so the `is-start` border shifts nothing; performance is
+  **6.1ms per advance** on the longest chain with no page-scroll side effect; `centre()` clamps correctly at
+  both ends; zero ungated animation declarations.
+- **Verified after the fixes, both themes:** every node state and all chrome text returns **belowAA: []**
+  (light and dark), the goal keeps its gold identity in every state, focus is retained at the end of the
+  chain, reduced motion still advances as a static state machine with no runner, no bloom and no stale class,
+  and every earlier invariant still holds (edge gaps 6.7/6.2, endpoints clear of the mask, rise uniform,
+  focus rings intact, no page overflow). `npm run build` green (46 pages).
+- **Status:** Adopted (working tree). Component-scoped CSS + script only; no content, config, token, or
+  dependency changes.
+
 ### 2026-07-20 · AttackPath edge mask overlays a GUTTER, not the endpoint nodes (one token drives band + inset)
 - **Decision:** the horizontal edge fade is kept as the no-scrollbar "more path off-screen" affordance, but it
   no longer falls on the start and goal nodes. A single token `--ap-fade-w` now drives BOTH the mask's band

@@ -68,8 +68,11 @@
   needs a design decision first, not a quiet extension of this component. The component itself had a
   production-polish pass on 2026-07-20 (parallel connector-label rule, loaded-face-only weight step, 24px dot
   touch targets, plus the edge mask moved onto a gutter so it no longer softens the start / goal nodes;
-  validated across both themes / phone-tablet-desktop / touch + keyboard / reduced-motion); it is considered
-  signature-quality and stable, so further reuse is purely authoring new chains. One knob is left to taste:
+  validated across both themes / phone-tablet-desktop / touch + keyboard / reduced-motion), followed by a
+  production-readiness audit the same day that fixed eight more findings, including two real WCAG AA text
+  failures (the future state's group opacity, and the active kind label on paper), a keyboard focus-loss bug
+  at the end of the chain, and progress state not reaching assistive tech. It is considered signature-quality
+  and stable, so further reuse is purely authoring new chains. One knob is left to taste:
   `--ap-fade-w` sets both the mask band and its gutter, so raising or lowering it is the single, safe way to
   make the edge fade stronger or weaker (endpoints stay clear at any value).
 
