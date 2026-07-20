@@ -60,11 +60,18 @@
   with a correction: only `.machine-meta` was dead. The `.meta-badge` / `.difficulty-*` / `.os-*` /
   `.platform-*` rules are still emitted by `WriteupCard` on the platform landing pages and were kept.)
 
-- [CONTENT] Reuse `AttackPath` on the other multi-hop writeups (shipped 2026-07-19 on Forest, under
-  Summary; see DECISIONS). It is data-driven, so adding one is authoring a `nodes[]` array, no component
-  change. Good candidates are any chain with 3 or more hops. Deliberately NOT retrofitted onto single-hop
-  writeups, where a two-node path says less than the prose already does. Note it is linear only: a writeup
-  whose escalation genuinely branches needs a design decision first, not a quiet extension of this component.
+- [CONTENT] Reuse `AttackPath` on the other multi-hop writeups. Live on TWO so far, both under `## Summary`:
+  Forest (6 hops, 2026-07-19) and Return (5 hops, 2026-07-20; see the production-polish DECISIONS entry). It
+  is data-driven, so adding one is authoring a `nodes[]` array, no component change. Good candidates are any
+  chain with 3 or more hops. Deliberately NOT retrofitted onto single-hop writeups, where a two-node path
+  says less than the prose already does. Note it is linear only: a writeup whose escalation genuinely branches
+  needs a design decision first, not a quiet extension of this component. The component itself had a
+  production-polish pass on 2026-07-20 (parallel connector-label rule, loaded-face-only weight step, 24px dot
+  touch targets, plus the edge mask moved onto a gutter so it no longer softens the start / goal nodes;
+  validated across both themes / phone-tablet-desktop / touch + keyboard / reduced-motion); it is considered
+  signature-quality and stable, so further reuse is purely authoring new chains. One knob is left to taste:
+  `--ap-fade-w` sets both the mask band and its gutter, so raising or lowering it is the single, safe way to
+  make the edge fade stronger or weaker (endpoints stay clear at any value).
 
 ## Next (committed)
 - [ENG/DESIGN] Unify the two marketing pages (home, about) under the `--focus-ring` token established for

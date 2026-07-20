@@ -271,10 +271,24 @@ token is an open ROADMAP item, not a bug.
   Toggle / FlagCapture panel surface (`#f2ede0` light, a subtle lift dark) and the gold goal is derived
   exactly like FlagCapture's frame (decorative `--flag-gold`, AA text `--flag-gold-val`); accent is
   `var(--pf-accent, --sl-color-text-accent)` since the site does not platform-scope the accent in a writeup
-  body. Escalation (size/weight ramp) and ascent are COMPUTED from the node count (verified at 4/6/8 hops),
-  so it is data-driven from `nodes: { kind, name, edge?, detail? }[]` with no chain hardcoded;
-  runtime-guarded, scoped styles + `not-content`, AA in both themes, no branching. See DECISIONS
-  2026-07-19), `badges/WriteupMeta` (navigational
+  body. Ascent and escalation are COMPUTED from the node count (verified at 4/6/8 hops), so it is data-driven
+  from `nodes: { kind, name, edge?, detail? }[]` with no chain hardcoded; runtime-guarded, scoped styles +
+  `not-content`, AA in both themes, no branching. **Escalation rides the continuous font-SIZE ramp plus a
+  single derived weight step** (Medium before the chain midpoint, Bold from it on): JetBrains Mono is subset
+  to 400/500/700 only, so the earlier continuous weight calc silently snapped every intermediate value to
+  700; the honest ramp uses only loaded faces. **Each connector's verb label rides PARALLEL to its segment**
+  at a constant ~6.5px gap (tilted to the chord angle, computed from `rise`), which is the one rule that keeps
+  every label the same distance from its line regardless of slope, label width, or line count. **Step dots
+  carry a layout-neutral 24px-tall tap target** (`::after` overflow, the About-HUD convention) while the
+  visible dot and focus ring stay 7px. **The edge fade-mask overlays a GUTTER, never the endpoint nodes:**
+  one token `--ap-fade-w` (36px, 24px under the 50rem breakpoint) drives both the mask band AND the spine's
+  inline padding, so the start and goal nodes come to rest exactly where the band ends (measured alpha 0),
+  and the falloff is a smoothstep rather than an opaque plateau. This also makes the affordance self-truthing:
+  a mask over empty gutter is surface-on-surface, so a fade only appears once real path runs under it. That
+  token is the single knob for fade strength. Live on TWO writeups under `## Summary`: Forest (6 hops) and
+  Return (5 hops); both keep their BloodHound graph above as evidence. See DECISIONS 2026-07-19 (original
+  build + native-fabric rework) and 2026-07-20 (production-polish pass + Return instance; edge-mask
+  gutter)), `badges/WriteupMeta` (navigational
   Platform/OS/Environment chip row + trailing hue-free Difficulty pip chip, under a writeup title;
   each nav chip is coloured via a single `--wm-c` per value, with a restrained glow (halo on dark,
   hue-shadow on light); Difficulty magnitude is filled+growing pips; chips render as non-interactive
