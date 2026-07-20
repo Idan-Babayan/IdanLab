@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-07-17.
+> Last updated: 2026-07-20.
 
 ---
 
@@ -82,7 +82,7 @@
 C:\dev\idanlab\                       # chosen to avoid Hebrew chars in C:\Users\אידן\
 ├─ astro.config.mjs                   # Starlight config: site, sidebar, customCss[fonts.css, custom.css], EC themes + pluginPrivCommand, reading-progress head script (no font preloads, see DECISIONS 2026-07-07), image-zoom, vite alias, components overrides (PageSidebar + Footer), markdown remarkPlugins (content-taxonomy validation guard + PasswordReveal import injection) + rehypePlugins (content image loading)
 ├─ src/
-│  ├─ content.config.ts               # docs collection (docsLoader + docsSchema), extended with optional os/tags/principle
+│  ├─ content.config.ts               # docs collection (docsLoader + docsSchema), extended with the WriteupMeta metadata as STRICT optional enums (os Linux|Windows, environment Standalone|Active Directory|Progressive, difficulty Easy|Medium|Hard|Insane) plus optional badges boolean, tags, principle. NO platform field: platform is derived from the directory. Enums mirror src/components/badges/icons.ts exactly
 │  ├─ pages/
 │  │  ├─ index.astro                  # HOMEPAGE: standalone immersive page (NOT Starlight). Dark-only.
 │  │  └─ about.astro                  # ABOUT: standalone immersive page. Has dark/light toggle.
@@ -98,6 +98,7 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in C:\Users
 │  │  ├─ FlagCapture.astro            # "Decrypt to Capture" gold flag control (props: type user|root, flag); replaces the heading-plus-duplicate flag Toggle
 │  │  ├─ PasswordReveal.astro         # amber wargame password waypoint (prop: password); blur-to-reveal then copy-in-place, deliberately distinct from FlagCapture (no gold, no decode animation); no per-file import needed, see plugins/remark-inject-passwordreveal.mjs
 │  │  ├─ ToggleAll.astro              # Expand/Collapse-all control (vanilla TS, scroll-anchored); injected via PageSidebar override
+│  │  ├─ AttackPath.astro             # guided infographic for a LINEAR priv-esc chain (ascending escalating path, SVG connectors, Next-step progression, one-time gold flourish); data-driven from a nodes[] prop, scoped styles, not-content. See DECISIONS 2026-07-19
 │  │  ├─ Callout.astro                # icon-based tagged callout (recon/loot/intel/vuln/defense); .cl styles in custom.css
 │  │  ├─ Principle.astro              # closing epigraph (aside.principle, prop: text): centered italic mono maxim + dinkus + PRINCIPLE label; no card/border/bg; .principle styles in custom.css
 │  │  ├─ WriteupCard.astro            # presentational writeup card (props only, reusable for a future /writeups index)
@@ -115,7 +116,8 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in C:\Users
 ├─ plugins/
 │  ├─ rehype-content-image-loading.mjs # rehype: sets loading/decoding on content <img> (first eager, rest lazy); wired via astro.config markdown.rehypePlugins
 │  ├─ remark-inject-passwordreveal.mjs # remark: conditionally injects `import PasswordReveal from '@components/PasswordReveal.astro'` into an MDX file's AST at build time, only when that file uses <PasswordReveal/> and has no import of its own; wired via astro.config markdown.remarkPlugins
-│  └─ remark-validate-content-taxonomy.mjs # remark: build-time guardrail that FAILS the build on an unknown hand-authored badge/metadata class token (meta-badge / platform-* / difficulty-* / os-* / port-label / task-title / machine-meta) or an unknown component metadata value (Callout type, WriteupMeta enums, FlagCapture type user|root), with a "did you mean" suggestion; the deliberate alternative to astro check; zero deps (unist-util-visit); its allow-lists are the single source of truth; wired via astro.config markdown.remarkPlugins. See DECISIONS 2026-07-12
+│  ├─ remark-inject-writeupmeta.mjs   # remark: injects the <WriteupMeta/> badge row + its import into every writeup at build time. platform is DERIVED from the platform directory (hardcoded map, the single source of truth); os/environment/difficulty are read from frontmatter via file.data.astro.frontmatter and forwarded only when a non-empty string. Gated on the writeup path (non-index .mdx under the four platform dirs), so nothing else can be injected. badges: false opts out; a non-boolean badges FAILS the build (YAML parses no/off/"false" as truthy strings). Transformer must be (tree, file) to see frontmatter. Zero deps (unist-util-visit + acorn). See DECISIONS 2026-07-20
+│  └─ remark-validate-content-taxonomy.mjs # remark: build-time guardrail that FAILS the build on an unknown hand-authored badge/metadata class token (meta-badge / platform-* / difficulty-* / os-* / port-label / task-title; the machine-meta family was removed 2026-07-19) or an unknown component metadata value (Callout type, FlagCapture type user|root; the WriteupMeta prop enums were retired 2026-07-20 once the component stopped being hand-placed, and now live in the Zod schema instead), with a "did you mean" suggestion; the deliberate alternative to astro check; zero deps (unist-util-visit); its allow-lists are the single source of truth; wired via astro.config markdown.remarkPlugins. See DECISIONS 2026-07-12 and 2026-07-20
 └─ public/
    ├─ robots.txt                      # in-repo; breadcrumb comment + Sitemap line (see §2)
    ├─ favicon.svg                     # site favicon
@@ -204,7 +206,7 @@ ring echoes what the element is rather than inventing an identity. Everything el
 | `ToggleAll` | `--pf-accent-2` cyan (its own hover identity; set in the component's scoped style) |
 | TOC entries | the hue of the heading they point to: flags `--flag-gold-val`, h3 cyan, h2/h4+ lime |
 | In-prose links | `--tp-cyan` / `--tp-cyan-ink` |
-| `WriteupMeta` chips | `--wm-c` (inert hook until the rollout) |
+| `WriteupMeta` chips | `--wm-c` (live: the chips render on every writeup) |
 
 **Light flag gold is the one contrast carve-out.** The decorative `--flag-gold` (`#C6A243`) rings at only
 2.00:1 on paper, under the 3:1 a non-text indicator needs, so the flag ring reads the AA-grade
@@ -261,16 +263,37 @@ token is an open ROADMAP item, not a bug.
 - Content-embedded (in `src/components/`): `PlatformIndex` (animated hero + difficulty filter rail
   + writeup-card grid; reuses the homepage effects), `WriteupCard` (presentational, `showPlatform`
   prop for a future mixed grid), `Callout` (icon-based tagged callout, used in writeup bodies),
-  `NotFound` (404 body), `SecretTerminal` (vanilla-TS terminal), `badges/WriteupMeta` (navigational
+  `NotFound` (404 body), `SecretTerminal` (vanilla-TS terminal), `AttackPath` (guided infographic for a
+  LINEAR privilege-escalation chain: an ascending horizontal path whose nodes escalate toward the goal,
+  structural SVG connectors that arrow into the next node with the privilege verb on the segment, a
+  "Next step" progression with past/present/future states, and a one-time gold flourish at root. Built
+  entirely from the site's own fabric so it reads as a native region, not a widget: the container is the
+  Toggle / FlagCapture panel surface (`#f2ede0` light, a subtle lift dark) and the gold goal is derived
+  exactly like FlagCapture's frame (decorative `--flag-gold`, AA text `--flag-gold-val`); accent is
+  `var(--pf-accent, --sl-color-text-accent)` since the site does not platform-scope the accent in a writeup
+  body. Escalation (size/weight ramp) and ascent are COMPUTED from the node count (verified at 4/6/8 hops),
+  so it is data-driven from `nodes: { kind, name, edge?, detail? }[]` with no chain hardcoded;
+  runtime-guarded, scoped styles + `not-content`, AA in both themes, no branching. See DECISIONS
+  2026-07-19), `badges/WriteupMeta` (navigational
   Platform/OS/Environment chip row + trailing hue-free Difficulty pip chip, under a writeup title;
   each nav chip is coloured via a single `--wm-c` per value, with a restrained glow (halo on dark,
   hue-shadow on light); Difficulty magnitude is filled+growing pips; chips render as non-interactive
   `<span>` today (the commented `<a>` + `data-astro-prefetch="false"` restore verbatim once the filter
   routes ship), `.not-content`; icons live in `badges/icons.ts` on a 14px grid; runtime-validates its
-  four union props. Colour model, icon sourcing, geometry and the light-mode AA palette are documented
-  in the "Badge system (WriteupMeta)" blocks in §6 and §7. Built and documented but not currently wired to
-  any page (the `busquedav2.mdx` testbed it was verified on was dropped from the branch before push). See
-  DECISIONS 2026-07-17 (the three badge entries plus the testbed-drop entry) and 2026-07-10).
+  union props. Colour model, icon sourcing, geometry and the light-mode AA palette are documented
+  in the "Badge system (WriteupMeta)" blocks in §6 and §7. **`difficulty` is the one OPTIONAL prop**
+  (`difficulty?: Difficulty`): omit it and the Difficulty chip does not render at all, which is how a
+  progressive wargame with no difficulty rating (OverTheWire Bandit) is expressed. A difficulty that IS
+  supplied is still validated, so a typo still fails the build; it is never given a fallback. The other
+  three props are required. WriteupMeta is now the metadata row on EVERY writeup and has fully replaced
+  the hand-authored `.machine-meta` badge row, which no longer appears anywhere in `src/content/docs`.
+  **It is INJECTED, never hand-placed (2026-07-20):** `plugins/remark-inject-writeupmeta.mjs` builds the
+  element from frontmatter, so no writeup imports or writes the component. `platform` is supplied by the
+  injector from the directory and is not a frontmatter field; `os` / `environment` / `difficulty` come
+  from frontmatter and are validated as strict enums by `content.config.ts`. The component's own runtime
+  guard still throws on an unknown axis, so a bad value fails at the schema, and again at render.
+  See DECISIONS 2026-07-20 (injection + validation consolidation), 2026-07-19 (optional difficulty + the
+  34-page Bandit migration), 2026-07-17 (the three badge entries plus the testbed-drop entry) and 2026-07-10.
 - Chrome (Starlight override): `ToggleAll` (Expand/Collapse-all control) auto-injected into the right
   "On this page" sidebar by `overrides/PageSidebar.astro` (renders `<Default/>` then the control).
 
@@ -486,7 +509,12 @@ Preserves reading position: anchors on the current heading and corrects scroll s
   change. Icons remain in public/icons; marketing images remain in public/images.
   Absolute /public image paths are not used for writeup content images.
 - Frontmatter `title`/`description` + `import Toggle from '@components/Toggle.astro'`.
-- Metadata badges div + description as a `>` blockquote lead.
+- **Metadata is FRONTMATTER ONLY.** Declare `os`, `environment` and (where the content has a rating)
+  `difficulty` in frontmatter, and write nothing in the body: the badge row and its import are injected by
+  `plugins/remark-inject-writeupmeta.mjs`. Never author a `<WriteupMeta />` tag or import it. `platform` is
+  NOT a frontmatter field, it is derived from the writeup's directory. Omit `difficulty` for a progressive
+  wargame (Bandit) and no chip renders. Set `badges: false` (unquoted boolean, never `no` or `off`) to opt a
+  writeup-path page out entirely. The description is still repeated as a `>` blockquote lead.
 - Long/indented code → wrapped in `<Toggle>`; all code blocks get `frame="code"` + a
   language `title` so bash and python look identical.
 - Notion `<aside>` → `:::tip[Answer]`. Task headings → brown `.task-title`.
@@ -518,10 +546,20 @@ Preserves reading position: anchors on the current heading and corrects scroll s
 - Difficulty: easy green, medium amber, hard red, misc slate.
 - OS: linux slate, windows blue.
 - Topic `.tag-*`: web orange, crypto teal, forensics amber, reversing pink, pentest green, etc.
-- **Frontmatter os/tags:** `content.config.ts` extends `docsSchema` with optional `os` and `tags`.
-  Today writeups encode OS in the body `.machine-meta` badge row, so these stay undefined and
-  `WriteupCard` omits the OS/tag chips gracefully. When the pipeline promotes os/tags to
-  frontmatter, the cards render them with no component change (a content-lane enhancement).
+- **`.machine-meta` RETIRED 2026-07-19; the REST of the family is LIVE.** No writeup hand-authors a badge
+  row any more (WriteupMeta replaced the last of them, the 34 Bandit pages), so the `.machine-meta`
+  container rule is deleted from `custom.css` and its `machine-` family from the taxonomy guard. Nothing
+  else went with it: `WriteupCard.astro` emits `meta-badge`, `difficulty-*`, `os-*` and (behind
+  `showPlatform`) `platform-*`, and `PlatformIndex` renders those cards on every `{platform}/index.mdx`,
+  so those rules are live on all four landing pages. `platform-*` renders 0 times today but is the
+  `showPlatform` path reserved for the planned `/writeups` index, so it is wired, not dead. Measured in
+  `dist`: `meta-badge` 6, `difficulty-*` 3, `os-*` 3, `machine-meta` 0. See DECISIONS 2026-07-19.
+- **Frontmatter metadata (updated 2026-07-20):** `content.config.ts` extends `docsSchema` with strict
+  optional enums for `os` (`Linux | Windows`), `environment` and `difficulty`, plus an optional `badges`
+  boolean, `tags`, and `principle`. Since the injection migration EVERY writeup sets `os` and
+  `environment` in frontmatter, so `WriteupCard`'s OS chip now has a value on every writeup it renders
+  (it still only maps linux/windows, which is exactly what the enum permits). `tags` stays deliberately
+  unused until writeup volume makes a tag filter earn its place (see ROADMAP).
 
 ### Badge system (WriteupMeta): icon sourcing, geometry, a11y
 
