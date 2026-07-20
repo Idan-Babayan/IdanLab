@@ -102,6 +102,12 @@ const DASH = 260;
 // is the angle; negative because the line climbs to the right (screen-up is a CCW rotation). One value
 // serves every connector because they all share `rise`, and it is derived, so it holds at any chain length.
 const EDGE_ANGLE = -(Math.atan2(rise, CONN_W - 5) * 180 / Math.PI);
+
+// Each node's position along the chain, 0 at the entry and 1 at the goal, driving the width and
+// type-scale interpolation in CSS. Rounded because the raw quotient serialises as up to 17 significant
+// digits into every node's style attribute (--t:0.1111111111111111), and 4 decimals is already far below
+// one device pixel on the widest thing it drives (0.0001 * 52px of width interpolation).
+const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastIndex) * 1e4) / 1e4);
 ---
 
 <div
@@ -147,7 +153,7 @@ const EDGE_ANGLE = -(Math.atan2(rise, CONN_W - 5) * 180 / Math.PI);
               data-ap-node
               data-state={i === 0 ? 'active' : 'future'}
               aria-current={i === 0 ? 'step' : undefined}
-              style={`--i:${i}; --t:${lastIndex === 0 ? 0 : i / lastIndex}; --ap-nw:${(lastIndex === 0 ? 0 : i / lastIndex) >= 0.5 ? 700 : 500}`}
+              style={`--i:${i}; --t:${t(i)}; --ap-nw:${t(i) >= 0.5 ? 700 : 500}`}
             >
               <span class="ap-node-kind">{node.kind}</span>
               <span class="ap-node-name">{node.name}</span>
@@ -235,15 +241,33 @@ const EDGE_ANGLE = -(Math.atan2(rise, CONN_W - 5) * 180 / Math.PI);
     let pos = 0;
     let bloomed = false; // the goal flourish is one-time; revisiting must never replay it
 
+    // Captured once from the rendered markup, so the accessible names below stay in step with the visible
+    // labels without the data being threaded through a second time.
+    const labels = nodes.map((n) => {
+      const kind = (n.querySelector('.ap-node-kind') as HTMLElement | null)?.textContent?.trim() ?? '';
+      const name = (n.querySelector('.ap-node-name') as HTMLElement | null)?.textContent?.trim() ?? '';
+      return `${kind} ${name}`.trim();
+    });
+
     // Read at interaction time, not once at load, so a mid-session OS change is honoured (the same
     // approach FlagCapture takes).
     const reduced = (): boolean => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Progress state is carried visually by tint, scale and the check glyph, none of which reach assistive
+    // tech (the check is aria-hidden, and aria-current only ever marks ONE node). Without this a screen
+    // reader hears an undifferentiated list of names and cannot tell taken hops from untaken ones, so the
+    // word is appended to each control's accessible name. The visible label stays inside the accessible
+    // name, keeping WCAG 2.5.3 Label in Name satisfied.
+    function stateWord(i: number): string {
+      return i < pos ? 'completed' : i === pos ? 'current step' : 'not yet reached';
+    }
 
     function paint(): void {
       nodes.forEach((n, i) => {
         n.dataset.state = i < pos ? 'done' : i === pos ? 'active' : 'future';
         if (i === pos) n.setAttribute('aria-current', 'step');
         else n.removeAttribute('aria-current');
+        n.setAttribute('aria-label', `${labels[i]}, ${stateWord(i)}`);
       });
       // Connector k sits between node k and node k+1, so it is `done` once we have moved past node k.
       conns.forEach((c, k) => {
@@ -253,13 +277,18 @@ const EDGE_ANGLE = -(Math.atan2(rise, CONN_W - 5) * 180 / Math.PI);
         d.dataset.state = i < pos ? 'done' : i === pos ? 'active' : 'future';
         if (i === pos) d.setAttribute('aria-current', 'step');
         else d.removeAttribute('aria-current');
+        d.setAttribute('aria-label', `Step ${i + 1}: ${labels[i]}, ${stateWord(i)}`);
       });
       panels.forEach((p, i) => {
         p.hidden = i !== pos;
       });
       if (stepEl) stepEl.textContent = String(pos + 1);
       if (fill) fill.style.width = `${(pos / last) * 100}%`;
-      nextBtn.disabled = pos >= last;
+      // aria-disabled, NOT the `disabled` property: a disabled element is not focusable, so reaching the
+      // goal by pressing Enter on this very button destroyed the keyboard user's focus (verified: focus
+      // fell to <body>, and the next Tab restarted from the top of the document). Keeping it focusable and
+      // marking it disabled to AT preserves the focus position; the click/advance path is guarded instead.
+      nextBtn.setAttribute('aria-disabled', pos >= last ? 'true' : 'false');
       root.dataset.done = pos >= last ? 'true' : 'false';
       if (nextLabel) nextLabel.textContent = pos >= last ? 'Compromised' : 'Next step';
     }
@@ -274,6 +303,10 @@ const EDGE_ANGLE = -(Math.atan2(rise, CONN_W - 5) * 180 / Math.PI);
       if (!panel || reduced()) return;
       void panel.offsetWidth;
       panel.classList.add('is-enter');
+      // Drop the class as soon as it has served its purpose. Clearing it only on the NEXT advance left it
+      // sitting on the current panel indefinitely, so a reader who turned motion back on mid-session would
+      // see that panel animate the moment the media query started matching, with nothing having changed.
+      panel.addEventListener('animationend', () => panel.classList.remove('is-enter'), { once: true });
     }
 
     // Centre the active node in the viewport of the track.
@@ -336,7 +369,12 @@ const EDGE_ANGLE = -(Math.atan2(rise, CONN_W - 5) * 180 / Math.PI);
       if (target === last) bloom();
     }
 
-    nextBtn.addEventListener('click', () => go(pos + 1));
+    // Guarded rather than relying on the `disabled` property, which would take the button out of the tab
+    // order at exactly the moment the user pressed it. `go()` clamps anyway; this keeps the intent explicit.
+    nextBtn.addEventListener('click', () => {
+      if (pos >= last) return;
+      go(pos + 1);
+    });
     nodes.forEach((n, i) => n.addEventListener('click', () => go(i)));
     dots.forEach((d, i) => d.addEventListener('click', () => go(i)));
 
@@ -467,6 +505,10 @@ const EDGE_ANGLE = -(Math.atan2(rise, CONN_W - 5) * 180 / Math.PI);
     overflow-y: visible;
     scrollbar-width: none;              /* Firefox */
     -ms-overflow-style: none;
+    /* Keep a horizontal swipe inside the path. Without this, flicking past either end of the track chains
+       the scroll to the page and, on touch, can trigger the browser's back-navigation gesture, so a reader
+       swiping the chain could be thrown off the writeup entirely. */
+    overscroll-behavior-x: contain;
   }
   .ap-track::-webkit-scrollbar { display: none; }
 
@@ -549,6 +591,10 @@ const EDGE_ANGLE = -(Math.atan2(rise, CONN_W - 5) * 180 / Math.PI);
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--ap-quiet);
+    /* Reserve the gutter the absolutely-positioned check glyph occupies (right: 0.5rem + its 13px box,
+       less the node's own inline padding) so an unusually long kind wraps instead of running underneath it.
+       Real kinds are one short word, so this never bites in practice; it is a guard, not a layout device. */
+    max-width: calc(100% - 0.7rem);
   }
   .ap-node-name {
     font-family: var(--sl-font-mono);
@@ -576,11 +622,19 @@ const EDGE_ANGLE = -(Math.atan2(rise, CONN_W - 5) * 180 / Math.PI);
     .ap-check { transition: opacity 0.3s ease 0.12s; }
   }
 
-  /* future: quiet and slightly smaller, clearly not yet reached */
+  /* future: quiet and slightly smaller, clearly not yet reached.
+     The quiet is carried by COLOUR and scale, never by group `opacity`. An earlier `opacity: 0.4` faded the
+     text and the chrome together, which pushed real content under AA: measured 3.83:1 (dark) / 2.43:1
+     (light) on the node name and 1.88 / 1.79 on the kind, against the 4.5:1 this text needs. These are not
+     inactive controls, a future node is clickable to jump ahead, so WCAG's inactive-component exemption
+     does not apply. Opacity is a blunt instrument here: to lift the kind label to AA it would have had to
+     run at ~0.88, which erases the state entirely. Per-element colours keep the hierarchy AND the ratio:
+     the name drops to the muted grey (5.78:1) while done/active names stay full-contrast white (16.8 /
+     16.0), and the goal keeps its gold ink through the later .is-goal rule (5.24:1). */
   .ap-node[data-state='future'] {
-    opacity: 0.4;
     transform: scale(0.955);
   }
+  .ap-node[data-state='future'] .ap-node-name { color: var(--ap-quiet); }
   /* active: the focal point. Accent-bordered, softly glowing, and STATIC once it settles.
      The lift is carried by scale + the elevation shadow, deliberately NOT by translateY: scale keeps an
      element's CENTRE fixed while translateY moves it off the rise ladder, and the connectors aim at node
@@ -603,6 +657,13 @@ const EDGE_ANGLE = -(Math.atan2(rise, CONN_W - 5) * 180 / Math.PI);
       0 8px 26px -12px color-mix(in oklab, var(--ap-accent) 60%, transparent);
   }
   .ap-node[data-state='active'] .ap-node-kind { color: var(--ap-accent); }
+  /* Same carve-out the primary "Next step" control already needed, for the same reason: on paper the
+     ambient accent sitting ON its own 12% accent tint measures only 3.94:1 as a 9.6px label, under AA.
+     The site's text-legible accent variant clears it at 7.59:1. Light only, dark accent is already 13.3:1.
+     The :not(.is-goal) is load-bearing: adding html[data-theme] to the selector out-specifies the later
+     .is-goal[data-state='active'] gold rule, which silently turned the GOAL's kind label green (verified:
+     it computed accent-high instead of the gold ink). The goal keeps its prize identity in every state. */
+  :global(html[data-theme='light']) .ap-node[data-state='active']:not(.is-goal) .ap-node-kind { color: var(--sl-color-accent-high); }
   /* done: established and illuminated, but calm enough not to compete with the active node */
   .ap-node[data-state='done'] {
     opacity: 1;
@@ -901,7 +962,9 @@ const EDGE_ANGLE = -(Math.atan2(rise, CONN_W - 5) * 180 / Math.PI);
      the PRIMARY control is right anyway: the CTA should read a step above the ambient accent. Light only,
      because the dark accent is already ~13:1. */
   :global(html[data-theme='light']) .ap-next { color: var(--sl-color-accent-high); }
-  .ap-next:hover:not(:disabled) {
+  /* Keyed off aria-disabled, since the control stays a real focusable button at the end of the chain
+     (see the focus note in the script) rather than taking the `disabled` property. */
+  .ap-next:not([aria-disabled='true']):hover {
     background: color-mix(in oklab, var(--ap-accent) 12%, transparent);
     border-color: var(--ap-accent);
   }
