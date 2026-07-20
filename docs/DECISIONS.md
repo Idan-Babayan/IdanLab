@@ -6,6 +6,60 @@
 
 ---
 
+### 2026-07-20 · WriteupMeta is injected from frontmatter, platform is derived from the directory
+- **Decision:** writeups no longer hand-place `<WriteupMeta />`. A new remark plugin
+  `plugins/remark-inject-writeupmeta.mjs` injects the badge row (and its import) at build time, reading
+  `os` / `environment` / `difficulty` from frontmatter. **`platform` is NEVER a frontmatter field:** it is
+  derived from the writeup's platform directory, the same way the sidebar and `PlatformIndex` already
+  treat the directory as authoritative. All 37 writeups were migrated in the same pass (props moved to
+  frontmatter, component and import deleted).
+- **Why derive platform instead of authoring it (the load-bearing choice):** an earlier design had
+  `platform` in frontmatter with an elaborate guard: a missing-platform build error plus near-miss key
+  detection for `platfrom` / `Platform`. Deriving it deletes that entire failure class instead of
+  guarding it, so the guard, the near-miss detector and the null-vs-undefined handling were never built.
+  A writeup's platform is a fact about where the file lives, not a value an author restates and can
+  mistype.
+- **Proven lossless before migrating:** an audit compared every hand-placed `platform` prop against its
+  directory across all 37 writeups and found **0 disagreements**, so derivation reproduces exactly what
+  was authored. The audit also confirmed 0 writeups lacking the tag, 0 frontmatter-vs-prop `os`
+  conflicts, and 5 hubs carrying no writeup metadata.
+- **Mechanism, established by a read-only investigation first (do not re-derive):** frontmatter reaches a
+  remark plugin as parsed structured data at `file.data.astro.frontmatter`, but ONLY if the transformer is
+  declared `(tree, file)`; a `(tree)`-only transformer, like the PasswordReveal injector, never sees it.
+  `@astrojs/mdx` parses and strips frontmatter BEFORE the processor runs (`vite-plugin-mdx.js`), so there
+  is no `yaml` node in the mdast and plugin ORDER does not affect availability. Injection needs an
+  `mdxJsxFlowElement` with string-valued `mdxJsxAttribute`s plus a matching `mdxjsEsm` import built via
+  acorn. Zero new dependencies (`unist-util-visit` and `acorn` are already transitive via `@astrojs/mdx`).
+- **The silent-failure mode this had to defeat:** frontmatter is ALWAYS an object (an empty file yields
+  `{}`) and an absent field reads as `undefined` without throwing, so a naive trigger would skip quietly
+  and a writeup would ship with no badge row on a green build. Two structural answers: platform cannot go
+  missing because it is derived, and the plugin is gated entirely on the writeup path (non-`index` `.mdx`
+  under the four platform directories), so a stray metadata field anywhere else can never inject.
+- **`badges: false` opt-out, with the YAML coercion trap closed:** only the unquoted boolean `false` opts
+  out. `badges: no`, `badges: off` and `badges: "false"` all parse as TRUTHY STRINGS under js-yaml, so an
+  author who meant to opt out would silently get badges. Any present-but-non-boolean value therefore FAILS
+  the build with an explicit message. Verified live: `badges: no` fails, `badges: false` skips injection.
+- **Validation consolidated at the same time (three ways became two, both real):** `content.config.ts`
+  tightens the metadata fields to strict enums MIRRORING the component unions exactly (including the space
+  in `Active Directory`): `os` moves from a loose string to `Linux | Windows`, `environment` and
+  `difficulty` are added, `badges` is typed boolean. `os` was safe to tighten because its only consumers,
+  `WriteupCard` / `PlatformIndex`, already matched nothing outside those two values. In exchange, ONLY the
+  `WriteupMeta` entry was retired from the taxonomy guard's component-enum map, since no writeup
+  hand-places the component for that stage to see. **Everything else in the guard is untouched and still
+  live:** the `meta-badge` / `platform-` / `difficulty-` / `os-` class families (still emitted by
+  `WriteupCard`, still hand-authorable), `port-label`, `task-title`, and the `Callout` and `FlagCapture`
+  enum checks. The class-string families are NOT the same thing as the component prop enums; only the
+  latter died.
+- **Verified live:** `npm run build` green (46 pages) with the strict enums accepting all 37 writeups.
+  Exactly 37 badge rows in `dist`, one per writeup, no duplicates and no page missing one. Forest renders
+  platform `pf-htb` derived from its directory plus os/environment/difficulty from frontmatter; Bandit
+  renders `pf-otw` + os + environment with NO difficulty chip and no error. A non-writeup file carrying a
+  stray `platform` field is not injected. Negative tests all fail loudly: `difficulty: Medum` is rejected
+  by Zod naming the field and options, a bad `Callout type` and a bad `difficulty-` class token are still
+  caught by the guard.
+- **Status:** Adopted. Plugin + wiring + 37-file migration + schema + guard cleanup. Zero new
+  dependencies, pinned versions unchanged, `WriteupMeta.astro` itself untouched.
+
 ### 2026-07-19 · AttackPath: a guided, data-driven infographic for linear privilege-escalation chains
 - **Decision:** new additive component `src/components/AttackPath.astro` renders a LINEAR privilege-escalation
   chain as an ascending horizontal path that escalates toward the goal, with a guided "Next step"

@@ -46,9 +46,13 @@
   complete and documented (CORE_SPEC §6/§7 "Badge system"): real icon marks on a 14px grid, light-mode
   labels solved to WCAG AA in OKLCH, the Linux OS chip re-hued off OverTheWire's amber, accessibility clean.
   RESOLVED and recorded in DECISIONS: the palette reconciliation, the `Progressive` env colour, the
-  placeholder-stub icons, the "renders on no page" status, and the old rollout item 1 (WriteupMeta is
-  HAND-PLACED under the title and it DOES replace `.machine-meta`; see DECISIONS 2026-07-19, which also made
-  `difficulty` optional so a progressive wargame need not invent a rating). Remaining:
+  placeholder-stub icons, the "renders on no page" status, and `difficulty` becoming optional so a
+  progressive wargame need not invent a rating (DECISIONS 2026-07-19). RESOLVED 2026-07-20: the
+  hand-placement question is settled the other way. WriteupMeta is now INJECTED from frontmatter by
+  `plugins/remark-inject-writeupmeta.mjs`, with `platform` derived from the writeup's directory rather
+  than authored, and all 37 writeups migrated. Validation was consolidated in the same pass (strict Zod
+  enums in `content.config.ts`; the dormant WriteupMeta prop checks retired from the taxonomy guard).
+  See DECISIONS 2026-07-20. Remaining:
   1. **Filter routes:** the chips render as non-interactive `<span>` until `/platform`, `/os`,
      `/environment` exist; restore the commented `<a>` and drop `data-astro-prefetch="false"` when they land.
      Same machinery as the `/principles` index. Engineering.
@@ -82,12 +86,6 @@
 - [CONTENT] Author `principle:` frontmatter on writeups to surface the coda (the auto-append mechanism,
   footer silence, and true italic face all shipped 2026-07-04, see DECISIONS). Migrate busqueda's body
   `<Principle>` to frontmatter (remove the inline component + import, add `principle:`).
-- [CONTENT/ENG] Promote `os` to a typed frontmatter enum (Linux | Windows, matching the `WriteupMeta` OS
-  axis) and tighten the content-collection schema from a loose string to a two-value enum. Unlike tags this
-  is a closed dimension, not a browsable tag, and it is cheap and renders today: it lights up the OS chip on
-  the writeup cards via `WriteupCard`'s existing `os` read. Reconcile the value casing across the
-  `WriteupCard` and `WriteupMeta` consumers when wiring it. Best folded into the mass-import pass so every
-  imported writeup carries it, then backfill the existing few. Owner/ENG for the schema, CONTENT for the values.
 - [PRODUCT] Global `/writeups` index (path 3): reuse `WriteupCard` with `showPlatform` true for a
   mixed cross-platform grid (the card was built for this).
 
@@ -104,11 +102,13 @@
 - [ENG] Extract repeated UI into reusable Astro components (cards, badges, buttons, hero FX).
 - [ENG] CI on push: type-check, build, link-check, (later) visual-regression screenshots.
 - [ENG] Content-taxonomy build guard (`plugins/remark-validate-content-taxonomy.mjs`) shipped as the
-  astro-check alternative (DECISIONS 2026-07-12). Remaining follow-up: extend it to frontmatter `os`/`tags`,
-  which is now worth doing because `os:` IS in frontmatter on busqueda / return / forest and is a committed
-  Next item (a bad value there currently fails silently, since the guard does not see frontmatter). The
-  "narrow or remove the class families" half is CLOSED: only `machine-` was dead and it was removed
-  2026-07-19; the rest stay because `WriteupCard` still emits them (see DECISIONS 2026-07-19).
+  astro-check alternative (DECISIONS 2026-07-12). Both original follow-ups are now CLOSED. The
+  "narrow or remove the class families" half: only `machine-` was dead and it was removed 2026-07-19; the
+  rest stay because `WriteupCard` still emits them (DECISIONS 2026-07-19). The "extend it to frontmatter"
+  half: frontmatter metadata is now validated by strict Zod enums in `content.config.ts` instead, which is
+  the better home for it (the remark stage does not see frontmatter cleanly, and Zod gives editor support),
+  so the guard keeps its hand-authored-markup boundary and its WriteupMeta prop checks were retired
+  (DECISIONS 2026-07-20). Only `tags` remains unvalidated, and it is deliberately unused for now.
 - [CONTENT] Writeup `_template.mdx` so every new writeup starts consistent.
 - [ENV] Change Windows username from Hebrew to English (new admin account).
 - [ENG] Real platform-logo SVGs in sidebar via a Starlight Sidebar component override
