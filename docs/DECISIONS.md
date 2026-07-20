@@ -6,6 +6,149 @@
 
 ---
 
+### 2026-07-19 · AttackPath: a guided, data-driven infographic for linear privilege-escalation chains
+- **Decision:** new additive component `src/components/AttackPath.astro` renders a LINEAR privilege-escalation
+  chain as an ascending horizontal path that escalates toward the goal, with a guided "Next step"
+  progression, structural directional connectors, and a one-time gold flourish on reaching root. It is a
+  storytelling infographic, not a UI control, and is intended as a signature element reused across
+  multi-hop writeups. First instance: Forest, under `## Summary`. Linear only, no branching.
+- **Data contract:** `title` plus an ordered `nodes: { kind, name, edge?, detail? }[]`. Everything (escalation,
+  states, connectors, meter, dots, flourish) derives from index and position, so no chain is hardcoded. A
+  runtime guard throws on fewer than 2 nodes or a node missing `kind`/`name`, matching how WriteupMeta guards
+  its props and for the same reason: `astro build` does not type-check `.astro` props and this repo has no
+  `astro check`, so the interface is editor-only.
+- **Styles are SCOPED to the component, not in custom.css.** That is the majority convention here (NotFound,
+  WriteupCard, PlatformIndex, SecretTerminal) and it is safe specifically BECAUSE the root carries
+  `not-content`: every `.sl-markdown-content` prose rule is guarded with `:not(:where(.not-content *))`, so
+  nothing in this subtree ever needs to out-rank a global rule, which is the thing Astro's zero-specificity
+  `:where()` scoping cannot do. WriteupMeta's custom.css placement is the exception, not the pattern.
+- **Token corrections found by checking the source (the brief assumed otherwise):**
+  1. **`--pf-accent` is NOT global.** It is defined only on the `.pf-*` classes, so a reusable component
+     cannot read it directly. The accent is `var(--pf-accent, var(--sl-color-text-accent))`, the same
+     fallback idiom `PlatformIndex` uses: it inherits a platform hue if ever dropped inside a `.pf-*`
+     context, and is the site lime everywhere else.
+  2. **The display font variable is `--tp-display`, not `--display`.** Syne is also only loaded at 600/700/800,
+     so display type never asks for a lighter weight; the escalating weight rides JetBrains Mono 500 to 700.
+  3. **The two golds are not interchangeable.** `--flag-gold` is decorative (2.00:1 on paper) and paints
+     borders, glows, the runner and the bloom; every gold TEXT run uses the AA-grade `--flag-gold-val`.
+     Verified live: the goal label computes `#7a5a12` on light and `#ffc23d` on dark.
+- **Geometry finding (a real bug, caught by measuring):** the connectors aim at node CENTRES, and the active
+  node's `transform: translateY(-5px)` moved it off the rise ladder, so the incoming arrowhead landed 5px
+  low (measured rise 13.4px against 18.4px on every other hop). Scale preserves an element's centre and
+  translate does not, so the lift is now carried by `scale(1.045)` plus the elevation shadow. After the fix
+  all five hops measure a uniform 18.4px rise and every arrowhead lands with `dy = 0`.
+- **Second geometry finding:** a `future` node scales to 0.955, pulling its left edge inward by
+  `(0.045/2 * width)`, 3 to 4px on this chain, so the dashed segment fell visibly short of the node it
+  pointed at. Fixed by overshooting the tip past the connector box and pairing it with a negative inline
+  margin. Arrowheads now land 1px inside a `done` node and 5.1px inside the scaled-up `active` one.
+- **Vertical layout model (worth reusing):** the spine is `display:flex; align-items:center` and the ascent
+  is pure `position:relative; bottom: rise * index`. Because every item is centred on one axis, a node that
+  wraps to three lines does not disturb the ladder, and a connector aligned to the LEFT node's `bottom`
+  automatically ends exactly `rise` above it. Node HEIGHT is therefore free, which matters because the data
+  is arbitrary. The climb is normalised (a fixed total divided by the hop count), so a 12-hop chain occupies
+  the same vertical envelope as a 3-hop one; the spine's top padding reads that TOTAL, not the per-hop rise,
+  because sizing off the rise under-pads and clips the top node on any chain longer than five hops.
+- **Testing property to know (cost real time here):** the in-app Browser pane runs the page with
+  `document.visibilityState === "hidden"`, so the browser FREEZES animation timelines. A transition reports
+  `playState: "running"` with `currentTime` pinned at 0 forever, and `getComputedStyle` returns the START
+  value indefinitely. A `stroke-dashoffset` that had correctly cascaded to 0 read as 260px, which looks
+  exactly like a broken cascade. The reliable technique is to inject
+  `*{transition:none!important;animation:none!important}`, force a reflow, and read the resting value, which
+  tests the cascade and doubles as the reduced-motion rendering. Screenshot capture also times out in this
+  state. Related to, but distinct from, the headless false negatives already recorded for ToggleAll.
+- **Diagnostic trap, also worth knowing:** walking `document.styleSheets` and recursing on any rule that has
+  a `cssRules` property silently skips every leaf rule, because a modern `CSSStyleRule` exposes an empty
+  `cssRules` for CSS nesting. That reported "0 matching rules" for CSS that was present and correct. Test
+  `instanceof CSSMediaRule` instead of truthiness of `cssRules`.
+- **A11y:** nodes, dots and the advance control are real `<button>`s; focus colour flows through
+  `--focus-ring` (accent on nodes/dots/next, `--flag-gold-val` on the goal) with no hardcoded ring; the meter
+  states "Step N of M" as real text rather than a `role="progressbar"`; the dossier is an `aria-live="polite"`
+  region; `done` carries a check glyph so state is never colour-only; arrow keys are bound on the component
+  root so they act only while focus is inside it and never hijack page scrolling.
+- **Reduced motion:** every one of the 11 transition/animation declarations sits inside
+  `@media (prefers-reduced-motion: no-preference)` (verified programmatically: zero ungated). The JS reads
+  `matchMedia` at interaction time, not once at load, so a mid-session change is honoured; under reduce there
+  is no runner, no flourish and no smooth scroll, and advancing is a plain static state machine. Verified by
+  forcing the branch: state still advanced to step 6 with the runner hidden and no bloom.
+- **Verified live, both themes, desktop and 375px:** uniform 18.4px rise; monotonic escalation (layout widths
+  132 to 184, font 12.16 to 14.4px, weight 500 to 700); the full walk drives states, meter 0 to 100%, dossier
+  and "Compromised" + disabled end state; the final connector draws gold while the rest are accent; the bloom
+  fires once on first arrival and does NOT replay on revisit; arrow keys, node clicks and dots all revisit;
+  no visible scrollbar with 1511px of path scrolling inside 318px on mobile and no page-level horizontal
+  scroll. `npm run build` green (46 pages), no console errors, no new dependencies.
+- **Status:** Adopted (working tree; not committed). SUPERSEDED IN PART by the native-surface rework
+  below (same day): the interaction, geometry and structure recorded here stand, but the surfaces,
+  container background, and goal treatment described in the original build were reworked off invented
+  values onto the site's own fabric.
+
+### 2026-07-19 · AttackPath reworked onto the site's native fabric (surfaces, prize identity, computed escalation)
+- **Decision:** the AttackPath surfaces are rebuilt entirely from the site's existing design language so it
+  reads as a rich REGION of the writeup, distinct only by behaviour, not a foreign widget in a separate
+  skin. The approved interaction (guided Next-step, ascending path, escalating nodes, structural
+  connectors, runner, one-time gold flourish) and the geometry fix (scale, not translate, for the active
+  lift) are unchanged; only the visual fabric changed.
+- **What was foreign and what replaced it (each mapped to a real site convention):**
+  1. Container background was `--sl-color-black` (dark) and `color-mix(--sl-color-bg 60%, #fff)` (light, a
+     glaring near-white). Now `--ap-surface`: the Toggle / FlagCapture panel fabric, a 2% white lift over
+     the page on dark and the warm paper panel `#f2ede0` on light, plus the site's own
+     `0 4px 14px -12px rgba(60,50,30,0.4)` depth shadow on light. `#f2ede0` and that shadow are the site's
+     established panel literals (Toggle and FlagCapture both use them verbatim; there is no token), so
+     matching them is reusing the convention, not inventing.
+  2. The goal node had a `radial-gradient` gold backdrop. Now a FLAT gold tint derived exactly like
+     FlagCapture's frame: `background: color-mix(--flag-gold 6%, --ap-surface)`,
+     `border: color-mix(--flag-gold 38%, --ap-line)`, gold TEXT via `--flag-gold-val`. No gradient anywhere
+     in the component now.
+  3. Node done/active fills and the meter were reworked to `color-mix` derivations off the accent into the
+     panel surface (the callout / FlagCapture-hover idiom), giving a tint crescendo active 12% > done 7% >
+     future none, with non-colour cues (scale, glow, the check glyph) carrying state alongside colour.
+  4. The edge fade-masks faded to `--sl-color-black`. Now they dissolve into `--ap-surface` (the alias
+     flips per theme), so "there is more path" reads as content running under the panel edge, not fading
+     to black. Made the dark surface a SOLID color (the opaque equivalent of the Toggle's
+     `rgba(255,255,255,0.02)` lift) precisely so a fade can dissolve into it cleanly.
+- **Accent sourcing, confirmed against the code (not assumed):** the site does NOT platform-scope the
+  accent inside a writeup body; `--pf-accent` exists only on `.pf-*` (cards / landings / sidebar), and a
+  writeup body's accent is the global `--sl-color-text-accent` (lime). So `var(--pf-accent,
+  var(--sl-color-text-accent))` is the honest native mechanism: lime in a normal writeup, and it upgrades
+  to a platform hue only if the component is ever dropped inside a `.pf-*` context. Recorded so nobody
+  "fixes" it into a hardcoded platform colour.
+- **Contrast solved to AA using the site's own legible variants, not one-off hexes (all measured by canvas
+  readback, both themes):** dark clears everything comfortably (node name 19.5, active kind 13.2, goal gold
+  11.3, Next button 16.1). Light: title 15.2, meter 6.0, done name 10.9, done kind 5.5, goal gold 5.25,
+  dossier code 4.9, all AA. The one shortfall was the primary "Next step" label: accent ink on paper is
+  only ~4.3:1 as small bold text (the site's `#4d7c0f` runs ~4.1 to 4.3 on paper, recorded in the
+  2026-07-13 focus-ring note), so the label was moved to the site's own text-legible accent variant
+  `--sl-color-accent-high` (`#2f4d09` light) on light ONLY, lifting it to 8.2:1. That is right beyond
+  contrast: the primary CTA should read a step above the ambient accent, and accent-high is exactly the
+  site's higher-emphasis accent token. The button also follows the site's accent-button pattern
+  (PasswordReveal): TRANSPARENT rest fill, colour + border on the panel, filling only on hover, which is
+  itself what keeps the label off an accent-on-accent tint.
+- **Escalation is computed from the node count and verified at 4 / 6 / 8 hops (a temporary in-repo test
+  harness page, since deleted):** node width (132 to 184px) and type scale/weight (500 to 700) interpolate
+  across `--t = index / lastIndex`, so the crescendo is proportional to the chain, not a fixed per-node
+  step. The ascent aims for a fixed total climb evenly divided across the hops, then CLAMPS the per-hop
+  rise to [12, 30]px, and the spine headroom reads the ACTUAL total (rise * hops). Without the clamp a
+  2-node chain climbed the whole total in one hop and pushed the connector curve off the SVG box, and a
+  long chain inched up invisibly; with it, a 4-hop chain rises 30/hop and an 8-hop 13.7/hop, both
+  monotonic, both with arrowheads landing at dy 0, neither clipped. It stays fully data-driven; no chain is
+  hardcoded.
+- **Measurement traps recorded (both cost time):** (1) canvas 2D `fillStyle` cannot parse a raw
+  `color-mix(... hsl() ...)` custom-property string, so contrast probes must pass a RESOLVED colour
+  (read back `getComputedStyle().color` off a throwaway element, which returns `rgb()`/`oklab()` the canvas
+  handles), or they silently report garbage (a vivid-lime button read as 2.03:1). (2) JS-toggling
+  `data-theme` mid-session while `localStorage['starlight-theme']` holds the other value leaves computed
+  styles stale (a dark button reported the light `#2f4d09`); theme contrast must be read after a clean
+  reload with the matching localStorage value, which is how it actually ships. Add these to the existing
+  hidden-document animation-freeze and CSSStyleRule-nesting traps from the first build.
+- **Verified end to end (both themes, desktop + 375px, reduced-motion on and off):** surfaces render as the
+  native panel (`#f2ede0` light, subtle lift dark), goal has no gradient, fades dissolve into the surface;
+  the guided walk drives states / connectors / meter / dossier then settles calm; arrowheads land at dy 0;
+  the one-time bloom fires once and never on revisit; reduced-motion advances as a static state machine
+  with no runner or bloom (zero ungated animation declarations); mobile scrolls internally with no page
+  overflow and no scrollbar; every checked text pairing is AA. Forest still carries it under Summary with
+  the BloodHound graph intact as evidence. `npm run build` green (46 pages), no console errors.
+- **Status:** Adopted (working tree; not committed). Component-scoped styles only; no custom.css, config,
+  or dependency changes.
+
 ### 2026-07-19 · `.machine-meta` deleted; the REST of the badge family is not dead (corrects the entry below)
 - **Decision:** the `.machine-meta` rule is removed from `custom.css` and its `machine-` family from
   `plugins/remark-validate-content-taxonomy.mjs`. Nothing else in the badge taxonomy is touched.
