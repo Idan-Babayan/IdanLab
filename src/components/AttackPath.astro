@@ -92,12 +92,28 @@ const ARROW = `M ${CONN_W - 10} ${y1 - 5.5} L ${CONN_W - 2} ${y1} L ${CONN_W - 1
 // Generous enough to exceed the real path length, so dashoffset:<len> hides the stroke completely and
 // dashoffset:0 reveals it. A constant avoids a getTotalLength() measurement pass in JS.
 const DASH = 260;
+
+// Edge-label tilt. The verb label rides PARALLEL to its connector's chord, at a constant gap above it,
+// so its distance to the line stops depending on the three things that made a horizontally-centred label
+// read unevenly across the path: the segment's slope, the label's width, and how many lines it wraps to.
+// (Measured on the old rule: a 110px horizontal label cleared the line by +17px on the low-left but
+// CROSSED it by -2px on the high-right, and a two-line label floated ~8px further off than a one-line
+// one.) The chord runs from the curve's start (3, y0) to its end tip (CONN_W-2, y1), so its rise-over-run
+// is the angle; negative because the line climbs to the right (screen-up is a CCW rotation). One value
+// serves every connector because they all share `rise`, and it is derived, so it holds at any chain length.
+const EDGE_ANGLE = -(Math.atan2(rise, CONN_W - 5) * 180 / Math.PI);
+
+// Each node's position along the chain, 0 at the entry and 1 at the goal, driving the width and
+// type-scale interpolation in CSS. Rounded because the raw quotient serialises as up to 17 significant
+// digits into every node's style attribute (--t:0.1111111111111111), and 4 decimals is already far below
+// one device pixel on the widest thing it drives (0.0001 * 52px of width interpolation).
+const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastIndex) * 1e4) / 1e4);
 ---
 
 <div
   class="apath not-content"
   data-attack-path
-  style={`--ap-rise:${rise}px; --ap-climb:${climb}px; --ap-cw:${CONN_W}px; --ap-ch:${CONN_H}px; --ap-dash:${DASH};`}
+  style={`--ap-rise:${rise}px; --ap-climb:${climb}px; --ap-cw:${CONN_W}px; --ap-ch:${CONN_H}px; --ap-dash:${DASH}; --ap-edge-angle:${EDGE_ANGLE}deg;`}
 >
   <div class="ap-head">
     <p class="ap-title">{title}</p>
@@ -137,7 +153,7 @@ const DASH = 260;
               data-ap-node
               data-state={i === 0 ? 'active' : 'future'}
               aria-current={i === 0 ? 'step' : undefined}
-              style={`--i:${i}; --t:${lastIndex === 0 ? 0 : i / lastIndex}`}
+              style={`--i:${i}; --t:${t(i)}; --ap-nw:${t(i) >= 0.5 ? 700 : 500}`}
             >
               <span class="ap-node-kind">{node.kind}</span>
               <span class="ap-node-name">{node.name}</span>
@@ -225,15 +241,33 @@ const DASH = 260;
     let pos = 0;
     let bloomed = false; // the goal flourish is one-time; revisiting must never replay it
 
+    // Captured once from the rendered markup, so the accessible names below stay in step with the visible
+    // labels without the data being threaded through a second time.
+    const labels = nodes.map((n) => {
+      const kind = (n.querySelector('.ap-node-kind') as HTMLElement | null)?.textContent?.trim() ?? '';
+      const name = (n.querySelector('.ap-node-name') as HTMLElement | null)?.textContent?.trim() ?? '';
+      return `${kind} ${name}`.trim();
+    });
+
     // Read at interaction time, not once at load, so a mid-session OS change is honoured (the same
     // approach FlagCapture takes).
     const reduced = (): boolean => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Progress state is carried visually by tint, scale and the check glyph, none of which reach assistive
+    // tech (the check is aria-hidden, and aria-current only ever marks ONE node). Without this a screen
+    // reader hears an undifferentiated list of names and cannot tell taken hops from untaken ones, so the
+    // word is appended to each control's accessible name. The visible label stays inside the accessible
+    // name, keeping WCAG 2.5.3 Label in Name satisfied.
+    function stateWord(i: number): string {
+      return i < pos ? 'completed' : i === pos ? 'current step' : 'not yet reached';
+    }
 
     function paint(): void {
       nodes.forEach((n, i) => {
         n.dataset.state = i < pos ? 'done' : i === pos ? 'active' : 'future';
         if (i === pos) n.setAttribute('aria-current', 'step');
         else n.removeAttribute('aria-current');
+        n.setAttribute('aria-label', `${labels[i]}, ${stateWord(i)}`);
       });
       // Connector k sits between node k and node k+1, so it is `done` once we have moved past node k.
       conns.forEach((c, k) => {
@@ -243,13 +277,18 @@ const DASH = 260;
         d.dataset.state = i < pos ? 'done' : i === pos ? 'active' : 'future';
         if (i === pos) d.setAttribute('aria-current', 'step');
         else d.removeAttribute('aria-current');
+        d.setAttribute('aria-label', `Step ${i + 1}: ${labels[i]}, ${stateWord(i)}`);
       });
       panels.forEach((p, i) => {
         p.hidden = i !== pos;
       });
       if (stepEl) stepEl.textContent = String(pos + 1);
       if (fill) fill.style.width = `${(pos / last) * 100}%`;
-      nextBtn.disabled = pos >= last;
+      // aria-disabled, NOT the `disabled` property: a disabled element is not focusable, so reaching the
+      // goal by pressing Enter on this very button destroyed the keyboard user's focus (verified: focus
+      // fell to <body>, and the next Tab restarted from the top of the document). Keeping it focusable and
+      // marking it disabled to AT preserves the focus position; the click/advance path is guarded instead.
+      nextBtn.setAttribute('aria-disabled', pos >= last ? 'true' : 'false');
       root.dataset.done = pos >= last ? 'true' : 'false';
       if (nextLabel) nextLabel.textContent = pos >= last ? 'Compromised' : 'Next step';
     }
@@ -264,6 +303,10 @@ const DASH = 260;
       if (!panel || reduced()) return;
       void panel.offsetWidth;
       panel.classList.add('is-enter');
+      // Drop the class as soon as it has served its purpose. Clearing it only on the NEXT advance left it
+      // sitting on the current panel indefinitely, so a reader who turned motion back on mid-session would
+      // see that panel animate the moment the media query started matching, with nothing having changed.
+      panel.addEventListener('animationend', () => panel.classList.remove('is-enter'), { once: true });
     }
 
     // Centre the active node in the viewport of the track.
@@ -326,7 +369,12 @@ const DASH = 260;
       if (target === last) bloom();
     }
 
-    nextBtn.addEventListener('click', () => go(pos + 1));
+    // Guarded rather than relying on the `disabled` property, which would take the button out of the tab
+    // order at exactly the moment the user pressed it. `go()` clamps anyway; this keeps the intent explicit.
+    nextBtn.addEventListener('click', () => {
+      if (pos >= last) return;
+      go(pos + 1);
+    });
     nodes.forEach((n, i) => n.addEventListener('click', () => go(i)));
     dots.forEach((d, i) => d.addEventListener('click', () => go(i)));
 
@@ -376,6 +424,12 @@ const DASH = 260;
     --ap-line: var(--sl-color-hairline);
     --ap-quiet: var(--sl-color-gray-3);
     --ap-surface: color-mix(in oklab, var(--sl-color-white) 2%, var(--sl-color-bg));
+    /* ONE value drives BOTH the edge mask's band width and the spine's resting gutter (below), which is
+       what keeps the mask off the endpoint nodes: the gutter is exactly as wide as the band, so at either
+       scroll extreme the mask lands on empty gutter instead of on the start / goal node. It also makes the
+       affordance self-truthing: a mask over empty gutter is surface-on-surface, i.e. INVISIBLE, so a fade
+       only appears once real path is actually running under it. */
+    --ap-fade-w: 36px;
 
     position: relative;
     margin: 1.75rem 0 2.25rem;
@@ -451,6 +505,10 @@ const DASH = 260;
     overflow-y: visible;
     scrollbar-width: none;              /* Firefox */
     -ms-overflow-style: none;
+    /* Keep a horizontal swipe inside the path. Without this, flicking past either end of the track chains
+       the scroll to the page and, on touch, can trigger the browser's back-navigation gesture, so a reader
+       swiping the chain could be thrown off the writeup entirely. */
+    overscroll-behavior-x: contain;
   }
   .ap-track::-webkit-scrollbar { display: none; }
 
@@ -461,22 +519,49 @@ const DASH = 260;
     width: max-content;
     /* Headroom for the FULL climb plus the active node's scale and glow. This reads the total climb, not
        the per-hop rise: rise shrinks as the chain lengthens (it is climb/hops), so sizing off rise would
-       under-pad and clip the top node on any chain longer than five hops. */
-    padding: calc(var(--ap-climb) + 26px) 0.4rem 30px;
+       under-pad and clip the top node on any chain longer than five hops.
+       The INLINE padding is the mask gutter: it matches --ap-fade-w exactly, so scrolled fully left the
+       start node rests precisely where the left band ends, and scrolled fully right the goal node rests
+       precisely where the right band ends. The two most important anchors in the chain therefore always
+       come to rest in the fully-legible zone (measured alpha 0), at any chain length, while mid-scroll the
+       mask still dissolves real content and the affordance is untouched. */
+    padding: calc(var(--ap-climb) + 26px) var(--ap-fade-w) 30px;
   }
 
   .ap-fade {
     position: absolute;
     top: 0;
     bottom: 0;
-    width: 52px;
+    width: var(--ap-fade-w);
     pointer-events: none;
     z-index: 2;
   }
   /* The masks dissolve the track edges INTO the container's own surface (--ap-surface flips per theme),
-     so "there is more path" reads as the content running under the panel edge, not fading to black. */
-  .ap-fade-l { left: 0; background: linear-gradient(90deg, var(--ap-surface) 14%, transparent); }
-  .ap-fade-r { right: 0; background: linear-gradient(270deg, var(--ap-surface) 14%, transparent); }
+     so "there is more path" reads as the content running under the panel edge, not fading to black.
+     The falloff is a SMOOTHSTEP (1 - (3t^2 - 2t^3)), not the previous `surface 14%, transparent` linear
+     ramp. Two things were wrong with that ramp: it held a fully OPAQUE plateau across its first 14% and
+     then smeared linearly, so a node's text could begin under ~78% wash (measured on the start node). The
+     eased curve drops the plateau, so the band is only truly opaque at the outermost edge, recovers most
+     of its legibility by mid-band, and has no hard cut-off at either end. Paired with the gutter above it
+     means the mask is gentler everywhere AND never falls on an endpoint at rest. */
+  .ap-fade-l {
+    left: 0;
+    background: linear-gradient(90deg,
+      var(--ap-surface) 0%,
+      color-mix(in oklab, var(--ap-surface) 84%, transparent) 25%,
+      color-mix(in oklab, var(--ap-surface) 50%, transparent) 50%,
+      color-mix(in oklab, var(--ap-surface) 16%, transparent) 75%,
+      transparent 100%);
+  }
+  .ap-fade-r {
+    right: 0;
+    background: linear-gradient(270deg,
+      var(--ap-surface) 0%,
+      color-mix(in oklab, var(--ap-surface) 84%, transparent) 25%,
+      color-mix(in oklab, var(--ap-surface) 50%, transparent) 50%,
+      color-mix(in oklab, var(--ap-surface) 16%, transparent) 75%,
+      transparent 100%);
+  }
 
   /* ── Node ── */
   .ap-node {
@@ -506,11 +591,20 @@ const DASH = 260;
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--ap-quiet);
+    /* Reserve the gutter the absolutely-positioned check glyph occupies (right: 0.5rem + its 13px box,
+       less the node's own inline padding) so an unusually long kind wraps instead of running underneath it.
+       Real kinds are one short word, so this never bites in practice; it is a guard, not a layout device. */
+    max-width: calc(100% - 0.7rem);
   }
   .ap-node-name {
     font-family: var(--sl-font-mono);
     font-size: calc(0.76rem + var(--t) * 0.14rem);
-    font-weight: calc(500 + var(--t) * 200);   /* 500 to 700: JetBrains Mono ships both */
+    /* Escalation weight uses ONLY the loaded JetBrains Mono faces (400/500/700). A continuous
+       calc(500 + --t*200) requested 540/580/620/660, none of which exist, so the browser snapped every
+       one to Bold 700 (measured: identical ink to 700) and the "ramp" was really a step at node 0. The
+       honest crescendo therefore rides the continuous font-SIZE above, plus one derived weight step:
+       Medium before the chain's midpoint, Bold from it on (--ap-nw, computed from the node's --t). */
+    font-weight: var(--ap-nw, 500);
     line-height: 1.28;
     color: var(--sl-color-white);
     overflow-wrap: anywhere;
@@ -528,11 +622,19 @@ const DASH = 260;
     .ap-check { transition: opacity 0.3s ease 0.12s; }
   }
 
-  /* future: quiet and slightly smaller, clearly not yet reached */
+  /* future: quiet and slightly smaller, clearly not yet reached.
+     The quiet is carried by COLOUR and scale, never by group `opacity`. An earlier `opacity: 0.4` faded the
+     text and the chrome together, which pushed real content under AA: measured 3.83:1 (dark) / 2.43:1
+     (light) on the node name and 1.88 / 1.79 on the kind, against the 4.5:1 this text needs. These are not
+     inactive controls, a future node is clickable to jump ahead, so WCAG's inactive-component exemption
+     does not apply. Opacity is a blunt instrument here: to lift the kind label to AA it would have had to
+     run at ~0.88, which erases the state entirely. Per-element colours keep the hierarchy AND the ratio:
+     the name drops to the muted grey (5.78:1) while done/active names stay full-contrast white (16.8 /
+     16.0), and the goal keeps its gold ink through the later .is-goal rule (5.24:1). */
   .ap-node[data-state='future'] {
-    opacity: 0.4;
     transform: scale(0.955);
   }
+  .ap-node[data-state='future'] .ap-node-name { color: var(--ap-quiet); }
   /* active: the focal point. Accent-bordered, softly glowing, and STATIC once it settles.
      The lift is carried by scale + the elevation shadow, deliberately NOT by translateY: scale keeps an
      element's CENTRE fixed while translateY moves it off the rise ladder, and the connectors aim at node
@@ -555,6 +657,13 @@ const DASH = 260;
       0 8px 26px -12px color-mix(in oklab, var(--ap-accent) 60%, transparent);
   }
   .ap-node[data-state='active'] .ap-node-kind { color: var(--ap-accent); }
+  /* Same carve-out the primary "Next step" control already needed, for the same reason: on paper the
+     ambient accent sitting ON its own 12% accent tint measures only 3.94:1 as a 9.6px label, under AA.
+     The site's text-legible accent variant clears it at 7.59:1. Light only, dark accent is already 13.3:1.
+     The :not(.is-goal) is load-bearing: adding html[data-theme] to the selector out-specifies the later
+     .is-goal[data-state='active'] gold rule, which silently turned the GOAL's kind label green (verified:
+     it computed accent-high instead of the gold ink). The goal keeps its prize identity in every state. */
+  :global(html[data-theme='light']) .ap-node[data-state='active']:not(.is-goal) .ap-node-kind { color: var(--sl-color-accent-high); }
   /* done: established and illuminated, but calm enough not to compete with the active node */
   .ap-node[data-state='done'] {
     opacity: 1;
@@ -633,12 +742,19 @@ const DASH = 260;
     .ap-conn-base { transition: opacity 0.3s ease; }
   }
 
-  /* The privilege verb rides ON the segment. */
+  /* The privilege verb rides ON the segment, parallel to it. Anchor: the label's BOTTOM edge sits a
+     constant gap above the connector's mid-line (translateY(-100%) lands the bottom edge on the anchor
+     no matter how many lines the label wraps to, so one- and two-line labels keep the same distance to
+     the line); then a rotation about that bottom-centre point tilts the label to the chord's angle, which
+     makes the gap independent of the slope and of the label's width. This is the single rule that holds
+     for any segment and any label, replacing the old horizontal translate(-50%,-160%) whose clearance
+     swung from +17px to crossing the line across one label. */
   .ap-edge {
     position: absolute;
     left: 50%;
-    top: calc(50% - var(--ap-rise) / 2);
-    transform: translate(-50%, -160%);
+    top: calc(50% - var(--ap-rise) / 2 - 0.4rem);
+    transform-origin: 50% 100%;
+    transform: translate(-50%, -100%) rotate(var(--ap-edge-angle, 0deg));
     width: calc(var(--ap-cw) - 6px);
     text-align: center;
     font-family: var(--sl-font-mono);
@@ -783,8 +899,9 @@ const DASH = 260;
     padding-top: 0.8rem;
     border-top: 1px solid var(--ap-line);
   }
-  .ap-dots { display: flex; align-items: center; gap: 0.42rem; }
+  .ap-dots { display: flex; align-items: center; gap: 0.7rem; }
   .ap-dot {
+    position: relative;
     width: 7px;
     height: 7px;
     padding: 0;
@@ -793,6 +910,22 @@ const DASH = 260;
     background: color-mix(in oklab, var(--ap-quiet) 45%, transparent);
     cursor: pointer;
     --focus-ring: var(--ap-accent);
+  }
+  /* Layout-neutral pointer target (WCAG 2.2 SC 2.5.8), the site's own hit-area convention (the About HUD
+     controls grow the target, not the layout): the visible dot and its focus ring stay the 7px border box,
+     while this absolutely positioned overflow grows only the invisible tap area, so nothing reflows. It is
+     24px tall (the standard) and one dot-plus-gap wide, so adjacent targets TILE the row edge to edge (no
+     overlap, no dead zone, symmetric per dot) instead of a fixed 24px box where later siblings would steal
+     a neighbour's overlap. The dots are a redundant control as well (every step is also reachable by its
+     full-size node, the Next button, and the arrow keys), so the row stays compact by design. */
+  .ap-dot::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: calc(100% + 0.7rem);
+    height: 24px;
+    transform: translate(-50%, -50%);
   }
   .ap-dot[data-state='done'] { background: color-mix(in oklab, var(--ap-accent) 60%, transparent); }
   .ap-dot[data-state='active'] {
@@ -829,7 +962,9 @@ const DASH = 260;
      the PRIMARY control is right anyway: the CTA should read a step above the ambient accent. Light only,
      because the dark accent is already ~13:1. */
   :global(html[data-theme='light']) .ap-next { color: var(--sl-color-accent-high); }
-  .ap-next:hover:not(:disabled) {
+  /* Keyed off aria-disabled, since the control stays a real focusable button at the end of the chain
+     (see the focus note in the script) rather than taking the `disabled` property. */
+  .ap-next:not([aria-disabled='true']):hover {
     background: color-mix(in oklab, var(--ap-accent) 12%, transparent);
     border-color: var(--ap-accent);
   }
@@ -848,8 +983,9 @@ const DASH = 260;
 
   /* Narrow screens: scrolling the path is the deliberate gesture, matching how code blocks scroll. */
   @media (max-width: 50rem) {
-    .apath { padding-inline: 0.75rem; }
-    .ap-fade { width: 34px; }
+    /* The band narrows on small screens (less of a scarce 318px stage spent on mask), and because the
+       gutter reads the same token it narrows with it, so the endpoints stay exactly as clear as on desktop. */
+    .apath { padding-inline: 0.75rem; --ap-fade-w: 24px; }
     .ap-foot { flex-wrap: wrap; }
   }
 </style>
