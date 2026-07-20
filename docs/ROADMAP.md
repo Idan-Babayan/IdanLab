@@ -40,25 +40,31 @@
   `https://idanlab.dev/sitemap-index.xml` resolves after deploy.
 - [CONTENT] Verify the ToggleAll few-pixel shift fix in real browsers (see Open bugs), then it can be
   considered closed.
-- [ENG/DESIGN] WriteupMeta badge system (`src/components/badges/`, DECISIONS 2026-07-10) shipped to
-  production (commits `7fa5d82` + `02e8bab`, PR #9); the `busquedav2.mdx` testbed it was verified on was dropped before push, so it currently renders on no page. The DESIGN
-  is now complete and documented (CORE_SPEC §6/§7 "Badge system"): real icon marks on a 14px grid (polychrome
-  `<img>` vs monochrome inline `currentColor`, HackTheBox inlined), light-mode labels solved to WCAG AA in
-  OKLCH, the Linux OS chip re-hued off OverTheWire's amber, accessibility clean. See DECISIONS 2026-07-17
-  (three badge entries plus the testbed-drop entry). The badge commits were rebased to `304c97e` + `1fcf53e`
-  + `d7b1550` (busquedav2-drop) and pushed to `origin/dev`, then merged to `main` via PR #16 (`dev` -> `main`).
-  RESOLVED earlier: canonical `--pf-accent` hexes verbatim, `Progressive` env colour set. RESOLVED now: the
-  "placeholder-stub SVGs" item (icons are real, gridded, and colour-plumbed). The "renders on no page yet"
-  item stands: the `busquedav2.mdx` testbed it briefly rendered on was dropped before push, so the badges
-  currently render on no page (see DECISIONS 2026-07-17; rollout is the remaining work below).
-  Remaining (rollout + interactivity only, no design work left):
-  1. **Auto-injection vs manual:** decide with Engineering whether WriteupMeta is hand-placed under each
-     title or injected (and whether it replaces the current `.machine-meta` badge row; note WriteupMeta's
-     hue-free growing pips are a SECOND difficulty encoding vs the traffic-light `.difficulty-*` badge).
-  2. **Filter routes:** the chips render as non-interactive `<span>` until `/platform`, `/os`,
+- [ENG/DESIGN] WriteupMeta badge system (`src/components/badges/`) is now the metadata row on EVERY
+  writeup, and the hand-authored `.machine-meta` row it replaced is gone from `src/content/docs` entirely
+  (busqueda / return / forest earlier, then all 34 OverTheWire Bandit pages on 2026-07-19). The DESIGN is
+  complete and documented (CORE_SPEC §6/§7 "Badge system"): real icon marks on a 14px grid, light-mode
+  labels solved to WCAG AA in OKLCH, the Linux OS chip re-hued off OverTheWire's amber, accessibility clean.
+  RESOLVED and recorded in DECISIONS: the palette reconciliation, the `Progressive` env colour, the
+  placeholder-stub icons, the "renders on no page" status, and `difficulty` becoming optional so a
+  progressive wargame need not invent a rating (DECISIONS 2026-07-19). RESOLVED 2026-07-20: the
+  hand-placement question is settled the other way. WriteupMeta is now INJECTED from frontmatter by
+  `plugins/remark-inject-writeupmeta.mjs`, with `platform` derived from the writeup's directory rather
+  than authored, and all 37 writeups migrated. Validation was consolidated in the same pass (strict Zod
+  enums in `content.config.ts`; the dormant WriteupMeta prop checks retired from the taxonomy guard).
+  See DECISIONS 2026-07-20. Remaining:
+  1. **Filter routes:** the chips render as non-interactive `<span>` until `/platform`, `/os`,
      `/environment` exist; restore the commented `<a>` and drop `data-astro-prefetch="false"` when they land.
      Same machinery as the `/principles` index. Engineering.
-  Then wire WriteupMeta into the writeup + wargame-level pages (Content/Product).
+  (The "retire the dead badge taxonomy" item that sat here is DONE and moved to DECISIONS 2026-07-19,
+  with a correction: only `.machine-meta` was dead. The `.meta-badge` / `.difficulty-*` / `.os-*` /
+  `.platform-*` rules are still emitted by `WriteupCard` on the platform landing pages and were kept.)
+
+- [CONTENT] Reuse `AttackPath` on the other multi-hop writeups (shipped 2026-07-19 on Forest, under
+  Summary; see DECISIONS). It is data-driven, so adding one is authoring a `nodes[]` array, no component
+  change. Good candidates are any chain with 3 or more hops. Deliberately NOT retrofitted onto single-hop
+  writeups, where a two-node path says less than the prose already does. Note it is linear only: a writeup
+  whose escalation genuinely branches needs a design decision first, not a quiet extension of this component.
 
 ## Next (committed)
 - [ENG/DESIGN] Unify the two marketing pages (home, about) under the `--focus-ring` token established for
@@ -80,12 +86,6 @@
 - [CONTENT] Author `principle:` frontmatter on writeups to surface the coda (the auto-append mechanism,
   footer silence, and true italic face all shipped 2026-07-04, see DECISIONS). Migrate busqueda's body
   `<Principle>` to frontmatter (remove the inline component + import, add `principle:`).
-- [CONTENT/ENG] Promote `os` to a typed frontmatter enum (Linux | Windows, matching the `WriteupMeta` OS
-  axis) and tighten the content-collection schema from a loose string to a two-value enum. Unlike tags this
-  is a closed dimension, not a browsable tag, and it is cheap and renders today: it lights up the OS chip on
-  the writeup cards via `WriteupCard`'s existing `os` read. Reconcile the value casing across the
-  `WriteupCard` and `WriteupMeta` consumers when wiring it. Best folded into the mass-import pass so every
-  imported writeup carries it, then backfill the existing few. Owner/ENG for the schema, CONTENT for the values.
 - [PRODUCT] Global `/writeups` index (path 3): reuse `WriteupCard` with `showPlatform` true for a
   mixed cross-platform grid (the card was built for this).
 
@@ -102,9 +102,13 @@
 - [ENG] Extract repeated UI into reusable Astro components (cards, badges, buttons, hero FX).
 - [ENG] CI on push: type-check, build, link-check, (later) visual-regression screenshots.
 - [ENG] Content-taxonomy build guard (`plugins/remark-validate-content-taxonomy.mjs`) shipped as the
-  astro-check alternative (DECISIONS 2026-07-12). Follow-ups: extend it to frontmatter `os`/`tags` if the
-  pipeline ever promotes those to frontmatter, and narrow or remove the `meta-badge` / `platform-` /
-  `difficulty-` / `os-` / `machine-` class families when WriteupMeta retires the `.machine-meta` badge row.
+  astro-check alternative (DECISIONS 2026-07-12). Both original follow-ups are now CLOSED. The
+  "narrow or remove the class families" half: only `machine-` was dead and it was removed 2026-07-19; the
+  rest stay because `WriteupCard` still emits them (DECISIONS 2026-07-19). The "extend it to frontmatter"
+  half: frontmatter metadata is now validated by strict Zod enums in `content.config.ts` instead, which is
+  the better home for it (the remark stage does not see frontmatter cleanly, and Zod gives editor support),
+  so the guard keeps its hand-authored-markup boundary and its WriteupMeta prop checks were retired
+  (DECISIONS 2026-07-20). Only `tags` remains unvalidated, and it is deliberately unused for now.
 - [CONTENT] Writeup `_template.mdx` so every new writeup starts consistent.
 - [ENV] Change Windows username from Hebrew to English (new admin account).
 - [ENG] Real platform-logo SVGs in sidebar via a Starlight Sidebar component override
@@ -121,10 +125,12 @@
 - [DESIGN/A11y] Non-badge `#a86f04` ambers unaudited for light-mode WCAG AA. The badge light palette pass
   (DECISIONS 2026-07-17) solved the OTW/Linux CHIP labels to AA and left the seven-way `#a86f04` collision
   forked (correctly: they are unrelated ambers). But the five NON-badge users of that hex were failing at
-  2.97:1 on paper when the badges were, and nothing about their surfaces makes them pass: `.platform-overthewire`
-  (the old machine-meta badge label), `.pf-overthewire` (platform-index accent), and PasswordReveal's button
-  text are body-size text needing 4.5:1; the sidebar `nth-child(5)` focus ring and the spoiler-toggle border
-  are non-text (3:1). Audit each on light and solve the text ones in OKLCH the same way (hold hue, drop
+  2.97:1 on paper when the badges were, and nothing about their surfaces makes them pass. NARROWED
+  2026-07-19: `.platform-overthewire` (the old machine-meta badge label) is now MOOT, since `.machine-meta`
+  is gone from all content and that selector styles nothing (it goes away with the dead-taxonomy cleanup in
+  Now). That leaves `.pf-overthewire` (platform-index accent) and PasswordReveal's button text as body-size
+  text needing 4.5:1, plus the sidebar `nth-child(5)` focus ring and the spoiler-toggle border as non-text
+  (3:1). Audit each on light and solve the text ones in OKLCH the same way (hold hue, drop
   lightness), leaving the forks independent. Small, self-contained, after the glyph pass.
 - [ENG] ToggleAll few-pixel shift: expand/collapse can leave a small reversible content offset in real
   Chromium (Chrome/Edge/Opera GX), from native scroll anchoring fighting the manual correction. Fix

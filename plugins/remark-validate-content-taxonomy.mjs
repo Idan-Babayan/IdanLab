@@ -19,16 +19,19 @@
 // same as remark-inject-passwordreveal) plus Node built-ins. Nothing is added to package.json.
 //
 // SINGLE SOURCE OF TRUTH for validation. When the design taxonomy changes, update the allow-lists
-// below and nowhere else. NOTE: the `.machine-meta` / `meta-badge` badge system is expected to be
-// RETIRED when WriteupMeta fully rolls out. When that happens, remove the meta- / platform- /
-// difficulty- / os- / machine- class families here and keep the WriteupMeta enum checks.
+// below and nowhere else. RETIREMENT NOTE (revised 2026-07-19): WriteupMeta has fully replaced the
+// hand-authored `.machine-meta` badge row, so the `machine-` family is REMOVED. The meta- /
+// platform- / difficulty- / os- families STAY, correcting the earlier expectation that all five
+// would go together: `WriteupCard.astro` still emits `meta-badge`, `difficulty-*`, `os-*` and
+// (behind `showPlatform`) `platform-*` on the platform landing pages, so that CSS is live, and
+// keeping the families here still catches a typo in any badge hand-authored in a future writeup.
 
 import { visit } from 'unist-util-visit';
 
 // --- Owned class-token families: prefix -> the exact allowed full tokens --------------------------
 // A hand-authored class token that STARTS WITH an owned prefix must be one of that prefix's exact
 // tokens, otherwise the build fails. A token that starts with no owned prefix is out of scope and is
-// ignored. Each of meta- / port- / task- / machine- maps to a single class, so owning the prefix is
+// ignored. Each of meta- / port- / task- maps to a single class, so owning the prefix is
 // airtight. `platform-` is owned strictly: `.platform-card` / `.platform-grid` are marketing-only
 // (.astro) classes that never appear in MDX, so a `platform-*` token here is always a badge modifier.
 const CLASS_FAMILIES = {
@@ -38,7 +41,6 @@ const CLASS_FAMILIES = {
   'os-': ['os-linux', 'os-windows'],
   'port-': ['port-label'],
   'task-': ['task-title'],
-  'machine-': ['machine-meta'],
 };
 
 // A `meta-badge` element must carry exactly one modifier from one of these families.
@@ -46,17 +48,19 @@ const BADGE_MODIFIER_FAMILIES = ['platform-', 'difficulty-', 'os-'];
 const BADGE_MODIFIERS = new Set(BADGE_MODIFIER_FAMILIES.flatMap((prefix) => CLASS_FAMILIES[prefix]));
 
 // --- Component metadata enums: string prop values authored on component JSX elements ---------------
-// The typed unions the components accept. WriteupMeta already throws at render on a bad value, but
-// validating here fails earlier with a source position and a suggestion, and it also covers Callout
-// and FlagCapture, whose .astro props are not type-checked at build. Only string-valued props are
-// checked; a dynamic `{expr}` value is skipped.
+// The typed unions the components accept, for components still HAND-AUTHORED in writeup bodies.
+// Validating here fails earlier than a component's own runtime guard, with a source position and a
+// suggestion, and it covers .astro props that are not type-checked at build. Only string-valued props
+// are checked; a dynamic `{expr}` value is skipped.
+//
+// WriteupMeta was RETIRED from this map (2026-07-20). Its metadata is no longer hand-authored: the
+// badge row is injected from frontmatter by plugins/remark-inject-writeupmeta.mjs, so no hand-written
+// <WriteupMeta> JSX remains in any writeup for this stage to see. That surface is now covered twice
+// over instead: the Zod enums in src/content.config.ts catch a bad frontmatter value with editor
+// support, and the component's own runtime guard still throws on an unknown axis. This is unrelated
+// to the platform- / difficulty- / os- CLASS families above, which stay live because WriteupCard
+// still emits them and a writeup can still hand-author a badge span.
 const COMPONENT_ENUMS = {
-  WriteupMeta: {
-    platform: ['HackTheBox', 'VulnHub', 'PicoCTF', 'OverTheWire'],
-    os: ['Linux', 'Windows'],
-    environment: ['Standalone', 'Active Directory', 'Progressive'],
-    difficulty: ['Easy', 'Medium', 'Hard', 'Insane'],
-  },
   Callout: {
     type: ['recon', 'loot', 'intel', 'defense', 'vuln'],
   },
@@ -171,7 +175,7 @@ export default function remarkValidateContentTaxonomy() {
         }
       }
 
-      // 2. Component metadata enum validation (Callout, WriteupMeta).
+      // 2. Component metadata enum validation (Callout, FlagCapture).
       const enumsForComponent = COMPONENT_ENUMS[node.name];
       if (enumsForComponent) {
         for (const attr of attributes) {

@@ -6,6 +6,288 @@
 
 ---
 
+### 2026-07-20 · WriteupMeta is injected from frontmatter, platform is derived from the directory
+- **Decision:** writeups no longer hand-place `<WriteupMeta />`. A new remark plugin
+  `plugins/remark-inject-writeupmeta.mjs` injects the badge row (and its import) at build time, reading
+  `os` / `environment` / `difficulty` from frontmatter. **`platform` is NEVER a frontmatter field:** it is
+  derived from the writeup's platform directory, the same way the sidebar and `PlatformIndex` already
+  treat the directory as authoritative. All 37 writeups were migrated in the same pass (props moved to
+  frontmatter, component and import deleted).
+- **Why derive platform instead of authoring it (the load-bearing choice):** an earlier design had
+  `platform` in frontmatter with an elaborate guard: a missing-platform build error plus near-miss key
+  detection for `platfrom` / `Platform`. Deriving it deletes that entire failure class instead of
+  guarding it, so the guard, the near-miss detector and the null-vs-undefined handling were never built.
+  A writeup's platform is a fact about where the file lives, not a value an author restates and can
+  mistype.
+- **Proven lossless before migrating:** an audit compared every hand-placed `platform` prop against its
+  directory across all 37 writeups and found **0 disagreements**, so derivation reproduces exactly what
+  was authored. The audit also confirmed 0 writeups lacking the tag, 0 frontmatter-vs-prop `os`
+  conflicts, and 5 hubs carrying no writeup metadata.
+- **Mechanism, established by a read-only investigation first (do not re-derive):** frontmatter reaches a
+  remark plugin as parsed structured data at `file.data.astro.frontmatter`, but ONLY if the transformer is
+  declared `(tree, file)`; a `(tree)`-only transformer, like the PasswordReveal injector, never sees it.
+  `@astrojs/mdx` parses and strips frontmatter BEFORE the processor runs (`vite-plugin-mdx.js`), so there
+  is no `yaml` node in the mdast and plugin ORDER does not affect availability. Injection needs an
+  `mdxJsxFlowElement` with string-valued `mdxJsxAttribute`s plus a matching `mdxjsEsm` import built via
+  acorn. Zero new dependencies (`unist-util-visit` and `acorn` are already transitive via `@astrojs/mdx`).
+- **The silent-failure mode this had to defeat:** frontmatter is ALWAYS an object (an empty file yields
+  `{}`) and an absent field reads as `undefined` without throwing, so a naive trigger would skip quietly
+  and a writeup would ship with no badge row on a green build. Two structural answers: platform cannot go
+  missing because it is derived, and the plugin is gated entirely on the writeup path (non-`index` `.mdx`
+  under the four platform directories), so a stray metadata field anywhere else can never inject.
+- **`badges: false` opt-out, with the YAML coercion trap closed:** only the unquoted boolean `false` opts
+  out. `badges: no`, `badges: off` and `badges: "false"` all parse as TRUTHY STRINGS under js-yaml, so an
+  author who meant to opt out would silently get badges. Any present-but-non-boolean value therefore FAILS
+  the build with an explicit message. Verified live: `badges: no` fails, `badges: false` skips injection.
+- **Validation consolidated at the same time (three ways became two, both real):** `content.config.ts`
+  tightens the metadata fields to strict enums MIRRORING the component unions exactly (including the space
+  in `Active Directory`): `os` moves from a loose string to `Linux | Windows`, `environment` and
+  `difficulty` are added, `badges` is typed boolean. `os` was safe to tighten because its only consumers,
+  `WriteupCard` / `PlatformIndex`, already matched nothing outside those two values. In exchange, ONLY the
+  `WriteupMeta` entry was retired from the taxonomy guard's component-enum map, since no writeup
+  hand-places the component for that stage to see. **Everything else in the guard is untouched and still
+  live:** the `meta-badge` / `platform-` / `difficulty-` / `os-` class families (still emitted by
+  `WriteupCard`, still hand-authorable), `port-label`, `task-title`, and the `Callout` and `FlagCapture`
+  enum checks. The class-string families are NOT the same thing as the component prop enums; only the
+  latter died.
+- **Verified live:** `npm run build` green (46 pages) with the strict enums accepting all 37 writeups.
+  Exactly 37 badge rows in `dist`, one per writeup, no duplicates and no page missing one. Forest renders
+  platform `pf-htb` derived from its directory plus os/environment/difficulty from frontmatter; Bandit
+  renders `pf-otw` + os + environment with NO difficulty chip and no error. A non-writeup file carrying a
+  stray `platform` field is not injected. Negative tests all fail loudly: `difficulty: Medum` is rejected
+  by Zod naming the field and options, a bad `Callout type` and a bad `difficulty-` class token are still
+  caught by the guard.
+- **Status:** Adopted. Plugin + wiring + 37-file migration + schema + guard cleanup. Zero new
+  dependencies, pinned versions unchanged, `WriteupMeta.astro` itself untouched.
+
+### 2026-07-19 · AttackPath: a guided, data-driven infographic for linear privilege-escalation chains
+- **Decision:** new additive component `src/components/AttackPath.astro` renders a LINEAR privilege-escalation
+  chain as an ascending horizontal path that escalates toward the goal, with a guided "Next step"
+  progression, structural directional connectors, and a one-time gold flourish on reaching root. It is a
+  storytelling infographic, not a UI control, and is intended as a signature element reused across
+  multi-hop writeups. First instance: Forest, under `## Summary`. Linear only, no branching.
+- **Data contract:** `title` plus an ordered `nodes: { kind, name, edge?, detail? }[]`. Everything (escalation,
+  states, connectors, meter, dots, flourish) derives from index and position, so no chain is hardcoded. A
+  runtime guard throws on fewer than 2 nodes or a node missing `kind`/`name`, matching how WriteupMeta guards
+  its props and for the same reason: `astro build` does not type-check `.astro` props and this repo has no
+  `astro check`, so the interface is editor-only.
+- **Styles are SCOPED to the component, not in custom.css.** That is the majority convention here (NotFound,
+  WriteupCard, PlatformIndex, SecretTerminal) and it is safe specifically BECAUSE the root carries
+  `not-content`: every `.sl-markdown-content` prose rule is guarded with `:not(:where(.not-content *))`, so
+  nothing in this subtree ever needs to out-rank a global rule, which is the thing Astro's zero-specificity
+  `:where()` scoping cannot do. WriteupMeta's custom.css placement is the exception, not the pattern.
+- **Token corrections found by checking the source (the brief assumed otherwise):**
+  1. **`--pf-accent` is NOT global.** It is defined only on the `.pf-*` classes, so a reusable component
+     cannot read it directly. The accent is `var(--pf-accent, var(--sl-color-text-accent))`, the same
+     fallback idiom `PlatformIndex` uses: it inherits a platform hue if ever dropped inside a `.pf-*`
+     context, and is the site lime everywhere else.
+  2. **The display font variable is `--tp-display`, not `--display`.** Syne is also only loaded at 600/700/800,
+     so display type never asks for a lighter weight; the escalating weight rides JetBrains Mono 500 to 700.
+  3. **The two golds are not interchangeable.** `--flag-gold` is decorative (2.00:1 on paper) and paints
+     borders, glows, the runner and the bloom; every gold TEXT run uses the AA-grade `--flag-gold-val`.
+     Verified live: the goal label computes `#7a5a12` on light and `#ffc23d` on dark.
+- **Geometry finding (a real bug, caught by measuring):** the connectors aim at node CENTRES, and the active
+  node's `transform: translateY(-5px)` moved it off the rise ladder, so the incoming arrowhead landed 5px
+  low (measured rise 13.4px against 18.4px on every other hop). Scale preserves an element's centre and
+  translate does not, so the lift is now carried by `scale(1.045)` plus the elevation shadow. After the fix
+  all five hops measure a uniform 18.4px rise and every arrowhead lands with `dy = 0`.
+- **Second geometry finding:** a `future` node scales to 0.955, pulling its left edge inward by
+  `(0.045/2 * width)`, 3 to 4px on this chain, so the dashed segment fell visibly short of the node it
+  pointed at. Fixed by overshooting the tip past the connector box and pairing it with a negative inline
+  margin. Arrowheads now land 1px inside a `done` node and 5.1px inside the scaled-up `active` one.
+- **Vertical layout model (worth reusing):** the spine is `display:flex; align-items:center` and the ascent
+  is pure `position:relative; bottom: rise * index`. Because every item is centred on one axis, a node that
+  wraps to three lines does not disturb the ladder, and a connector aligned to the LEFT node's `bottom`
+  automatically ends exactly `rise` above it. Node HEIGHT is therefore free, which matters because the data
+  is arbitrary. The climb is normalised (a fixed total divided by the hop count), so a 12-hop chain occupies
+  the same vertical envelope as a 3-hop one; the spine's top padding reads that TOTAL, not the per-hop rise,
+  because sizing off the rise under-pads and clips the top node on any chain longer than five hops.
+- **Testing property to know (cost real time here):** the in-app Browser pane runs the page with
+  `document.visibilityState === "hidden"`, so the browser FREEZES animation timelines. A transition reports
+  `playState: "running"` with `currentTime` pinned at 0 forever, and `getComputedStyle` returns the START
+  value indefinitely. A `stroke-dashoffset` that had correctly cascaded to 0 read as 260px, which looks
+  exactly like a broken cascade. The reliable technique is to inject
+  `*{transition:none!important;animation:none!important}`, force a reflow, and read the resting value, which
+  tests the cascade and doubles as the reduced-motion rendering. Screenshot capture also times out in this
+  state. Related to, but distinct from, the headless false negatives already recorded for ToggleAll.
+- **Diagnostic trap, also worth knowing:** walking `document.styleSheets` and recursing on any rule that has
+  a `cssRules` property silently skips every leaf rule, because a modern `CSSStyleRule` exposes an empty
+  `cssRules` for CSS nesting. That reported "0 matching rules" for CSS that was present and correct. Test
+  `instanceof CSSMediaRule` instead of truthiness of `cssRules`.
+- **A11y:** nodes, dots and the advance control are real `<button>`s; focus colour flows through
+  `--focus-ring` (accent on nodes/dots/next, `--flag-gold-val` on the goal) with no hardcoded ring; the meter
+  states "Step N of M" as real text rather than a `role="progressbar"`; the dossier is an `aria-live="polite"`
+  region; `done` carries a check glyph so state is never colour-only; arrow keys are bound on the component
+  root so they act only while focus is inside it and never hijack page scrolling.
+- **Reduced motion:** every one of the 11 transition/animation declarations sits inside
+  `@media (prefers-reduced-motion: no-preference)` (verified programmatically: zero ungated). The JS reads
+  `matchMedia` at interaction time, not once at load, so a mid-session change is honoured; under reduce there
+  is no runner, no flourish and no smooth scroll, and advancing is a plain static state machine. Verified by
+  forcing the branch: state still advanced to step 6 with the runner hidden and no bloom.
+- **Verified live, both themes, desktop and 375px:** uniform 18.4px rise; monotonic escalation (layout widths
+  132 to 184, font 12.16 to 14.4px, weight 500 to 700); the full walk drives states, meter 0 to 100%, dossier
+  and "Compromised" + disabled end state; the final connector draws gold while the rest are accent; the bloom
+  fires once on first arrival and does NOT replay on revisit; arrow keys, node clicks and dots all revisit;
+  no visible scrollbar with 1511px of path scrolling inside 318px on mobile and no page-level horizontal
+  scroll. `npm run build` green (46 pages), no console errors, no new dependencies.
+- **Status:** Adopted (working tree; not committed). SUPERSEDED IN PART by the native-surface rework
+  below (same day): the interaction, geometry and structure recorded here stand, but the surfaces,
+  container background, and goal treatment described in the original build were reworked off invented
+  values onto the site's own fabric.
+
+### 2026-07-19 · AttackPath reworked onto the site's native fabric (surfaces, prize identity, computed escalation)
+- **Decision:** the AttackPath surfaces are rebuilt entirely from the site's existing design language so it
+  reads as a rich REGION of the writeup, distinct only by behaviour, not a foreign widget in a separate
+  skin. The approved interaction (guided Next-step, ascending path, escalating nodes, structural
+  connectors, runner, one-time gold flourish) and the geometry fix (scale, not translate, for the active
+  lift) are unchanged; only the visual fabric changed.
+- **What was foreign and what replaced it (each mapped to a real site convention):**
+  1. Container background was `--sl-color-black` (dark) and `color-mix(--sl-color-bg 60%, #fff)` (light, a
+     glaring near-white). Now `--ap-surface`: the Toggle / FlagCapture panel fabric, a 2% white lift over
+     the page on dark and the warm paper panel `#f2ede0` on light, plus the site's own
+     `0 4px 14px -12px rgba(60,50,30,0.4)` depth shadow on light. `#f2ede0` and that shadow are the site's
+     established panel literals (Toggle and FlagCapture both use them verbatim; there is no token), so
+     matching them is reusing the convention, not inventing.
+  2. The goal node had a `radial-gradient` gold backdrop. Now a FLAT gold tint derived exactly like
+     FlagCapture's frame: `background: color-mix(--flag-gold 6%, --ap-surface)`,
+     `border: color-mix(--flag-gold 38%, --ap-line)`, gold TEXT via `--flag-gold-val`. No gradient anywhere
+     in the component now.
+  3. Node done/active fills and the meter were reworked to `color-mix` derivations off the accent into the
+     panel surface (the callout / FlagCapture-hover idiom), giving a tint crescendo active 12% > done 7% >
+     future none, with non-colour cues (scale, glow, the check glyph) carrying state alongside colour.
+  4. The edge fade-masks faded to `--sl-color-black`. Now they dissolve into `--ap-surface` (the alias
+     flips per theme), so "there is more path" reads as content running under the panel edge, not fading
+     to black. Made the dark surface a SOLID color (the opaque equivalent of the Toggle's
+     `rgba(255,255,255,0.02)` lift) precisely so a fade can dissolve into it cleanly.
+- **Accent sourcing, confirmed against the code (not assumed):** the site does NOT platform-scope the
+  accent inside a writeup body; `--pf-accent` exists only on `.pf-*` (cards / landings / sidebar), and a
+  writeup body's accent is the global `--sl-color-text-accent` (lime). So `var(--pf-accent,
+  var(--sl-color-text-accent))` is the honest native mechanism: lime in a normal writeup, and it upgrades
+  to a platform hue only if the component is ever dropped inside a `.pf-*` context. Recorded so nobody
+  "fixes" it into a hardcoded platform colour.
+- **Contrast solved to AA using the site's own legible variants, not one-off hexes (all measured by canvas
+  readback, both themes):** dark clears everything comfortably (node name 19.5, active kind 13.2, goal gold
+  11.3, Next button 16.1). Light: title 15.2, meter 6.0, done name 10.9, done kind 5.5, goal gold 5.25,
+  dossier code 4.9, all AA. The one shortfall was the primary "Next step" label: accent ink on paper is
+  only ~4.3:1 as small bold text (the site's `#4d7c0f` runs ~4.1 to 4.3 on paper, recorded in the
+  2026-07-13 focus-ring note), so the label was moved to the site's own text-legible accent variant
+  `--sl-color-accent-high` (`#2f4d09` light) on light ONLY, lifting it to 8.2:1. That is right beyond
+  contrast: the primary CTA should read a step above the ambient accent, and accent-high is exactly the
+  site's higher-emphasis accent token. The button also follows the site's accent-button pattern
+  (PasswordReveal): TRANSPARENT rest fill, colour + border on the panel, filling only on hover, which is
+  itself what keeps the label off an accent-on-accent tint.
+- **Escalation is computed from the node count and verified at 4 / 6 / 8 hops (a temporary in-repo test
+  harness page, since deleted):** node width (132 to 184px) and type scale/weight (500 to 700) interpolate
+  across `--t = index / lastIndex`, so the crescendo is proportional to the chain, not a fixed per-node
+  step. The ascent aims for a fixed total climb evenly divided across the hops, then CLAMPS the per-hop
+  rise to [12, 30]px, and the spine headroom reads the ACTUAL total (rise * hops). Without the clamp a
+  2-node chain climbed the whole total in one hop and pushed the connector curve off the SVG box, and a
+  long chain inched up invisibly; with it, a 4-hop chain rises 30/hop and an 8-hop 13.7/hop, both
+  monotonic, both with arrowheads landing at dy 0, neither clipped. It stays fully data-driven; no chain is
+  hardcoded.
+- **Measurement traps recorded (both cost time):** (1) canvas 2D `fillStyle` cannot parse a raw
+  `color-mix(... hsl() ...)` custom-property string, so contrast probes must pass a RESOLVED colour
+  (read back `getComputedStyle().color` off a throwaway element, which returns `rgb()`/`oklab()` the canvas
+  handles), or they silently report garbage (a vivid-lime button read as 2.03:1). (2) JS-toggling
+  `data-theme` mid-session while `localStorage['starlight-theme']` holds the other value leaves computed
+  styles stale (a dark button reported the light `#2f4d09`); theme contrast must be read after a clean
+  reload with the matching localStorage value, which is how it actually ships. Add these to the existing
+  hidden-document animation-freeze and CSSStyleRule-nesting traps from the first build.
+- **Verified end to end (both themes, desktop + 375px, reduced-motion on and off):** surfaces render as the
+  native panel (`#f2ede0` light, subtle lift dark), goal has no gradient, fades dissolve into the surface;
+  the guided walk drives states / connectors / meter / dossier then settles calm; arrowheads land at dy 0;
+  the one-time bloom fires once and never on revisit; reduced-motion advances as a static state machine
+  with no runner or bloom (zero ungated animation declarations); mobile scrolls internally with no page
+  overflow and no scrollbar; every checked text pairing is AA. Forest still carries it under Summary with
+  the BloodHound graph intact as evidence. `npm run build` green (46 pages), no console errors.
+- **Status:** Adopted (working tree; not committed). Component-scoped styles only; no custom.css, config,
+  or dependency changes.
+
+### 2026-07-19 · `.machine-meta` deleted; the REST of the badge family is not dead (corrects the entry below)
+- **Decision:** the `.machine-meta` rule is removed from `custom.css` and its `machine-` family from
+  `plugins/remark-validate-content-taxonomy.mjs`. Nothing else in the badge taxonomy is touched.
+- **Correction, and the load-bearing finding:** the entry below (and the ROADMAP item it spawned) claimed the
+  whole `.meta-badge` / `.platform-*` / `.difficulty-*` / `.os-*` family had gone dead with the Bandit
+  migration. That is FALSE, and true only of HAND-AUTHORED MDX. `WriteupCard.astro` still emits `meta-badge`,
+  `difficulty-*`, `os-*` and (behind `showPlatform`) `platform-*`, and `PlatformIndex` renders those cards on
+  every `{platform}/index.mdx`, so deleting that CSS would have stripped the badges off every writeup card on
+  all four platform landing pages, including the HackTheBox one that prompted the check.
+- **What caught it:** checking `dist`, the shipped artifact, instead of `src/content/docs` alone. A page's own
+  MDX authoring no more the whole story than a component's output. Exact class-token counts in `dist`:
+  `meta-badge` 6, `difficulty-easy` 2, `difficulty-medium` 1, `os-linux` 1, `os-windows` 2, `machine-meta` 0.
+  Only the last is genuinely unreferenced.
+- **Property to know (measurement trap):** a naive `\bos-linux\b` grep over `dist` reports 36, because the
+  `-` is a non-word character so the pattern also matches INSIDE WriteupMeta's own `wm-os-linux`. The class
+  token has to be anchored on a quote or whitespace or the old and new badge systems are indistinguishable.
+  The 36 vs 1 gap is what exposed it.
+- **`platform-*` is kept although it renders 0 times today:** it is the `showPlatform` path, reserved for the
+  planned global `/writeups` index (CORE_SPEC §6). Unused-but-wired is not dead.
+- **The guard's remaining families are kept too:** the guard only ever sees hand-authored MDX, so they match
+  nothing today, but they cost nothing and still catch a typo in any badge a future writeup hand-authors.
+  Only `machine-`, whose sole token is now unstyled everywhere, is removed. This narrows, and partly reverses,
+  the retirement note left in the 2026-07-12 guard entry, which assumed all five families would go together.
+- **Two stale docs corrected in passing:** `src/content.config.ts` said OS "lives in each writeup's body
+  `.machine-meta` badge row, NOT frontmatter, so these stay undefined". Both halves were wrong: the row is
+  gone, and three writeups (busqueda, return, forest) DO set `os:` in frontmatter, which is exactly the 1
+  `os-linux` plus 2 `os-windows` badges rendering. `CLAUDE.md` still instructed authors to hand-write a
+  `<div class="machine-meta">` row and now documents the WriteupMeta usage instead, including that
+  `difficulty` is optional.
+- **Verified:** `npm run build` green (46 pages); zero `machine-meta` in `src` and in `dist`; the landing-page
+  cards still render their difficulty and OS badges with styling intact in both themes.
+- **Status:** Adopted.
+
+### 2026-07-19 · WriteupMeta difficulty becomes optional; Bandit's 34 pages migrate off `.machine-meta` (retiring it site-wide)
+- **Decision:** `difficulty` is now the ONE optional prop on `WriteupMeta` (`difficulty?: Difficulty`), and
+  when it is absent the Difficulty chip does not render at all. All 34 OverTheWire Bandit pages (33 level
+  pages plus `bandit-finale.mdx`) drop their hand-authored `.machine-meta` badge row for
+  `<WriteupMeta platform="OverTheWire" os="Linux" environment="Progressive" />`.
+- **Why optional, rather than picking a value:** the task was specced as a badge-row swap only, but the old
+  Bandit row carries exactly two axes (platform + OS) while `WriteupMeta` required four. `Difficulty` is
+  `Easy | Medium | Hard | Insane` with no honest "none" member, and a progressive wargame has no difficulty
+  rating, so ANY available value would have been invented metadata on 34 published pages. It is also an
+  EVALUATIVE axis that announces "Difficulty N of 4" to screen readers, so a blanket value would be a spoken
+  falsehood, and Bandit genuinely ramps (0 to 1 is trivial, 32 to 33 is not), so one value is wrong at both
+  ends. Optionality is the same recognition that already put `Progressive` in the Environment union: a
+  wargame is a different SHAPE, not a machine with a missing field. Owner chose this over grading all 34
+  levels by hand and over leaving Bandit on `.machine-meta`.
+- **Required-ness was measured, not inferred:** a throwaway probe page passing only platform/os/environment
+  failed the build with `WriteupMeta: unknown difficulty "undefined". Expected one of: Easy, Medium, Hard,
+  Insane.` **Property to know:** the remark taxonomy guard validates only attributes that are PRESENT, so a
+  missing `difficulty` passes it silently and detonates later at render. The component's runtime guard is
+  the only gate on absence, and it reports at render time, not with a source position.
+- **The typo guard is preserved:** `difficulty` joins the validation loop only when supplied, so an absent
+  value is a deliberate omission while a present one is still checked and `difficulty="Hardd"` still fails
+  the build. It is never given a fallback: substituting a rating is the precise thing the omission exists to
+  prevent.
+- **No CSS change was needed (checked, not assumed):** `.wm-diff` is a self-contained `inline-flex` with no
+  sibling selector, `:has()`, or `margin-inline: auto` dependency, and `.writeup-meta`'s `gap: 1rem` has no
+  effect with a single remaining child. Verified live: the row has exactly one child, `.wm-nav` sits flush
+  to the row's left edge, and the 0.55rem / 2.1rem vertical rhythm is unchanged.
+- **Mixed line endings in the content tree (property to know):** 33 Bandit files are CRLF and 2 (`0-1.mdx`,
+  `10-11.mdx`) are LF, so an LF-anchored match silently matched only those 2 on the first pass. The
+  migration normalises per file and restores each file's OWN ending on write, so the diff is the content
+  change alone with zero line-ending churn (confirmed still 33 CRLF / 2 LF afterwards). Any future bulk
+  content edit on this tree must do the same.
+- **`.machine-meta` is now retired site-wide:** with Bandit migrated, the class no longer appears anywhere in
+  `src/content/docs`, completing the page-by-page retirement planned on 2026-07-11. This FIRES the trigger
+  recorded in the 2026-07-12 taxonomy-guard entry and parked in ROADMAP: the guard's `meta-` / `platform-` /
+  `difficulty-` / `os-` / `machine-` allow-lists and the `.machine-meta` / `.meta-badge` / `.platform-*` /
+  `.difficulty-*` / `.os-*` CSS are now dead. Deliberately NOT removed here (out of this task's scope, and a
+  separate blast radius); flagged as follow-up work. **CORRECTED same day (see the entry above): only
+  `.machine-meta` was dead.** `WriteupCard` still emits the other four families on the platform landing
+  pages, so they were kept; only the `machine-` family and its CSS rule were removed. Note this also moots `.platform-overthewire` in the
+  ROADMAP light-AA amber bug, since that selector now styles nothing.
+- **Verified live (both themes) and in `dist`:** Bandit renders exactly three chips reading "OverTheWire
+  Linux Progressive", with no Difficulty chip, no pips, and no `sr-only` remnant. Dark `#ffc23d` / `#ffa95d`
+  / `#3fd9a8`, light `#794e00` / `#6b3900` / `#006345`, all byte-identical to the AA-solved palette. This is
+  the first time the 2026-07-17 Linux-vs-OverTheWire amber separation renders on the real Bandit row it was
+  designed for, and the two ambers read distinct in both themes. Regression checked on busqueda: still
+  "Easy" at `data-level="1"`, leading pip grown to 6px, "Difficulty 1 of 4" text equivalent intact. In
+  `dist`: 0 of 34 Bandit pages carry `machine-meta` or `wm-diff`, 34 carry the Progressive chip, busqueda
+  keeps its Difficulty chip. `npm run build` green (46 pages), no console errors, no horizontal overflow.
+- **Status:** Adopted (working tree; NOT committed). Component + content only: no CSS, no config, no new
+  deps, pinned versions unchanged.
+
 ### 2026-07-17 · busquedav2 testbed dropped before push; badge commits rebased + pushed; merged to main (PR #16)
 - **Decision:** the `busquedav2.mdx` design testbed is NOT pushed and is kept out of the `dev` -> `main` PR.
   It is a local-only testing page (a re-created successor to the June testbed that the 2026-06-27 FlagCapture
