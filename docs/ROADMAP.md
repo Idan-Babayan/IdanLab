@@ -5,6 +5,16 @@
 > Each item: `[area] description — owner-note`. Areas: DESIGN, CONTENT, ENG, PRODUCT.
 
 ## Now (in progress)
+- [DESIGN] Confirm the Geist prose dials on the deployed preview, then close this item. The prose/chrome type
+  split shipped to `dev` (DECISIONS 2026-07-25) and is structurally done: chrome is decoupled from the prose
+  size, so every remaining question is a token edit in the one block at the top of the theme pass in
+  `custom.css`, with no other code change. What is genuinely still an eye-call on a real screen:
+  `--prose-size` (18.5px now, `1.125rem` for the 18px variant), `--prose-leading` (~1.5 to 1.55),
+  `--prose-strong-weight` (600 vs 700 against Geist), and the two toggle-title dials
+  `--toggle-title-face` (`var(--body-face)` reads as a content label, `var(--sl-font-mono)` as terminal
+  voice) + `--toggle-title-weight` (600 vs 700). Also worth a look in the same pass: the re-tuned spacing
+  (`--prose-paragraph-gap`, `--prose-heading-gap`, `--blockquote-pad-y`) and that italic prose renders
+  Geist's drawn italic, not a slant. Both themes, wide and 375px. Then move the settled values to DECISIONS.
 - [DESIGN/ENG] Three-column rebalance + full-width intro pages (custom.css): SHIPPED to production (commit
   `723c2ab`, PR #9 merged 2026-07-11) but STILL NEEDS A REAL-BROWSER FINE-TUNE. The rem values are
   analysis-based starting targets and the required Chrome/Firefox visual pass has not yet run. Changes: (1) writeup content

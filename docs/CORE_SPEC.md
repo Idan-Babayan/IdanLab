@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-07-20.
+> Last updated: 2026-07-25.
 
 ---
 
@@ -111,8 +111,8 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 │  ├─ lib/
 │  │  └─ ec-priv-command.mjs          # EC plugin: tags command words by category (priv/recon/net/inspect)
 │  └─ styles/
-│     ├─ custom.css                   # Starlight theme + THEME PASS + light art-direction + badges + sidebar + components
-│     └─ fonts.css                    # self-hosted @font-face (subset WOFF2) + metric-matched fallbacks; loaded via customCss and imported by the marketing pages
+│     ├─ custom.css                   # Starlight theme + THEME PASS + light art-direction + badges + sidebar + components. Also owns the prose/chrome type split + its token block (see §6)
+│     └─ fonts.css                    # self-hosted @font-face (subset WOFF2: Syne, JetBrains Mono, Geist) + metric-matched fallbacks for each; loaded via customCss and imported by the marketing pages
 ├─ plugins/
 │  ├─ rehype-content-image-loading.mjs # rehype: sets loading/decoding on content <img> (first eager, rest lazy); wired via astro.config markdown.rehypePlugins
 │  ├─ remark-inject-passwordreveal.mjs # remark: conditionally injects `import PasswordReveal from '@components/PasswordReveal.astro'` into an MDX file's AST at build time, only when that file uses <PasswordReveal/> and has no import of its own; wired via astro.config markdown.remarkPlugins
@@ -121,7 +121,7 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 └─ public/
    ├─ robots.txt                      # in-repo; breadcrumb comment + Sitemap line (see §2)
    ├─ favicon.svg                     # site favicon
-   ├─ fonts/*.woff2                   # self-hosted subset fonts (Syne 600/700/800; JetBrains Mono 400/500/700 + 400/500 italic); served at /fonts/
+   ├─ fonts/*.woff2                   # self-hosted subset fonts (Syne 600/700/800; JetBrains Mono 400/500/700 + 400/500 italic; Geist 400/600/700 + 400 italic); served at /fonts/
    ├─ icons/{htb,vulnhub,picoctf,overthewire}.svg
    └─ ethical-hacking.png             # about portrait (TODO: replace with transparent SVG). Writeup screenshots now live in src/assets (see §7); marketing images, if any, go under public/images
 ```
@@ -161,11 +161,47 @@ Two surfaces, deliberately different:
 - **Text (dark):** `--text #e9f1ee`, `--muted #79857f`. **(light):** `#12181a`, `#586460`.
 - **Accents (dark):** lime `#b6ff3c`, cyan `#41efff`, magenta `#ff4d9d`.
 - **Accents (light, darkened for contrast):** lime `#4d7c0f`, cyan `#0b7e92`, magenta `#c41d6f`.
-- **Fonts:** display = **Syne** (600/700/800); mono/body/UI = **JetBrains Mono** (400/500/700, plus italic 400/500 for the Principle coda maxim).
+- **Fonts:** display = **Syne** (600/700/800); code/chrome/UI = **JetBrains Mono** (400/500/700, plus italic
+  400/500 for the Principle coda maxim); **writeup prose = Geist** (400/600/700 plus a true drawn italic 400).
   Self-hosted as subset WOFF2 in public/fonts/ (see src/styles/fonts.css), with metric-matched
-  size-adjust fallbacks so the font swap is shift-free; no Google Fonts origin. See DECISIONS 2026-07-04.
+  size-adjust fallbacks so the font swap is shift-free; no Google Fonts origin. See DECISIONS 2026-07-04
+  (self-hosting) and 2026-07-25 (the Geist prose face and the prose/chrome split below).
 - **Starlight var overrides:** `--sl-color-accent` = lime, `--sl-color-bg` = ink,
   `--sl-font` = JetBrains Mono. Headings forced to Syne via CSS.
+
+### Prose vs chrome typography split (writeup bodies)
+
+Writeup PROSE is Geist; everything else on a content page stays JetBrains Mono. The rule that makes this
+safe: **`--sl-font` / `--sl-font-mono` are deliberately NOT changed.** Geist is applied by a scoped rule,
+so every surface not named in it (sidebar, TOC, breadcrumbs, pager, code frames, badges, headings in Syne)
+is unchanged by construction rather than by exclusion. All of it lives in `custom.css`. See DECISIONS
+2026-07-25.
+
+- **What Geist takes:** `.sl-markdown-content :is(p, li, blockquote, td, strong, em)`. `em` renders Geist's
+  real drawn italic (italic angle -12, distinct letterforms), not a synthetic slant.
+- **Two deliberate exclusions, both chrome wearing prose markup.** `.cl-header` (the `Callout` label row is
+  authored as a `<p>`) keeps its uppercase mono; callout BODY prose stays Geist. `figcaption` is left
+  untargeted because it is Expressive Code's code-frame title bar, not an image caption (image captions are
+  `em` inside a paragraph, so they are covered).
+- **Chrome does not track the prose body.** Mono chrome (inline code, `.port-label`) and component titles
+  (toggle summaries, the `FlagCapture` button base, the `Principle` maxim) are pinned to FIXED rem sizes, so
+  they hold when `--prose-size` moves; only true prose tracks it. Inline code also re-declares
+  `font-family`, since it otherwise inherits Geist from its paragraph. `FlagCapture` needs a fixed base
+  because its flag value (`1.02em`) and lock icon (`1.25em`) are em-relative to that button.
+- **Everything is a token, in one block at the top of the theme pass:** `--body-face`, `--prose-size`
+  (18.5px; the 18px variant is a one-line change to `1.125rem`), `--prose-leading`, `--prose-measure`
+  (50rem, the full content column), `--prose-strong-weight`, `--mono-chrome-size`,
+  `--component-title-size`, `--principle-maxim-size`, `--toggle-title-face` / `--toggle-title-weight`, and
+  the spacing trio `--prose-paragraph-gap` / `--prose-heading-gap` / `--blockquote-pad-y` (+ `-pad-x`).
+  Spacing stays `em` so it remains proportional to the text. Headings keep Starlight's own scale (no
+  override), so the prose size does not drag them.
+- **Two specificity rules that must not be "simplified":** the Principle maxim is targeted as
+  `p.principle-text` (the plain class at (0,2,0) loses to the prose face rule at (0,2,1)), and the prose
+  paragraph gap carries `:not(:where(blockquote *))` because `blockquote p { margin: 0 }` is only (0,1,2)
+  and was being outranked, leaking ~2x the gap into every blockquote.
+- **Toggle titles are one system:** `--toggle-title-face` / `--toggle-title-weight` (Geist 600) on
+  `details.toggle:not(.toggle-flag) > summary`, so no toggle variant carries a bespoke face/weight; the gold
+  flag toggle keeps its own identity.
 
 ### Focus ring system (keyboard accessibility)
 
