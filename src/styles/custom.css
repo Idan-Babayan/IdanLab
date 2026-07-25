@@ -411,6 +411,7 @@ html[data-theme="dark"] .port-label {
    :not(pre) > code so it never touches code-block tokens (those live in pre). Unlayered, so it overrides
    Starlight's default inline-code chip. Red text stays AA on its own fill in both themes (dark is high
    contrast on the near-black surface, light is about 4.9:1). */
+@layer prose {
 :not(pre) > code {
   border-radius: 5px;
   border: 1px solid;
@@ -432,12 +433,18 @@ html[data-theme="light"] :not(pre) > code {
   background-color: #ece2d6;
   border-color: var(--tp-divider);
 }
+} /* @layer prose */
 
 
 /* ── Toggle / details blocks ─────────────────── */
 
 /* Scoped to .sl-markdown-content so these content-Toggle styles never leak onto Starlight's
    sidebar group <details> (which was boxing every group and breaking the nesting line). */
+/* Styling a raw <details> is a DELIBERATE prose default, not an oversight: these rules set the
+   baseline card and summary for any content disclosure, and every named variant (.toggle face,
+   .toggle-flag, .pwreveal-block) states its own identity on top from a later layer. Living in
+   `prose` is what makes that layering do the work, so no variant needs specificity armor to win. */
+@layer prose {
 .sl-markdown-content details {
   border: 1px solid var(--sl-color-gray-5);
   border-radius: 6px;
@@ -503,6 +510,7 @@ html[data-theme="light"] .sl-markdown-content details {
   list-style: none;
   user-select: none;
 }
+} /* @layer prose */
 
 /* Toggle summary title: face + weight on dials for the owner to judge live. Covers the regular <Toggle>
    AND PasswordReveal's block mode (which carries .toggle), so every toggle title reads as one system;
@@ -515,6 +523,7 @@ html[data-theme="light"] .sl-markdown-content details {
   font-weight: var(--toggle-title-weight);
 }
 
+@layer prose {
 .sl-markdown-content details > summary::marker,
 .sl-markdown-content details > summary::-webkit-details-marker {
   display: none;
@@ -540,6 +549,7 @@ html[data-theme="light"] .sl-markdown-content details {
 .sl-markdown-content details[open] > summary {
   padding-bottom: 0.15rem;
 }
+} /* @layer prose */
 
 /* Toggle titles use the normal foreground text color (no cyan), so cyan stays reserved for links, and
    the disclosure chevron stays dim (the ::before above). Inline <code> in a summary is deliberately NOT
@@ -582,6 +592,7 @@ html[data-theme="light"] .sl-markdown-content details {
 
 /* ── Answer callouts (:::tip[Answer]) ────────── */
 
+@layer prose {
 .starlight-aside--tip {
   border-left-width: 3px;
   border-radius: 4px;
@@ -613,6 +624,7 @@ html[data-theme="light"] .starlight-aside--tip {
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'/%3E%3C/svg%3E") center / contain no-repeat;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'/%3E%3C/svg%3E") center / contain no-repeat;
 }
+} /* @layer prose */
 
 
 /* ── Custom metadata badges (distinct colors) ── */
@@ -1145,6 +1157,7 @@ body:has(.pi-index) .content-panel + .content-panel {
    are em inside a paragraph, covered below). The callout label row is authored as <p class="cl-header">
    (chrome markup that happens to be a paragraph), so it is excluded via :not(.cl-header) to keep the
    uppercase callout labels in JetBrains Mono; callout BODY prose (p / li without that class) stays Geist. */
+@layer prose {
 .sl-markdown-content :is(p, li, blockquote, td, strong, em):not(.cl-header):not(:where(.not-content *)) {
   font-family: var(--body-face);
 }
@@ -1181,6 +1194,7 @@ body:has(.pi-index) .content-panel + .content-panel {
 .sl-markdown-content :is(p, ul, ol, blockquote):not(.cl-header):not(:where(.not-content *)) {
   max-width: var(--prose-measure);
 }
+} /* @layer prose */
 
 /* ── Accent + surfaces — DARK ── */
 @layer tokens {
@@ -1303,14 +1317,23 @@ body::after {
 /* Light grain opacity is set alongside the light atmosphere block below (lifted to .035). */
 
 /* ── Headings: Syne display ── */
-.sl-markdown-content :is(h1, h2, h3, h4),
-.site-title,
-a.site-title {
+@layer prose {
+.sl-markdown-content :is(h1, h2, h3, h4) {
   font-family: var(--tp-display);
   letter-spacing: -0.01em;
 }
 .sl-markdown-content h1 { font-weight: 800; }
 .sl-markdown-content h2 { font-weight: 700; }
+} /* @layer prose */
+/* Sanctioned split (Phase 2 slice A): the header wordmark half of the heading Syne rule stays
+   unlayered here, declarations byte-identical to the prose half above, until it moves to the chrome
+   layer in slice B. It keeps its physical position so its source order against the later a.site-title
+   rule is unchanged. */
+.site-title,
+a.site-title {
+  font-family: var(--tp-display);
+  letter-spacing: -0.01em;
+}
 
 /* ── Hero echo on the page title only (mirrors .hero h1 gradient text-fill) ──
    Verified against the live Starlight DOM: the writeup title is frontmatter-driven and
@@ -1342,12 +1365,14 @@ h1#_top {
 }
 
 /* Decorative lime # before section headings (purely visual cue) */
+@layer prose {
 .sl-markdown-content h2::before {
   content: "# ";
   color: var(--sl-color-accent);
   font-family: var(--sl-font-mono);
   font-weight: 700;
 }
+} /* @layer prose */
 
 /* ── Sub-heading hierarchy: lime/cyan duotone ladder (h2 > h3 > h4) ──
    Calm and theme-aware (no motion). The levels are separated by size (the
@@ -1366,6 +1391,7 @@ h1#_top {
    a rule on the h2 would shrink-wrap. The wrapper (.sl-heading-wrapper.level-h2) is the
    full-width block that owns both the h2 and its anchor, so the rule spans the whole column
    AND stays out of the inline flow (no anchor wrapping). padding-bottom reserves the gap. */
+@layer prose {
 .sl-markdown-content .sl-heading-wrapper.level-h2 {
   position: relative;
   padding-bottom: 0.4rem;
@@ -1388,12 +1414,14 @@ h1#_top {
   background: linear-gradient(90deg, var(--tp-deco-lime), var(--tp-deco-cyan), transparent);
   opacity: 0.72;
 }
+} /* @layer prose */
 
 /* h3: cyan accent, one clear step down. Lighter weight than h2 and no "#" marker
    so it differs unmistakably. Cyan is theme-aware via the light override.
    The :not(:where(.not-content *)) guard mirrors Starlight's own prose rules: components
    rendered inside docs (e.g. PlatformIndex/WriteupCard) opt out with class="not-content",
    and these prose styles must respect that too. :where() adds zero specificity. */
+@layer prose {
 .sl-markdown-content h3:not(:where(.not-content *)) {
   color: var(--tp-cyan);
   font-weight: 600;
@@ -1408,8 +1436,10 @@ h1#_top {
   color: var(--sl-color-gray-2);
   font-weight: 600;
 }
+} /* @layer prose */
 
 /* ── Prose links: cyan, lime on hover (guarded off .not-content subtrees, see h3 note) ── */
+@layer prose {
 .sl-markdown-content a:not(:where(.not-content *)) {
   color: var(--tp-cyan);
   /* Focus ring echoes the link's own cyan identity rather than the lime default, reusing the same token
@@ -1429,8 +1459,10 @@ h1#_top {
   --focus-ring: var(--tp-cyan-ink);
   border-bottom-color: color-mix(in oklab, var(--tp-cyan-ink) 40%, transparent);
 }
+} /* @layer prose */
 
 /* ── Lead blockquote (machine description sits here) ── */
+@layer prose {
 .sl-markdown-content blockquote {
   border-inline-start: 3px solid var(--sl-color-accent);
   background: color-mix(in oklab, var(--sl-color-accent) 7%, transparent);
@@ -1441,6 +1473,7 @@ h1#_top {
   font-style: normal;
 }
 .sl-markdown-content blockquote p { margin: 0; }
+} /* @layer prose */
 
 
 /* ── Principle: the closing epigraph ──────────────────────────────────────────
@@ -1849,17 +1882,21 @@ html[data-theme="light"] .expressive-code pre::-webkit-scrollbar-track { backgro
 
 /* Lead blockquote: a calm warm-paper card (subtle olive tint kept light so the body text on it
    stays AA), but the left bar is the vivid deco-lime panel accent. */
+@layer prose {
 :root[data-theme='light'] .sl-markdown-content blockquote {
   background: color-mix(in oklab, var(--sl-color-accent) 12%, #f4f1e8);
   border-inline-start-color: var(--tp-deco-lime);
   box-shadow: 0 6px 20px -14px rgba(60, 50, 30, 0.4);
 }
+} /* @layer prose */
 /* Open content Toggle keeps the closed divider color on paper (no green edge): opening a Toggle must
    not change its border, and lime/green must not appear here. Uses --tp-divider, the same token the
    closed Toggle border and the structural hairlines use. */
+@layer prose {
 :root[data-theme='light'] .sl-markdown-content details[open] {
   border-color: var(--tp-divider);
 }
+} /* @layer prose */
 
 /* Sidebar: give the rail a subtle edge + soft shadow so the nav reads as a distinct panel,
    not the same flat sheet as the content column. */
@@ -1870,9 +1907,11 @@ html[data-theme="light"] .expressive-code pre::-webkit-scrollbar-track { backgro
 
 /* Decorative accent (NOT body text): the lime "#" before each h2 runs the vivid deco-lime on
    paper, bolder than the AA text ink, for a confident risograph marker. Light-only. */
+@layer prose {
 :root[data-theme='light'] .sl-markdown-content h2::before {
   color: var(--tp-deco-lime);
 }
+} /* @layer prose */
 
 /* ── Header + footer chrome: homepage HUD feel ──
    Mono, uppercase, letter-spaced to mirror index.astro .hud / .footbar.
@@ -1976,6 +2015,7 @@ ul.top-level > li:nth-child(5) > details > summary .group-label::before  { width
 
 
 /* ── Loot callout: captured creds / intel ─────── */
+@layer prose {
 .sl-markdown-content .loot {
   border: 1px solid color-mix(in oklab, var(--tp-cyan) 35%, transparent);
   border-left: 3px solid var(--tp-cyan);
@@ -1986,6 +2026,7 @@ ul.top-level > li:nth-child(5) > details > summary .group-label::before  { width
 }
 .sl-markdown-content .loot > :first-child { margin-top: 0; }
 .sl-markdown-content .loot > :last-child  { margin-bottom: 0; }
+} /* @layer prose */
 
 
 /* ── Tagged callouts (.cl + Callout.astro) ─────────────────────────────────────
