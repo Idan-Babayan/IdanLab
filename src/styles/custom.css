@@ -374,7 +374,8 @@ mobile-starlight-toc a[style*="--depth: 1"]:not([href="#user-flag"]):not([href="
    rows is layered on separately. Used only inside recon callouts. */
 .port-label {
   font-family: var(--sl-font-mono);
-  font-size: 0.82em;
+  /* Fixed code scale (rem), matching inline code, so the port tag does not inflate with the Geist prose. */
+  font-size: var(--mono-chrome-size);
   font-weight: 700;
   border: 1px solid;
   border-radius: 4px;
@@ -408,7 +409,12 @@ html[data-theme="dark"] .port-label {
   border-radius: 5px;
   border: 1px solid;
   padding: 0.12em 0.4em;
-  font-size: 0.875em;
+  /* Fixed code scale (rem), NOT em: inline code reads at the ~14px code-block scale and does not inflate
+     with the 18.5px Geist prose. AttackPath sets its own (higher-specificity) inline-code size, so its
+     tiny diagram code is unaffected. */
+  font-size: var(--mono-chrome-size);
+  /* Stay mono even when the surrounding prose is Geist (inline code inherits its parent otherwise). */
+  font-family: var(--sl-font-mono);
 }
 html[data-theme="dark"] :not(pre) > code {
   color: #ff9b9b;
@@ -480,12 +486,27 @@ html[data-theme="light"] .sl-markdown-content details {
 .sl-markdown-content details > summary {
   cursor: pointer;
   font-weight: 500;
+  /* Component TITLE, held at a fixed size so it does not inflate with the 18.5px Geist prose (it inherits
+     the mono chrome family; without this it tracked the prose container and read oversized). Covers every
+     toggle title built on this base: the regular Toggle, the flag toggle, and the spoiler toggle. */
+  font-size: var(--component-title-size);
   padding-block: 0.3rem;
   margin-inline: calc(-1 * (0.75rem - 0.4rem));
   padding-inline: calc(0.75rem - 0.4rem);
   border-radius: 4px;
   list-style: none;
   user-select: none;
+}
+
+/* Toggle summary title: face + weight on dials for the owner to judge live. Covers every .toggle variant
+   on the page, so all toggle titles read as one system instead of each carrying a bespoke face and weight;
+   :not(.toggle-flag) leaves the gold flag toggle to its own identity. Size stays --component-title-size
+   (base rule above). Defaults: Geist (content-label reading) at weight 600. To flip, edit the two tokens
+   in the token block: --toggle-title-face (var(--body-face) <-> var(--sl-font-mono)) and
+   --toggle-title-weight (600 <-> 700). Inline <code> in a title keeps its own mono chip rule. */
+.sl-markdown-content details.toggle:not(.toggle-flag) > summary {
+  font-family: var(--toggle-title-face);
+  font-weight: var(--toggle-title-weight);
 }
 
 .sl-markdown-content details > summary::marker,
@@ -1048,13 +1069,104 @@ body:has(.pi-index) .content-panel + .content-panel {
    design tokens, the framework-blessed way.
    ══════════════════════════════════════════════ */
 
-/* ── Typography: Syne for display, JetBrains Mono for everything else ── */
+/* ── Typography: Syne for display, JetBrains Mono for code + chrome, Geist for writeup prose ── */
 :root {
   --sl-font: 'JetBrains Mono', 'JetBrains Mono Fallback', ui-monospace, SFMono-Regular, Menlo, monospace;
   --sl-font-mono: 'JetBrains Mono', 'JetBrains Mono Fallback', ui-monospace, SFMono-Regular, Menlo, monospace;
   --tp-display: 'Syne', 'Syne Fallback', sans-serif;
+
+  /* Writeup PROSE face. Geist sets running prose only (see the prose/chrome split just below); all code,
+     badges, and chrome stay JetBrains Mono because --sl-font / --sl-font-mono are left untouched.
+     'Geist Fallback' is the metric-matched, shift-free fallback declared in fonts.css (roman + italic). */
+  --body-face: 'Geist', 'Geist Fallback', system-ui, sans-serif;
+
+  /* PROSE TOKENS, pending final confirmation on the deployed preview: these are live eye-calls, tune
+     them here, no other code change needed.
+       --prose-measure        cap on the prose TEXT line width (50rem = the full content column, LOCKED).
+       --prose-strong-weight  bold weight for prose <strong>.
+       --prose-size           prose body size, scoped to the prose container (1.15625rem = 18.5px).
+                              18px VARIANT: set this to 1.125rem. Nothing else needs to change, because the
+                              component tokens below are decoupled from it, so proportions hold at either size.
+       --prose-leading        prose line-height (unitless), comfortable range ~1.5 to 1.55.
+     Headings keep Starlight's own scale (no override here), so this size no longer drags them.
+
+     COMPONENT + RHYTHM tokens. The point of this pass: chrome does NOT track the prose body. Mono chrome
+     and component titles are pinned to FIXED rem sizes, so they hold when --prose-size moves; only true
+     prose (paragraphs, list items, callout body, blockquote text) tracks it. Spacing stays em (proportional
+     to the text) but is re-tuned smaller for the 18.5px body.
+       --mono-chrome-size      inline code + port label, at the ~14px code-block scale (fixed rem).
+       --component-title-size  toggle / spoiler titles + FlagCapture base (fixed rem, ~16px).
+       --toggle-title-face     regular <Toggle> summary title face. OWNER'S LIVE CALL: var(--body-face) reads
+                              it as a content label (Geist, default), var(--sl-font-mono) as terminal voice.
+       --toggle-title-weight   regular <Toggle> summary title weight. OWNER'S LIVE CALL: 600 (default) vs 700,
+                              the same "is 700 too heavy against Geist" question as prose bold.
+       --principle-maxim-size  the closing Principle maxim (fixed rem; a deliberate, slightly emphasized coda).
+       --prose-paragraph-gap   vertical gap between paragraphs (em; was 1.35em, felt too large).
+       --prose-heading-gap     gap BELOW a heading, before its text (em; heading TOP margin is untouched).
+       --blockquote-pad-y      blockquote vertical padding (em; reduced so the box is not tall).
+       --blockquote-pad-x      blockquote horizontal inset (em; kept, this is the quote doing its job). */
+  --prose-measure: 50rem;
+  --prose-strong-weight: 600;
+  --prose-size: 1.15625rem;
+  --prose-leading: 1.55;
+  --mono-chrome-size: 0.875rem;
+  --component-title-size: 1rem;
+  --toggle-title-face: var(--body-face);
+  --toggle-title-weight: 600;
+  --principle-maxim-size: 1.4rem;
+  --prose-paragraph-gap: 0.9em;
+  --prose-heading-gap: 0.6em;
+  --blockquote-pad-y: 0.6em;
+  --blockquote-pad-x: 1.25em;
+
   --tp-cyan: #41efff;
   --tp-cyan-ink: #0b7e92;
+}
+
+/* ── Writeup prose face + rhythm (Geist), scoped to .sl-markdown-content prose surfaces ONLY ──────────
+   Geist sets running prose (paragraphs, list items, blockquotes, table body cells, strong, and em, the
+   last rendering Geist's true drawn italic). Everything else stays JetBrains Mono: code blocks and
+   inline code, badges, callout labels, .port-label / .task-title, headings (Syne), the Principle coda,
+   and all sidebar / TOC / breadcrumb / pager chrome are either untargeted here or set their own
+   font-family. --sl-font / --sl-font-mono are deliberately NOT changed. figcaption is left out on
+   purpose: it is Expressive Code's code-frame title bar (chrome), not an image caption (image captions
+   are em inside a paragraph, covered below). The callout label row is authored as <p class="cl-header">
+   (chrome markup that happens to be a paragraph), so it is excluded via :not(.cl-header) to keep the
+   uppercase callout labels in JetBrains Mono; callout BODY prose (p / li without that class) stays Geist. */
+.sl-markdown-content :is(p, li, blockquote, td, strong, em):not(.cl-header) {
+  font-family: var(--body-face);
+}
+.sl-markdown-content {
+  font-size: var(--prose-size);
+}
+.sl-markdown-content :is(p, li):not(.cl-header) {
+  line-height: var(--prose-leading);
+  letter-spacing: 0;
+  font-weight: 400;
+}
+/* The prose paragraph gap must NOT apply inside blockquotes: a blockquote is a single set-off block, and
+   `blockquote p { margin: 0 }` (below) is meant to zero its inner paragraph. That rule is specificity
+   (0,1,2), so without this exclusion the gap rule (0,2,1) outranks it and leaks ~2x the gap into the quote,
+   which was the real cause of the "too tall" blockquote (not padding). The :not(:where(...)) carries zero
+   specificity, so normal prose paragraphs, list items, and callout body text are entirely unaffected. */
+.sl-markdown-content p:not(.cl-header):not(:where(blockquote *)) {
+  margin-block: var(--prose-paragraph-gap);
+}
+/* Gap BELOW a heading, before its text. Starlight wraps every heading in .sl-heading-wrapper and the
+   real content is the wrapper's next sibling (the heading's own next sibling is its anchor link), so this
+   is the clean, level-agnostic hook. Only the space below a heading is set here; the space ABOVE a
+   heading (section separation) stays Starlight's. Overrides whatever margin-top the following element
+   would otherwise use, so the heading-to-text gap is uniform and tunable. */
+.sl-markdown-content .sl-heading-wrapper + * {
+  margin-top: var(--prose-heading-gap);
+}
+.sl-markdown-content strong {
+  font-weight: var(--prose-strong-weight);
+}
+/* Cap the prose TEXT measure within the unchanged 50rem content column: running prose caps at
+   --prose-measure (left aligned), while headings, code blocks, tables, and figures keep the full column. */
+.sl-markdown-content :is(p, ul, ol, blockquote):not(.cl-header) {
+  max-width: var(--prose-measure);
 }
 
 /* ── Accent + surfaces — DARK ── */
@@ -1297,7 +1409,9 @@ h1#_top {
   border-inline-start: 3px solid var(--sl-color-accent);
   background: color-mix(in oklab, var(--sl-color-accent) 7%, transparent);
   border-radius: 0 10px 10px 0;
-  padding: 0.85rem 1.25rem;
+  /* Padding in em (tracks the prose size). Vertical reduced so the quote box is not tall; horizontal inset
+     kept, which is why the quote text measures a few characters narrower than body (the quote doing its job). */
+  padding: var(--blockquote-pad-y) var(--blockquote-pad-x);
   font-style: normal;
 }
 .sl-markdown-content blockquote p { margin: 0; }
@@ -1336,11 +1450,17 @@ h1#_top {
   color: var(--sl-color-gray-3);
   margin-bottom: 0.7rem;
 }
-.sl-markdown-content .principle-text {
+/* The maxim is a <p class="principle-text">, so the prose face rule
+   (.sl-markdown-content :is(p,...):not(.cl-header), specificity 0,2,1) was OUTRANKING the plain
+   .principle-text (0,2,0) and forcing Geist onto it, plus leaking the prose paragraph margin. The
+   `p.principle-text` qualifier ties that specificity (0,2,1) and wins on source order (this block is
+   later), so the maxim keeps its own mono / italic / margin. It is a terminal maxim: mono is the point,
+   same register as badges and command highlighting. Size is a token so it can be dialed as a coda. */
+.sl-markdown-content p.principle-text {
   font-family: var(--sl-font-mono);
   font-style: italic;
   font-weight: 400;
-  font-size: 1.2rem;
+  font-size: var(--principle-maxim-size);
   line-height: 1.55;
   color: var(--sl-color-text);
   margin: 0 auto;
@@ -2195,6 +2315,9 @@ html[data-theme] .sl-markdown-content details.spoiler-toggle[open] {
   margin: 0;
   padding: 0.85rem 0.95rem;
   font-family: var(--sl-font-mono, ui-monospace, monospace);
+  /* Fixed base size so the flag VALUE (1.02em) and lock/check icon (1.25em), which are em-relative to this
+     button, hold their proportion instead of inflating with the 18.5px prose. Restores the pre-Geist scale. */
+  font-size: var(--component-title-size);
   text-align: left;
   color: var(--fc-id);
   background: transparent;
