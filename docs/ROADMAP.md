@@ -130,6 +130,22 @@
   swap on 2026-06-27 kept the inherited tip color). Experiment with a tip accent that better matches the
   overall theme (e.g. green/teal or a paper-harmonious hue), both themes, CSS-only via the Starlight aside
   color tokens. Owner wants to try options later.
+- [DESIGN] Revisit the Active Directory topology glyph (low priority, no urgency). The diamond is not
+  broken and ships as-is: it passes the silhouette test (its outline reads at 15px with the interior
+  contributing nothing, which is exactly why it works). Parked only because Idan may want to move off it
+  later, not because anything is wrong. Context for whoever picks it up, so the dead ends are not re-walked:
+  - Concept A ("one node vs three linked nodes") is REJECTED, do not retry it. Two independently fatal
+    reasons: three ~4px nodes fuse into a Λ letterform at 15px, and Active Directory and Standalone occupy
+    the same scalar `environment` slot so they never co-occur, meaning a node-count contrast has no on-page
+    reference to read against.
+  - The design bar for any replacement: the silhouette carries the meaning, the interior does nothing (at
+    15px, part-count is not a legible channel). Starting directions that fit the bar: folder-tree bracket,
+    nested/concentric forms, hierarchy fork.
+  - Standalone's ring stays regardless. It beat every candidate by resolving its hole at 15px and dodging
+    the prospective PicoCTF two-disc collision. This item is AD only.
+  - Any redraw inherits the current 15px hull-area grid (model B, cap 1.128) and, being a we-authored
+    geometric glyph, should size by hull area rather than clamp. It also retires the Amido `<metadata>`
+    attribution the diamond asset currently carries.
 
 ## Open bugs / known issues
 - [DESIGN/A11y] Non-badge `#a86f04` ambers unaudited for light-mode WCAG AA. The badge light palette pass
