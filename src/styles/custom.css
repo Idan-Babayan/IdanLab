@@ -1133,13 +1133,13 @@ body:has(.pi-index) .content-panel + .content-panel {
    are em inside a paragraph, covered below). The callout label row is authored as <p class="cl-header">
    (chrome markup that happens to be a paragraph), so it is excluded via :not(.cl-header) to keep the
    uppercase callout labels in JetBrains Mono; callout BODY prose (p / li without that class) stays Geist. */
-.sl-markdown-content :is(p, li, blockquote, td, strong, em):not(.cl-header) {
+.sl-markdown-content :is(p, li, blockquote, td, strong, em):not(.cl-header):not(:where(.not-content *)) {
   font-family: var(--body-face);
 }
 .sl-markdown-content {
   font-size: var(--prose-size);
 }
-.sl-markdown-content :is(p, li):not(.cl-header) {
+.sl-markdown-content :is(p, li):not(.cl-header):not(:where(.not-content *)) {
   line-height: var(--prose-leading);
   letter-spacing: 0;
   font-weight: 400;
@@ -1149,14 +1149,15 @@ body:has(.pi-index) .content-panel + .content-panel {
    (0,1,2), so without this exclusion the gap rule (0,2,1) outranks it and leaks ~2x the gap into the quote,
    which was the real cause of the "too tall" blockquote (not padding). The :not(:where(...)) carries zero
    specificity, so normal prose paragraphs, list items, and callout body text are entirely unaffected. */
-.sl-markdown-content p:not(.cl-header):not(:where(blockquote *)) {
+.sl-markdown-content p:not(.cl-header):not(:where(blockquote *)):not(:where(.not-content *)) {
   margin-block: var(--prose-paragraph-gap);
 }
 /* Gap BELOW a heading, before its text. Starlight wraps every heading in .sl-heading-wrapper and the
    real content is the wrapper's next sibling (the heading's own next sibling is its anchor link), so this
    is the clean, level-agnostic hook. Only the space below a heading is set here; the space ABOVE a
    heading (section separation) stays Starlight's. Overrides whatever margin-top the following element
-   would otherwise use, so the heading-to-text gap is uniform and tunable. */
+   would otherwise use, so the heading-to-text gap is uniform and tunable.
+   Deliberately UNGUARDED by :not(:where(.not-content *)): this sets external rhythm on whatever block follows a heading, component roots included; spacing between blocks is the surrounding context's business, and the guard convention covers only rules that reach into a component's internals. */
 .sl-markdown-content .sl-heading-wrapper + * {
   margin-top: var(--prose-heading-gap);
 }
@@ -1165,7 +1166,7 @@ body:has(.pi-index) .content-panel + .content-panel {
 }
 /* Cap the prose TEXT measure within the unchanged 50rem content column: running prose caps at
    --prose-measure (left aligned), while headings, code blocks, tables, and figures keep the full column. */
-.sl-markdown-content :is(p, ul, ol, blockquote):not(.cl-header) {
+.sl-markdown-content :is(p, ul, ol, blockquote):not(.cl-header):not(:where(.not-content *)) {
   max-width: var(--prose-measure);
 }
 
