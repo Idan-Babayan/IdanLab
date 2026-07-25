@@ -96,7 +96,7 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in C:\Users
 │  ├─ components/
 │  │  ├─ Toggle.astro                 # <details class="toggle"> wrapper; flag prop adds .toggle-flag; renders MDX (incl. code) in slot
 │  │  ├─ FlagCapture.astro            # "Decrypt to Capture" gold flag control (props: type user|root, flag); replaces the heading-plus-duplicate flag Toggle
-│  │  ├─ PasswordReveal.astro         # amber wargame password waypoint (prop: password); blur-to-reveal then copy-in-place, deliberately distinct from FlagCapture (no gold, no decode animation); no per-file import needed, see plugins/remark-inject-passwordreveal.mjs
+│  │  ├─ PasswordReveal.astro         # amber wargame secret waypoint, TWO modes derived from the slot: INLINE (prop: password) blur-to-reveal then copy-in-place, BLOCK (slot content + prop: label) collapses a multi-line secret as a <details class="toggle pwreveal-block">, no copy button. Both wear one amber (--pw-amber / --pw-amber-rgb). Deliberately distinct from FlagCapture (no gold, no decode animation); replaced the retired .spoiler-toggle class; no per-file import needed, see plugins/remark-inject-passwordreveal.mjs
 │  │  ├─ ToggleAll.astro              # Expand/Collapse-all control (vanilla TS, scroll-anchored); injected via PageSidebar override
 │  │  ├─ AttackPath.astro             # guided infographic for a LINEAR priv-esc chain (ascending escalating path, SVG connectors, Next-step progression, one-time gold flourish); data-driven from a nodes[] prop, scoped styles, not-content. See DECISIONS 2026-07-19
 │  │  ├─ Callout.astro                # icon-based tagged callout (recon/loot/intel/vuln/defense); .cl styles in custom.css
@@ -238,7 +238,7 @@ ring echoes what the element is rather than inventing an identity. Everything el
 | --- | --- |
 | `WriteupCard` (`.wc-card`) | `--pf-accent` (its platform color) |
 | The 4 platform sidebar groups | positional `nth-child`, theme-aware (HTB lime, VulnHub red, PicoCTF purple, OTW amber) |
-| `FlagCapture` / `PasswordReveal` | gold `color-mix(--fc-id)` / amber `#ffc23d` dark, `#a86f04` light |
+| `FlagCapture` / `PasswordReveal` | gold `color-mix(--fc-id)` / amber `var(--pw-amber)` (`#ffc23d` dark, `#a86f04` light) |
 | `ToggleAll` | `--pf-accent-2` cyan (its own hover identity; set in the component's scoped style) |
 | TOC entries | the hue of the heading they point to: flags `--flag-gold-val`, h3 cyan, h2/h4+ lime |
 | In-prose links | `--tp-cyan` / `--tp-cyan-ink` |
@@ -393,10 +393,13 @@ token (unlike `--flag-gold` / `--flag-gold-val`): everything `--wm-c` paints wan
   L0.40: dark already separated on hue AND lightness, but light had matched lightness, so hue alone at low
   chroma did not read. Deepening restores the second axis (separation dEOK 0.065 light / 0.073 dark). The
   finding: an amber slot CAN hold two identities on paper, but only separating on lightness as well as hue.
-- **The seven-way `#a86f04` fork:** OTW, Linux, `.platform-overthewire`, `.pf-overthewire`, the sidebar
-  focus ring, the spoiler toggle and PasswordReveal independently used the same light amber. They are
-  semantically unrelated ambers that coincided on a hex, NOT a shared token, so they stay forked (this pass
-  moved the two badge ambers off it). The five non-badge ambers are unaudited for light AA (see ROADMAP).
+- **The `#a86f04` fork, now six-way (was seven):** OTW, Linux, `.platform-overthewire`, `.pf-overthewire`,
+  the sidebar focus ring, the spoiler toggle and PasswordReveal independently used the same light amber. They
+  are semantically unrelated ambers that coincided on a hex, NOT a shared token, so they stay forked (the
+  2026-07-17 pass moved the two badge ambers off it). Two of those users have since MERGED, legitimately:
+  the spoiler toggle became PasswordReveal's block mode and both now read the shared `--pw-amber`
+  (2026-07-25), which is a real shared identity rather than a coincidence, so it is one entry. That leaves
+  four non-badge ambers unaudited for light AA (see ROADMAP).
 
 ### Light-mode identity (paper-native "risograph")
 Light is art-directed on its own terms (dark is unchanged). All rules scoped to
@@ -472,7 +475,36 @@ slug ids are what the active-color ladder excludes, so flags keep gold instead o
 DECISIONS 2026-06-20.
 
 ### Password waypoint amber (PasswordReveal)
-`PasswordReveal.astro` (prop: `password: string`) is the wargame-password counterpart to FlagCapture,
+
+**Two modes, one component, one amber (2026-07-25).** A wargame secret comes in two shapes and the
+interaction follows the shape:
+
+| Mode | Trigger | Behavior |
+| --- | --- | --- |
+| **INLINE** | `password` prop, no slot | one-line password: blurs in place, copy control (the original) |
+| **BLOCK** | slot content, no `password` prop | multi-line secret (an RSA private key): collapses as a `<details>` |
+
+Inline secrets blur, block secrets collapse: a secret running to many lines cannot be blurred as one inline
+run. **Mode is derived from the slot, never guessed** (`Astro.slots.has('default')`); passing both or
+neither throws at build time rather than silently picking a branch. Block mode takes a `label` prop for its
+summary and carries `.toggle`, so it inherits the standard toggle card, the disclosure marker, ToggleAll's
+bulk expand, and the shared toggle-title face/weight. **Block mode has NO copy button on purpose:** the keys
+it holds are truncated for publication (see the private-key truncation rule), so a copy control would hand
+over a broken key. This replaced the one-off `.spoiler-toggle` class, which existed only because the inline
+component could not hold a block secret; that class is retired and appears nowhere in `src/`.
+
+**The amber has exactly one source:** `--pw-amber` (accent: label, button, open border. `#ffc23d` dark /
+`#a86f04` light) and `--pw-amber-rgb` (the `#f59e0b` wash base, consumed as
+`rgba(var(--pw-amber-rgb), alpha)` for tints and hairlines). Both modes read them, so they cannot drift
+apart. Declared on the bare `:root` fallback as well, per this file's convention, so an absent `data-theme`
+can never leave the var undefined and invalidate every `rgba()` reading it. Custom properties are safe here:
+the failure that once made this block literal-only was `color-mix()` indirection, not the properties
+themselves. `.pwreveal-block`'s two border rules keep the `html[data-theme]` prefix inherited from the
+retired class, and still need it (see the specificity note in the CSS).
+
+The inline mode, unchanged, in detail:
+
+`PasswordReveal.astro` is the wargame-password counterpart to FlagCapture,
 deliberately built as its own component (not a FlagCapture variant) because a wargame password
 (OverTheWire Bandit, etc.) is a waypoint the reader pastes into SSH, not a trophy: no gold/loot tokens,
 no signature decode/scramble animation. Layout: a `PASSWORD` label, the value blurred via CSS `filter`
@@ -486,18 +518,19 @@ revealed"/"Password copied" text). Only the button reads as interactive: the con
 label, and the value are all `user-select: none` (copying is the only way to take the value, matching
 FlagCapture's captured-value pattern), and the container/value both get `cursor: default` with no `:hover`
 change to filter/cursor/color. The row itself IS a passive amber card (not a neutral hairline frame):
-literal `rgba(245, 158, 11, ...)` washes/borders (dark 0.08 fill / 0.4 border, light 0.14 fill / 0.55
-border, stronger and more golden), matching the site's canonical OverTheWire system, the same values
-`.spoiler-toggle` uses. The button text/icon is the OTW accent directly, `#ffc23d` dark / `#a86f04` light,
-with an `rgba(245, 158, 11, ...)` border/hover wash. Every color is a literal hex/rgba value (no
-`color-mix()` custom-property indirection, after an intermediate token-based pass rendered as a
+`--pw-amber-rgb` washes/borders (dark 0.08 fill / 0.4 border, light 0.14 fill / 0.55
+border, stronger and more golden), matching the site's canonical OverTheWire system, the same values the
+retired spoiler class used. The button text/icon is the OTW accent `--pw-amber` (`#ffc23d` dark / `#a86f04`
+light), with a `--pw-amber-rgb` border/hover wash. Every value behind those two tokens is a literal hex/rgba
+(no `color-mix()` custom-property indirection, after an intermediate token-based pass rendered as a
 neutral/near-black box in practice), deliberately NOT `--flag-gold`. The only motion is the blur-to-clear
 filter transition, gated behind `prefers-reduced-motion: no-preference`; the value's `:hover` rule
 deliberately does NOT declare `filter` at all (an earlier `filter: inherit` attempt resolved to the
 parent's "none" and silently un-blurred the still-locked password on hover, see DECISIONS). Styled in
-`custom.css` near the `.spoiler-toggle` rules, including a project-first `.sr-only` utility. Wired into
-`overthewire/bandit/0-1.mdx` alongside the existing spoiler-toggle; rolling out to the remaining 33 Bandit
-pages is tracked in ROADMAP. See DECISIONS 2026-07-05.
+`custom.css` immediately after the `.pwreveal-block` rules, including a project-first `.sr-only` utility.
+Inline mode is live on 32 of the 34 Bandit level pages (rollout completed 2026-07-11); of the two
+exceptions, `16-17.mdx` is now BLOCK mode (its RSA private key) and one level has no password to reveal.
+See DECISIONS 2026-07-05 (inline) and 2026-07-25 (block mode + the shared amber).
 
 ### TOC active-entry color ladder
 The right "On this page" entry the reader is currently on (`aria-current="true"`) takes the hue of the
@@ -581,13 +614,21 @@ Preserves reading position: anchors on the current heading and corrects scroll s
   `import FlagCapture from '@components/FlagCapture.astro'`. This replaces the old heading + duplicate
   `<Toggle flag>` + `:::tip[Answer]`. Handle user-only and root-only writeups (emit only the flag that
   exists). See DECISIONS 2026-06-27.
-- **Wargame passwords:** emit `<PasswordReveal password="..." />` inline, at the point in the walkthrough
-  where the password is obtained (not frontmatter, not appended at the end). No import line needed: a
-  remark plugin (`plugins/remark-inject-passwordreveal.mjs`, wired via astro.config `markdown.remarkPlugins`)
-  detects the tag in the MDX AST at build time and conditionally injects
-  `import PasswordReveal from '@components/PasswordReveal.astro'`, only in files that actually use the
-  component and only if they have not already imported it. Supersedes the manual per-file import used when
-  PasswordReveal first shipped on `overthewire/bandit/0-1.mdx`. See DECISIONS 2026-07-05.
+- **Wargame secrets:** emit `PasswordReveal` at the point in the walkthrough where the secret is obtained
+  (not frontmatter, not appended at the end). Pick the mode by the secret's SHAPE, never by preference:
+  - one-line password → `<PasswordReveal password="..." />` (inline: blurs in place, copyable).
+  - multi-line secret, e.g. an RSA private key → `<PasswordReveal label="Reveal private key">` wrapping a
+    fenced block, then `</PasswordReveal>` (block: collapses). Truncate the key first (see the
+    private-key rule); block mode has no copy button precisely because the value is truncated.
+  Passing both a `password` prop and slot content, or neither, fails the build on purpose. Never reach for a
+  bare `<Toggle>` with a bespoke class for this, which is what the retired `.spoiler-toggle` was.
+  No import line needed in either mode: a remark plugin (`plugins/remark-inject-passwordreveal.mjs`, wired
+  via astro.config `markdown.remarkPlugins`) detects the tag in the MDX AST at build time and conditionally
+  injects `import PasswordReveal from '@components/PasswordReveal.astro'`, only in files that actually use
+  the component and only if they have not already imported it. It matches `mdxJsxFlowElement` by name, so a
+  block-mode tag WITH children is detected exactly like a self-closing inline one. Supersedes the manual
+  per-file import used when PasswordReveal first shipped on `overthewire/bandit/0-1.mdx`.
+  See DECISIONS 2026-07-05 and 2026-07-25.
 - `**Port 80**` → a cyan mono `.port-label` tag (was red; harmonizes with the recon callout, out-ranks
   inline code by weight; inside `.cl-recon` a port list becomes an aligned findings table with an
   `Assessment` eyebrow, see DECISIONS 2026-07-04). Inline code (`:not(pre) > code`) → a rounded NEUTRAL chip with red

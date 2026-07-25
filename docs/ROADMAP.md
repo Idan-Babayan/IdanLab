@@ -165,9 +165,13 @@
   2026-07-19: `.platform-overthewire` (the old machine-meta badge label) is now MOOT, since `.machine-meta`
   is gone from all content and that selector styles nothing (it goes away with the dead-taxonomy cleanup in
   Now). That leaves `.pf-overthewire` (platform-index accent) and PasswordReveal's button text as body-size
-  text needing 4.5:1, plus the sidebar `nth-child(5)` focus ring and the spoiler-toggle border as non-text
-  (3:1). Audit each on light and solve the text ones in OKLCH the same way (hold hue, drop
-  lightness), leaving the forks independent. Small, self-contained, after the glyph pass.
+  text needing 4.5:1, plus the sidebar `nth-child(5)` focus ring and PasswordReveal's block-mode open border
+  as non-text (3:1). NARROWED AGAIN 2026-07-25: the spoiler-toggle border is no longer a separate user. The
+  class is retired and its border is now `.pwreveal-block` reading the SHARED `--pw-amber`, the same token as
+  PasswordReveal's button text (DECISIONS 2026-07-25), so the two PasswordReveal entries are one fix: solve
+  `--pw-amber` light once and both the 4.5:1 text and the 3:1 border move together. Audit each remaining user
+  on light and solve the text ones in OKLCH the same way (hold hue, drop lightness), leaving the genuinely
+  unrelated forks independent. Small, self-contained, after the glyph pass.
 - [ENG] ToggleAll few-pixel shift: expand/collapse can leave a small reversible content offset in real
   Chromium (Chrome/Edge/Opera GX), from native scroll anchoring fighting the manual correction. Fix
   applied: suppress `overflow-anchor` for the operation, restored next frame (DECISIONS 2026-06-20). NOT
