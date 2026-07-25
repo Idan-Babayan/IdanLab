@@ -6,6 +6,59 @@
 
 ---
 
+### 2026-07-25 · PasswordReveal gets a BLOCK mode; the one-off `.spoiler-toggle` class is retired
+- **Decision:** `PasswordReveal` grows a second mode so one component covers both shapes a wargame secret
+  comes in, and the `.spoiler-toggle` class it existed to work around is deleted from `custom.css`.
+  **INLINE** (a `password` prop, no slot) is the original one-line password: blurs in place, copy control,
+  unchanged. **BLOCK** (slot content, no `password` prop) collapses a multi-line secret as a `<details>`.
+  Migrated `overthewire/bandit/16-17.mdx`, the RSA private key that was the last spoiler-toggle on the site.
+- **Why two modes rather than two components:** the rule is that the interaction follows the secret's SHAPE,
+  not its meaning. Inline secrets blur, block secrets collapse, because a secret running to many lines cannot
+  be blurred as one inline run: a blur over a 5-line PEM block is unreadable as a control and reads as broken
+  rendering. The IDENTITY is the same in both cases though (this is a wargame waypoint the reader pastes into
+  SSH, not a trophy), and that is exactly why it is one component and not two: the amber, the "no gold, no
+  decode animation" distinction from FlagCapture, and the reader's mental model are shared, only the geometry
+  differs.
+- **Mode is derived from the slot, never guessed:** `Astro.slots.has('default')` decides, and passing BOTH a
+  `password` prop and slot content, or NEITHER, throws at build time. An ambiguous call should be a build
+  failure, not a silent branch choice, for the same reason the `badges` opt-out rejects non-booleans: a
+  quiet wrong guess ships a broken page on a green build.
+- **Block mode ships with NO copy button on purpose.** The keys it holds are truncated for publication
+  (GitHub push protection blocks real PEM keys, and the truncation is the recorded convention), so a copy
+  control would hand the reader a broken key. Better no affordance than a misleading one. Revisitable if a
+  full, copyable block secret ever ships.
+- **Why this is a consolidation and not a rename:** block mode carries `.toggle`, so it inherits the standard
+  toggle card, the disclosure marker and ToggleAll's bulk expand exactly as the spoiler class did, and its
+  summary face/weight now come from the shared toggle-title rule instead of a bespoke mono 700. The Geist
+  type pass is what surfaced this: after it, `.spoiler-toggle` was the last toggle on the site still
+  carrying its own face and weight, for no reason other than that it predated any system.
+- **The amber now has exactly ONE source, which is the real prize:** `--pw-amber` (accent: label, button,
+  open border. `#ffc23d` dark / `#a86f04` light) and `--pw-amber-rgb` (the `#f59e0b` wash base, consumed as
+  `rgba(var(--pw-amber-rgb), alpha)`). Both modes read them, so they cannot drift apart, and the inline row's
+  scattered literal hexes and `rgba()`s collapse into them. Previously the same amber lived independently in
+  the spoiler block and the `.pwreveal` block, which is precisely how a two-place identity drifts.
+- **Custom properties are safe here, and this is worth stating because the file says otherwise:** the 2026-07-05
+  entry recorded that every colour in this block must be a literal, after a token-based pass rendered as a
+  neutral/near-black box. That failure was `color-mix()` indirection, NOT custom properties. `--pw-amber`
+  holds a literal hex and `--pw-amber-rgb` a literal channel triplet, so nothing has to resolve a colour
+  function. Both are also declared on the bare `:root` fallback (this file's convention), so an absent
+  `data-theme` can never leave the var undefined and invalidate every `rgba()` reading it, which is the one
+  way a token could have reproduced the old failure.
+- **Inherited specificity requirement, still load-bearing:** `.pwreveal-block`'s two border rules keep the
+  `html[data-theme]` prefix the retired class needed. Two generic rules elsewhere set `border-color` on any
+  `.sl-markdown-content details` / `details[open]` (the per-theme card border, and light mode's "no green
+  edge on paper" open-state override), both unconditional on element type, so a plain `.pwreveal-block`
+  selector is silently outranked and the amber border never renders. The prefix is attribute-presence only,
+  not tied to a value, so it still applies in both themes. The shared rules stay untouched.
+- **The injector needed no change (checked, not assumed):** `remark-inject-passwordreveal.mjs` matches
+  `mdxJsxFlowElement` by NAME, so a block-mode tag with children is detected exactly like a self-closing
+  inline one. Two stale `spoiler-toggle` mentions in comments were cleaned up in passing (`Toggle.astro`'s
+  `class` prop and the taxonomy guard's "ignored tokens" note); the class name now appears nowhere in `src/`.
+- **Verified:** `npm run build` green (46 pages); `16-17.mdx` renders one `.pwreveal-block` collapse and no
+  page carries `spoiler-toggle`.
+- **Status:** Adopted (working tree, committed to `dev`, not pushed). Component + one content file + the
+  `custom.css` block; no config, no new dependencies, pinned versions unchanged.
+
 ### 2026-07-25 · Writeup prose moves to Geist; chrome is pinned OFF the prose scale
 - **Decision:** running prose in writeup bodies is set in **Geist** (self-hosted subset WOFF2, roman
   400/600/700 plus a true drawn italic 400). Everything else on a content page stays JetBrains Mono. The
