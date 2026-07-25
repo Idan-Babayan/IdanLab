@@ -104,6 +104,13 @@ The authoring flow is: write in Notion, export Markdown, then polish it by hand 
 - Never rewrite git history (rebase, amend, force push) unless I explicitly request it.
 - If a task involves git, ask before doing anything.
 
+Delegated authority (2026-07-25, owner instruction): Claude Code may run read
+commands, stage, commit, and push to the working branch (dev) under the
+phase-gate protocol, with build green before any commit. main is never pushed
+directly; changes reach main only via a pull request opened and merged by the
+owner. Force pushes, amends, rebases, resets, merges, and any history rewrite
+remain forbidden without a new owner instruction.
+
 ## My rules
 - NO em dashes in any copy (use commas, colons, or parentheses).
 - Don't upgrade dependencies unless I ask (versions are pinned).
