@@ -6,6 +6,59 @@
 
 ---
 
+### 2026-07-25 · Writeup prose moves to Geist; chrome is pinned OFF the prose scale
+- **Decision:** running prose in writeup bodies is set in **Geist** (self-hosted subset WOFF2, roman
+  400/600/700 plus a true drawn italic 400). Everything else on a content page stays JetBrains Mono. The
+  face was chosen with a standalone typography playground that rendered the real Busqueda writeup in ~10
+  candidate body faces against the site's real tokens (2026-07-20); that tool is deliberately kept LOCAL
+  and untracked, like the busquedav2 testbed, because it loads faces from the Google Fonts CDN and source
+  carries no Google Fonts origin.
+- **Why:** mono was set for everything, so running prose read as terminal output. The site's terminal voice
+  is the point in code blocks, badges, callout labels and the Principle coda, and it costs nothing to keep
+  it there; long-form prose is the one place it was working against the reading. Headings (Syne) and the
+  whole mono chrome layer are untouched, so the change is additive to the visual language rather than a
+  rebrand.
+- **The mechanism that makes it safe (the load-bearing choice):** `--sl-font` and `--sl-font-mono` are
+  deliberately NOT changed. Geist is applied by ONE scoped rule over
+  `.sl-markdown-content :is(p, li, blockquote, td, strong, em)`, so every surface the rule does not name
+  (sidebar, TOC, breadcrumbs, pager, code frames, badges, headings) is unchanged BY CONSTRUCTION, not by a
+  growing exclusion list. Swapping the Starlight font vars would have inverted that: every piece of chrome
+  would have needed its own carve-out.
+- **Two exclusions, both chrome wearing prose markup:** `.cl-header` (a `Callout`'s label row is authored as
+  a `<p>`) keeps its uppercase mono while callout BODY prose goes Geist, and `figcaption` is left untargeted
+  because it is Expressive Code's code-frame title bar, not an image caption (real image captions are `em`
+  inside a paragraph, so they are already covered).
+- **Chrome does not track the prose body, which is the actual point of the pass.** Mono chrome (inline code,
+  `.port-label`) and component titles (toggle summaries, the `FlagCapture` button base, the `Principle`
+  maxim) are pinned to FIXED rem sizes, so they hold their scale when `--prose-size` moves and the 18px vs
+  18.5px question stays a one-line change. Left on `em` they inflated with the larger body: inline code and
+  the port tag grew out of the code-block scale they are supposed to match, and `FlagCapture`'s flag value
+  (`1.02em`) and lock icon (`1.25em`), both em-relative to that button, grew with it. Inline code also has
+  to re-declare `font-family`, since it otherwise inherits Geist from its paragraph.
+- **Two specificity bugs the pass had to fix (do not "simplify" either selector):**
+  1. **`p.principle-text`, not `.principle-text`.** The prose face rule is (0,2,1) and the plain class is
+     (0,2,0), so Geist and the prose paragraph margin were being forced onto the mono italic maxim. The
+     element qualifier ties the specificity and wins on source order (its block is later in the file).
+  2. **The paragraph gap is excluded from inside blockquotes.** `blockquote p { margin: 0 }` is only
+     (0,1,2), so the new gap rule (0,2,1) outranked it and leaked about 2x the gap into every quote. That,
+     not the padding, was the real cause of the blockquote reading too tall. The exclusion is written
+     `:not(:where(blockquote *))` so it carries ZERO specificity and normal prose is untouched.
+- **Toggle titles became one system in passing:** `--toggle-title-face` / `--toggle-title-weight` on
+  `details.toggle:not(.toggle-flag) > summary` (Geist 600). This supersedes the spoiler toggle's bespoke mono
+  700, which is what exposed that one-off class as the last toggle carrying its own face and weight for no
+  reason; retiring the class itself is a separate change. The gold flag toggle keeps its own identity.
+- **Metric-matched fallbacks by the same method as the existing faces:** `Geist Fallback` is computed with
+  the capsize xWidthAvg method (Geist upm 1000, ascent 1005, descent 295, line-gap 0; roman xWidthAvg 467,
+  italic 460) against Arial, and the ITALIC carries its own overrides against Arial Italic so italic prose
+  does not shift on swap either. New filenames, so the immutable one-year `/fonts/*` cache is not a concern
+  (the rename-on-change rule only bites when replacing a face).
+- **Verified:** `npm run build` green (46 pages); all four Geist faces ship to `dist/fonts/`.
+- **Status:** Adopted (working tree, committed to `dev`, not pushed). **The prose dials are deliberately
+  left as tokens pending the owner's judgement on the deployed preview:** `--prose-size` (18.5px, or
+  `1.125rem` for 18px), `--prose-leading`, `--prose-strong-weight`, and the two `--toggle-title-*` tokens.
+  Tuning any of them is a token edit with no other code change, because the component sizes are decoupled
+  from the prose size. Tracked in ROADMAP.
+
 ### 2026-07-20 · AttackPath production-readiness audit: 8 findings fixed (2 were real WCAG AA failures)
 - **Decision:** a full audit pass over the finished component, hunting for defects rather than confirming the
   known ones were gone. Eight issues found and fixed; everything else measured clean. No redesign, no new
