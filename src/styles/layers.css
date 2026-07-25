@@ -1,0 +1,8 @@
+/* Cascade contract for the theme pass. Order is precedence: later layers win.
+   starlight is named first so Starlight's starlight.* sublayers sit below every
+   layer of ours. Rules that must beat inline styles, or that carry !important,
+   live in overrides.css, which stays deliberately unlayered. No !important
+   inside layers. This statement is duplicated at the top of every module file
+   so any stylesheet load order establishes the same layer order; repeats after
+   the first occurrence are no-ops. */
+@layer starlight, tokens, base, prose, chrome, components, pages, utilities;

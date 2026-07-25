@@ -63,7 +63,7 @@ export default defineConfig({
         { tag: 'script', content: "window.addEventListener('DOMContentLoaded',function(){var b=document.createElement('div');b.id='tp-progress';document.body.appendChild(b);var u=function(){var h=document.documentElement,m=h.scrollHeight-h.clientHeight;b.style.width=(m>0?h.scrollTop/m*100:0)+'%';};document.addEventListener('scroll',u,{passive:true});window.addEventListener('resize',u);u();});" },
       ],
       title: "Idan.Lab",
-      customCss: ['./src/styles/fonts.css', './src/styles/custom.css'],
+      customCss: ['./src/styles/layers.css', './src/styles/fonts.css', './src/styles/custom.css'],
       // Additive override: render the default right "On this page" sidebar and add the ToggleAll
       // control at the top (see src/components/overrides/PageSidebar.astro). Default TOC preserved.
       components: {
