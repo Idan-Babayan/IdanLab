@@ -488,7 +488,7 @@ html[data-theme="light"] .sl-markdown-content details {
   font-weight: 500;
   /* Component TITLE, held at a fixed size so it does not inflate with the 18.5px Geist prose (it inherits
      the mono chrome family; without this it tracked the prose container and read oversized). Covers every
-     toggle title built on this base: the regular Toggle, the flag toggle, and the spoiler toggle. */
+     toggle title built on this base: the regular Toggle, the flag toggle, and PasswordReveal block mode. */
   font-size: var(--component-title-size);
   padding-block: 0.3rem;
   margin-inline: calc(-1 * (0.75rem - 0.4rem));
@@ -498,8 +498,8 @@ html[data-theme="light"] .sl-markdown-content details {
   user-select: none;
 }
 
-/* Toggle summary title: face + weight on dials for the owner to judge live. Covers every .toggle variant
-   on the page, so all toggle titles read as one system instead of each carrying a bespoke face and weight;
+/* Toggle summary title: face + weight on dials for the owner to judge live. Covers the regular <Toggle>
+   AND PasswordReveal's block mode (which carries .toggle), so every toggle title reads as one system;
    :not(.toggle-flag) leaves the gold flag toggle to its own identity. Size stays --component-title-size
    (base rule above). Defaults: Geist (content-label reading) at weight 600. To flip, edit the two tokens
    in the token block: --toggle-title-face (var(--body-face) <-> var(--sl-font-mono)) and
@@ -1185,6 +1185,14 @@ body:has(.pi-index) .content-panel + .content-panel {
   --flag-gold-root: #ffcf63;
   --flag-gold-val: #ffc23d;
   --flag-gold-val-root: #ffcf63;
+  /* Wargame-secret amber: ONE identity shared by both PasswordReveal modes (the inline blurred password
+     row and the block collapse that hides a multi-line secret), so the amber has a single source instead
+     of living independently in two places. --pw-amber is the accent (label, button, open border);
+     --pw-amber-rgb is the wash base, consumed as rgba(var(--pw-amber-rgb), alpha) for the tints and
+     hairlines. Declared on the bare :root fallback as well, per this file's convention, so an absent
+     data-theme can never leave the var undefined and invalidate every rgba() that reads it. */
+  --pw-amber: #ffc23d;
+  --pw-amber-rgb: 245, 158, 11;
   --sl-color-bg: #07090a;
   --sl-color-bg-nav: color-mix(in oklab, #07090a 78%, transparent);
   --sl-color-bg-sidebar: #0a0e0f;
@@ -1205,6 +1213,9 @@ body:has(.pi-index) .content-panel + .content-panel {
   --flag-gold-root: #B8862B;
   --flag-gold-val: #7a5a12;
   --flag-gold-val-root: #6b4e0e;
+  /* Light accent for the shared wargame-secret amber (deeper, AA on paper). The wash base
+     (--pw-amber-rgb) is the same #f59e0b family in both themes, so it is declared once, on dark. */
+  --pw-amber: #a86f04;
   --sl-color-bg: #ece9e0;
   --sl-color-bg-nav: color-mix(in oklab, #ece9e0 80%, transparent);
   --sl-color-bg-sidebar: #f1eee5;
@@ -2080,42 +2091,36 @@ html[data-theme="light"] .sl-markdown-content .cl :not(pre) > code {
 }
 
 
-/* ── Spoiler reveal toggle (OverTheWire amber) ───────────────────────────────
-   A <Toggle class="spoiler-toggle"> for "reveal the answer" controls (e.g. a wargame password).
-   It reuses the base .sl-markdown-content details card and only layers OverTheWire's amber on the
-   border and a compact mono summary, so the reveal reads as the level's payoff without a new
-   component. Theme-aware via a single --spoiler-color token (amber #ffc23d dark, #a86f04 light,
-   both AA on the toggle panel): the OPEN border and the summary both read from it, so the open
-   border always matches the label. In dark the two values were already identical (no visible
-   change); in light this unifies the open border to the deeper #a86f04 summary color, fixing a
-   prior mismatch where the open border stayed the brighter #ffc23d. The closed border keeps its
-   translucent amber. The disclosure marker transition is removed so the control is calm under
-   prefers-reduced-motion. Wargame-agnostic: any level page can opt in via the class.
-   Specificity note: two generic rules elsewhere in this file also set border-color on any
-   .sl-markdown-content details / details[open] (the base per-theme card border, and light mode's
-   "no green edge on paper" open-state override), and both are unconditional on element type, so
-   they silently outrank a plain .spoiler-toggle selector and the amber border never renders. The
-   closed- and open-state rules below are prefixed with html[data-theme] (attribute-presence only,
-   not tied to a value, so it still applies in both themes) purely to out-specificity those two
-   rules. Scoped to .spoiler-toggle only; the shared rules themselves are untouched. */
-.sl-markdown-content details.spoiler-toggle {
-  --spoiler-color: #ffc23d;
+/* ── PasswordReveal, BLOCK mode (multi-line secret) ──────────────────────────
+   The collapse half of PasswordReveal, emitted by PasswordReveal.astro when it is handed slot content
+   instead of a `password` prop. A secret that runs to many lines (an RSA private key) cannot be blurred
+   as one inline run, so it collapses instead: inline secrets blur, block secrets collapse. This replaces
+   the retired one-off spoiler class, which existed only because the inline component could not hold a
+   block secret.
+   The element carries `.toggle`, so it inherits the standard toggle card, the disclosure marker, and
+   ToggleAll's bulk expand exactly as the old spoiler toggle did, and its summary face and weight come
+   from the regular-toggle rule near the top of this file (Geist 600), so the label matches every other
+   toggle title rather than carrying a bespoke weight.
+   Amber reads the SHARED --pw-amber / --pw-amber-rgb tokens, the same ones the inline row uses, so the
+   identity has exactly one source: change the token and both modes move together. That consolidation is
+   the reason the old class was folded in here.
+   Specificity note (inherited from the retired class, still required): two generic rules elsewhere set
+   border-color on any .sl-markdown-content details / details[open] (the per-theme card border, and light
+   mode's "no green edge on paper" open-state override), both unconditional on element type, so a plain
+   .pwreveal-block selector would be silently outranked and the amber border would never render. The two
+   border rules below are prefixed with html[data-theme] (attribute presence only, not tied to a value, so
+   it still applies in both themes) purely to out-specificity those. The shared rules stay untouched.
+   The disclosure marker transition is removed so the control stays calm under prefers-reduced-motion. */
+html[data-theme] .sl-markdown-content details.pwreveal-block {
+  border-color: rgba(var(--pw-amber-rgb), 0.45);
 }
-html[data-theme="light"] .sl-markdown-content details.spoiler-toggle {
-  --spoiler-color: #a86f04;
+html[data-theme] .sl-markdown-content details.pwreveal-block[open] {
+  border-color: var(--pw-amber);
 }
-html[data-theme] .sl-markdown-content details.spoiler-toggle {
-  border-color: rgba(245, 158, 11, 0.45);
+.sl-markdown-content details.pwreveal-block > summary {
+  color: var(--pw-amber);
 }
-html[data-theme] .sl-markdown-content details.spoiler-toggle[open] {
-  border-color: var(--spoiler-color);
-}
-.sl-markdown-content details.spoiler-toggle > summary {
-  color: var(--spoiler-color);
-  font-family: var(--sl-font-mono);
-  font-weight: 700;
-}
-.sl-markdown-content details.spoiler-toggle > summary::before {
+.sl-markdown-content details.pwreveal-block > summary::before {
   transition: none;
 }
 
@@ -2125,15 +2130,17 @@ html[data-theme] .sl-markdown-content details.spoiler-toggle[open] {
    the gold flag tokens, and NO decode scramble (reserved for FlagCapture, so the flag vs password
    distinction reads). The row is a passive amber card: only .pw-action is interactive. The label and
    value are NON-selectable (copy is the only way to take the value, like FlagCapture), and the value
-   is spoiler-blurred until Reveal is clicked (never on hover). Amber matches the site system:
-   #f59e0b washes/borders, accent #ffc23d dark / #a86f04 light (same as the spoiler-toggle). Both
-   themes; light is stronger and more golden. Values are literal so nothing fails to resolve. */
+   is spoiler-blurred until Reveal is clicked (never on hover). Amber comes from the shared identity
+   tokens --pw-amber (accent, #ffc23d dark / #a86f04 light) and --pw-amber-rgb (the #f59e0b wash base),
+   which BLOCK mode reads too, so the two modes cannot drift apart. Both themes; light is stronger and
+   more golden. The tokens hold literal values and are declared on the bare :root fallback, so nothing
+   fails to resolve (the earlier failure mode here was color-mix indirection, not custom properties). */
 .sl-markdown-content .pwreveal {
   display: flex;
   align-items: center;
   gap: 0.7rem;
-  border: 1px solid rgba(245, 158, 11, 0.4);
-  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(var(--pw-amber-rgb), 0.4);
+  background: rgba(var(--pw-amber-rgb), 0.08);
   border-radius: 8px;
   padding: 0.5rem 0.7rem;
   margin: 1rem 0;
@@ -2142,8 +2149,8 @@ html[data-theme] .sl-markdown-content details.spoiler-toggle[open] {
   -webkit-user-select: none;
 }
 :root[data-theme="light"] .sl-markdown-content .pwreveal {
-  border-color: rgba(245, 158, 11, 0.55);
-  background: rgba(245, 158, 11, 0.14);
+  border-color: rgba(var(--pw-amber-rgb), 0.55);
+  background: rgba(var(--pw-amber-rgb), 0.14);
 }
 .sl-markdown-content .pwreveal .pw-label {
   font-family: var(--sl-font-mono);
@@ -2181,31 +2188,30 @@ html[data-theme] .sl-markdown-content details.spoiler-toggle[open] {
   font-family: var(--sl-font-mono);
   font-size: 0.72rem;
   font-weight: 600;
-  color: #ffc23d;
+  color: var(--pw-amber);
   background: transparent;
-  border: 1px solid rgba(245, 158, 11, 0.45);
+  border: 1px solid rgba(var(--pw-amber-rgb), 0.45);
   border-radius: 6px;
   padding: 0.28rem 0.6rem;
   cursor: pointer;
 }
 :root[data-theme="light"] .sl-markdown-content .pwreveal .pw-action {
-  color: #a86f04;
-  border-color: rgba(245, 158, 11, 0.6);
+  /* Only the border differs on paper; the text color comes from the theme-aware --pw-amber token. */
+  border-color: rgba(var(--pw-amber-rgb), 0.6);
 }
 @media (prefers-reduced-motion: no-preference) {
   .sl-markdown-content .pwreveal .pw-action { transition: background-color 0.15s ease, border-color 0.15s ease; }
 }
 .sl-markdown-content .pwreveal .pw-action:hover {
-  background: rgba(245, 158, 11, 0.15);
-  border-color: rgba(245, 158, 11, 0.65);
+  background: rgba(var(--pw-amber-rgb), 0.15);
+  border-color: rgba(var(--pw-amber-rgb), 0.65);
 }
 :root[data-theme="light"] .sl-markdown-content .pwreveal .pw-action:hover {
-  background: rgba(245, 158, 11, 0.2);
+  background: rgba(var(--pw-amber-rgb), 0.2);
 }
 /* Focus ring routed through the token (amber identity, matching the control's own color); the shared
    :where(...button...):focus-visible rule draws it, outline following the button's 6px radius. */
-.sl-markdown-content .pwreveal .pw-action { --focus-ring: #ffc23d; }
-:root[data-theme="light"] .sl-markdown-content .pwreveal .pw-action { --focus-ring: #a86f04; }
+.sl-markdown-content .pwreveal .pw-action { --focus-ring: var(--pw-amber); }
 .sl-markdown-content .pwreveal .pw-action-ico { width: 15px; height: 15px; flex: none; }
 
 /* Visually hidden aria-live region (omit if an .sr-only utility already exists in the file). */

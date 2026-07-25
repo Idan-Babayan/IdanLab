@@ -13,7 +13,7 @@
 // is no way to false-positive on component output. Marketing pages (index.astro, about.astro) are
 // not markdown, so their `platform-card` / `platform-grid` classes are never seen either. Within the
 // hand-authored MDX we validate ONLY tokens in the families this guard OWNS (see below) and ignore
-// every other class token (utility classes, component props like `spoiler-toggle`, and so on).
+// every other class token (utility classes, class names passed as component props, and so on).
 //
 // Zero new dependencies. Uses only `unist-util-visit` (already a transitive dep via @astrojs/mdx,
 // same as remark-inject-passwordreveal) plus Node built-ins. Nothing is added to package.json.
