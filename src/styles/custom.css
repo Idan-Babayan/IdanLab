@@ -24,25 +24,31 @@
    SCOPE: custom.css themes Starlight CONTENT pages only. The two standalone marketing pages (home,
    about) carry their own equivalent rings inline; folding them into this same token is a deliberate
    follow-up, not part of this pass. */
+@layer tokens {
 :root {
   --focus-ring: var(--sl-color-text-accent);
 }
+} /* @layer tokens */
 /* Shared, zero-specificity base for the general (rectangular) case. :where() holds specificity at 0 so
    any element that intentionally needs a different width/offset still wins, and unlayered custom.css
    already beats Starlight's layered styles. Starlight 0.39 ships no :focus-visible outline of its own,
    so this becomes the ring for every content-page control (nav, TOC, prose links, buttons, the theme
    toggle), lime unless an ancestor set --focus-ring. Keyboard only (:focus-visible), never on click. */
+@layer base {
 :where(a, button, [role="button"], input, select, textarea, summary, [tabindex]):focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }
+} /* @layer base */
 
 
 /* ── Brighter body text in dark mode ─────────── */
 
+@layer tokens {
 html[data-theme="dark"] {
   --sl-color-text: #e6edf3;
 }
+} /* @layer tokens */
 
 
 /* ── Task title headings (Notion brown) ──────── */
@@ -905,12 +911,14 @@ html[data-theme="light"] .hero h1 {
    ══════════════════════════════════════════════ */
 
 /* Panel background variable (subtle, theme-aware) */
+@layer tokens {
 :root {
   --home-panel-bg: rgba(0, 0, 0, 0.04);
 }
 html[data-theme="dark"] {
   --home-panel-bg: rgba(255, 255, 255, 0.03);
 }
+} /* @layer tokens */
 
 /* Layered color glows across the whole homepage — kills the flat look */
 body:has(.home-stats) {
@@ -999,8 +1007,10 @@ html[data-theme="light"] body:has(.home-stats) {
 /* Universal SECONDARY accent (cyan) for the platform-index duotone. The platform color
    stays the lead; this complements all four (none of which are cyan). Theme-aware: bright
    cyan on ink, darkened cyan-ink on paper (both clear AA for the small text that uses it). */
+@layer tokens {
 :root { --pf-accent-2: var(--tp-cyan); }
 :root[data-theme='light'] { --pf-accent-2: var(--tp-cyan-ink); }
+} /* @layer tokens */
 
 /* Focus ring: platform cards ring in their platform identity (echoes the accent bar + hover border).
    Each card is <a class="wc-card pf-*"> and already carries --pf-accent from the .pf-* token above, so
@@ -1070,6 +1080,7 @@ body:has(.pi-index) .content-panel + .content-panel {
    ══════════════════════════════════════════════ */
 
 /* ── Typography: Syne for display, JetBrains Mono for code + chrome, Geist for writeup prose ── */
+@layer tokens {
 :root {
   --sl-font: 'JetBrains Mono', 'JetBrains Mono Fallback', ui-monospace, SFMono-Regular, Menlo, monospace;
   --sl-font-mono: 'JetBrains Mono', 'JetBrains Mono Fallback', ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -1122,6 +1133,7 @@ body:has(.pi-index) .content-panel + .content-panel {
   --tp-cyan: #41efff;
   --tp-cyan-ink: #0b7e92;
 }
+} /* @layer tokens */
 
 /* ── Writeup prose face + rhythm (Geist), scoped to .sl-markdown-content prose surfaces ONLY ──────────
    Geist sets running prose (paragraphs, list items, blockquotes, table body cells, strong, and em, the
@@ -1171,6 +1183,7 @@ body:has(.pi-index) .content-panel + .content-panel {
 }
 
 /* ── Accent + surfaces — DARK ── */
+@layer tokens {
 :root,
 :root[data-theme='dark'] {
   --sl-color-accent-low: #20330a;
@@ -1248,6 +1261,7 @@ body:has(.pi-index) .content-panel + .content-panel {
   --tp-deco-lime: #6fae00;
   --tp-deco-cyan: #0a9ec2;
 }
+} /* @layer tokens (dark + light surface tokens move atomically) */
 
 /* ── Faint atmosphere (fixed + very subtle — reading stays calm) ──
    Spans the viewport so a low bottom glow can echo the homepage. The two top
@@ -1516,9 +1530,11 @@ nav.sidebar details > ul > li {
    Starlight's default --sl-sidebar-width (18.75rem) reads wide once the rows are taller;
    17rem keeps every label on one line (HackTheBox, OverTheWire fit) while handing ~1.75rem
    back to the article. Theme-agnostic Starlight token; nothing else needs to change. */
+@layer tokens {
 :root {
   --sl-sidebar-width: 17rem;
 }
+} /* @layer tokens */
 
 /* ── Three-column proportions: content-first, tighter TOC, balanced gutters ────
    Starlight allocates the right TOC roughly the same width as the left nav (--sl-sidebar-width + half
@@ -1530,9 +1546,11 @@ nav.sidebar details > ul > li {
    empty margin. Theme-neutral. Desktop only (the three-column layout collapses below 72rem, so mobile is
    unaffected). Intro pages (.pi-index, no TOC) are handled separately below and skip these rules because
    they carry no [data-has-toc]. */
+@layer tokens {
 :root {
   --sl-content-width: 50rem;
 }
+} /* @layer tokens */
 @media (min-width: 72rem) {
   /* Tightening the TOC needs TWO widths, not one. The visible TOC text column is `.right-sidebar-panel
      .sl-container`, which Starlight derives from --sl-sidebar-width (our 17rem nav) as
