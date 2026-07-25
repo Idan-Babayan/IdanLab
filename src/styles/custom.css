@@ -54,16 +54,17 @@ html[data-theme="dark"] {
 /* ── Task title headings (Notion brown) ──────── */
 /* Notion-accurate: light #9f6b53, dark #ba856f   */
 
+@layer components {
 .task-title {
   font-weight: 700;
 }
 
 html[data-theme="light"] .task-title {
-  color: #9f6b53 !important;
+  color: #9f6b53;
 }
 
 html[data-theme="dark"] .task-title {
-  color: #ba856f !important;
+  color: #ba856f;
 }
 
 /* ── Flag loot system: User Flag / Root Flag read as one gold signal ───────────────────────────
@@ -73,11 +74,12 @@ html[data-theme="dark"] .task-title {
    DEPENDENCY: the flag headings reuse .task-title (shared with real Task headings like "Task 1"), so
    there is no dedicated .flag-title yet. A .flag-title emitted by the content pipeline would be the
    clean hook; until then these target the deterministic Starlight slug ids (#user-flag / #root-flag).
-   The id outranks the .task-title !important brown, and --flag-gold is theme-aware, so one rule
-   covers both themes. */
+   The id outranks the .task-title brown inside the components layer (both are components rules, so
+   specificity still decides between them), and --flag-gold is theme-aware, so one rule covers both
+   themes. */
 #user-flag .task-title,
 #root-flag .task-title {
-  color: var(--flag-gold) !important;
+  color: var(--flag-gold);
 }
 /* Gold flag icon: the project's flag SVG as a mask, so background-color (the gold) fills the shape.
    Mask, not an emoji, and not a glow. Body heading only. */
@@ -93,11 +95,13 @@ html[data-theme="dark"] .task-title {
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z'/%3E%3C/svg%3E") center / contain no-repeat;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z'/%3E%3C/svg%3E") center / contain no-repeat;
 }
+} /* @layer components */
 
 /* Flag TOC entries: the gold identity in the right "On this page" column, others keep the green
    active accent. Targeted by their deterministic anchors; this is unlayered so it overrides
    Starlight's layered a[aria-current] green. A persistent muted gold makes the loot scannable at a
    glance; full gold on hover and when current. */
+@layer chrome {
 .right-sidebar-panel a[href="#user-flag"],
 .right-sidebar-panel a[href="#root-flag"] {
   color: color-mix(in oklab, var(--flag-gold) 70%, var(--sl-color-gray-3));
@@ -221,6 +225,7 @@ mobile-starlight-toc a[style*="--depth: 1"]:not([href="#user-flag"]):not([href="
 :root[data-theme='light'] mobile-starlight-toc a[style*="--depth: 1"]:not([href="#user-flag"]):not([href="#root-flag"]) {
   --focus-ring: var(--tp-cyan-ink);
 }
+} /* @layer chrome */
 
 
 /* ── Writeup metadata badges: intentional color, restrained glow ──────────────
@@ -233,6 +238,7 @@ mobile-starlight-toc a[style*="--depth: 1"]:not([href="#user-flag"]):not([href="
    SAME size/weight as the nav chips (a calm peer, not a heavier sibling), the word shown once, magnitude
    carried only by pips that grow with level. Spacing: TIGHT under the title, OPEN before the body, no
    divider. Chips are anchors to future filter routes. Both themes. */
+@layer components {
 .writeup-meta {
   display: flex;
   align-items: center;
@@ -388,15 +394,16 @@ mobile-starlight-toc a[style*="--depth: 1"]:not([href="#user-flag"]):not([href="
   padding: 0.08em 0.45em;
 }
 html[data-theme="light"] .port-label {
-  color: #05495b !important;
+  color: #05495b;
   background-color: color-mix(in oklab, #41efff 15%, transparent);
   border-color: color-mix(in oklab, #096577 40%, transparent);
 }
 html[data-theme="dark"] .port-label {
-  color: #41efff !important;
+  color: #41efff;
   background-color: color-mix(in oklab, #41efff 18%, transparent);
   border-color: color-mix(in oklab, #41efff 42%, transparent);
 }
+} /* @layer components */
 
 
 /* Inline code: its own object (calm neutral chip, identity in the text). Inline code (:not(pre) > code)
@@ -518,10 +525,12 @@ html[data-theme="light"] .sl-markdown-content details {
    (base rule above). Defaults: Geist (content-label reading) at weight 600. To flip, edit the two tokens
    in the token block: --toggle-title-face (var(--body-face) <-> var(--sl-font-mono)) and
    --toggle-title-weight (600 <-> 700). Inline <code> in a title keeps its own mono chip rule. */
+@layer components {
 .sl-markdown-content details.toggle:not(.toggle-flag) > summary {
   font-family: var(--toggle-title-face);
   font-weight: var(--toggle-title-weight);
 }
+} /* @layer components */
 
 @layer prose {
 .sl-markdown-content details > summary::marker,
@@ -564,6 +573,7 @@ html[data-theme="light"] .sl-markdown-content details {
    which otherwise dropped the icon onto its own line and wrapped the title.) The svg gets a fixed 1em
    box and flex-shrink:0 so it never collapses or wraps off. The disclosure ::before marker is kept,
    its margin zeroed so the flex gap spaces all three items evenly. */
+@layer components {
 .sl-markdown-content details.toggle-flag > summary {
   display: flex;
   align-items: center;
@@ -588,6 +598,7 @@ html[data-theme="light"] .sl-markdown-content details {
 .toggle-body {
   padding-top: 0.25rem;
 }
+} /* @layer components */
 
 
 /* ── Answer callouts (:::tip[Answer]) ────────── */
@@ -629,6 +640,7 @@ html[data-theme="light"] .starlight-aside--tip {
 
 /* ── Custom metadata badges (distinct colors) ── */
 
+@layer components {
 .meta-badge {
   display: inline-flex;
   align-items: center;
@@ -714,6 +726,7 @@ html[data-theme="dark"] .os-windows { color: #60a5fa; }
 :root[data-theme="light"] .platform-vulnhub::before     { background: #e23b2e; }
 :root[data-theme="light"] .platform-picoctf::before     { background: #a64bf0; }
 :root[data-theme="light"] .platform-overthewire::before { background: #ed8f00; }
+} /* @layer components */
 
 
 /* ══════════════════════════════════════════════
@@ -721,6 +734,7 @@ html[data-theme="dark"] .os-windows { color: #60a5fa; }
    ══════════════════════════════════════════════ */
 
 /* Hero glow behind the splash */
+@layer pages {
 .hero {
   position: relative;
 }
@@ -767,6 +781,7 @@ html[data-theme="light"] .hero h1 {
 :root[data-theme='light'] .pf-vulnhub     { --pf-accent: #d12f2f; }
 :root[data-theme='light'] .pf-picoctf     { --pf-accent: #8b3dc4; }
 :root[data-theme='light'] .pf-overthewire { --pf-accent: #a86f04; }
+} /* @layer pages */
 
 /* Universal SECONDARY accent (cyan) for the platform-index duotone. The platform color
    stays the lead; this complements all four (none of which are cyan). Theme-aware: bright
@@ -780,6 +795,7 @@ html[data-theme="light"] .hero h1 {
    Each card is <a class="wc-card pf-*"> and already carries --pf-accent from the .pf-* token above, so
    the shared :where(a,...):focus-visible rule draws a platform-colored ring. (The homepage's marketing
    cards are a separate surface, folded into the same token in a later pass.) */
+@layer pages {
 .wc-card { --focus-ring: var(--pf-accent); }
 
 /* Scroll-reveal infra (shared by hero + cards; the component script toggles .in).
@@ -787,8 +803,17 @@ html[data-theme="light"] .hero h1 {
 .pi-index .reveal {
   opacity: 0;
   transform: translateY(26px);
+}
+} /* @layer pages */
+/* UNLAYERED ON PURPOSE. This transition must beat WriteupCard's and PlatformIndex's own
+   `.wc-card` / `.pi-wg-card { transition: transform 0.12s ease, border-color 0.3s ease }`. Those are
+   Astro component styles, which are unlayered, so a layered copy of this rule would lose to them and
+   the 0.8s reveal would run at the component hover speed. It stays physically here, after the state
+   rule above and before the reduced-motion kill below, so its order against those styles is unchanged. */
+.pi-index .reveal {
   transition: opacity 0.8s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
+@layer pages {
 .pi-index .reveal.in {
   opacity: 1;
   transform: none;
@@ -830,6 +855,13 @@ body:has(.pi-index) .content-panel + .content-panel {
   .pi-index .reveal {
     opacity: 1;
     transform: none;
+  }
+}
+} /* @layer pages */
+/* UNLAYERED ON PURPOSE, same reason as the transition above, and additionally because it must beat
+   that unlayered transition rule itself: a layered `transition: none` would lose to both. */
+@media (prefers-reduced-motion: reduce) {
+  .pi-index .reveal {
     transition: none;
   }
 }
@@ -1033,6 +1065,7 @@ body:has(.pi-index) .content-panel + .content-panel {
    Spans the viewport so a low bottom glow can echo the homepage. The two top
    radials are unchanged: they are anchored to the top with the same offsets,
    so widening the box from 360px to full height does not move them. */
+@layer chrome {
 body::before {
   content: "";
   position: fixed; inset: 0; z-index: 0; pointer-events: none;
@@ -1066,6 +1099,7 @@ body::after {
   position: fixed; inset: 0; pointer-events: none; z-index: 9999; opacity: .035;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
+} /* @layer chrome */
 /* Light grain opacity is set alongside the light atmosphere block below (lifted to .035). */
 
 /* ── Headings: Syne display ── */
@@ -1081,6 +1115,7 @@ body::after {
    unlayered here, declarations byte-identical to the prose half above, until it moves to the chrome
    layer in slice B. It keeps its physical position so its source order against the later a.site-title
    rule is unchanged. */
+@layer chrome {
 .site-title,
 a.site-title {
   font-family: var(--tp-display);
@@ -1115,6 +1150,7 @@ h1#_top {
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+} /* @layer chrome */
 
 /* Decorative lime # before section headings (purely visual cue) */
 @layer prose {
@@ -1238,6 +1274,7 @@ h1#_top {
    nothing rendered beneath it (see the engineering note about suppressing pagination/footer on
    writeups). Centered italic monospace is on-brand here precisely because the whole site reads in
    mono: this is the operator's typed coda. Both themes; neutral, editorial. */
+@layer components {
 .sl-markdown-content .principle {
   display: block;
   text-align: center;
@@ -1276,6 +1313,7 @@ h1#_top {
   color: var(--sl-color-text);
   margin: 0 auto;
 }
+} /* @layer components */
 
 /* ── Sidebar: active item — obviously filled accent row, distinct from hover ──
    Raised tint + 3px bar + explicit accessible label color (accent-high, theme-aware:
@@ -1283,6 +1321,7 @@ h1#_top {
    label clears WCAG AA in both themes instead of inheriting a faint color. Hover stays
    Starlight's subtle gray, so active and hover never look alike. Scoped to .sidebar so
    it never touches the TOC "current heading" link (which uses aria-current="true"). */
+@layer chrome {
 .sidebar a[aria-current="page"] {
   background: color-mix(in oklab, var(--sl-color-accent) 20%, transparent);
   border-inline-start: 3px solid var(--sl-color-accent);
@@ -1310,6 +1349,7 @@ nav.sidebar details > ul > li {
 :root[data-theme='light'] nav.sidebar details > ul > li {
   border-inline-start-color: rgba(0, 0, 0, 0.14);
 }
+} /* @layer chrome */
 
 /* ── Sidebar: trim the rail width so it gives the content column more room ──
    Starlight's default --sl-sidebar-width (18.75rem) reads wide once the rows are taller;
@@ -1336,6 +1376,7 @@ nav.sidebar details > ul > li {
   --sl-content-width: 50rem;
 }
 } /* @layer tokens */
+@layer chrome {
 @media (min-width: 72rem) {
   /* Tightening the TOC needs TWO widths, not one. The visible TOC text column is `.right-sidebar-panel
      .sl-container`, which Starlight derives from --sl-sidebar-width (our 17rem nav) as
@@ -1469,6 +1510,7 @@ nav.sidebar summary {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }
+} /* @layer chrome */
 
 /* ── Command highlight by category (.ec-cmd-*) ──
    The ec-priv-command plugin tags command words by semantic category (see
@@ -1488,7 +1530,12 @@ nav.sidebar summary {
        previously near-invisible inspect color (it had been quieted by dropping CONTRAST instead).
    Privilege/sudo COLOR is the fixed anchor and is untouched (it sits at ~5.5:1 dark / ~5.4:1 light,
    just under the 7:1 the redesigned set meets, by design). Every recognized command also goes bold
-   (weight channel below), so a command pops by weight while color only signals category. */
+   (weight channel below), so a command pops by weight while color only signals category.
+
+   UNLAYERED ON PURPOSE. Expressive Code paints every token colour as an INLINE style on the span, so
+   these rules carry !important to beat it. !important in a layer is ordered by REVERSED layer order,
+   which would put them below any later layer, and an inline style is beaten only from outside the
+   layer stack, so this whole set stays unlayered. */
 html[data-theme="dark"] .ec-cmd-priv,
 html[data-theme="dark"] .ec-cmd-priv span {
   color: #ff4d9d !important;
@@ -1549,6 +1596,7 @@ html[data-theme="light"] .ec-cmd-inspect span {
    warm paper. Override the EC editor + tab-bar background vars to a soft warm off-white slightly
    darker than the page paper (#ece9e0), so a code block reads as a distinct warm panel. Light only;
    dark (github-dark-dimmed) is untouched. Kept light enough that the catppuccin text stays AA. */
+@layer chrome {
 :root[data-theme='light'] .expressive-code {
   --ec-frm-edBg: #e8e2d3;
   --ec-frm-edTabBarBg: #e0d8c6;
@@ -1630,6 +1678,7 @@ html[data-theme="light"] .expressive-code pre::-webkit-scrollbar-track { backgro
   background: color-mix(in oklab, var(--tp-deco-lime) 12%, transparent);
   border-inline-start-color: var(--tp-deco-lime);
 }
+} /* @layer chrome */
 
 
 /* Lead blockquote: a calm warm-paper card (subtle olive tint kept light so the body text on it
@@ -1652,10 +1701,12 @@ html[data-theme="light"] .expressive-code pre::-webkit-scrollbar-track { backgro
 
 /* Sidebar: give the rail a subtle edge + soft shadow so the nav reads as a distinct panel,
    not the same flat sheet as the content column. */
+@layer chrome {
 :root[data-theme='light'] nav.sidebar {
   border-inline-end: 1px solid rgba(60, 50, 30, 0.12);
   box-shadow: inset -12px 0 24px -24px rgba(60, 50, 30, 0.35);
 }
+} /* @layer chrome */
 
 /* Decorative accent (NOT body text): the lime "#" before each h2 runs the vivid deco-lime on
    paper, bolder than the AA text ink, for a confident risograph marker. Light-only. */
@@ -1676,6 +1727,7 @@ html[data-theme="light"] .expressive-code pre::-webkit-scrollbar-track { backgro
    (lighter than the h1's 800, which reads heavy at header size); letter-spacing matches the h1.
    The "." is part of the text node, so it takes the same gradient as every other glyph. Wins
    over the earlier mono treatment via the same selector at later source order. */
+@layer chrome {
 a.site-title {
   font-family: var(--tp-display);
   font-weight: 700;
@@ -1754,6 +1806,7 @@ ul.top-level > li:nth-child(5) { --focus-ring: #ffc23d; }  /* OverTheWire */
 :root[data-theme='light'] ul.top-level > li:nth-child(3) { --focus-ring: #d12f2f; }
 :root[data-theme='light'] ul.top-level > li:nth-child(4) { --focus-ring: #8b3dc4; }
 :root[data-theme='light'] ul.top-level > li:nth-child(5) { --focus-ring: #a86f04; }
+} /* @layer chrome */
 
 
 /* ── Tagged callouts (.cl + Callout.astro) ─────────────────────────────────────
@@ -1761,6 +1814,7 @@ ul.top-level > li:nth-child(5) { --focus-ring: #ffc23d; }  /* OverTheWire */
    of icon + UPPERCASE label in the accent color. Each type sets --acc. Light mode keeps the colored
    border, lifts the tint so it reads on paper, and swaps the icon + label to a darker ink for
    legibility. Body text uses the normal content color. Scoped to .sl-markdown-content. */
+@layer components {
 .sl-markdown-content .cl {
   border-left: 3px solid var(--acc);
   background: color-mix(in oklab, var(--acc) 8%, transparent);
@@ -1891,17 +1945,16 @@ html[data-theme="light"] .sl-markdown-content .cl :not(pre) > code {
    Amber reads the SHARED --pw-amber / --pw-amber-rgb tokens, the same ones the inline row uses, so the
    identity has exactly one source: change the token and both modes move together. That consolidation is
    the reason the old class was folded in here.
-   Specificity note (inherited from the retired class, still required): two generic rules elsewhere set
-   border-color on any .sl-markdown-content details / details[open] (the per-theme card border, and light
-   mode's "no green edge on paper" open-state override), both unconditional on element type, so a plain
-   .pwreveal-block selector would be silently outranked and the amber border would never render. The two
-   border rules below are prefixed with html[data-theme] (attribute presence only, not tied to a value, so
-   it still applies in both themes) purely to out-specificity those. The shared rules stay untouched.
+   Layer note (this used to need specificity armor): two generic rules elsewhere set border-color on any
+   .sl-markdown-content details / details[open] (the per-theme card border, and light mode's "no green
+   edge on paper" open-state override), both unconditional on element type. Those live in `prose` and
+   these live in `components`, so layer order settles it and the old html[data-theme] prefixes (attribute
+   presence only, carried over from the retired class) are gone. The shared rules stay untouched.
    The disclosure marker transition is removed so the control stays calm under prefers-reduced-motion. */
-html[data-theme] .sl-markdown-content details.pwreveal-block {
+.sl-markdown-content details.pwreveal-block {
   border-color: rgba(var(--pw-amber-rgb), 0.45);
 }
-html[data-theme] .sl-markdown-content details.pwreveal-block[open] {
+.sl-markdown-content details.pwreveal-block[open] {
   border-color: var(--pw-amber);
 }
 .sl-markdown-content details.pwreveal-block > summary {
@@ -2000,8 +2053,10 @@ html[data-theme] .sl-markdown-content details.pwreveal-block[open] {
    :where(...button...):focus-visible rule draws it, outline following the button's 6px radius. */
 .sl-markdown-content .pwreveal .pw-action { --focus-ring: var(--pw-amber); }
 .sl-markdown-content .pwreveal .pw-action-ico { width: 15px; height: 15px; flex: none; }
+} /* @layer components */
 
 /* Visually hidden aria-live region (omit if an .sr-only utility already exists in the file). */
+@layer utilities {
 .sl-markdown-content .sr-only {
   position: absolute;
   width: 1px;
@@ -2013,6 +2068,7 @@ html[data-theme] .sl-markdown-content details.pwreveal-block[open] {
   white-space: nowrap;
   border: 0;
 }
+} /* @layer utilities */
 
 
 /* === LIGHT SURFACE DEPTH (V3) ================================================
@@ -2028,6 +2084,7 @@ html[data-theme] .sl-markdown-content details.pwreveal-block[open] {
    boundary. The existing warm frame border is kept (rgba(60,50,30,.14)); the QF2
    drop shadow is swapped for the inset so the block presses in rather than floats.
    Main code text stays AAA. */
+@layer chrome {
 :root[data-theme='light'] .expressive-code {
   --ec-frm-edBg: #e6dfd0;
   --ec-frm-edActTabBg: #e6dfd0;
@@ -2035,15 +2092,22 @@ html[data-theme] .sl-markdown-content details.pwreveal-block[open] {
 :root[data-theme='light'] .expressive-code .frame {
   box-shadow: inset 0 1px 2px rgba(60, 50, 30, 0.08);
 }
+} /* @layer chrome */
 
 /* V3 part 2 (SECONDARY, revert-alone): cards and the neutral callout read as subtly
    raised. Same backgrounds (no lighten, no recolor); a soft warm drop shadow alone
    lifts them off the page. The colored callouts (.cl, asides) keep their identity and
-   are untouched. */
+   are untouched.
+
+   UNLAYERED ON PURPOSE. These beat WriteupCard's and PlatformIndex's own light
+   `html[data-theme='light'] .wc-card { box-shadow: 0 8px 24px -16px rgba(60,50,30,.45) }`. Those are
+   Astro component styles and therefore unlayered, so a layered copy of these would lose and the V3
+   depth shadow would never render on paper. */
 :root[data-theme='light'] .wc-card,
 :root[data-theme='light'] .pi-wg-card {
   box-shadow: 0 2px 8px rgba(60, 50, 30, 0.10);
 }
+@layer components {
 :root[data-theme='light'] .sl-markdown-content details {
   box-shadow: 0 1px 4px rgba(60, 50, 30, 0.07);
 }
@@ -2334,9 +2398,14 @@ html[data-theme] .sl-markdown-content details.pwreveal-block[open] {
   35% { text-shadow: 0 0 12px var(--fc-glow-text); }
   100% { text-shadow: none; }
 }
+} /* @layer components */
 
 /* Reduced motion: no scramble (skipped in the script), no glow, no pop/unlock. The CAPTURED state still
-   applies via classes, so the value reveals instantly and copy still works. */
+   applies via classes, so the value reveals instantly and copy still works.
+
+   UNLAYERED ON PURPOSE. This kill carries !important and has to reach every descendant of .flagcap,
+   including the component-scoped ones; !important inside a layer is ordered by reversed layer order,
+   so layering it would weaken exactly the guarantee it exists to make. */
 @media (prefers-reduced-motion: reduce) {
   .flagcap *,
   .flagcap *::before,
