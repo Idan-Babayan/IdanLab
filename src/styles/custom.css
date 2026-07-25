@@ -736,19 +736,11 @@ html[data-theme="dark"] .os-windows { color: #60a5fa; }
   z-index: -1;
 }
 
-/* Hero title accent */
-.hero h1 {
-  background: linear-gradient(135deg, var(--sl-color-white), #9fef00);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
 
 /* Light-mode ink for the splash hero title. Starlight's splash template renders the page title as
    h1#_top INSIDE .hero (the 404 does this), so this rule and the h1#_top gradient below address the
-   same element. The gradient half of this block went with the homepage-era rules: it never rendered,
-   because :root[data-theme='light'] h1#_top outranks it (verified in the browser before deletion). */
+   same element. Both .hero h1 gradient rules that used to sit here are deleted: neither ever
+   rendered, because h1#_top outranks .hero h1 in both themes and duplicated every declaration. */
 html[data-theme="light"] .hero h1 {
   color: #4d7c00;
 }
