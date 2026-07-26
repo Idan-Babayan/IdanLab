@@ -73,11 +73,15 @@ html[data-theme="dark"] {
 
   /* PROSE TOKENS, pending final confirmation on the deployed preview: these are live eye-calls, tune
      them here, no other code change needed.
-       --prose-measure        cap on the prose TEXT line width (50rem = the full content column, LOCKED).
+       --prose-measure        prose TEXT line cap. ALIASED to --sl-content-width so running prose and every
+                              component (code blocks, callouts, toggles, FlagCapture, PasswordReveal,
+                              AttackPath) share one edge. Two names for one number is how values drift, so
+                              this is an alias and not a repeated literal. Making them diverge again means
+                              writing a literal here, which is a visible deliberate act.
        --prose-strong-weight  bold weight for prose <strong>.
-       --prose-size           prose body size, scoped to the prose container (1.15625rem = 18.5px).
-                              18px VARIANT: set this to 1.125rem. Nothing else needs to change, because the
-                              component tokens below are decoupled from it, so proportions hold at either size.
+       --prose-size           prose body size, scoped to the prose container (1.125rem = 18px). Chosen with
+                              the measure, not independently: see the CPL derivation on --sl-content-width.
+                              The component tokens below are decoupled from it, so chrome holds its scale.
        --prose-leading        prose line-height (unitless), comfortable range ~1.5 to 1.55.
      Headings keep Starlight's own scale (no override here), so this size no longer drags them.
 
@@ -96,16 +100,16 @@ html[data-theme="dark"] {
        --prose-heading-gap     gap BELOW a heading, before its text (em; heading TOP margin is untouched).
        --blockquote-pad-y      blockquote vertical padding (em; reduced so the box is not tall).
        --blockquote-pad-x      blockquote horizontal inset (em; kept, this is the quote doing its job). */
-  --prose-measure: 50rem;
+  --prose-measure: var(--sl-content-width);
   --prose-strong-weight: 600;
-  --prose-size: 1.15625rem;
-  --prose-leading: 1.55;
+  --prose-size: 1.125rem;
+  --prose-leading: 1.7;
   --mono-chrome-size: 0.875rem;
   --component-title-size: 1rem;
   --toggle-title-face: var(--body-face);
   --toggle-title-weight: 600;
   --principle-maxim-size: 1.4rem;
-  --prose-paragraph-gap: 0.9em;
+  --prose-paragraph-gap: 1em;
   --prose-heading-gap: 0.6em;
   --blockquote-pad-y: 0.6em;
   --blockquote-pad-x: 1.25em;
@@ -228,18 +232,39 @@ html[data-theme="dark"] {
 }
 } /* @layer tokens */
 
+/* ── Content column: ONE width for prose and every component ────────────────────
+   46rem = 736px. This is also --prose-measure (aliased), so text and components share one edge.
+
+   Derived, not eyeballed. Characters per line is the target, and it falls out of two numbers:
+     CPL = column_px / (xWidthAvg_em * prose_size_px)
+   Geist's frequency-weighted average advance is 0.467em (recorded in fonts.css as xWidthAvg 467/1000,
+   and it back-solves the shipped Geist Fallback size-adjust of 104.76% exactly). So:
+     736 / (0.467 * 18) = 87.6 characters, inside the 80 to 90 target band.
+   Two further ratios, both scale-invariant, both verified on the live pages:
+     block ratio = column_px / line_box_px = 736 / 30.6 = 24.1   (comfortable is roughly 24 to 26)
+     gap ratio   = paragraph_gap / line_box = 18 / 30.6 = 0.588  (the ratio validated when the gap
+                                                                  was cut from 1.35em to 0.9em)
+
+   HISTORY, so this is not repeated: the previous 50rem was justified as a 75-character measure in
+   JetBrains Mono. That was wrong even for mono (16px mono at 0.598em gave about 83.6), and the Geist
+   migration then dropped the average advance 22 percent without anyone recomputing the column, which
+   pushed running prose to 92.6 characters in the same physical space.
+
+   IF THE BODY FACE OR PROSE SIZE EVER CHANGES: recompute this column from the CPL formula above using
+   the new face's xWidthAvg. Do not carry this pixel value across a font change. That is the exact
+   mistake this comment exists to prevent. */
+
 /* ── Three-column proportions: content-first, tighter TOC, balanced gutters ────
    Starlight allocates the right TOC roughly the same width as the left nav (--sl-sidebar-width + half
    the free space), but the TOC holds short entries so most of it reads as empty, and it caps content at
-   45rem, a sans measure that feels cramped in our wide JetBrains Mono body. Rebalance: widen the content
-   cap so the writeup is the focus (50rem is about a 75-char measure in this mono, the top of the
-   comfortable reading range), and narrow the TOC toward its actual content. Widening the cap is required, not just narrowing
-   the TOC: Starlight caps content regardless of free space, so tightening the TOC alone would only add
+   45rem by default. Rebalance: set the content cap from the CPL derivation above, and narrow the TOC
+   toward its actual content. Setting the cap is required, not just narrowing the TOC: Starlight caps
+   content regardless of free space, so tightening the TOC alone would only add
    empty margin. Theme-neutral. Desktop only (the three-column layout collapses below 72rem, so mobile is
    unaffected). Intro pages (.pi-index, no TOC) are handled separately below and skip these rules because
    they carry no [data-has-toc]. */
 @layer tokens {
 :root {
-  --sl-content-width: 50rem;
+  --sl-content-width: 46rem;
 }
 } /* @layer tokens */
