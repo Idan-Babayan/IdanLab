@@ -115,5 +115,7 @@ remain forbidden without a new owner instruction.
 - NO em dashes in any copy (use commas, colons, or parentheses).
 - Don't upgrade dependencies unless I ask (versions are pinned).
 - Marketing pages (src/pages/*.astro) are standalone and dark-only. Writeups are Starlight,
-  themed via src/styles/custom.css only. Never rebuild Starlight.
+  themed via the src/styles/ modules under the layer contract (tokens, base, prose, chrome,
+  components, pages, utilities), with overrides.css as the only unlayered surface. Never
+  rebuild Starlight.
 - Treat docs/CORE_SPEC.md as the source of truth once it's committed.

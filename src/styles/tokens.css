@@ -1,0 +1,223 @@
+@layer starlight, tokens, base, prose, chrome, components, pages, utilities;
+/* Design tokens: the custom properties (surfaces, accents, type scale, prose dials) every other
+   module reads. Layer order, not file order, decides precedence. */
+/* ══════════════════════════════════════════════
+   Idan's Cyber Lab — Custom Starlight Styles
+   ══════════════════════════════════════════════ */
+
+
+/* ══════════════════════════════════════════════
+   FOCUS RING SYSTEM — one color token, identity where it exists, lime default
+   ══════════════════════════════════════════════
+   Every keyboard focus ring reads its COLOR from --focus-ring, which defaults to the theme-aware site
+   accent (--sl-color-text-accent: lime #b6ff3c dark / #4d7c0f light). Identity-bearing elements set
+   --focus-ring to their own accent so the ring echoes the color they already express (matching hover):
+   platform cards (--pf-accent), platform sidebar groups, the flag/password reveals (gold/amber), the
+   badge chips (--wm-c, hooked for rollout), and the ToggleAll control (--pf-accent-2 cyan, assigned in its
+   own component style). Everything else inherits the lime default. Same
+   intentional-color idea as the badges: the ring tells the truth about what the element is, and never
+   invents an identity that is not there.
+
+   This unifies the ring COLOR only, not how it is DRAWN. Rectangular elements use the shared outline
+   rule below. A rounded component that needed the ring to follow its border-radius would keep its own
+   box-shadow rule (still colored via --focus-ring); none do today, because the flag/password reveals
+   are <button>s whose outline already follows their 6px radius in current engines, so they collapse
+   into the shared rule. Adding a new identity element later is just setting --focus-ring on it.
+
+   SCOPE: custom.css themes Starlight CONTENT pages only. The two standalone marketing pages (home,
+   about) carry their own equivalent rings inline; folding them into this same token is a deliberate
+   follow-up, not part of this pass. */
+@layer tokens {
+:root {
+  --focus-ring: var(--sl-color-text-accent);
+}
+} /* @layer tokens */
+
+
+/* ── Brighter body text in dark mode ─────────── */
+
+@layer tokens {
+html[data-theme="dark"] {
+  --sl-color-text: #e6edf3;
+}
+} /* @layer tokens */
+
+/* Universal SECONDARY accent (cyan) for the platform-index duotone. The platform color
+   stays the lead; this complements all four (none of which are cyan). Theme-aware: bright
+   cyan on ink, darkened cyan-ink on paper (both clear AA for the small text that uses it). */
+@layer tokens {
+:root { --pf-accent-2: var(--tp-cyan); }
+:root[data-theme='light'] { --pf-accent-2: var(--tp-cyan-ink); }
+} /* @layer tokens */
+
+/* ══════════════════════════════════════════════
+   THEME PASS — align the writeups with the homepage /
+   about "Decrypted" aesthetic.
+   CSS-only: every bit of Starlight functionality
+   (search, sidebar nav, TOC, a11y, the theme toggle)
+   is preserved. Works by overriding Starlight's own
+   design tokens, the framework-blessed way.
+   ══════════════════════════════════════════════ */
+
+/* ── Typography: Syne for display, JetBrains Mono for code + chrome, Geist for writeup prose ── */
+@layer tokens {
+:root {
+  --sl-font: 'JetBrains Mono', 'JetBrains Mono Fallback', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --sl-font-mono: 'JetBrains Mono', 'JetBrains Mono Fallback', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --tp-display: 'Syne', 'Syne Fallback', sans-serif;
+
+  /* Writeup PROSE face. Geist sets running prose only (see the prose/chrome split just below); all code,
+     badges, and chrome stay JetBrains Mono because --sl-font / --sl-font-mono are left untouched.
+     'Geist Fallback' is the metric-matched, shift-free fallback declared in fonts.css (roman + italic). */
+  --body-face: 'Geist', 'Geist Fallback', system-ui, sans-serif;
+
+  /* PROSE TOKENS, pending final confirmation on the deployed preview: these are live eye-calls, tune
+     them here, no other code change needed.
+       --prose-measure        cap on the prose TEXT line width (50rem = the full content column, LOCKED).
+       --prose-strong-weight  bold weight for prose <strong>.
+       --prose-size           prose body size, scoped to the prose container (1.15625rem = 18.5px).
+                              18px VARIANT: set this to 1.125rem. Nothing else needs to change, because the
+                              component tokens below are decoupled from it, so proportions hold at either size.
+       --prose-leading        prose line-height (unitless), comfortable range ~1.5 to 1.55.
+     Headings keep Starlight's own scale (no override here), so this size no longer drags them.
+
+     COMPONENT + RHYTHM tokens. The point of this pass: chrome does NOT track the prose body. Mono chrome
+     and component titles are pinned to FIXED rem sizes, so they hold when --prose-size moves; only true
+     prose (paragraphs, list items, callout body, blockquote text) tracks it. Spacing stays em (proportional
+     to the text) but is re-tuned smaller for the 18.5px body.
+       --mono-chrome-size      inline code + port label, at the ~14px code-block scale (fixed rem).
+       --component-title-size  toggle / spoiler titles + FlagCapture base (fixed rem, ~16px).
+       --toggle-title-face     regular <Toggle> summary title face. OWNER'S LIVE CALL: var(--body-face) reads
+                              it as a content label (Geist, default), var(--sl-font-mono) as terminal voice.
+       --toggle-title-weight   regular <Toggle> summary title weight. OWNER'S LIVE CALL: 600 (default) vs 700,
+                              the same "is 700 too heavy against Geist" question as prose bold.
+       --principle-maxim-size  the closing Principle maxim (fixed rem; a deliberate, slightly emphasized coda).
+       --prose-paragraph-gap   vertical gap between paragraphs (em; was 1.35em, felt too large).
+       --prose-heading-gap     gap BELOW a heading, before its text (em; heading TOP margin is untouched).
+       --blockquote-pad-y      blockquote vertical padding (em; reduced so the box is not tall).
+       --blockquote-pad-x      blockquote horizontal inset (em; kept, this is the quote doing its job). */
+  --prose-measure: 50rem;
+  --prose-strong-weight: 600;
+  --prose-size: 1.15625rem;
+  --prose-leading: 1.55;
+  --mono-chrome-size: 0.875rem;
+  --component-title-size: 1rem;
+  --toggle-title-face: var(--body-face);
+  --toggle-title-weight: 600;
+  --principle-maxim-size: 1.4rem;
+  --prose-paragraph-gap: 0.9em;
+  --prose-heading-gap: 0.6em;
+  --blockquote-pad-y: 0.6em;
+  --blockquote-pad-x: 1.25em;
+
+  --tp-cyan: #41efff;
+  --tp-cyan-ink: #0b7e92;
+}
+} /* @layer tokens */
+
+/* ── Accent + surfaces — DARK ── */
+@layer tokens {
+:root,
+:root[data-theme='dark'] {
+  --sl-color-accent-low: #20330a;
+  --sl-color-accent: #b6ff3c;
+  --sl-color-accent-high: #daff9e;
+  --sl-color-text-accent: #b6ff3c;
+  /* Flag loot gold: one signal for the User Flag / Root Flag heading, reveal toggle, and TOC entry.
+     Theme-aware; AA in both themes (12.4:1 on ink, 4.85:1 on paper). */
+  --flag-gold: #ffc23d;
+  /* FlagCapture tiers (see the FLAG CAPTURE block). --flag-gold-root is the richer "bigger prize" gold
+     for root; --flag-gold-val(-root) is the AA-grade gold used for the actual flag VALUE text. On dark
+     the bright loot gold already clears AA, so value == identity. All clear 4.5:1 on the captured row. */
+  --flag-gold-root: #ffcf63;
+  --flag-gold-val: #ffc23d;
+  --flag-gold-val-root: #ffcf63;
+  /* Wargame-secret amber: ONE identity shared by both PasswordReveal modes (the inline blurred password
+     row and the block collapse that hides a multi-line secret), so the amber has a single source instead
+     of living independently in two places. --pw-amber is the accent (label, button, open border);
+     --pw-amber-rgb is the wash base, consumed as rgba(var(--pw-amber-rgb), alpha) for the tints and
+     hairlines. Declared on the bare :root fallback as well, per this file's convention, so an absent
+     data-theme can never leave the var undefined and invalidate every rgba() that reads it. */
+  --pw-amber: #ffc23d;
+  --pw-amber-rgb: 245, 158, 11;
+  --sl-color-bg: #07090a;
+  --sl-color-bg-nav: color-mix(in oklab, #07090a 78%, transparent);
+  --sl-color-bg-sidebar: #0a0e0f;
+  --tp-glow-1: #41efff;
+  --tp-glow-2: #b6ff3c;
+}
+
+/* ── Accent + surfaces — LIGHT (warm paper, darkened accents) ── */
+:root[data-theme='light'] {
+  --sl-color-accent-low: #e0eec4;
+  --sl-color-accent: #4d7c0f;
+  --sl-color-accent-high: #2f4d09;
+  --sl-color-text-accent: #4d7c0f;
+  --flag-gold: #C6A243;
+  /* FlagCapture tiers, light. The bright loot gold (#C6A243) reads as decorative gold but is NOT AA as
+     text on paper, so the flag VALUE uses a deeper antique gold that clears 4.5:1 on the captured row
+     (user 5.1:1, root 6.1:1). Root identity + value are a notch deeper so root reads as the richer prize. */
+  --flag-gold-root: #B8862B;
+  --flag-gold-val: #7a5a12;
+  --flag-gold-val-root: #6b4e0e;
+  /* Light accent for the shared wargame-secret amber (deeper, AA on paper). The wash base
+     (--pw-amber-rgb) is the same #f59e0b family in both themes, so it is declared once, on dark. */
+  --pw-amber: #a86f04;
+  --sl-color-bg: #ece9e0;
+  --sl-color-bg-nav: color-mix(in oklab, #ece9e0 80%, transparent);
+  --sl-color-bg-sidebar: #f1eee5;
+  /* Warm structural divider (single source of truth). Starlight's light hairline tokens all fall
+     back to --sl-color-gray-6 (hsl(224 20% 94%), a cool near-white) which is nearly invisible on the
+     warm paper bg and the wrong temperature for it. This warm greige is the paper hue dropped in
+     lightness with most of the yellow chroma removed, so it reads as a soft shadow of the paper:
+     clearly NOT gold (it must not compete with the gold loot signal), not a cool screen gray, and
+     not a colored accent. Fed to --sl-color-hairline it fixes every structural hairline at once (content-to-TOC
+     separator, the line under the writeup title, section rules, the markdown --- hr, and the
+     TOC/ToggleAll divider) and is reused for the content Toggle border below. Light only; the dark
+     hairline (~#262831) is untouched. */
+  --tp-divider: #c6c0b4;
+  --sl-color-hairline: var(--tp-divider);
+  --tp-glow-1: #7cc9ff;
+  --tp-glow-2: #a9dd6a;
+  /* Darker cyan-ink for paper: the previous #0b7e92 left prose links and h3 at ~3.9:1
+     (under AA 4.5 for body text). #08697a clears 4.5:1 while staying on-brand teal, not dull.
+     Light-only override; the dark --tp-cyan is unchanged. */
+  --tp-cyan-ink: #08697a;
+  /* Editorial ink: a crisp near-black on warm paper. Starlight's default light text is a
+     grayish slate (~#353841); a true near-black lifts the paper-and-ink contrast to a premium,
+     intentional feel (about 15:1 on #ece9e0). Body text only; colored inks below are unchanged. */
+  --sl-color-text: #1a1815;
+  /* Decorative accent palette (NON-text only): vivid riso-bold hues for dots, fills, the heading
+     marker, the h2 rule, the sidebar active bar, and panel accents. These read boldly on paper.
+     The darkened text inks (#4d7c0f / #08697a / #c41d6f) stay reserved for colored BODY text and
+     keep WCAG AA; these vivid tones never carry text. */
+  --tp-deco-lime: #6fae00;
+  --tp-deco-cyan: #0a9ec2;
+}
+} /* @layer tokens (dark + light surface tokens move atomically) */
+
+/* ── Sidebar: trim the rail width so it gives the content column more room ──
+   Starlight's default --sl-sidebar-width (18.75rem) reads wide once the rows are taller;
+   17rem keeps every label on one line (HackTheBox, OverTheWire fit) while handing ~1.75rem
+   back to the article. Theme-agnostic Starlight token; nothing else needs to change. */
+@layer tokens {
+:root {
+  --sl-sidebar-width: 17rem;
+}
+} /* @layer tokens */
+
+/* ── Three-column proportions: content-first, tighter TOC, balanced gutters ────
+   Starlight allocates the right TOC roughly the same width as the left nav (--sl-sidebar-width + half
+   the free space), but the TOC holds short entries so most of it reads as empty, and it caps content at
+   45rem, a sans measure that feels cramped in our wide JetBrains Mono body. Rebalance: widen the content
+   cap so the writeup is the focus (50rem is about a 75-char measure in this mono, the top of the
+   comfortable reading range), and narrow the TOC toward its actual content. Widening the cap is required, not just narrowing
+   the TOC: Starlight caps content regardless of free space, so tightening the TOC alone would only add
+   empty margin. Theme-neutral. Desktop only (the three-column layout collapses below 72rem, so mobile is
+   unaffected). Intro pages (.pi-index, no TOC) are handled separately below and skip these rules because
+   they carry no [data-has-toc]. */
+@layer tokens {
+:root {
+  --sl-content-width: 50rem;
+}
+} /* @layer tokens */

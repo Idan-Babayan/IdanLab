@@ -1,0 +1,17 @@
+@layer starlight, tokens, base, prose, chrome, components, pages, utilities;
+/* Utilities: single-purpose helpers that must sit above the named layers, today .sr-only.
+   Layer order, not file order, decides precedence. */
+/* Visually hidden aria-live region (omit if an .sr-only utility already exists in the file). */
+@layer utilities {
+.sl-markdown-content .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+} /* @layer utilities */
