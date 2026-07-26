@@ -1,0 +1,120 @@
+@layer starlight, tokens, base, prose, chrome, components, pages, utilities;
+/* Unlayered tail: rules that must beat any unlayered CSS (vendor stylesheets, inline styles, or our
+   own Astro-scoped component styles) or that carry !important. Nothing here is layered, on purpose. */
+/* UNLAYERED ON PURPOSE. This transition must beat WriteupCard's and PlatformIndex's own
+   `.wc-card` / `.pi-wg-card { transition: transform 0.12s ease, border-color 0.3s ease }`. Those are
+   Astro component styles, which are unlayered, so a layered copy of this rule would lose to them and
+   the 0.8s reveal would run at the component hover speed. It stays physically here, after the state
+   rule above and before the reduced-motion kill below, so its order against those styles is unchanged. */
+.pi-index .reveal {
+  transition: opacity 0.8s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+/* UNLAYERED ON PURPOSE, same reason as the transition above, and additionally because it must beat
+   that unlayered transition rule itself: a layered `transition: none` would lose to both. */
+@media (prefers-reduced-motion: reduce) {
+  .pi-index .reveal {
+    transition: none;
+  }
+}
+
+/* ── Command highlight by category (.ec-cmd-*) ──
+   The ec-priv-command plugin tags command words by semantic category (see
+   astro.config.mjs / src/lib/ec-priv-command.mjs). EC sets each token color inline per theme, so
+   we override with theme-scoped rules + !important.
+
+   Palette designed in OKLCH (perceptual lightness / chroma / hue), measured against the rendered
+   code background (tokyo-night #1a1b26 on dark, one-light #fafafa on light):
+     - LIGHTNESS is uniform per theme (dark L 0.745, light L 0.43), so the categories read at one
+       brightness. Every redesigned category clears WCAG 7:1 on its code bg (measured): dark
+       recon 7.56 / net 7.96 / inspect 7.45; light recon 7.72 / net 7.45 / inspect 7.88.
+     - HUE separates categories and stays clear of the theme's string / keyword / function token
+       hues: privilege magenta (sudo, kept exactly), recon gold (h95), network cyan (h200),
+       inspect warm-sand (h60, ~145 deg off the theme's cool neutral text so it reads as a tint).
+     - CHROMA (not lightness) carries loud vs quiet: recon + network are vivid (high C); inspect
+       is LOW C at the SAME L/contrast, so it stays calm without going dim. That is the fix for the
+       previously near-invisible inspect color (it had been quieted by dropping CONTRAST instead).
+   Privilege/sudo COLOR is the fixed anchor and is untouched (it sits at ~5.5:1 dark / ~5.4:1 light,
+   just under the 7:1 the redesigned set meets, by design). Every recognized command also goes bold
+   (weight channel below), so a command pops by weight while color only signals category.
+
+   UNLAYERED ON PURPOSE. Expressive Code paints every token colour as an INLINE style on the span, so
+   these rules carry !important to beat it. !important in a layer is ordered by REVERSED layer order,
+   which would put them below any later layer, and an inline style is beaten only from outside the
+   layer stack, so this whole set stays unlayered. */
+html[data-theme="dark"] .ec-cmd-priv,
+html[data-theme="dark"] .ec-cmd-priv span {
+  color: #ff4d9d !important;
+}
+html[data-theme="light"] .ec-cmd-priv,
+html[data-theme="light"] .ec-cmd-priv span {
+  color: #c41d6f !important;
+}
+/* Recon / enumeration: vivid gold, an "attention" signal (nmap, gobuster, ...). */
+html[data-theme="dark"] .ec-cmd-recon,
+html[data-theme="dark"] .ec-cmd-recon span {
+  color: oklch(0.745 0.153 95) !important;
+}
+html[data-theme="light"] .ec-cmd-recon,
+html[data-theme="light"] .ec-cmd-recon span {
+  color: oklch(0.43 0.088 95) !important;
+}
+/* Network / shell / transfer: vivid cyan, brand connection feel (nc, curl, ssh, ...). */
+html[data-theme="dark"] .ec-cmd-net,
+html[data-theme="dark"] .ec-cmd-net span {
+  color: oklch(0.745 0.126 200) !important;
+}
+html[data-theme="light"] .ec-cmd-net,
+html[data-theme="light"] .ec-cmd-net span {
+  color: oklch(0.43 0.073 200) !important;
+}
+/* Local inspection (ls, cd, cat, echo, ping, whoami, id, ...): low-chroma warm sand. Dark sits at the
+   vivid set's L/contrast (quiet via chroma, not contrast). Light is intentionally a touch lighter than
+   the vivid set (owner preference: the darker brown read too heavy); it stays AA on paper (~5.8:1) and
+   distinct from the cool neutral text. */
+html[data-theme="dark"] .ec-cmd-inspect,
+html[data-theme="dark"] .ec-cmd-inspect span {
+  color: oklch(0.745 0.045 60) !important;
+}
+html[data-theme="light"] .ec-cmd-inspect,
+html[data-theme="light"] .ec-cmd-inspect span {
+  color: oklch(0.5 0.045 60) !important;
+}
+/* Weight channel: every recognized command is bold in both themes (all four categories, sudo
+   included). Color signals the category; weight signals "this token is the command." This is a
+   weight-only addition for sudo, so sudo's color stays exactly as the anchor above. */
+.ec-cmd-priv, .ec-cmd-priv span,
+.ec-cmd-recon, .ec-cmd-recon span,
+.ec-cmd-net, .ec-cmd-net span,
+.ec-cmd-inspect, .ec-cmd-inspect span {
+  font-weight: 700 !important;
+}
+
+/* V3 part 2 (SECONDARY, revert-alone): cards and the neutral callout read as subtly
+   raised. Same backgrounds (no lighten, no recolor); a soft warm drop shadow alone
+   lifts them off the page. The colored callouts (.cl, asides) keep their identity and
+   are untouched.
+
+   UNLAYERED ON PURPOSE. These beat WriteupCard's and PlatformIndex's own light
+   `html[data-theme='light'] .wc-card { box-shadow: 0 8px 24px -16px rgba(60,50,30,.45) }`. Those are
+   Astro component styles and therefore unlayered, so a layered copy of these would lose and the V3
+   depth shadow would never render on paper. */
+:root[data-theme='light'] .wc-card,
+:root[data-theme='light'] .pi-wg-card {
+  box-shadow: 0 2px 8px rgba(60, 50, 30, 0.10);
+}
+
+/* Reduced motion: no scramble (skipped in the script), no glow, no pop/unlock. The CAPTURED state still
+   applies via classes, so the value reveals instantly and copy still works.
+
+   UNLAYERED ON PURPOSE. This kill carries !important and has to reach every descendant of .flagcap,
+   including the component-scoped ones; !important inside a layer is ordered by reversed layer order,
+   so layering it would weaken exactly the guarantee it exists to make. */
+@media (prefers-reduced-motion: reduce) {
+  .flagcap *,
+  .flagcap *::before,
+  .flagcap *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+/* === end FLAG CAPTURE === */

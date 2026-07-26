@@ -3,8 +3,8 @@
    layer of ours. Rules that must beat any unlayered CSS (vendor stylesheets,
    inline styles, or our own Astro-scoped component styles) or that carry
    !important stay deliberately unlayered, and each one carries a comment naming
-   exactly what it beats. No !important inside layers. Phase 3 moves that tail
-   into its own module; today it sits at the point of use in custom.css.
+   exactly what it beats. No !important inside layers. That tail lives in
+   overrides.css, the only unlayered surface in this directory.
    This statement is duplicated at the top of every module file
    so any stylesheet load order establishes the same layer order; repeats after
    the first occurrence are no-ops. */
