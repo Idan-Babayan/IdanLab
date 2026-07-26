@@ -6,6 +6,152 @@
 
 ---
 
+### 2026-07-26 · `dev` holds the finished CSS refactor and does NOT merge to `main` until the Geist retune lands
+- **Decision:** the refactor workstream is complete and pushed to `dev`, and it stays there. `main` is not
+  updated, no PR is opened, and Cloudflare production keeps serving the pre-Geist site until the design
+  retune below has been done and reviewed. Owner's call, and the reason is not caution about the refactor:
+  it is that `dev` currently carries a HALF-FINISHED DESIGN CHANGE, which is a different thing.
+- **What is actually on `dev` (17 commits ahead of `main`, whose tip is `51edb9c`, PR #18):** two separable
+  bodies of work that happen to share the branch.
+  1. **A design change:** the Geist prose face and the prose/chrome type split (`991bfc4`), plus
+     PasswordReveal's block mode (`b9742fb`). Geist is now the writeup body face, but the rest of the
+     design has NOT been refitted around it. The prose dials are still parked as tokens pending a real
+     screen (see the 2026-07-25 entry), and the spacing, measure and component scales were tuned for the
+     old mono body.
+  2. **Engineering and infrastructure only:** the cascade-layer refactor, the module split, the dead-rule
+     purge, and the governance pass (`59765d6` through `200e9da`). This half is behavior-preserving by
+     construction and was gated at zero changed cells at every step.
+- **Why this blocks the merge even though the refactor is safe:** merging would deploy the Geist face to
+  production in its untuned state. A half-refitted body face is exactly the kind of change that reads as
+  "the site looks off" to a visitor while every individual rule is correct, and this site's whole pitch is
+  that the design is high-effort. The engineering half is invisible to a visitor by design, so it gains
+  nothing from shipping early and loses nothing by waiting.
+- **The merge gate, stated so it is not re-litigated:** `dev` merges to `main` when the Geist retune is
+  done and the owner has seen it on a real screen in both themes. The retune and the refactor ship as ONE
+  release. Splitting them (cherry-picking the refactor to `main` first) was considered and rejected: the
+  refactor's own verification baseline was captured against a Geist-carrying tree, so a `main` that has the
+  refactor without Geist is a configuration nothing was ever measured against.
+- **What the retune inherits, and why the sequencing was right:** a layered, purged, tokenized theme pass.
+  Every dial the retune needs is a custom property in one block in `tokens.css`, precedence is decided by
+  layer order rather than by selector weight, and the dead rules that would have made a retune ambiguous
+  are gone. Doing the plumbing first means the retune is a values exercise, not an archaeology exercise.
+- **Status:** Adopted (owner instruction). No PR, no `main` activity. Tracked as the top ROADMAP item.
+
+### 2026-07-26 · OverTheWire amber splits into an identity accent and an AA text ink
+- **Decision:** the single `--pw-amber` becomes a PAIR: `--otw-amber` (the identity, for non-text uses:
+  borders, focus rings, bars, and display-size type. `#ffc23d` dark / `#a86f04` light, both unchanged) and
+  `--otw-amber-ink` (the AA text ink for body-size text: `#ffc23d` dark, byte-identical, / `#7c5000` light,
+  new). Every consumer was rewired: text to the ink, borders and washes to the accent. This is the only
+  intentional pixel change in the whole refactor workstream.
+- **Why a pair rather than a darker single value:** one value could not serve both jobs on paper. Measured
+  by canvas readback on the real elements, `#a86f04` failed AA as body text on every surface it landed on
+  (3.21:1 on the PasswordReveal row, 3.64:1 on the toggle card, 3.50:1 on paper) while being exactly right
+  as a border and ring, where the bar is 3:1 and it passes. Darkening the single token would have dragged
+  the borders and rings darker for no reason; splitting fixes the text and leaves the identity alone.
+- **The solve (badge-pass method, hold the hue, drop the lightness):** `oklch(0.470 0.101 73.35)` =
+  `#7c5000`, hue held at 72.87 against the identity's 73.35, and 82% of the chroma retained. That last
+  figure matches the recorded finding that amber's sRGB gamut collapses as it darkens and it keeps only
+  about four fifths of its chroma at AA. **Two corrections during the solve, both worth recording:**
+  1. The first candidate (`#8a5300`) drifted the hue by 6.4 degrees under gamut clamping. The method
+     forbids a hue shift, so chroma was backed off until the hue held within a degree. A gamut-clamp drift
+     is still a hue shift; it just is not an intentional one.
+  2. The first hue-holding candidate cleared AA at rest and measured **4.38:1 while HOVERED**, because
+     `.pw-action:hover` paints its own amber wash underneath its own label. **The hover composite, not the
+     resting one, is the surface to solve against.** Re-solved there: 4.78:1 hovered, 5.28:1 at rest.
+- **Display type deliberately keeps the identity amber.** `.pi-name` (57.6px/800) and `.pi-num`
+  (44.8px/700) are large text at the 3:1 bar and pass at 3.50:1. Only `.pi-eyebrow` (12.8px/400) is body
+  text. That split is exactly what the accent/ink pair encodes, and it is why the platform index did not
+  need its shared `--pf-accent` retinted.
+- **A 14th tail rule, and why it was the honest option.** `.pi-eyebrow`'s colour is declared by
+  `PlatformIndex.astro`'s own scoped style, so the theme pass cannot reach it from a layer. Verified in the
+  browser rather than assumed: a layered rule at (0,4,0) did not move it, an unlayered rule did, because an
+  Astro scoped style is unlayered and beats every layered rule at any weight. Retinting `--pf-accent`
+  instead would have dragged three display-type consumers and about fifteen non-text uses. So the fix is
+  one unlayered rule in `overrides.css`, scoped to `.pf-overthewire .pi-eyebrow`, under the tail contract
+  that already names "our own Astro-scoped component styles" (the tail already held two rules beating these
+  same two components). Tail 13 to 14.
+- **Also routed, zero-diff:** the sidebar OverTheWire group focus ring now reads `--otw-amber` instead of a
+  literal. The HackTheBox, VulnHub and PicoCTF ring literals stay forked: there is no root token for the
+  red or the purple, and HackTheBox's hex merely COINCIDES with `--sl-color-accent`. Routing it there would
+  encode a coincidence as a coupling, which is the mistake the seven-way `#a86f04` fork already taught.
+- **Verified:** dark output byte-identical (zero changed cells). Light changed exactly 17 cells of 7,536,
+  one value transition (`#a86f04` to `#7c5000`), collapsing to THREE elements: the PasswordReveal button,
+  the block-mode summary (matched by two manifest entries and proven the same node), and the OverTheWire
+  eyebrow. Every other cell on those elements is an unpainted `currentColor` follower (`border-*-color` at
+  width 0, `outline-color`). Final table, all clearing their bar: hovered button 4.78, resting button 5.28,
+  block summary 5.98, eyebrow 5.76, rings 3.21 and 3.50 against the 3:1 non-text bar.
+- **Found and NOT fixed (different token family, out of scope):** the HackTheBox and VulnHub platform-index
+  eyebrows measure 4.11:1 and 4.16:1 on paper as 12.8px body text, both under 4.5:1. Same defect, different
+  hue, each needs its own solve and its own ink token. Recorded in CORE_SPEC and ROADMAP.
+- **Status:** Adopted; committed as `f5eb43a` to `dev`, pushed, not merged.
+
+### 2026-07-26 · The theme pass moves to declared cascade layers and splits into per-layer modules
+- **Decision:** `custom.css` (2,417 lines, 130,423 bytes, 56 top-level constructs) is retired. The theme
+  pass is now a set of cascade-layer modules under `src/styles/`, one module per layer, with
+  `layers.css` declaring `@layer starlight, tokens, base, prose, chrome, components, pages, utilities;` and
+  `overrides.css` holding the unlayered tail. Precedence is decided by LAYER ORDER, not by file order and
+  not by selector weight. This is an engineering and infrastructure change with no intended visual effect.
+- **The problem it solves (why this was worth doing at all):** the old posture was "custom.css is unlayered,
+  so it beats Starlight". That works until our own rules start fighting EACH OTHER, and they did. The file
+  had accumulated specificity armor (stacked `html[data-theme]` prefixes, element qualifiers, `:root`
+  chains) whose only job was to out-rank another rule in the same file, and the armor was undocumented, so
+  every new rule had to guess how much weight it needed. Layers replace that guessing with a declared
+  order: a `components` rule beats a `prose` rule because it is in a later layer, full stop, and the armor
+  could be deleted rather than migrated.
+- **Phase order, and why the purge came early:** Phase 1 declared the order and wrapped `tokens` and `base`.
+  Phase 2 migrated `prose`, then `chrome` / `components` / `pages` and retired the armor. **Phase 4a (the
+  dead-rule purge) was PULLED FORWARD to sit before the reordering**, which is the sequencing lesson worth
+  keeping: a rule that matches live elements but always loses is dead IN EFFECT, and reordering the cascade
+  can silently revive it. Migrating such a rule converts a harmless no-op into a live regression, so the
+  dead rules were deleted first (including a `.hero h1` duplicate that `h1#_top` outranked in both themes).
+  Phase 3 split the file into modules. Phase 4b did governance and documentation.
+- **The split mechanics, so a future reader can trust it:** every top-level construct travelled with its
+  leading comment run and any same-line trailing comment, byte for byte. Verified by a round trip:
+  re-reading the written modules, stripping the added headers, and re-interleaving the recovered pieces by
+  original source offset reproduced `custom.css` exactly (130,423 bytes in, 130,423 out). Distribution:
+  tokens 7 constructs, base 1, prose 14, chrome 9, components 8, pages 3, utilities 1, overrides 13, which
+  is all 56. Every module repeats the order statement on its first line so any bundler chunk order still
+  establishes the same order.
+- **The layer law that fell out of it:** no `!important` inside a layer. `!important` REVERSES layer order,
+  so an important declaration in a late layer is weaker than one in an early layer, which is a trap rather
+  than a tool. Important declarations therefore live only in the unlayered tail. The tail contract: a rule
+  earns a place in `overrides.css` on exactly one of two grounds, it must beat unlayered CSS (a vendor
+  stylesheet, an inline style, or one of our own Astro-scoped component styles, all of which sit above
+  every layer) or it carries `!important`, and each one carries a comment naming what it beats.
+- **The two instruments, previously conflated (this cost real debugging time):** `.not-content` governs
+  REACH and layer order governs PRECEDENCE. The guard is written `:not(:where(.not-content *))` and, like
+  Starlight's own, it excludes DESCENDANTS only, so a component root that carries the class is still
+  matched and is resolved by precedence. And a rule with no guard at all (the bare `:not(pre) > code`
+  inline-code chip) reaches into every component subtree regardless. What actually protects a component is
+  that its scoped style is unlayered. `AttackPath.astro` carried a comment crediting the guard; corrected.
+- **The verification protocol, which is the reusable part.** A 62-entry, 24-property computed-style harness
+  over 8 pages in both themes, 7,536 comparable cells, diffed in-page so only CHANGED cells ever reach the
+  transcript. Every phase gated at zero changed cells except the amber pass's intended 17. Three traps were
+  found and are now encoded in the instrument:
+  1. **The pane freezes transition timelines** (`visibilityState: "hidden"`), so a mid-flight transition
+     reports its START value forever. This produced a false 4-cell diff whose two halves moved in OPPOSITE
+     directions on two pages, which is the tell that a diff is a race and not a regression. Zeroing
+     `transition-duration` does NOT cancel an already-running frozen transition; only the `transition`
+     shorthand does, and it cannot be in force during the capture or `transition-property` computes as
+     `none`. v4 does both, in that order.
+  2. **devicePixelRatio drifts** between 1 and 1.25 as the pane settles. A pair captured at mixed dpr is
+     not comparable. The rule is to rebuild a same-dpr pair, never to reinterpret the diff.
+  3. **A layered rule cannot override an Astro scoped style**, at any specificity. Measured, not argued.
+- **Verified at every gate:** `npm run build` green at 46 pages; zero `package.json` or lockfile diff
+  throughout; the order statement is the first `@layer` occurrence in document CSS order on a built page;
+  the tail sits at brace depth 0 in the shipped CSS. Two Starlight-authored stylesheets do open with a
+  `starlight.components` block and no order statement of their own; proved pre-existing by rebuilding the
+  committed tree and confirming both files are content-hash identical before and after.
+- **Deliberately NOT done, in this or any future phase of this workstream:** selector flattening and unit
+  conversions. The remaining multi-part selectors either express real precedence within their layer or are
+  load-bearing against unlayered CSS. The unit rule (rem or px for component geometry, em only where
+  scaling with the local font size is the declared intent, with a comment naming the coupling) is WRITTEN
+  in the `layers.css` header and deliberately NOT applied: converting a unit changes rendered geometry, so
+  it belongs to the retune with its own measurements, not to a behavior-preserving refactor.
+- **Status:** Adopted; committed to `dev` across `e6f1602`, `8215858`, `fb70ce9`, `c4b40d3`, `64ad6df`,
+  `ff396d3`, `19c2e49`, `200e9da`, all pushed, none merged to `main`. No new dependencies, pinned versions
+  unchanged, no component edits beyond one comment correction in `AttackPath.astro`.
+
 ### 2026-07-25 · PasswordReveal gets a BLOCK mode; the one-off `.spoiler-toggle` class is retired
 - **Decision:** `PasswordReveal` grows a second mode so one component covers both shapes a wargame secret
   comes in, and the `.spoiler-toggle` class it existed to work around is deleted from `custom.css`.

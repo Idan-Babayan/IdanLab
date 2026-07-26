@@ -93,6 +93,7 @@ The authoring flow is: write in Notion, export Markdown, then polish it by hand 
 - Real name is fine on the public site.
 - **Domain:** the canonical domain is **`idanlab.dev`** (moved from `idanstudio.click`, 2026-06-06; old domain kept as a 301 redirect, then retired). See DECISIONS.
 - **Deployment:** Cloudflare Pages auto-deploys on push to **`main`** (also at `idanlab.pages.dev`). Build `npm run build`, output `dist/` (gitignored).
+- **RELEASE HOLD (2026-07-26):** `dev` is ahead of `main` and must NOT be merged yet. It carries the Geist prose face without the design having been refitted around it, alongside the finished CSS refactor. The merge is gated on the Geist retune so production never serves a half-tuned body face; the retune and the refactor ship as one release. Do not open a PR into `main` until Idan says the retune is done. See `docs/CORE_SPEC.md` §2 and the top item in `docs/ROADMAP.md`.
 
 ## Git policy
 - Never run `git commit` or `git push` unless I explicitly ask. Edit locally; I commit myself.
@@ -111,6 +112,10 @@ directly; changes reach main only via a pull request opened and merged by the
 owner. Force pushes, amends, rebases, resets, merges, and any history rewrite
 remain forbidden without a new owner instruction.
 
+Release hold (2026-07-26, owner instruction): do not propose, prepare, or open a
+pull request into main while the Geist retune is outstanding. dev accumulating
+commits ahead of main is the intended state, not a problem to fix.
+
 ## My rules
 - NO em dashes in any copy (use commas, colons, or parentheses).
 - Don't upgrade dependencies unless I ask (versions are pinned).
@@ -118,4 +123,9 @@ remain forbidden without a new owner instruction.
   themed via the src/styles/ modules under the layer contract (tokens, base, prose, chrome,
   components, pages, utilities), with overrides.css as the only unlayered surface. Never
   rebuild Starlight.
+- No !important inside a layer (it reverses layer order). Rules that must beat unlayered CSS,
+  including our own Astro-scoped component styles, go in overrides.css with a comment naming
+  what they beat.
+- No selector flattening and no unit conversions in the theme pass. The unit rule is written in
+  the layers.css header and is applied during the design retune, not before.
 - Treat docs/CORE_SPEC.md as the source of truth once it's committed.

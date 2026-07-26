@@ -28,6 +28,13 @@
   Pages auto-deploys. Also serves at `idanlab.pages.dev`. `astro.config.mjs` sets
   `site: 'https://idanlab.dev'` (drives the sitemap + canonical URLs). Branches: only `main`
   and `dev`; work lands on `dev`, then a PR into `main`.
+- **RELEASE STATE (2026-07-26): `dev` is 17 commits ahead of `main` and is deliberately NOT merged.**
+  `main`'s tip is `51edb9c` (PR #18) and production is still the pre-Geist site. `dev` carries two things:
+  the Geist prose face plus PasswordReveal's block mode (a DESIGN change that is only half done, because
+  the rest of the design has not been refitted around the new body face), and the CSS cascade-layer
+  refactor (engineering only, behavior-preserving, gated at zero changed cells). The merge is gated on the
+  Geist retune: the two ship as one release, so production never serves a half-tuned body face. Do not
+  open the PR until the retune is done and reviewed. See DECISIONS 2026-07-26 and the top ROADMAP item.
 - **robots.txt:** managed in-repo at `public/robots.txt` (served at `/robots.txt`). The in-repo file
   holds the easter-egg breadcrumb comment + a `Sitemap:` line. On deploy, Cloudflare composes its own
   managed block (the Content-Signals header plus the managed bot disallow list: Amazonbot,
