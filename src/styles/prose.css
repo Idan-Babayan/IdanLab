@@ -227,7 +227,6 @@ html[data-theme="light"] .starlight-aside--tip {
   max-width: var(--prose-measure);
 }
 } /* @layer prose */
-/* Light grain opacity is set alongside the light atmosphere block below (lifted to .035). */
 
 /* ── Headings: Syne display ── */
 @layer prose {

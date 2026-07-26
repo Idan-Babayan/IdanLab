@@ -176,8 +176,10 @@ html[data-theme="dark"] .task-title {
   width: 5px; height: 5px; border-radius: 50%;
   background: var(--sl-color-gray-5); display: block;
 }
-/* Filled + growing per level: the filled count is the level, and the leading filled pip grows so
-   higher difficulty visibly outweighs lower beyond count alone. Achromatic (no hue). */
+/* Filled + growing per level: the filled count is the level, and the LAST filled pip grows so
+   higher difficulty visibly outweighs lower beyond count alone. Achromatic (no hue). The growth
+   selectors below are nth-child(N) for level N, which is the trailing filled pip, not the leading
+   one; the wording used to say "leading" and contradicted them. */
 .writeup-meta .wm-pips[data-level="1"] i:nth-child(1),
 .writeup-meta .wm-pips[data-level="2"] i:nth-child(-n+2),
 .writeup-meta .wm-pips[data-level="3"] i:nth-child(-n+3),
@@ -189,11 +191,10 @@ html[data-theme="dark"] .task-title {
 .writeup-meta .wm-pips[data-level="3"] i:nth-child(3) { width: 7px; height: 7px; }
 .writeup-meta .wm-pips[data-level="4"] i:nth-child(4) { width: 8px; height: 8px; }
 
-/* Visually hidden difficulty text (keep if the file's .sr-only is not already global). */
-.writeup-meta .sr-only {
-  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
-  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
-}
+/* The visually hidden difficulty text ("Difficulty N of 4") is covered by the global .sr-only utility
+   in utilities.css. The duplicate that used to sit here carried byte-identical declarations and was
+   already being won by that utility anyway (utilities is a later layer than components), so it was
+   doing nothing. The badge row renders inside .sl-markdown-content, which is the utility's scope. */
 
 
 /* ── Port label: a cyan mono tag inside recon callouts ────────────────────────
@@ -316,13 +317,13 @@ html[data-theme="dark"] .port-label {
   flex-shrink: 0;
 }
 
-/* Difficulty — traffic-light semantics */
+/* Difficulty: traffic-light semantics */
 .difficulty-easy   { background: rgba(34,197,94,.15);  color: #16a34a; border-color: rgba(34,197,94,.35); }
 .difficulty-medium { background: rgba(245,158,11,.15); color: #d97706; border-color: rgba(245,158,11,.35); }
 .difficulty-hard   { background: rgba(239,68,68,.15);  color: #dc2626; border-color: rgba(239,68,68,.35); }
 .difficulty-misc   { background: rgba(100,116,139,.15);color: #64748b; border-color: rgba(100,116,139,.35); }
 
-/* OS — neutral slate */
+/* OS: neutral slate */
 .os-linux   { background: rgba(100,116,139,.12); color: #475569; border-color: rgba(100,116,139,.3); }
 .os-windows { background: rgba(37,99,235,.12);   color: #2563eb; border-color: rgba(37,99,235,.3); }
 

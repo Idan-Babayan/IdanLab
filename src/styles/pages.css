@@ -2,7 +2,7 @@
 /* Pages: whole-page treatments (the splash hero, the platform index and its reveal infrastructure).
    Layer order, not file order, decides precedence. */
 /* ══════════════════════════════════════════════
-   HOMEPAGE — hacker aesthetic
+   HOMEPAGE: hacker aesthetic
    ══════════════════════════════════════════════ */
 
 /* Hero glow behind the splash */
@@ -33,7 +33,7 @@ html[data-theme="light"] .hero h1 {
 
 
 /* ══════════════════════════════════════════════
-   PLATFORM INDEX PAGES — animated hero + writeup grid
+   PLATFORM INDEX PAGES: animated hero + writeup grid
    (src/components/PlatformIndex.astro + WriteupCard.astro)
    The components own their visuals via scoped styles; these
    global rules cover the shared reveal infra, the per-platform
