@@ -196,7 +196,14 @@ html[data-theme="light"] .starlight-aside--tip {
 .sl-markdown-content {
   font-size: var(--prose-size);
 }
-.sl-markdown-content :is(p, li):not(.cl-header):not(:where(.not-content *)) {
+/* td is included so a table cell gets the prose LEADING as well as the prose face it already takes from
+   the rule above. Without it a cell rendered Geist at --prose-size but fell back to Starlight's ambient
+   --sl-line-height (1.75) while every paragraph beside it ran 1.7. This has ZERO rendered effect today:
+   no file in src/content/docs contains a markdown table, so the rule currently matches no element. It is
+   fixed now because the gap is invisible until the first table ships, at which point it reads as a
+   mysteriously loose block. th is deliberately left out, matching the face rule above, which also names
+   only td: a header cell is chrome for the table, not running prose. */
+.sl-markdown-content :is(p, li, td):not(.cl-header):not(:where(.not-content *)) {
   line-height: var(--prose-leading);
   letter-spacing: 0;
   font-weight: 400;
@@ -343,8 +350,10 @@ html[data-theme="light"] .starlight-aside--tip {
   border-inline-start: 3px solid var(--sl-color-accent);
   background: color-mix(in oklab, var(--sl-color-accent) 7%, transparent);
   border-radius: 0 10px 10px 0;
-  /* Padding in em (tracks the prose size). Vertical reduced so the quote box is not tall; horizontal inset
-     kept, which is why the quote text measures a few characters narrower than body (the quote doing its job). */
+  /* The two axes deliberately use different units, see the token block in tokens.css. Vertical is em, so
+     the quote's breathing tracks the text; horizontal is rem, because it is an alignment to .cl's inline
+     padding rather than a rhythm, and it must not move when --prose-size does. The quote text still
+     measures narrower than body text (the quote doing its job), now by the same inset a callout uses. */
   padding: var(--blockquote-pad-y) var(--blockquote-pad-x);
   font-style: normal;
 }

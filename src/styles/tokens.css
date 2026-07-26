@@ -103,7 +103,13 @@ html[data-theme="dark"] {
        --prose-paragraph-gap   vertical gap between paragraphs (em; was 1.35em, felt too large).
        --prose-heading-gap     gap BELOW a heading, before its text (em; heading TOP margin is untouched).
        --blockquote-pad-y      blockquote vertical padding (em; reduced so the box is not tall).
-       --blockquote-pad-x      blockquote horizontal inset (em; kept, this is the quote doing its job). */
+       --blockquote-pad-x      blockquote horizontal inset. rem, and the UNIT CHANGE (was 1.25em) is the
+                               point: this value is an ALIGNMENT to another component, not a rhythm. It
+                               matches .cl's 1.05rem inline padding so a blockquote and a callout, the
+                               site's two set-off block families, present their text at the same inset
+                               from the shared column edge. An alignment must not drift when --prose-size
+                               moves, which is exactly what em did. --blockquote-pad-y stays em on the
+                               opposite reasoning: vertical rhythm SHOULD track the text. */
   --prose-measure: var(--sl-content-width);
   --prose-strong-weight: 600;
   --prose-size: 1.125rem;
@@ -116,7 +122,7 @@ html[data-theme="dark"] {
   --prose-paragraph-gap: 1em;
   --prose-heading-gap: 0.6em;
   --blockquote-pad-y: 0.6em;
-  --blockquote-pad-x: 1.25em;
+  --blockquote-pad-x: 1.05rem;
 
   --tp-cyan: #41efff;
   --tp-cyan-ink: #0b7e92;

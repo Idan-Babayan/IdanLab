@@ -516,7 +516,12 @@ html[data-theme="light"] .sl-markdown-content .cl :not(pre) > code {
   padding-left: 5.6em;
   text-indent: -5.6em;
   margin: 0.26rem 0;
-  line-height: 1.55;
+  /* No line-height here on purpose: these rows are prose and inherit --prose-leading like every other
+     paragraph and list item. The 1.55 that used to sit here was authored in 2026-07-04 against
+     Starlight's ambient 1.75, then briefly matched the body exactly when the Geist pass set
+     --prose-leading to 1.55, then silently desynced when the foundation lock moved it to 1.7. The tell
+     that it was stale rather than deliberate: .cl-loot li carries identical markup and no literal, so
+     two visually identical findings lists were rendering at 27.9px and 30.6px. */
 }
 .sl-markdown-content .cl-recon li > .port-label:first-child {
   display: inline-block;
