@@ -71,8 +71,10 @@ html[data-theme="dark"] {
      'Geist Fallback' is the metric-matched, shift-free fallback declared in fonts.css (roman + italic). */
   --body-face: 'Geist', 'Geist Fallback', system-ui, sans-serif;
 
-  /* PROSE TOKENS, pending final confirmation on the deployed preview: these are live eye-calls, tune
-     them here, no other code change needed.
+  /* PROSE TOKENS. The four FOUNDATION dials (--prose-measure, --prose-size, --prose-leading,
+     --prose-paragraph-gap) are LOCKED and DERIVED, not eye-calls: see the CPL derivation on
+     --sl-content-width, and recompute from it rather than nudging any of them by eye. The remaining
+     tokens below are still live calls, tunable here with no other code change needed.
        --prose-measure        prose TEXT line cap. ALIASED to --sl-content-width so running prose and every
                               component (code blocks, callouts, toggles, FlagCapture, PasswordReveal,
                               AttackPath) share one edge. Two names for one number is how values drift, so
@@ -82,13 +84,15 @@ html[data-theme="dark"] {
        --prose-size           prose body size, scoped to the prose container (1.125rem = 18px). Chosen with
                               the measure, not independently: see the CPL derivation on --sl-content-width.
                               The component tokens below are decoupled from it, so chrome holds its scale.
-       --prose-leading        prose line-height (unitless), comfortable range ~1.5 to 1.55.
+       --prose-leading        prose line-height (unitless). 1.7 sets the 30.6px line box that the block
+                              ratio (24.1) and gap ratio (0.588) on --sl-content-width are derived from,
+                              so moving it moves both: recompute them, do not nudge this alone.
      Headings keep Starlight's own scale (no override here), so this size no longer drags them.
 
      COMPONENT + RHYTHM tokens. The point of this pass: chrome does NOT track the prose body. Mono chrome
      and component titles are pinned to FIXED rem sizes, so they hold when --prose-size moves; only true
      prose (paragraphs, list items, callout body, blockquote text) tracks it. Spacing stays em (proportional
-     to the text) but is re-tuned smaller for the 18.5px body.
+     to the text) and is tuned against the 18px body.
        --mono-chrome-size      inline code + port label, at the ~14px code-block scale (fixed rem).
        --component-title-size  toggle / spoiler titles + FlagCapture base (fixed rem, ~16px).
        --toggle-title-face     regular <Toggle> summary title face. OWNER'S LIVE CALL: var(--body-face) reads
