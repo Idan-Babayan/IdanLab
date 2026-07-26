@@ -555,9 +555,10 @@ html[data-theme="light"] .sl-markdown-content .cl :not(pre) > code {
    ToggleAll's bulk expand exactly as the old spoiler toggle did, and its summary face and weight come
    from the regular-toggle rule near the top of this file (Geist 600), so the label matches every other
    toggle title rather than carrying a bespoke weight.
-   Amber reads the SHARED --pw-amber / --pw-amber-rgb tokens, the same ones the inline row uses, so the
-   identity has exactly one source: change the token and both modes move together. That consolidation is
-   the reason the old class was folded in here.
+   Amber reads the SHARED --otw-amber / --otw-amber-ink / --pw-amber-rgb tokens, the same ones the inline
+   row uses, so the identity has exactly one source: change the token and both modes move together. That
+   consolidation is the reason the old class was folded in here. The summary LABEL is body-size text, so
+   it reads the ink; the open border is non-text, so it reads the accent.
    Layer note (this used to need specificity armor): two generic rules elsewhere set border-color on any
    .sl-markdown-content details / details[open] (the per-theme card border, and light mode's "no green
    edge on paper" open-state override), both unconditional on element type. Those live in `prose` and
@@ -568,10 +569,10 @@ html[data-theme="light"] .sl-markdown-content .cl :not(pre) > code {
   border-color: rgba(var(--pw-amber-rgb), 0.45);
 }
 .sl-markdown-content details.pwreveal-block[open] {
-  border-color: var(--pw-amber);
+  border-color: var(--otw-amber);
 }
 .sl-markdown-content details.pwreveal-block > summary {
-  color: var(--pw-amber);
+  color: var(--otw-amber-ink);
 }
 .sl-markdown-content details.pwreveal-block > summary::before {
   transition: none;
@@ -584,9 +585,10 @@ html[data-theme="light"] .sl-markdown-content .cl :not(pre) > code {
    distinction reads). The row is a passive amber card: only .pw-action is interactive. The label and
    value are NON-selectable (copy is the only way to take the value, like FlagCapture), and the value
    is spoiler-blurred until Reveal is clicked (never on hover). Amber comes from the shared identity
-   tokens --pw-amber (accent, #ffc23d dark / #a86f04 light) and --pw-amber-rgb (the #f59e0b wash base),
-   which BLOCK mode reads too, so the two modes cannot drift apart. Both themes; light is stronger and
-   more golden. The tokens hold literal values and are declared on the bare :root fallback, so nothing
+   tokens --otw-amber (accent, #ffc23d dark / #a86f04 light), --otw-amber-ink (the AA text ink, #ffc23d
+   dark / #7c5000 light) and --pw-amber-rgb (the #f59e0b wash base), which BLOCK mode reads too, so the
+   two modes cannot drift apart. The button LABEL is body-size text and reads the ink; its border and
+   focus ring are non-text and read the accent. Both themes; light is stronger and more golden. The tokens hold literal values and are declared on the bare :root fallback, so nothing
    fails to resolve (the earlier failure mode here was color-mix indirection, not custom properties). */
 .sl-markdown-content .pwreveal {
   display: flex;
@@ -641,7 +643,7 @@ html[data-theme="light"] .sl-markdown-content .cl :not(pre) > code {
   font-family: var(--sl-font-mono);
   font-size: 0.72rem;
   font-weight: 600;
-  color: var(--pw-amber);
+  color: var(--otw-amber-ink);
   background: transparent;
   border: 1px solid rgba(var(--pw-amber-rgb), 0.45);
   border-radius: 6px;
@@ -649,7 +651,7 @@ html[data-theme="light"] .sl-markdown-content .cl :not(pre) > code {
   cursor: pointer;
 }
 :root[data-theme="light"] .sl-markdown-content .pwreveal .pw-action {
-  /* Only the border differs on paper; the text color comes from the theme-aware --pw-amber token. */
+  /* Only the border differs on paper; the text color comes from the theme-aware --otw-amber-ink token. */
   border-color: rgba(var(--pw-amber-rgb), 0.6);
 }
 @media (prefers-reduced-motion: no-preference) {
@@ -662,9 +664,10 @@ html[data-theme="light"] .sl-markdown-content .cl :not(pre) > code {
 :root[data-theme="light"] .sl-markdown-content .pwreveal .pw-action:hover {
   background: rgba(var(--pw-amber-rgb), 0.2);
 }
-/* Focus ring routed through the token (amber identity, matching the control's own color); the shared
+/* Focus ring routed through the token. A ring is non-text, so it reads the ACCENT rather than the ink:
+   it is the control's identity, and it already clears the 3:1 a non-text indicator needs. The shared
    :where(...button...):focus-visible rule draws it, outline following the button's 6px radius. */
-.sl-markdown-content .pwreveal .pw-action { --focus-ring: var(--pw-amber); }
+.sl-markdown-content .pwreveal .pw-action { --focus-ring: var(--otw-amber); }
 .sl-markdown-content .pwreveal .pw-action-ico { width: 15px; height: 15px; flex: none; }
 } /* @layer components */
 @layer components {

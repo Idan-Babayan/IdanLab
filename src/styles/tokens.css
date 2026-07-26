@@ -132,13 +132,31 @@ html[data-theme="dark"] {
   --flag-gold-root: #ffcf63;
   --flag-gold-val: #ffc23d;
   --flag-gold-val-root: #ffcf63;
-  /* Wargame-secret amber: ONE identity shared by both PasswordReveal modes (the inline blurred password
-     row and the block collapse that hides a multi-line secret), so the amber has a single source instead
-     of living independently in two places. --pw-amber is the accent (label, button, open border);
-     --pw-amber-rgb is the wash base, consumed as rgba(var(--pw-amber-rgb), alpha) for the tints and
-     hairlines. Declared on the bare :root fallback as well, per this file's convention, so an absent
+  /* OverTheWire amber: ONE identity, split into an ACCENT and an INK, because a single value cannot
+     serve both jobs on paper. This supersedes --pw-amber, which was that single value and which every
+     consumer below now reads through this pair.
+       --otw-amber      the identity. Non-text uses only: borders, focus rings, bars, and DISPLAY-size
+                        type (the platform-index name and count-up, which sit at the 3:1 large-text bar
+                        and keep the identity amber deliberately).
+       --otw-amber-ink  the AA text ink, for body-size text. Light is solved in OKLCH by the badge-pass
+                        method (hold the hue, drop the lightness, gamut-map the chroma, never shift the
+                        hue): oklch(0.470 0.101 73.35) = #7c5000, hue held at 72.87 against the
+                        identity's 73.35 and 82% of its chroma retained, which matches the recorded
+                        finding that amber's sRGB gamut collapses as it darkens and it keeps only about
+                        four fifths of its chroma at AA. Measured by canvas readback on the real
+                        elements against their own composited surfaces, WORST CASE FIRST: the
+                        PasswordReveal button while HOVERED 4.78:1 (hover paints its own amber wash
+                        under the label, so it, not the resting row, is the surface to solve against),
+                        the same button at rest 5.28:1, the block-mode summary on the toggle card
+                        5.98:1, the platform-index eyebrow on paper 5.76:1.
+                        Dark needs no ink: #ffc23d already clears AA everywhere (11.4 to 12.4:1), so
+                        ink and accent are the SAME value there and dark output is byte-identical.
+     --pw-amber-rgb stays the wash base, consumed as rgba(var(--pw-amber-rgb), alpha) for tints and
+     hairlines; it is a channel triplet, not a colour, so the accent/ink split does not apply to it.
+     All three are declared on the bare :root fallback as well, per this file's convention, so an absent
      data-theme can never leave the var undefined and invalidate every rgba() that reads it. */
-  --pw-amber: #ffc23d;
+  --otw-amber: #ffc23d;
+  --otw-amber-ink: #ffc23d;
   --pw-amber-rgb: 245, 158, 11;
   --sl-color-bg: #07090a;
   --sl-color-bg-nav: color-mix(in oklab, #07090a 78%, transparent);
@@ -160,9 +178,13 @@ html[data-theme="dark"] {
   --flag-gold-root: #B8862B;
   --flag-gold-val: #7a5a12;
   --flag-gold-val-root: #6b4e0e;
-  /* Light accent for the shared wargame-secret amber (deeper, AA on paper). The wash base
-     (--pw-amber-rgb) is the same #f59e0b family in both themes, so it is declared once, on dark. */
-  --pw-amber: #a86f04;
+  /* OverTheWire amber, light. The accent keeps the established identity; only the INK moves, and only
+     because #a86f04 fails AA as body-size text on every surface it lands on (measured 3.21:1 on the
+     PasswordReveal row, 3.64:1 on the toggle card, 3.50:1 on paper). The accent is unchanged, so every
+     border, ring and bar renders exactly as before. The wash base (--pw-amber-rgb) is the same #f59e0b
+     family in both themes, so it is declared once, on dark. */
+  --otw-amber: #a86f04;
+  --otw-amber-ink: #7c5000;
   --sl-color-bg: #ece9e0;
   --sl-color-bg-nav: color-mix(in oklab, #ece9e0 80%, transparent);
   --sl-color-bg-sidebar: #f1eee5;
