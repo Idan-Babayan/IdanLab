@@ -221,8 +221,10 @@ html[data-theme="light"] .starlight-aside--tip {
 .sl-markdown-content strong {
   font-weight: var(--prose-strong-weight);
 }
-/* Cap the prose TEXT measure within the unchanged 50rem content column: running prose caps at
-   --prose-measure (left aligned), while headings, code blocks, tables, and figures keep the full column. */
+/* Prose text measure. --prose-measure is ALIASED to --sl-content-width in tokens.css, so today this
+   computes to the full column and every element shares one edge, which is the point. The rule is kept
+   rather than deleted: it is the seam that lets prose narrow independently again by writing a literal
+   into that one token, with no rule change here. */
 .sl-markdown-content :is(p, ul, ol, blockquote):not(.cl-header):not(:where(.not-content *)) {
   max-width: var(--prose-measure);
 }
