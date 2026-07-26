@@ -43,7 +43,7 @@ Both surfaces are now migrated: `/` is owned by `src/pages/index.astro` and `/ab
 
 ### The "theme pass" (CSS-only)
 
-Content pages are made to match the marketing pages purely by overriding Starlight design tokens + targeted rules in `src/styles/custom.css` (wired via `customCss` in `astro.config.mjs`). **Never fork or rebuild Starlight components** — the CSS layer must not touch Starlight's functionality. Reading content stays calm (no tilt / scroll-reveal on writeup bodies).
+Content pages are made to match the marketing pages purely by overriding Starlight design tokens + targeted rules in the `src/styles/` modules (wired via `customCss` in `astro.config.mjs`: `layers.css` declares the cascade order, then `fonts.css`, then `tokens`, `base`, `prose`, `chrome`, `components`, `pages`, `utilities`, `overrides`). Layer order decides precedence, not file order and not selector weight; `overrides.css` is the only unlayered surface. **Never fork or rebuild Starlight components**: the CSS layer must not touch Starlight's functionality. Reading content stays calm (no tilt / scroll-reveal on writeup bodies).
 
 ### Theming model
 
@@ -55,7 +55,7 @@ Content pages are made to match the marketing pages purely by overriding Starlig
 - **Fonts:** Syne (display/headings) + JetBrains Mono (body, UI, and code), self-hosted as subset WOFF2 served from `/fonts/` (see `src/styles/fonts.css`), with metric-matched size-adjust fallbacks so the swap is shift-free. There is no Google Fonts origin in source (migrated 2026-07-04, see DECISIONS).
 - **Tokens:** ink/lime/cyan/magenta on dark; warm paper + darkened accents on light. The `--ink/--lime/--cyan/--magenta/--display/--mono` token block is **duplicated** inside both `index.astro` and `about.astro` `<style is:global>` (extracting it is a ROADMAP item — keep them in sync if you edit one).
 - **Marketing-page FX** (inline JS, all `prefers-reduced-motion`-aware): constellation canvas, text decode/scramble, count-up stats, 3D-tilt cards with cursor glare, magnetic buttons, IntersectionObserver scroll-reveal, click-to-copy email, film-grain + glow overlays.
-- **Reading-progress bar** on Starlight pages is a vanilla-JS snippet injected via the `head` config in `astro.config.mjs`, styled by `#tp-progress` in `custom.css` — both files are involved.
+- **Reading-progress bar** on Starlight pages is a vanilla-JS snippet injected via the `head` config in `astro.config.mjs`, styled by `#tp-progress` in `chrome.css` (both files are involved).
 - Code-block themes (`expressiveCode`): `github-dark-dimmed` (dark) / `catppuccin-latte` (light).
 - **Platform palette (unified):** one canonical set everywhere (homepage cards, sidebar dots, about-page accents, and writeup badges): HTB lime, VulnHub red, PicoCTF purple, OTW amber. The old writeup-badge set (HTB blue, VulnHub cyan, Pico violet, OTW orange) is retired. Because HTB lime overlaps Easy green, every `.platform-*` badge carries a leading glow dot so it never reads as a difficulty pill. (See CORE_SPEC §6 / DECISIONS 2026-06-01.)
 
