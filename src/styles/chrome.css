@@ -568,15 +568,21 @@ ul.top-level > li:nth-child(5) > details > summary .group-label::before  { backg
    scoped to the whole platform <li> so its summary and writeup links share the color. Theme-aware:
    bright hues on the dark rail, and the darkened --pf-accent light values on the pale paper rail so the
    ring stays legible there (the pale-on-pale case). About (nth-child 1) is not a platform, so it keeps
-   the lime default. Positional like the dots: if the sidebar is reordered, update these too. */
+   the lime default. Positional like the dots: if the sidebar is reordered, update these too.
+   OverTheWire reads --otw-amber, the identity token, so the rail ring and every other OverTheWire
+   border/ring move together; a ring is non-text and the accent already clears the 3:1 it needs
+   (measured 3.66:1 on the paper rail). The other three are still literals: there is no root-level
+   token holding VulnHub red or PicoCTF purple, and HackTheBox's hex coincides with --sl-color-accent
+   without being the same thing, so routing it there would encode a coincidence as a coupling, which is
+   the mistake the seven-way #a86f04 fork already taught. They stay forked until a platform-token pass
+   gives them a real home. */
 ul.top-level > li:nth-child(2) { --focus-ring: #b6ff3c; }  /* HackTheBox */
 ul.top-level > li:nth-child(3) { --focus-ring: #ff5c5c; }  /* VulnHub */
 ul.top-level > li:nth-child(4) { --focus-ring: #d96bff; }  /* PicoCTF */
-ul.top-level > li:nth-child(5) { --focus-ring: #ffc23d; }  /* OverTheWire */
+ul.top-level > li:nth-child(5) { --focus-ring: var(--otw-amber); }  /* OverTheWire */
 :root[data-theme='light'] ul.top-level > li:nth-child(2) { --focus-ring: #4d7c0f; }
 :root[data-theme='light'] ul.top-level > li:nth-child(3) { --focus-ring: #d12f2f; }
 :root[data-theme='light'] ul.top-level > li:nth-child(4) { --focus-ring: #8b3dc4; }
-:root[data-theme='light'] ul.top-level > li:nth-child(5) { --focus-ring: #a86f04; }
 } /* @layer chrome */
 
 
