@@ -2,12 +2,12 @@
 /* Design tokens: the custom properties (surfaces, accents, type scale, prose dials) every other
    module reads. Layer order, not file order, decides precedence. */
 /* ══════════════════════════════════════════════
-   Idan's Cyber Lab — Custom Starlight Styles
+   Idan's Cyber Lab: Custom Starlight Styles
    ══════════════════════════════════════════════ */
 
 
 /* ══════════════════════════════════════════════
-   FOCUS RING SYSTEM — one color token, identity where it exists, lime default
+   FOCUS RING SYSTEM: one color token, identity where it exists, lime default
    ══════════════════════════════════════════════
    Every keyboard focus ring reads its COLOR from --focus-ring, which defaults to the theme-aware site
    accent (--sl-color-text-accent: lime #b6ff3c dark / #4d7c0f light). Identity-bearing elements set
@@ -51,7 +51,7 @@ html[data-theme="dark"] {
 } /* @layer tokens */
 
 /* ══════════════════════════════════════════════
-   THEME PASS — align the writeups with the homepage /
+   THEME PASS: align the writeups with the homepage /
    about "Decrypted" aesthetic.
    CSS-only: every bit of Starlight functionality
    (search, sidebar nav, TOC, a11y, the theme toggle)
@@ -115,7 +115,7 @@ html[data-theme="dark"] {
 }
 } /* @layer tokens */
 
-/* ── Accent + surfaces — DARK ── */
+/* ── Accent + surfaces: DARK ── */
 @layer tokens {
 :root,
 :root[data-theme='dark'] {
@@ -165,7 +165,7 @@ html[data-theme="dark"] {
   --tp-glow-2: #b6ff3c;
 }
 
-/* ── Accent + surfaces — LIGHT (warm paper, darkened accents) ── */
+/* ── Accent + surfaces: LIGHT (warm paper, darkened accents) ── */
 :root[data-theme='light'] {
   --sl-color-accent-low: #e0eec4;
   --sl-color-accent: #4d7c0f;

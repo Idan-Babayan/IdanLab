@@ -4,8 +4,13 @@
 /* UNLAYERED ON PURPOSE. This transition must beat WriteupCard's and PlatformIndex's own
    `.wc-card` / `.pi-wg-card { transition: transform 0.12s ease, border-color 0.3s ease }`. Those are
    Astro component styles, which are unlayered, so a layered copy of this rule would lose to them and
-   the 0.8s reveal would run at the component hover speed. It stays physically here, after the state
-   rule above and before the reduced-motion kill below, so its order against those styles is unchanged. */
+   the 0.8s reveal would run at the component hover speed.
+   What settles it against those component rules is SPECIFICITY, not source order, so the Phase 3 move
+   into this module was safe: both are unlayered, and `.pi-index .reveal` is (0,2,0) while Astro's
+   :where([data-astro-cid-...]) scoping holds `.wc-card` / `.pi-wg-card` at (0,1,0). Verified live after
+   the move: the card computes transition-property `opacity, transform` at `0.8s, 0.8s`, not the
+   component's hover timing. Source order still matters against the reduced-motion kill BELOW, which is
+   the same specificity, so these two must keep their relative order. */
 .pi-index .reveal {
   transition: opacity 0.8s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
 }

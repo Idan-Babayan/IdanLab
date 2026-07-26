@@ -131,7 +131,7 @@ mobile-starlight-toc a[style*="--depth: 1"]:not([href="#user-flag"]):not([href="
 }
 } /* @layer chrome */
 
-/* ── Faint atmosphere (fixed + very subtle — reading stays calm) ──
+/* ── Faint atmosphere (fixed + very subtle, reading stays calm) ──
    Spans the viewport so a low bottom glow can echo the homepage. The two top
    radials are unchanged: they are anchored to the top with the same offsets,
    so widening the box from 360px to full height does not move them. */
@@ -158,7 +158,10 @@ body::before {
   background-repeat: repeat, no-repeat;
   background-position: 0 0, center top;
 }
-/* Grain reads far less on pale paper than on ink: lift it just enough to add tooth. */
+/* Grain reads far less on pale paper than on ink: lift it just enough to add tooth. The light grain
+   opacity is set HERE, beside the light atmosphere block, rather than with the base grain rule below
+   (both land on .035 today). This note used to sit at the end of the prose module, where the Phase 3
+   split had carried it because it trails its subject instead of leading it. */
 :root[data-theme='light'] body::after { opacity: .035; }
 
 /* ── Film grain (mirrors the index.astro / about.astro fractalNoise overlay) ──
@@ -170,10 +173,10 @@ body::after {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 } /* @layer chrome */
-/* Sanctioned split (Phase 2 slice A): the header wordmark half of the heading Syne rule stays
-   unlayered here, declarations byte-identical to the prose half above, until it moves to the chrome
-   layer in slice B. It keeps its physical position so its source order against the later a.site-title
-   rule is unchanged. */
+/* The header wordmark half of the heading Syne rule, split from the prose half in Phase 2 slice A and
+   moved into the chrome layer in slice B, which is where it now sits. Its declarations are
+   byte-identical to the prose half above. It keeps its physical position so its source order against
+   the later a.site-title rule is unchanged. */
 @layer chrome {
 .site-title,
 a.site-title {
@@ -211,7 +214,7 @@ h1#_top {
 }
 } /* @layer chrome */
 
-/* ── Sidebar: active item — obviously filled accent row, distinct from hover ──
+/* ── Sidebar: active item, obviously filled accent row, distinct from hover ──
    Raised tint + 3px bar + explicit accessible label color (accent-high, theme-aware:
    light olive #2f4d09 on pale sidebar, dark pale-lime #daff9e on ink) so the active
    label clears WCAG AA in both themes instead of inheriting a faint color. Hover stays
@@ -383,7 +386,7 @@ nav.sidebar summary {
 } /* @layer chrome */
 
 /* ══════════════════════════════════════════════
-   LIGHT-MODE DEPTH — parity with the dark theme
+   LIGHT-MODE DEPTH: parity with the dark theme
    Dark gets depth free from its near-black surfaces; on paper the same panels read flat.
    These light-only rules add subtle borders + soft warm shadows + tints so code frames,
    the lead blockquote, and the sidebar separate from the page. Reading stays calm; no motion.
@@ -543,7 +546,7 @@ footer .meta,
   color: var(--sl-color-white);
 }
 
-/* ── Sidebar category markers — clean colored circles (replaces emojis) ──
+/* ── Sidebar category markers: clean colored circles (replaces emojis) ──
    Top-level order: About · HackTheBox · VulnHub · PicoCTF · OverTheWire.
    About is targeted by its attrs class; platforms by position.
    If you REORDER the sidebar, update the nth-child numbers (2=HTB … 5=OTW). */
