@@ -9,8 +9,6 @@ principle: "Never let a client choose where it authenticates."
 
 import Toggle from '@components/Toggle.astro';
 import Callout from '@components/Callout.astro';
-import Findings from '@components/Findings.astro';
-import Finding from '@components/Finding.astro';
 import FlagCapture from '@components/FlagCapture.astro';
 import AttackPath from '@components/AttackPath.astro';
 
@@ -79,15 +77,13 @@ An aggressive OS scan added nothing the service sweep had not already answered: 
 
 <Callout type="recon">
 
-<Findings>
-  <Finding port="53/tcp">DNS, Simple DNS Plus</Finding>
-  <Finding port="80/tcp">IIS 10.0, serving the HTB Printer Admin Panel</Finding>
-  <Finding port="88/tcp">Kerberos</Finding>
-  <Finding port="389/tcp">LDAP for `return.local`</Finding>
-  <Finding port="445/tcp">SMB, signing required</Finding>
-  <Finding port="3268/tcp">Global Catalog</Finding>
-  <Finding port="5985/tcp">WinRM, the remote shell once I have credentials</Finding>
-</Findings>
+- 53/tcp : DNS, Simple DNS Plus
+- 80/tcp : IIS 10.0, serving the HTB Printer Admin Panel
+- 88/tcp : Kerberos
+- 389/tcp : LDAP for `return.local`
+- 445/tcp : SMB, signing required
+- 3268/tcp : Global Catalog
+- 5985/tcp : WinRM, the remote shell once I have credentials
 
 The service list is a textbook domain controller, and the printer panel on port 80 is the only human-facing surface. That panel is where I start.
 
