@@ -80,7 +80,18 @@ Conventions (see `busqueda.mdx` as the reference and `CORE_SPEC.md` §7):
 - Import the toggle: `import Toggle from '@components/Toggle.astro'`. `Toggle.astro` is a `<details>` wrapper whose `label` accepts an HTML string; code fences inside its slot are fully highlighted.
 - **Writeup images live in `src/assets`** (parallel tree `src/assets/<platform>/<difficulty>/<slug>/...`), referenced from the `.mdx` by a relative Markdown path (`../../../../assets/...`, four `../` from a difficulty-tier writeup) so `astro:assets` optimizes and hashes them (served under `/_astro`). Use plain Markdown image syntax, not `<Image />`. Site-wide click-to-zoom is still provided by the `starlight-image-zoom` plugin (use `data-zoom-off` to opt an image out, e.g. logos).
 - Code blocks use `frame="code"` + a language `title` so bash/python render identically. Bold inside a code fence is impossible — use expressive-code line highlighting (e.g. ```` ```bash {3} ````) to emphasize a line.
-- Flag answers / spoilers go in `:::tip[Answer]` admonitions (often wrapped in a `<Toggle>`). Inline code renders red; `<span class="port-label">` for ports, `<span class="task-title">` for task headings.
+- Flag answers / spoilers go in `:::tip[Answer]` admonitions (often wrapped in a `<Toggle>`). Inline code renders red; `<span class="task-title">` for task headings.
+- **The recon findings rail is `<Findings>` + `<Finding port="...">`, never a hand-written list.** Import both (`import Findings from '@components/Findings.astro'`, `import Finding from '@components/Finding.astro'`) and author one `<Finding>` per port, inline on one line, inside a `<Callout type="recon">`:
+
+  ```mdx frame="code" title="src/content/docs/<platform>/<difficulty>/<slug>.mdx"
+  <Findings>
+    <Finding port="53/tcp">DNS, Simple DNS Plus</Finding>
+    <Finding port="389/tcp">LDAP for `htb.local`</Finding>
+  </Findings>
+  ```
+
+  Write **no separator**: the old authored `" : "` was presentation living in content and the grid's column boundary replaces it. Author each `<Finding>` **inline** (opening tag, description, closing tag on one line); putting the description on its own line makes MDX wrap it in a `<p>`, which is handled but is not the convention. Backticked inline code works in the description. The port column sizes itself to the widest chip, so nothing needs measuring or tuning when a longer port appears. The concluding paragraph of the callout is auto-treated as the Assessment (hairline + eyebrow), keyed off `:has(.findings)`.
+- `<span class="port-label">` remains available for a port mentioned **inline in prose** (for example "the panel on 80/tcp"), but is no longer hand-written in rails.
 
 ### Content pipeline (Notion → MDX)
 
