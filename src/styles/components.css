@@ -534,17 +534,26 @@ html[data-theme="light"] .sl-markdown-content .cl :not(pre) > code {
    the shared .port-label rule above, so a port named inline in prose and a port in a rail are the same
    object. Only layout is below. */
 .sl-markdown-content .findings {
+  /* ONE gutter value with TWO consumers, so the rule's clearance stays symmetric by construction
+     rather than by arithmetic someone has to redo. The rule is drawn at the chip track's right edge,
+     so the space on its CHIP side is the dt's right padding minus the rule's own width, and the space
+     on its DESCRIPTION side is the column gap. Declaring that padding as gutter plus rule width makes
+     the two sides equal exactly, not approximately. The track is max-content and padding counts
+     toward it, so the column grows to hold the widest chip PLUS this gutter on its own, and no
+     literal about port token widths exists anywhere.
+     The gutter is derived from the chip, not picked: the chip's own inline padding is 0.45em at its
+     pinned 14px, which is 6.3px a side. A gutter has to exceed the chip's internal padding or the
+     chip reads as indented text rather than as a bounded object. Two times 6.3 is 12.6px, rounded
+     onto the rem grid at 0.8rem (12.8px). rem, not em: this is component geometry, not a word space. */
+  --findings-gutter: 0.8rem;
+  --findings-rule-width: 2px;
   display: grid;
   /* The port column measures itself. No literal, no floor, no padding of short tokens. */
   grid-template-columns: max-content 1fr;
   /* Chip and description sit on one shared baseline, as they did in inline flow. Without this,
      grid's default `normal` alignment stretches the chip to the row height and tears its box open. */
   align-items: baseline;
-  /* Derived from the chip, not picked: the chip's own inline padding is 0.45em at its pinned 14px,
-     which is 6.3px a side. A gutter has to exceed the chip's internal padding or the chip reads as
-     indented text rather than as a bounded object. Two times 6.3 is 12.6px, rounded onto the rem
-     grid at 0.8rem (12.8px). rem, not em: this is component geometry, not a word space. */
-  column-gap: 0.8rem;
+  column-gap: var(--findings-gutter);
   /* Reproduces the old rail's rhythm exactly. The li margins were 0.26rem and COLLAPSED to 0.26rem
      between rows (measured, not assumed); grid does not collapse margins, so the same number is
      declared once as a gap. A translation, not a change. */
@@ -573,6 +582,11 @@ html[data-theme="light"] .sl-markdown-content .cl :not(pre) > code {
   position: relative;
   margin: 0;
   padding: 0;
+  /* The gutter the column rule lives in. Without it the track was exactly the widest chip, so the
+     rule landed ON that chip's own right border (measured at -2.00px of clearance) while shorter
+     tokens kept a gap that varied with their length. max-content counts padding, so the track
+     absorbs this by itself and the chips keep both their natural widths and their shared left edge. */
+  padding-right: calc(var(--findings-gutter) + var(--findings-rule-width));
 }
 
 /* The column rule. It replaces the authored " : " that used to sit in content: a separator is
@@ -583,14 +597,16 @@ html[data-theme="light"] .sl-markdown-content .cl :not(pre) > code {
    anchored to the chip's centre via the dt's own box, which baseline alignment keeps on the chip, so on
    a wrapped row it stays beside the first line instead of stretching down the description.
    The colour is the callout's own code ink, so the rule belongs to the callout it sits in and adapts
-   per type and per theme with no rule of its own. */
+   per type and per theme with no rule of its own.
+   `right: 0` resolves against the dt's PADDING box, so the dt's right padding carries the rule out to
+   the track's new right edge rather than squeezing it inward: that padding IS the gutter it sits in. */
 .sl-markdown-content .findings dt::after {
   content: "";
   position: absolute;
   right: 0;
   top: 50%;
   margin-top: -0.8em;
-  width: 2px;
+  width: var(--findings-rule-width);
   height: 1.6em;
   background: var(--cl-code-ink);
 }
