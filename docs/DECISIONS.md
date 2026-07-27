@@ -6,6 +6,51 @@
 
 ---
 
+### 2026-07-27 · The rail's column rule gets a gutter, so its clearance is symmetric by construction
+- **Decision:** `.findings` declares two local custom properties, `--findings-gutter` (0.8rem) and
+  `--findings-rule-width` (2px). `column-gap` reads the gutter, the `dt` takes
+  `padding-right: calc(gutter + rule width)`, and `dt::after` reads the rule width. One value with two
+  consumers, so the space on each side of the rule is equal by construction rather than by arithmetic
+  someone has to redo.
+- **The defect:** the `dt` is `justify-self: stretch` over a `max-content` track, so the track was exactly
+  the widest chip, and the rule (absolutely positioned at `right: 0`) therefore landed at that chip's own
+  right border. Measured at dpr 1.25, clearance from a chip's right border edge to the rule's LEFT edge ran
+  14.80 / 6.40 / **-2.00**px at six, seven and eight characters. On the longest tokens the rule painted over
+  the chip's border.
+- **The defect is the WIDEST chip on a rail, not an eight character token,** which corrects how the task was
+  framed. Busqueda's widest token is six characters and collided at -2.00 as well. Token length is a proxy;
+  the track is what decides.
+- **Why padding rather than re-anchoring the rule:** anchoring it to the chip would make its x ragged per
+  row and destroy the rail, which is the design (chips left-align at natural widths, one rule marks the
+  column boundary). The track was simply one gutter too narrow. `max-content` counts padding, so the padding
+  grows the track by itself and no literal about port token widths exists anywhere. Same instinct as remedy
+  1 of the context law: let a layout primitive compute the relationship.
+- **Why gutter PLUS rule width, and not the gutter alone:** the rule occupies its own 2px inside that
+  padding, so padding by the gutter alone would leave the chip side short by exactly the rule's width. Sized
+  as the sum, both sides measure 12.80px exactly rather than approximately.
+- **`right: 0` resolves against the dt's PADDING box,** which is the mechanism that carries the rule out to
+  the track's new right edge instead of squeezing it inward. Recorded in the CSS, because "add right padding"
+  and "the rule does not move relative to the track" are not obviously compatible claims.
+- **Two deliberate zero-diff token substitutions, used as a check:** `column-gap` and the rule width had to
+  compute to exactly what they did before (12.80px and 2px). Both did. Had either moved, the substitution
+  would have been wrong.
+- **Verified by in-page diffing over 48,723 comparable cells across six captures** (forest dark, light and
+  375px, return, busqueda, plus bandit 16-17 as a no-rail control): 469 changed cells, every one of them the
+  enumerated horizontal shift, and the control at **0 of 1,887**. Chip left edges, chip paint across nineteen
+  properties, the rule's own width, height and colour, row heights, the `.findings` box, the `.cl-recon` box,
+  and the Assessment hairline and eyebrow all held at zero in both themes. Clearance is now 12.80 on every
+  widest chip, 21.20 at seven characters and 29.60 at six, and equals the 12.80 gap to the description.
+  `npm run build` green at 46 pages.
+- **One consequence at 375px, recorded rather than tuned away:** the description column narrows by 14.80px,
+  which pushed Forest's `5985/tcp` row from two lines to three and grew that callout by 30.60px. No
+  horizontal overflow, and the wrapped row's continuation error stays 0.00. Whether a narrow screen wants
+  the same 0.8rem gutter as a wide one is a taste call for the retune, and it is now a one-token change.
+- **Line endings, measured because two prior handoffs asserted opposite things:** the index blob is LF and
+  the working tree is CRLF (`core.autocrlf=true`, `text=auto`). Neither "the repo is CRLF" nor "the working
+  copies are LF" is the whole statement; `git ls-files --eol` is.
+- **Status:** Adopted; committed as `73cb444` to `dev`, pushed, not merged. One theme-pass module
+  (`src/styles/components.css`), no component, plugin, config or content edits, no new dependencies.
+
 ### 2026-07-27 · The recon rail, in three attempts: grid on the list, two components, then a remark transform
 - **Decision:** the recon findings rail is authored as a PLAIN MARKDOWN LIST inside `<Callout type="recon">`
   and converted at build time by `plugins/remark-transform-recon-rail.mjs` into

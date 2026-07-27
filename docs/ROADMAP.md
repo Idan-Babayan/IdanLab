@@ -39,6 +39,11 @@
      em only where scaling with the local font size is the declared intent. Applying it belongs to THIS
      retune, because converting a unit changes rendered geometry and each conversion needs its own
      before-and-after measurement. Do not sweep it.
+  5. **One recon-rail question to judge at 375px** (added 2026-07-27). The rail's chip track now carries
+     `--findings-gutter` (0.8rem) so the column rule has equal clearance on both sides, which narrowed the
+     description column by 14.80px and pushed one Forest row from two lines to three on a phone. Nothing is
+     broken (no horizontal overflow, continuation error still 0.00), but whether a narrow screen wants the
+     same gutter as a wide one is a taste call, and it is a one-token change. See DECISIONS 2026-07-27.
 
   Then move the settled values to DECISIONS, and only then open the PR.
 
