@@ -224,12 +224,18 @@ is unchanged by construction rather than by exclusion. The tokens live in `token
   `font-family`, since it otherwise inherits Geist from its paragraph. `FlagCapture` needs a fixed base
   because its flag value (`1.02em`) and lock icon (`1.25em`) are em-relative to that button.
 - **Everything is a token, in one block at the top of the theme pass:** `--body-face`, `--prose-size`
-  (18.5px; the 18px variant is a one-line change to `1.125rem`), `--prose-leading`, `--prose-measure`
-  (50rem, the full content column), `--prose-strong-weight`, `--mono-chrome-size`,
-  `--component-title-size`, `--principle-maxim-size`, `--toggle-title-face` / `--toggle-title-weight`, and
-  the spacing trio `--prose-paragraph-gap` / `--prose-heading-gap` / `--blockquote-pad-y` (+ `-pad-x`).
-  Spacing stays `em` so it remains proportional to the text. Headings keep Starlight's own scale (no
-  override), so the prose size does not drag them.
+  (18px, locked with the measure by the CPL derivation), `--prose-leading` (1.7), `--prose-measure`
+  (aliased to `--sl-content-width`, 46rem), `--prose-strong-weight`, `--mono-chrome-size` and its pinned
+  partner `--mono-chrome-leading`, `--component-title-size`, `--principle-maxim-size`,
+  `--toggle-title-face` / `--toggle-title-weight`, the heading pair `--heading-space-above` /
+  `--heading-space-below`, and `--prose-paragraph-gap` / `--blockquote-pad-y` (+ `-pad-x`).
+  **Spacing is `em` only where it must stay proportional to the text it separates, which is not
+  everywhere:** the heading pair is `em` and is ONLY valid declared on `.sl-heading-wrapper`, because that
+  is where `em` resolves against the heading's own size (see the context law in section 8);
+  `--blockquote-pad-x` is deliberately `rem`, since it aligns to `.cl`'s inline padding rather than
+  tracking prose. `--prose-heading-gap` is retired: it was an `em` on the FOLLOWING element and is the
+  worked example in the context law. Headings keep Starlight's own scale (no override), so the prose size
+  does not drag them.
 - **Two specificity rules that must not be "simplified":** the Principle maxim is targeted as
   `p.principle-text` (the plain class at (0,2,0) loses to the prose face rule at (0,2,1)), and the prose
   paragraph gap carries `:not(:where(blockquote *))` because `blockquote p { margin: 0 }` is only (0,1,2)
@@ -815,6 +821,71 @@ any future phase: the remaining multi-part selectors either express real precede
 are load-bearing against unlayered CSS, and flattening them buys tidiness at the cost of the behavior the
 layer contract just made legible. Unit conversions are likewise deferred to the retune (see the unit rule
 in `layers.css`).
+
+### The context law
+
+**A font-relative length resolves against the element it is declared on. If its purpose is to size,
+align, or space content that lives in a DIFFERENT font-size context, it is wrong, even when it correctly
+tracks the local font size.** That last clause is the whole point: every instance below passed the older
+test and still failed, because "does this `em` track its local font size" is a question the broken
+declaration answers yes to.
+
+**Remedies, in strict order. Reach for the first one that applies.**
+
+1. **Delete the number.** Let a layout primitive compute the relationship. A grid track sized
+   `max-content` cannot drift from the thing it measures, because it has no value of its own.
+2. **Declare it in the governed element's own context.** If the number must exist, put it where the
+   `em` resolves against the text it actually governs.
+3. **Use `rem` or `px` so both sides agree,** with a comment naming the coupling it holds.
+
+**The three instances, all found in one audit, all the same defect wearing different clothes.**
+
+| Instance | Declared on | Governs | Result | Remedy |
+| --- | --- | --- | --- | --- |
+| Recon rail | `.cl-recon li` at 18px (`5.6em`) and `.port-label` at 14px (`4.9em` + `0.7em`) | one shared column | 100.8px against 78.4px, a 22.4px error, and `4.9em` could never hold an eight-character token in the chip's context at any size | 1, deleted for a grid |
+| Heading gap | the element FOLLOWING the heading (`--prose-heading-gap`) | the space under a heading | one numeral meant 18px, 10.8px or 9.6px depending on what followed, and it lost outright to any follower with a larger margin | 2, moved onto `.sl-heading-wrapper`, which carries the heading's own size |
+| Principle cap | `aside.principle` at 18px (`46ch`) | `p.principle-text` at 22.4px | the maxim measures 36.97 characters, not 46, and has never measured 46 in any era | **still open**, see ROADMAP |
+
+**This supersedes the narrower unit rule in the `layers.css` header.** That rule asked only whether an
+`em` tracked its local font size and answered yes in all three failures, so it could not have caught any
+of them. It is not wrong, it is insufficient: it governs whether a unit is honest about itself, while
+this law governs whether it is honest about what it controls.
+
+### Prefer computed relationships to declared ones
+
+If two elements must align, express it with a layout primitive rather than a number. **A declared
+relationship is a standing promise to re-derive it every time a font, a size, or a token moves, and this
+project has already failed that promise across two font changes** (JetBrains Mono to Geist, then 18.5px
+to 18px). Nobody re-derived the rail, the principle cap, or the heading gap on either occasion, and no
+build ever went red. A computed relationship removes the promise instead of documenting it.
+
+### Content carries data, never presentation
+
+MDX carries semantic data. Class names, separator glyphs, and layout markup belong to components or to
+build-time transforms. The recon rail was the counter-example: every row hand-wrote a
+`<span class="port-label">` and an authored `" : "` separator, so the rail's appearance was distributed
+across fifteen lines in three content files.
+
+**The test: if changing the look requires editing content files, the boundary is in the wrong place.**
+
+### A pinned size implies a pinned leading
+
+A component that pins `font-size` off the prose scale must pin `line-height` too, or half its metrics
+still track prose and its box keeps growing whenever the body does even though its glyphs do not.
+`--mono-chrome-leading` (1.4) is the pinned partner to `--mono-chrome-size`.
+**Known remaining consumer: inline code** (`:not(pre) > code`) reads `--mono-chrome-size` but still
+inherits prose leading. Left deliberately, because inline code sits inside running paragraphs, so pinning
+its leading changes prose line boxes: a reading-surface decision, not a component one.
+
+### CSS-only is a scope boundary, not a universal law
+
+"CSS-only" governs **the theme pass over Starlight**, where the rule against forking Starlight components
+is absolute and unchanged. It does **not** govern our own content components. When a presentation problem
+needs structure the content does not have, add the structure in a component rather than encoding it as
+literals in CSS. The rail is the worked example: no arrangement of CSS over a flat `<li>` could hold a
+chip column and a description column in alignment, because the markup had no boundary between them, and
+three CSS literals were the workaround. `Findings` / `Finding` added the boundary, and the literals
+became unnecessary rather than correct.
 
 ## 9. Environment & Tooling
 
