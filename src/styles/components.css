@@ -488,13 +488,26 @@ html[data-theme="light"] .sl-markdown-content .cl-vuln    { --cl-ink: #c92a2a; }
    AA 4.5:1. Rounded corners + mono carry over from the standalone inline-code rule; only color / fill /
    border change. Scoped to .cl inline code, so standalone inline code and all code blocks (in <pre>) are
    untouched. */
+/* --cl-code-ink NAMES the value the rule above describes: "the ink a callout gives to a code-ish
+   object inside it". It had two consumers coming (inline code, and the findings rail's column rule)
+   and was not a token, only an expression restated per theme, so a second consumer would have had to
+   restate the derivation and the two would drift. Declared on .cl, so it resolves against the SAME
+   element's per-type --acc / --cl-ink and inherits to anything inside the callout. Per theme, because
+   the derivation genuinely differs: dark takes the bright accent directly, light deepens the per-type
+   ink 80% toward black for AA at body size (see the note above). */
+html[data-theme="dark"] .sl-markdown-content .cl {
+  --cl-code-ink: var(--acc);
+}
+html[data-theme="light"] .sl-markdown-content .cl {
+  --cl-code-ink: color-mix(in oklab, var(--cl-ink) 80%, #000);
+}
 html[data-theme="dark"] .sl-markdown-content .cl :not(pre) > code {
-  color: var(--acc);
+  color: var(--cl-code-ink);
   background-color: color-mix(in oklab, var(--acc) 16%, transparent);
   border-color: transparent;
 }
 html[data-theme="light"] .sl-markdown-content .cl :not(pre) > code {
-  color: color-mix(in oklab, var(--cl-ink) 80%, #000);
+  color: var(--cl-code-ink);
   background-color: color-mix(in oklab, var(--acc) 13%, transparent);
   border-color: transparent;
 }
@@ -540,13 +553,46 @@ html[data-theme="light"] .sl-markdown-content .cl :not(pre) > code {
   margin: 0.4rem 0 0.2rem;
 }
 
-/* Chips keep their natural widths and meet the column edge on the RIGHT, so the gutter is exactly
-   column-gap on every row regardless of token length. This is what makes the description column
-   start at one x with no arithmetic anywhere. */
+/* The dt FILLS the computed column (stretch, not end), so the chip inside it sits at the column's
+   left edge at its natural width and the rule below lands at the column's right edge. Chip LEFT edges
+   therefore share one x and the right edges are ragged, which is the correct reading order: the eye
+   scans down the ports, not down their trailing slashes. The description column still starts at one x,
+   because the track width and the gutter are both constant.
+
+   font-size and line-height PIN THE dt's OWN CONTEXT, and both do real work. em declared on this
+   element now means 14px, so the rule's height below is expressed in the context it actually governs,
+   which is remedy 2 of the context law (CORE_SPEC section 8). And it removes a defect rather than
+   masking one: the dt previously inherited the 18px container at Starlight's ambient 1.75, giving it a
+   31.50px strut that sized every grid row and grew each callout by 0.6875px per row (measured on
+   426a4fd). At 19.60px the strut is shorter than the dd's 30.60px prose line box, so rows are sized by
+   the text again. No compensating declaration anywhere: the growth is gone at its cause. */
 .sl-markdown-content .findings dt {
-  justify-self: end;
+  justify-self: stretch;
+  font-size: var(--mono-chrome-size);
+  line-height: var(--mono-chrome-leading);
+  position: relative;
   margin: 0;
   padding: 0;
+}
+
+/* The column rule. It replaces the authored " : " that used to sit in content: a separator is
+   presentation, so it is drawn here and the delimiter is consumed at build time.
+   1.6em resolves in the dt's pinned 14px context (22.40px) and approximates the chip's painted height,
+   so the rule reads as the same object as the chip rather than as a row divider. It is deliberately
+   SHORTER than the row, so consecutive rules never meet and each row stays visually separate. It is
+   anchored to the chip's centre via the dt's own box, which baseline alignment keeps on the chip, so on
+   a wrapped row it stays beside the first line instead of stretching down the description.
+   The colour is the callout's own code ink, so the rule belongs to the callout it sits in and adapts
+   per type and per theme with no rule of its own. */
+.sl-markdown-content .findings dt::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 50%;
+  margin-top: -0.8em;
+  width: 2px;
+  height: 1.6em;
+  background: var(--cl-code-ink);
 }
 
 /* Starlight ships dd { margin-top: 4px; padding-left: 16px } and dl { margin-top: 16px } (measured).
