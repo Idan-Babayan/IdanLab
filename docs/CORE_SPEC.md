@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-07-26.
+> Last updated: 2026-07-27.
 
 ---
 
@@ -696,6 +696,10 @@ Preserves reading position: anchors on the current heading and corrects scroll s
   list is converted at build time into the findings rail** by `plugins/remark-transform-recon-rail.mjs`,
   which emits the chip for each row, so `.port-label` is hand-written only for a port mentioned inline in
   prose. The concluding paragraph keeps the `Assessment` hairline + eyebrow, keyed off `:has(.findings)`.
+  The rail is a two-column grid whose chip track is `max-content` PLUS a gutter: `.findings` declares
+  `--findings-gutter` (0.8rem) and `--findings-rule-width` (2px), `column-gap` reads the gutter and the
+  `dt` takes `padding-right: calc(gutter + rule width)`, so the column rule sits IN a gutter with the same
+  space on both sides at every token length, and still no literal about port widths exists anywhere.
   See DECISIONS 2026-07-27. Inline code (`:not(pre) > code`) → a rounded NEUTRAL chip with red
   text (identity in the glyphs, no red in the fill or border), its own object (readability-first,
   theme-tuned, deliberately distinct from the sharp code blocks);
