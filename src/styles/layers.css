@@ -1,0 +1,23 @@
+/* Cascade contract for the theme pass. Order is precedence: later layers win.
+   starlight is named first so Starlight's starlight.* sublayers sit below every
+   layer of ours. Rules that must beat any unlayered CSS (vendor stylesheets,
+   inline styles, or our own Astro-scoped component styles) or that carry
+   !important stay deliberately unlayered, and each one carries a comment naming
+   exactly what it beats. No !important inside layers. That tail lives in
+   overrides.css, the only unlayered surface in this directory.
+   This statement is duplicated at the top of every module file
+   so any stylesheet load order establishes the same layer order; repeats after
+   the first occurrence are no-ops.
+
+   UNIT RULE (documented here, deliberately NOT yet applied):
+   component geometry (padding, margin, radius, border width, fixed box sizes)
+   is written in rem or px. em is reserved for the case where scaling with the
+   LOCAL font size is the declared intent, and a declaration that uses em carries
+   a comment naming the coupling it tracks, so the next reader can tell an
+   intentional coupling from an inherited accident. The prose rhythm tokens are
+   the model: they stay em precisely because they must stay proportional to the
+   text, and they say so. Applying this rule is a retune-phase job, not a
+   refactor one: converting a unit changes rendered geometry, so each conversion
+   needs its own before-and-after measurement rather than a sweep. Nothing in
+   this directory was converted when the rule was written. */
+@layer starlight, tokens, base, prose, chrome, components, pages, utilities;

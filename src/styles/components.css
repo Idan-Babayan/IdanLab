@@ -1,0 +1,1070 @@
+@layer starlight, tokens, base, prose, chrome, components, pages, utilities;
+/* Components: the named pieces (badges, toggles, callouts, FlagCapture, PasswordReveal, Principle).
+   Layer order, not file order, decides precedence. */
+/* ── Task title headings (Notion brown) ──────── */
+/* Notion-accurate: light #9f6b53, dark #ba856f   */
+
+@layer components {
+.task-title {
+  font-weight: 700;
+}
+
+html[data-theme="light"] .task-title {
+  color: #9f6b53;
+}
+
+html[data-theme="dark"] .task-title {
+  color: #ba856f;
+}
+
+/* ── Flag loot system: User Flag / Root Flag read as one gold signal ───────────────────────────
+   Three states share the gold: the body heading (below), the reveal toggle (see .toggle-flag in the
+   Toggle section), and the TOC entry (below). All pull the theme-aware --flag-gold token.
+
+   DEPENDENCY: the flag headings reuse .task-title (shared with real Task headings like "Task 1"), so
+   there is no dedicated .flag-title yet. A .flag-title emitted by the content pipeline would be the
+   clean hook; until then these target the deterministic Starlight slug ids (#user-flag / #root-flag).
+   The id outranks the .task-title brown inside the components layer (both are components rules, so
+   specificity still decides between them), and --flag-gold is theme-aware, so one rule covers both
+   themes. */
+#user-flag .task-title,
+#root-flag .task-title {
+  color: var(--flag-gold);
+}
+/* Gold flag icon: the project's flag SVG as a mask, so background-color (the gold) fills the shape.
+   Mask, not an emoji, and not a glow. Body heading only. */
+#user-flag .task-title::before,
+#root-flag .task-title::before {
+  content: "";
+  display: inline-block;
+  width: 0.85em;
+  height: 0.85em;
+  margin-right: 0.4em;
+  vertical-align: -0.06em;
+  background-color: var(--flag-gold);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+} /* @layer components */
+
+
+/* ── Writeup metadata badges: intentional color, restrained glow ──────────────
+   NAVIGATIONAL chips (Platform, OS, Environment) lead: pill chips, clickable, each colored with INTENT.
+   Platform = the brand's canonical --pf-accent (matches the sidebar and the rest of the site). OS = the
+   OS's own identity color (Linux Tux amber, Windows blue). Environment = the feel of that environment,
+   with Active Directory a deeper enterprise indigo kept distinct from the Windows-blue chip it usually
+   sits beside, and Standalone a solitary cool slate. A RESTRAINED halo gives life on dark; light uses a
+   hue-shadow (glow becomes haze on paper). EVALUATIVE Difficulty trails: a neutral, hue-free chip at the
+   SAME size/weight as the nav chips (a calm peer, not a heavier sibling), the word shown once, magnitude
+   carried only by pips that grow with level. Spacing: TIGHT under the title, OPEN before the body, no
+   divider. Chips are anchors to future filter routes. Both themes. */
+@layer components {
+.writeup-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 0.55rem;    /* tight to the title */
+  margin-bottom: 2.1rem;  /* open before the body; no border/divider */
+}
+.writeup-meta .wm-nav { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+
+/* Base chip: color, tint, border, and glow all derive from --wm-c (set per value below). */
+.writeup-meta .wm-chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--sl-font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--wm-c);
+  /* Focus-ring hook for the WriteupMeta rollout: when the chips become <a> (once the filter routes
+     ship), each rings in its own --wm-c identity via the shared :where(a,...):focus-visible rule.
+     Inert now (chips render as non-interactive <span>s and appear on no page yet). */
+  --focus-ring: var(--wm-c);
+  background: color-mix(in oklab, var(--wm-c) 15%, transparent);
+  border: 1px solid color-mix(in oklab, var(--wm-c) 38%, transparent);
+  border-radius: 999px;
+  padding: 0.32rem 0.8rem;
+  box-shadow: 0 0 10px -2px color-mix(in oklab, var(--wm-glow, var(--wm-c)) 32%, transparent);
+}
+:root[data-theme="light"] .writeup-meta .wm-chip {
+  box-shadow: 0 3px 10px -5px color-mix(in oklab, var(--wm-c) 45%, transparent);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .writeup-meta .wm-chip { transition: border-color 0.15s ease, box-shadow 0.2s ease; }
+}
+.writeup-meta .wm-chip:hover {
+  border-color: color-mix(in oklab, var(--wm-c) 60%, transparent);
+  box-shadow: 0 0 14px -2px color-mix(in oklab, var(--wm-glow, var(--wm-c)) 45%, transparent);
+}
+:root[data-theme="light"] .writeup-meta .wm-chip:hover {
+  box-shadow: 0 4px 12px -4px color-mix(in oklab, var(--wm-c) 55%, transparent);
+}
+.writeup-meta .wm-ico { width: 15px; height: 15px; flex: none; display: inline-flex; color: var(--wm-c); }
+.writeup-meta .wm-ico svg { width: 100%; height: 100%; }
+/* POLYCHROME marks (VulnHub, PicoCTF, OverTheWire, Linux) are served as <img> in their native fills.
+   Contain them in the 15px box so a non-square logo keeps its aspect. color:var(--wm-c) on .wm-ico has
+   no effect on an <img>, so those logos render in their own colors, as intended. HackTheBox is NOT one
+   of them: it is the one monochrome platform mark, so it is inlined and tints from --wm-c like the
+   other glyphs, and this rule does not apply to it. See icons.ts. */
+.writeup-meta img.wm-ico-logo { object-fit: contain; }
+
+/* Platform: canonical --pf-accent per platform (dark + light), with HTB's true brand green for glow. */
+.writeup-meta .pf-htb  { --wm-c: #b6ff3c; --wm-glow: #9fef00; }
+.writeup-meta .pf-vh   { --wm-c: #ff5c5c; }
+.writeup-meta .pf-pico { --wm-c: #d96bff; }
+.writeup-meta .pf-otw  { --wm-c: #ffc23d; }
+/* Light values solved in OKLCH to clear WCAG AA (4.5:1) for the 12px/600 label on its own composited
+   chip fill, targeting ~4.8 for antialiasing margin. Method: hold hue, drop lightness, hold chroma
+   where sRGB allows and clamp to the gamut boundary where it does not (dark saturated hues cannot keep
+   full chroma; the loss is reported per value below, never a hue shift). Dark values are untouched.
+   No light --wm-glow is set: the light box-shadows read --wm-c directly, so a light --wm-glow would
+   never render. Only the DARK pf-htb --wm-glow (#9fef00) is read (by the dark glow), where it holds
+   HTB's true brand green while the label carries palette lime; that distinction only reads on dark. */
+:root[data-theme="light"] .writeup-meta .pf-htb  { --wm-c: #3a6100; } /* 3.41 -> 4.80, chroma 88% */
+:root[data-theme="light"] .writeup-meta .pf-vh   { --wm-c: #aa0013; } /* 3.35 -> 4.80, chroma 96% */
+:root[data-theme="light"] .writeup-meta .pf-pico { --wm-c: #7a29b1; } /* 3.94 -> 4.85, chroma 100% */
+:root[data-theme="light"] .writeup-meta .pf-otw  { --wm-c: #794e00; } /* 2.97 -> 4.80, chroma 79% (amber browns when darkened) */
+
+/* OS: the OS's own identity color. */
+.writeup-meta .wm-os-linux   { --wm-c: #ffa95d; }   /* Tux amber, H60 (his own beak/feet are #FFA63F H65.6 / #E68C3F H57.9) */
+.writeup-meta .wm-os-windows { --wm-c: #4ca3ff; }   /* Windows blue */
+/* Linux is re-hued to H60 in BOTH themes (was dark #f0b429 H82.5 / light #794e00 H73, the latter
+   identical to OverTheWire), moving it into Tux's own amber family (#FFA63F H65.6 / #E68C3F H57.9) and
+   away from OTW's gold. OTW is untouched; the two chips sit adjacent on a Bandit row, so they must read
+   distinct. Dark separates on TWO axes (hue + lightness: OTW L0.85 vs Linux L0.80, plus ~60% more
+   chroma) and already reads distinct at dEOK 0.073. Light had matched lightness, so hue alone carried
+   it at low chroma and it read as one colour (dEOK 0.022). So light DROPS lightness to L0.40 to add the
+   second axis: dEOK 0.065, near dark's, without exceeding it. AA is a floor not a target here; darker
+   only raises contrast (4.85 -> 6.13). Gamut-map chroma (palette-pass method). Dark holds its lightness. */
+:root[data-theme="light"] .writeup-meta .wm-os-linux   { --wm-c: #6b3900; } /* H60, L0.40; 6.13, sep 0.065 vs OTW */
+:root[data-theme="light"] .writeup-meta .wm-os-windows { --wm-c: #0053af; } /* 3.85 -> 4.80, chroma 92% */
+
+/* Environment: the feel of the environment. AD enterprise indigo (distinct from Windows blue);
+   Standalone a solitary cool slate. */
+.writeup-meta .wm-env-standalone        { --wm-c: #8fa3b8; }
+.writeup-meta .wm-env-active-directory  { --wm-c: #7c9cff; }
+:root[data-theme="light"] .writeup-meta .wm-env-standalone       { --wm-c: #475869; } /* 3.75 -> 4.85, chroma 100% */
+:root[data-theme="light"] .writeup-meta .wm-env-active-directory { --wm-c: #3b4fa8; } /* 4.85 already AA, unchanged */
+/* Progressive: the wargame ladder (OverTheWire Bandit, Natas...). Teal-leaning "progress/ascent" green,
+   pulled toward teal so it stays distinct from HackTheBox's lime brand green and carries a terminal tint
+   that fits the shell-based wargames. OverTheWire's platform color is amber, so this chip effectively
+   never sits beside the HTB green chip anyway. */
+.writeup-meta .wm-env-progressive { --wm-c: #3fd9a8; }
+:root[data-theme="light"] .writeup-meta .wm-env-progressive { --wm-c: #006345; } /* 3.00 -> 4.80, chroma 81% */
+
+/* Difficulty: neutral, hue-free, SAME size/weight as nav chips. Word once; magnitude via pips only. */
+.writeup-meta .wm-diff { display: inline-flex; align-items: center; }
+.writeup-meta .wm-diff-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-family: var(--sl-font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--sl-color-text);
+  background: color-mix(in oklab, var(--sl-color-text) 5%, transparent);
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 6px;
+  padding: 0.32rem 0.7rem;
+}
+.writeup-meta .wm-pips { display: inline-flex; align-items: center; gap: 3px; }
+.writeup-meta .wm-pips i {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--sl-color-gray-5); display: block;
+}
+/* Filled + growing per level: the filled count is the level, and the LAST filled pip grows so
+   higher difficulty visibly outweighs lower beyond count alone. Achromatic (no hue). The growth
+   selectors below are nth-child(N) for level N, which is the trailing filled pip, not the leading
+   one; the wording used to say "leading" and contradicted them. */
+.writeup-meta .wm-pips[data-level="1"] i:nth-child(1),
+.writeup-meta .wm-pips[data-level="2"] i:nth-child(-n+2),
+.writeup-meta .wm-pips[data-level="3"] i:nth-child(-n+3),
+.writeup-meta .wm-pips[data-level="4"] i:nth-child(-n+4) {
+  background: color-mix(in oklab, var(--sl-color-text) 80%, transparent);
+}
+.writeup-meta .wm-pips[data-level="1"] i:nth-child(1) { width: 6px; height: 6px; }
+.writeup-meta .wm-pips[data-level="2"] i:nth-child(2) { width: 6px; height: 6px; }
+.writeup-meta .wm-pips[data-level="3"] i:nth-child(3) { width: 7px; height: 7px; }
+.writeup-meta .wm-pips[data-level="4"] i:nth-child(4) { width: 8px; height: 8px; }
+
+/* The visually hidden difficulty text ("Difficulty N of 4") is covered by the global .sr-only utility
+   in utilities.css. The duplicate that used to sit here carried byte-identical declarations and was
+   already being won by that utility anyway (utilities is a later layer than components), so it was
+   doing nothing. The badge row renders inside .sl-markdown-content, which is the utility's scope. */
+
+
+/* ── Port label: a cyan mono tag inside recon callouts ────────────────────────
+   Was red, which clashed with the cyan recon callout it lives in and, like the old inline-code chip,
+   spent an alert color on a neutral identifier (a port is an address, not a danger). Now a calm cyan
+   mono TAG that harmonizes with the recon accent and out-ranks a passing inline-code reference by
+   WEIGHT (bold), not by adding another cyan. Theme-aware pop: bright cyan on the near-black callout
+   tint (where bright reads), a DEEPER teal on the warm paper (where deep reads). Snug by default so it
+   also works inline in prose (for example "the panel on 80/tcp"); the column alignment for findings
+   rows is layered on separately. Used only inside recon callouts. */
+.port-label {
+  font-family: var(--sl-font-mono);
+  /* Fixed code scale (rem), matching inline code, so the port tag does not inflate with the Geist prose. */
+  font-size: var(--mono-chrome-size);
+  /* A pinned size implies a pinned leading. Without this the chip took --prose-leading (1.7) against
+     its own 14px, so half its metrics still tracked prose and its box grew whenever the body did. */
+  line-height: var(--mono-chrome-leading);
+  font-weight: 700;
+  border: 1px solid;
+  border-radius: 4px;
+  padding: 0.08em 0.45em;
+}
+html[data-theme="light"] .port-label {
+  color: #05495b;
+  background-color: color-mix(in oklab, #41efff 15%, transparent);
+  border-color: color-mix(in oklab, #096577 40%, transparent);
+}
+html[data-theme="dark"] .port-label {
+  color: #41efff;
+  background-color: color-mix(in oklab, #41efff 18%, transparent);
+  border-color: color-mix(in oklab, #41efff 42%, transparent);
+}
+} /* @layer components */
+
+/* Toggle summary title: face + weight on dials for the owner to judge live. Covers the regular <Toggle>
+   AND PasswordReveal's block mode (which carries .toggle), so every toggle title reads as one system;
+   :not(.toggle-flag) leaves the gold flag toggle to its own identity. Size stays --component-title-size
+   (base rule above). Defaults: Geist (content-label reading) at weight 600. To flip, edit the two tokens
+   in the token block: --toggle-title-face (var(--body-face) <-> var(--sl-font-mono)) and
+   --toggle-title-weight (600 <-> 700). Inline <code> in a title keeps its own mono chip rule. */
+@layer components {
+.sl-markdown-content details.toggle:not(.toggle-flag) > summary {
+  font-family: var(--toggle-title-face);
+  font-weight: var(--toggle-title-weight);
+}
+} /* @layer components */
+
+/* Toggle titles use the normal foreground text color (no cyan), so cyan stays reserved for links, and
+   the disclosure chevron stays dim (the ::before above). Inline <code> in a summary is deliberately NOT
+   special-cased here: the unified inline-code rule at the top of this file already renders it as the
+   same red chip on the toggle-panel surface (that was the point of making inline code its own object).
+   The flag-toggle summary keeps its gold label; a code chip inside it still reads red, because that
+   global rule sets color on the <code> directly and so wins over the summary's inherited gold. */
+
+/* Flag reveal is the prize of the writeup, so it is the one toggle that keeps a pop. Flag toggles
+   carry the .toggle-flag class (Toggle's `flag` prop). Single-line layout: the summary is a flex row
+   so the inline flag icon sits beside the label. (Starlight renders content <svg> as display:block,
+   which otherwise dropped the icon onto its own line and wrapped the title.) The svg gets a fixed 1em
+   box and flex-shrink:0 so it never collapses or wraps off. The disclosure ::before marker is kept,
+   its margin zeroed so the flex gap spaces all three items evenly. */
+@layer components {
+.sl-markdown-content details.toggle-flag > summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0.4rem;
+}
+.sl-markdown-content details.toggle-flag > summary::before {
+  margin-right: 0;
+}
+.sl-markdown-content details.toggle-flag > summary svg {
+  flex-shrink: 0;
+  width: 1em;
+  height: 1em;
+}
+/* Treasure gold via the shared --flag-gold token, so the toggle, the flag heading, and the flag TOC
+   entry read as one system. Theme-aware and WCAG AA on the toggle panel; the flag svg uses
+   fill:currentColor, so the icon and label share this gold ("this is the prize"). */
+.sl-markdown-content details.toggle-flag > summary {
+  color: var(--flag-gold);
+}
+
+.toggle-body {
+  padding-top: 0.25rem;
+}
+} /* @layer components */
+
+
+/* ── Custom metadata badges (distinct colors) ── */
+
+@layer components {
+.meta-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+  line-height: 1.4;
+}
+
+/* Platforms: canonical site palette (matches sidebar dots + about-page accents). */
+/* HTB lime now overlaps Easy green, so every platform badge carries a leading glow dot (below). */
+.platform-hackthebox  { background: rgba(132,204,22,.15);  color: #4d7c0f; border-color: rgba(132,204,22,.35); }
+.platform-vulnhub     { background: rgba(239,68,68,.15);   color: #d12f2f; border-color: rgba(239,68,68,.35); }
+.platform-picoctf     { background: rgba(168,85,247,.15);  color: #8b3dc4; border-color: rgba(168,85,247,.35); }
+.platform-overthewire { background: rgba(245,158,11,.15);  color: #a86f04; border-color: rgba(245,158,11,.35); }
+
+/* Leading glowing dot: echoes the sidebar dot so a platform badge never reads as a difficulty pill. */
+/* Uses currentColor so the dot tracks each platform hue and adapts per theme automatically. */
+.platform-hackthebox::before,
+.platform-vulnhub::before,
+.platform-picoctf::before,
+.platform-overthewire::before {
+  content: "";
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  margin-right: 0.4rem;
+  background: currentColor;
+  box-shadow: 0 0 6px currentColor;
+  flex-shrink: 0;
+}
+
+/* Difficulty: traffic-light semantics */
+.difficulty-easy   { background: rgba(34,197,94,.15);  color: #16a34a; border-color: rgba(34,197,94,.35); }
+.difficulty-medium { background: rgba(245,158,11,.15); color: #d97706; border-color: rgba(245,158,11,.35); }
+.difficulty-hard   { background: rgba(239,68,68,.15);  color: #dc2626; border-color: rgba(239,68,68,.35); }
+.difficulty-misc   { background: rgba(100,116,139,.15);color: #64748b; border-color: rgba(100,116,139,.35); }
+
+/* OS: neutral slate */
+.os-linux   { background: rgba(100,116,139,.12); color: #475569; border-color: rgba(100,116,139,.3); }
+.os-windows { background: rgba(37,99,235,.12);   color: #2563eb; border-color: rgba(37,99,235,.3); }
+
+/* Brighter badge text in dark mode */
+html[data-theme="dark"] .platform-hackthebox  { color: #b6ff3c; }
+html[data-theme="dark"] .platform-vulnhub     { color: #ff5c5c; }
+html[data-theme="dark"] .platform-picoctf     { color: #d96bff; }
+html[data-theme="dark"] .platform-overthewire { color: #ffc23d; }
+html[data-theme="dark"] .difficulty-easy   { color: #4ade80; }
+html[data-theme="dark"] .difficulty-medium { color: #fbbf24; }
+html[data-theme="dark"] .difficulty-hard   { color: #f87171; }
+html[data-theme="dark"] .difficulty-misc   { color: #94a3b8; }
+html[data-theme="dark"] .os-linux   { color: #cbd5e1; }
+html[data-theme="dark"] .os-windows { color: #60a5fa; }
+
+/* Light badge polish (risograph): confident flat fills + solid edges so pills read as deliberate
+   color on paper, not faint tint. Fills are raised and borders firmed; the vivid AA text inks set
+   on the base rules carry through (verified to keep WCAG AA on the bolder fills). Dark fills and
+   borders are untouched. */
+/* Each rule pairs a bold flat fill + firm border with a DEEP, saturated text ink. The deep inks
+   are the price of AA: a bright hue cannot clear 4.5:1 on a light same-hue fill, so the text goes
+   deep (still clearly its color) while the dot + border + fill carry the vivid energy. All ten are
+   verified at or above 4.5:1 on their own fill. */
+:root[data-theme="light"] .platform-hackthebox  { background: rgba(132,204,22,.26); border-color: rgba(132,204,22,.7); color: #3a5e08; }
+:root[data-theme="light"] .platform-vulnhub     { background: rgba(239,68,68,.22);  border-color: rgba(239,68,68,.7);  color: #9e1515; }
+:root[data-theme="light"] .platform-picoctf     { background: rgba(168,85,247,.22); border-color: rgba(168,85,247,.7); color: #6a28a0; }
+:root[data-theme="light"] .platform-overthewire { background: rgba(245,158,11,.26); border-color: rgba(245,158,11,.7); color: #855300; }
+:root[data-theme="light"] .difficulty-easy   { background: rgba(34,197,94,.24);   border-color: rgba(34,197,94,.7);  color: #125c2a; }
+:root[data-theme="light"] .difficulty-medium { background: rgba(245,158,11,.26);  border-color: rgba(245,158,11,.7); color: #855300; }
+:root[data-theme="light"] .difficulty-hard   { background: rgba(239,68,68,.22);   border-color: rgba(239,68,68,.7);  color: #9e1515; }
+:root[data-theme="light"] .difficulty-misc   { background: rgba(100,116,139,.22); border-color: rgba(100,116,139,.6); color: #3f4c5e; }
+:root[data-theme="light"] .os-linux   { background: rgba(100,116,139,.2);  border-color: rgba(100,116,139,.55); color: #3f4c5e; }
+:root[data-theme="light"] .os-windows { background: rgba(37,99,235,.18);   border-color: rgba(37,99,235,.55); color: #1f4bc4; }
+
+/* Crisp platform dot on paper: drop the glow (it smudges on light) for a clean solid dot, and use
+   a vivid hue decoupled from the AA text ink so the dot reads boldly. Dark dots keep their glow. */
+:root[data-theme="light"] .platform-hackthebox::before,
+:root[data-theme="light"] .platform-vulnhub::before,
+:root[data-theme="light"] .platform-picoctf::before,
+:root[data-theme="light"] .platform-overthewire::before { box-shadow: none; }
+:root[data-theme="light"] .platform-hackthebox::before  { background: var(--tp-deco-lime); }
+:root[data-theme="light"] .platform-vulnhub::before     { background: #e23b2e; }
+:root[data-theme="light"] .platform-picoctf::before     { background: #a64bf0; }
+:root[data-theme="light"] .platform-overthewire::before { background: #ed8f00; }
+} /* @layer components */
+
+
+/* ── Principle: the closing epigraph ──────────────────────────────────────────
+   The one-line lesson a writeup decrypts to, set as literature rather than UI: the reading face
+   (JetBrains Mono) in italic, centered, a dinkus (the three-dot scene break) above it, and a lot of
+   whitespace doing the work. No border, background, glow, icon, or motion, so it never pulls the eye
+   of a reader still mid-page; it rewards the reader who reaches the end. The maxim carries no accent
+   color (the page already spends color elsewhere); identity is the small mono PRINCIPLE label and the
+   consistent placement. Meant to be the LAST thing on the page, after the Defense callout, with
+   nothing rendered beneath it (see the engineering note about suppressing pagination/footer on
+   writeups). Centered italic monospace is on-brand here precisely because the whole site reads in
+   mono: this is the operator's typed coda. Both themes; neutral, editorial. */
+@layer components {
+.sl-markdown-content .principle {
+  display: block;
+  text-align: center;
+  margin: 3.6rem auto 1rem;
+  max-width: 46ch;
+}
+.sl-markdown-content .principle-dinkus {
+  display: block;
+  color: var(--sl-color-gray-4);
+  letter-spacing: 0.6em;
+  font-size: 0.9rem;
+  margin-bottom: 1.2rem;
+}
+.sl-markdown-content .principle-label {
+  display: block;
+  font-family: var(--sl-font-mono);
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--sl-color-gray-3);
+  margin-bottom: 0.7rem;
+}
+/* The maxim is a <p class="principle-text">, so the prose face rule
+   (.sl-markdown-content :is(p,...):not(.cl-header), specificity 0,2,1) was OUTRANKING the plain
+   .principle-text (0,2,0) and forcing Geist onto it, plus leaking the prose paragraph margin. The
+   `p.principle-text` qualifier ties that specificity (0,2,1) and wins on source order (this block is
+   later), so the maxim keeps its own mono / italic / margin. It is a terminal maxim: mono is the point,
+   same register as badges and command highlighting. Size is a token so it can be dialed as a coda. */
+.sl-markdown-content p.principle-text {
+  font-family: var(--sl-font-mono);
+  font-style: italic;
+  font-weight: 400;
+  font-size: var(--principle-maxim-size);
+  line-height: 1.55;
+  color: var(--sl-color-text);
+  margin: 0 auto;
+}
+} /* @layer components */
+
+
+/* ── Tagged callouts (.cl + Callout.astro) ─────────────────────────────────────
+   A reusable callout: a 3px accent left border, a faint accent-tinted background, and a header row
+   of icon + UPPERCASE label in the accent color. Each type sets --acc. Light mode keeps the colored
+   border, lifts the tint so it reads on paper, and swaps the icon + label to a darker ink for
+   legibility. Body text uses the normal content color. Scoped to .sl-markdown-content. */
+@layer components {
+.sl-markdown-content .cl {
+  border-left: 3px solid var(--acc);
+  background: color-mix(in oklab, var(--acc) 8%, transparent);
+  border-radius: 0 9px 9px 0;
+  padding: 0.7rem 1.05rem;
+  margin: 1.2rem 0;
+}
+.sl-markdown-content .cl-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 0.45rem;
+  color: var(--cl-ink, var(--acc));
+}
+.sl-markdown-content .cl-icon {
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+}
+.sl-markdown-content .cl-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.sl-markdown-content .cl > :last-child { margin-bottom: 0; }
+
+/* Per-type accent (border + icon + label), dark mode. */
+.sl-markdown-content .cl-recon   { --acc: #41efff; }
+.sl-markdown-content .cl-loot    { --acc: #ffc23d; }
+.sl-markdown-content .cl-intel   { --acc: #d96bff; }
+.sl-markdown-content .cl-defense { --acc: #22c55e; }
+.sl-markdown-content .cl-vuln    { --acc: #ff5c5c; }
+
+/* Light mode: colored border kept, tint lifted a touch so it reads on the warm paper, and the icon
+   + label color switched to a darker ink so they clear contrast on a light surface. */
+html[data-theme="light"] .sl-markdown-content .cl {
+  background: color-mix(in oklab, var(--acc) 11%, transparent);
+}
+html[data-theme="light"] .sl-markdown-content .cl-recon   { --cl-ink: #096577; }
+html[data-theme="light"] .sl-markdown-content .cl-loot    { --cl-ink: #946a00; }
+html[data-theme="light"] .sl-markdown-content .cl-intel   { --cl-ink: #7a27b3; }
+html[data-theme="light"] .sl-markdown-content .cl-defense { --cl-ink: #15803d; }
+html[data-theme="light"] .sl-markdown-content .cl-vuln    { --cl-ink: #c92a2a; }
+
+/* Inline code INSIDE a colored callout harmonizes with that callout's accent instead of fighting it.
+   The standalone red chip (red text + warm-red fill) clashes inside a colored callout, worst in a vuln
+   callout in DARK (two saturated reds). Generic across every type: this reads the callout's own --acc
+   (and the light --cl-ink) tokens, so recon / loot / intel / defense / vuln each adapt automatically
+   with no per-type rule. The fill becomes a soft SAME-accent tint (quiet emphasis that reads as part of
+   the callout), the standalone hairline is dropped (transparent), and the text takes the accent: the
+   bright --acc on dark (high contrast on the near-black tint), and a DEEPENED --cl-ink on light, because
+   a few callout inks (vuln, loot, defense) sit only ~4:1 on the callout tint and body-size code needs
+   AA 4.5:1. Rounded corners + mono carry over from the standalone inline-code rule; only color / fill /
+   border change. Scoped to .cl inline code, so standalone inline code and all code blocks (in <pre>) are
+   untouched. */
+/* --cl-code-ink NAMES the value the rule above describes: "the ink a callout gives to a code-ish
+   object inside it". It had two consumers coming (inline code, and the findings rail's column rule)
+   and was not a token, only an expression restated per theme, so a second consumer would have had to
+   restate the derivation and the two would drift. Declared on .cl, so it resolves against the SAME
+   element's per-type --acc / --cl-ink and inherits to anything inside the callout. Per theme, because
+   the derivation genuinely differs: dark takes the bright accent directly, light deepens the per-type
+   ink 80% toward black for AA at body size (see the note above). */
+html[data-theme="dark"] .sl-markdown-content .cl {
+  --cl-code-ink: var(--acc);
+}
+html[data-theme="light"] .sl-markdown-content .cl {
+  --cl-code-ink: color-mix(in oklab, var(--cl-ink) 80%, #000);
+}
+html[data-theme="dark"] .sl-markdown-content .cl :not(pre) > code {
+  color: var(--cl-code-ink);
+  background-color: color-mix(in oklab, var(--acc) 16%, transparent);
+  border-color: transparent;
+}
+html[data-theme="light"] .sl-markdown-content .cl :not(pre) > code {
+  color: var(--cl-code-ink);
+  background-color: color-mix(in oklab, var(--acc) 13%, transparent);
+  border-color: transparent;
+}
+
+
+/* ── Recon findings rail + assessment (Direction 2) ────────────────────────────
+   The rail's STRUCTURE is emitted at build time by plugins/remark-transform-recon-rail.mjs, which
+   rewrites a plain markdown list inside <Callout type="recon"> into this dl/dt/dd. The author writes
+   `- 53/tcp : DNS, Simple DNS Plus` and never sees any of this. The layout below therefore has exactly
+   one consumer and no component competes for these selectors, which is why it belongs in the theme
+   pass rather than in a component: it lives in the `components` LAYER, so a later layer can still
+   override it, where an Astro scoped style would have been unlayered and unreachable.
+
+   Its two columns are COMPUTED: `max-content` measures the widest chip actually present, so no literal
+   governs the column and there is nothing here to keep in sync. What used to live at this spot was
+   three coupled literals (li padding-left / text-indent 5.6em against a chip min-width 4.9em plus
+   margin-right 0.7em) that were one intended arithmetic identity, since 4.9 + 0.7 = 5.6, split across
+   two font-size contexts: the li's 18px and the chip's pinned 14px. They were therefore never equal,
+   and the old note here claiming 4.9em "fits the widest port token (for example 5985/tcp)" was not
+   stale but impossible, because eight mono characters plus the chip's own padding need about 5.7em in
+   the chip's context and 4.9em cannot reach that at any font size. See CORE_SPEC section 8.
+
+   The chip's colour, background, border, radius, family and size are NOT declared here: they stay on
+   the shared .port-label rule above, so a port named inline in prose and a port in a rail are the same
+   object. Only layout is below. */
+.sl-markdown-content .findings {
+  /* ONE gutter value with TWO consumers, so the rule's clearance stays symmetric by construction
+     rather than by arithmetic someone has to redo. The rule is drawn at the chip track's right edge,
+     so the space on its CHIP side is the dt's right padding minus the rule's own width, and the space
+     on its DESCRIPTION side is the column gap. Declaring that padding as gutter plus rule width makes
+     the two sides equal exactly, not approximately. The track is max-content and padding counts
+     toward it, so the column grows to hold the widest chip PLUS this gutter on its own, and no
+     literal about port token widths exists anywhere.
+     The gutter is derived from the chip, not picked: the chip's own inline padding is 0.45em at its
+     pinned 14px, which is 6.3px a side. A gutter has to exceed the chip's internal padding or the
+     chip reads as indented text rather than as a bounded object. Two times 6.3 is 12.6px, rounded
+     onto the rem grid at 0.8rem (12.8px). rem, not em: this is component geometry, not a word space. */
+  --findings-gutter: 0.8rem;
+  --findings-rule-width: 2px;
+  display: grid;
+  /* The port column measures itself. No literal, no floor, no padding of short tokens. */
+  grid-template-columns: max-content 1fr;
+  /* Chip and description sit on one shared baseline, as they did in inline flow. Without this,
+     grid's default `normal` alignment stretches the chip to the row height and tears its box open. */
+  align-items: baseline;
+  column-gap: var(--findings-gutter);
+  /* Reproduces the old rail's rhythm exactly. The li margins were 0.26rem and COLLAPSED to 0.26rem
+     between rows (measured, not assumed); grid does not collapse margins, so the same number is
+     declared once as a gap. A translation, not a change. */
+  row-gap: 0.26rem;
+  /* Reproduces the old ul margins so the callout's outer geometry does not move. */
+  margin: 0.4rem 0 0.2rem;
+}
+
+/* The dt FILLS the computed column (stretch, not end), so the chip inside it sits at the column's
+   left edge at its natural width and the rule below lands at the column's right edge. Chip LEFT edges
+   therefore share one x and the right edges are ragged, which is the correct reading order: the eye
+   scans down the ports, not down their trailing slashes. The description column still starts at one x,
+   because the track width and the gutter are both constant.
+
+   font-size and line-height PIN THE dt's OWN CONTEXT, and both do real work. em declared on this
+   element now means 14px, so the rule's height below is expressed in the context it actually governs,
+   which is remedy 2 of the context law (CORE_SPEC section 8). And it removes a defect rather than
+   masking one: the dt previously inherited the 18px container at Starlight's ambient 1.75, giving it a
+   31.50px strut that sized every grid row and grew each callout by 0.6875px per row (measured on
+   426a4fd). At 19.60px the strut is shorter than the dd's 30.60px prose line box, so rows are sized by
+   the text again. No compensating declaration anywhere: the growth is gone at its cause. */
+.sl-markdown-content .findings dt {
+  justify-self: stretch;
+  font-size: var(--mono-chrome-size);
+  line-height: var(--mono-chrome-leading);
+  position: relative;
+  margin: 0;
+  padding: 0;
+  /* The gutter the column rule lives in. Without it the track was exactly the widest chip, so the
+     rule landed ON that chip's own right border (measured at -2.00px of clearance) while shorter
+     tokens kept a gap that varied with their length. max-content counts padding, so the track
+     absorbs this by itself and the chips keep both their natural widths and their shared left edge. */
+  padding-right: calc(var(--findings-gutter) + var(--findings-rule-width));
+}
+
+/* The column rule. It replaces the authored " : " that used to sit in content: a separator is
+   presentation, so it is drawn here and the delimiter is consumed at build time.
+   1.6em resolves in the dt's pinned 14px context (22.40px) and approximates the chip's painted height,
+   so the rule reads as the same object as the chip rather than as a row divider. It is deliberately
+   SHORTER than the row, so consecutive rules never meet and each row stays visually separate. It is
+   anchored to the chip's centre via the dt's own box, which baseline alignment keeps on the chip, so on
+   a wrapped row it stays beside the first line instead of stretching down the description.
+   The colour is the callout's own code ink, so the rule belongs to the callout it sits in and adapts
+   per type and per theme with no rule of its own.
+   `right: 0` resolves against the dt's PADDING box, so the dt's right padding carries the rule out to
+   the track's new right edge rather than squeezing it inward: that padding IS the gutter it sits in. */
+.sl-markdown-content .findings dt::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 50%;
+  margin-top: -0.8em;
+  width: var(--findings-rule-width);
+  height: 1.6em;
+  background: var(--cl-code-ink);
+}
+
+/* Starlight ships dd { margin-top: 4px; padding-left: 16px } and dl { margin-top: 16px } (measured).
+   The dl margin is replaced above; these two are zeroed so the grid alone positions the row. */
+.sl-markdown-content .findings dd {
+  margin: 0;
+  padding: 0;
+}
+
+/* The transform emits the description's inline children directly, so a <p> only appears if a future
+   authoring path wraps them. Matches nothing today and exists so that cannot introduce an 18px
+   paragraph margin inside a grid row. */
+.sl-markdown-content .findings dd > p {
+  margin: 0;
+}
+
+/* ── Recon assessment ──────────────────────────────────────────────────────────
+   The concluding paragraph is treated as the ASSESSMENT: a hairline separates it from the facts
+   and an uppercase mono eyebrow labels it. The trigger MOVED WITH THE RAIL, from :has(ul) to
+   :has(.findings), which is load-bearing rather than cosmetic: the rail is not a list any more, so the
+   old selector would have quietly dropped both the hairline and the eyebrow on every rail page while
+   the build stayed green. It still fires only on recon callouts that actually list findings, and never
+   on a prose-only recon callout. Eyebrow color mirrors the callout header (bright --acc on dark, the
+   deeper --cl-ink on light). Scoped to .cl-recon. No motion. */
+.sl-markdown-content .cl-recon:has(.findings) > p:last-child {
+  margin-top: 0.8rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid color-mix(in oklab, var(--acc) 24%, transparent);
+}
+.sl-markdown-content .cl-recon:has(.findings) > p:last-child::before {
+  content: "Assessment";
+  display: block;
+  font-family: var(--sl-font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--cl-ink, var(--acc));
+  margin-bottom: 0.3rem;
+}
+
+
+/* ── PasswordReveal, BLOCK mode (multi-line secret) ──────────────────────────
+   The collapse half of PasswordReveal, emitted by PasswordReveal.astro when it is handed slot content
+   instead of a `password` prop. A secret that runs to many lines (an RSA private key) cannot be blurred
+   as one inline run, so it collapses instead: inline secrets blur, block secrets collapse. This replaces
+   the retired one-off spoiler class, which existed only because the inline component could not hold a
+   block secret.
+   The element carries `.toggle`, so it inherits the standard toggle card, the disclosure marker, and
+   ToggleAll's bulk expand exactly as the old spoiler toggle did, and its summary face and weight come
+   from the regular-toggle rule near the top of this file (Geist 600), so the label matches every other
+   toggle title rather than carrying a bespoke weight.
+   Amber reads the SHARED --otw-amber / --otw-amber-ink / --pw-amber-rgb tokens, the same ones the inline
+   row uses, so the identity has exactly one source: change the token and both modes move together. That
+   consolidation is the reason the old class was folded in here. The summary LABEL is body-size text, so
+   it reads the ink; the open border is non-text, so it reads the accent.
+   Layer note (this used to need specificity armor): two generic rules elsewhere set border-color on any
+   .sl-markdown-content details / details[open] (the per-theme card border, and light mode's "no green
+   edge on paper" open-state override), both unconditional on element type. Those live in `prose` and
+   these live in `components`, so layer order settles it and the old html[data-theme] prefixes (attribute
+   presence only, carried over from the retired class) are gone. The shared rules stay untouched.
+   The disclosure marker transition is removed so the control stays calm under prefers-reduced-motion. */
+.sl-markdown-content details.pwreveal-block {
+  border-color: rgba(var(--pw-amber-rgb), 0.45);
+}
+.sl-markdown-content details.pwreveal-block[open] {
+  border-color: var(--otw-amber);
+}
+.sl-markdown-content details.pwreveal-block > summary {
+  color: var(--otw-amber-ink);
+}
+.sl-markdown-content details.pwreveal-block > summary::before {
+  transition: none;
+}
+
+
+/* ── PasswordReveal: wargame waypoint (OverTheWire amber, not gold flag) ───────
+   A wargame password is a waypoint, not a trophy: amber (the OverTheWire / spoiler identity), never
+   the gold flag tokens, and NO decode scramble (reserved for FlagCapture, so the flag vs password
+   distinction reads). The row is a passive amber card: only .pw-action is interactive. The label and
+   value are NON-selectable (copy is the only way to take the value, like FlagCapture), and the value
+   is spoiler-blurred until Reveal is clicked (never on hover). Amber comes from the shared identity
+   tokens --otw-amber (accent, #ffc23d dark / #a86f04 light), --otw-amber-ink (the AA text ink, #ffc23d
+   dark / #7c5000 light) and --pw-amber-rgb (the #f59e0b wash base), which BLOCK mode reads too, so the
+   two modes cannot drift apart. The button LABEL is body-size text and reads the ink; its border and
+   focus ring are non-text and read the accent. Both themes; light is stronger and more golden. The tokens hold literal values and are declared on the bare :root fallback, so nothing
+   fails to resolve (the earlier failure mode here was color-mix indirection, not custom properties). */
+.sl-markdown-content .pwreveal {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  border: 1px solid rgba(var(--pw-amber-rgb), 0.4);
+  background: rgba(var(--pw-amber-rgb), 0.08);
+  border-radius: 8px;
+  padding: 0.5rem 0.7rem;
+  margin: 1rem 0;
+  cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
+}
+:root[data-theme="light"] .sl-markdown-content .pwreveal {
+  border-color: rgba(var(--pw-amber-rgb), 0.55);
+  background: rgba(var(--pw-amber-rgb), 0.14);
+}
+.sl-markdown-content .pwreveal .pw-label {
+  font-family: var(--sl-font-mono);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sl-color-gray-3);
+  flex: none;
+}
+.sl-markdown-content .pwreveal .pw-value {
+  font-family: var(--sl-font-mono);
+  font-size: 0.88rem;
+  color: var(--sl-color-text);
+  background: none;
+  border: 0;
+  padding: 0;
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  cursor: default;
+  filter: blur(5px);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .sl-markdown-content .pwreveal .pw-value { transition: filter 0.3s ease; }
+}
+.sl-markdown-content .pwreveal.is-revealed .pw-value {
+  filter: none;
+}
+.sl-markdown-content .pwreveal .pw-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: none;
+  font-family: var(--sl-font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--otw-amber-ink);
+  background: transparent;
+  border: 1px solid rgba(var(--pw-amber-rgb), 0.45);
+  border-radius: 6px;
+  padding: 0.28rem 0.6rem;
+  cursor: pointer;
+}
+:root[data-theme="light"] .sl-markdown-content .pwreveal .pw-action {
+  /* Only the border differs on paper; the text color comes from the theme-aware --otw-amber-ink token. */
+  border-color: rgba(var(--pw-amber-rgb), 0.6);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .sl-markdown-content .pwreveal .pw-action { transition: background-color 0.15s ease, border-color 0.15s ease; }
+}
+.sl-markdown-content .pwreveal .pw-action:hover {
+  background: rgba(var(--pw-amber-rgb), 0.15);
+  border-color: rgba(var(--pw-amber-rgb), 0.65);
+}
+:root[data-theme="light"] .sl-markdown-content .pwreveal .pw-action:hover {
+  background: rgba(var(--pw-amber-rgb), 0.2);
+}
+/* Focus ring routed through the token. A ring is non-text, so it reads the ACCENT rather than the ink:
+   it is the control's identity, and it already clears the 3:1 a non-text indicator needs. The shared
+   :where(...button...):focus-visible rule draws it, outline following the button's 6px radius. */
+.sl-markdown-content .pwreveal .pw-action { --focus-ring: var(--otw-amber); }
+.sl-markdown-content .pwreveal .pw-action-ico { width: 15px; height: 15px; flex: none; }
+} /* @layer components */
+@layer components {
+:root[data-theme='light'] .sl-markdown-content details {
+  box-shadow: 0 1px 4px rgba(60, 50, 30, 0.07);
+}
+/* === end LIGHT SURFACE DEPTH (V3) === */
+
+
+/* === FLAG CAPTURE (Decrypt to Capture) ======================================
+   The gold flag-loot control (FlagCapture.astro) under the gold "## User Flag" /
+   "## Root Flag" heading. The heading already owns the flag glyph + gold name, so
+   this control carries NO identity icon: a LOCK marks LOCKED, a single neutral CHECK
+   marks CAPTURED. Root vs user differs ONLY by the richer gold tier (color), never a
+   glyph. The frame matches the writeup Toggle (full content width, same padding +
+   6px radius) so it sits on the page like a toggle, not a chip; it keeps the gold
+   loot identity (gold border + faint gold surface). --fc-id is the identity gold
+   (frame, lock/check, label); --fc-val is the AA-grade gold for the flag VALUE text.
+   Capture moment is a warm gold GLOW pulse in BOTH themes (tuned per theme). */
+.flagcap-user { --fc-id: var(--flag-gold);      --fc-val: var(--flag-gold-val); }
+.flagcap-root { --fc-id: var(--flag-gold-root); --fc-val: var(--flag-gold-val-root); }
+
+/* Per-theme glow color for the capture moment (light needs a warmer, stronger halo to read on paper). */
+:root[data-theme='dark'] .flagcap {
+  --fc-glow: color-mix(in oklab, var(--fc-id) 55%, transparent);
+  --fc-glow-text: color-mix(in oklab, var(--fc-val) 75%, transparent);
+}
+:root[data-theme='light'] .flagcap {
+  --fc-glow: color-mix(in oklab, var(--fc-id) 72%, transparent);
+  --fc-glow-text: color-mix(in oklab, var(--fc-id) 50%, transparent);
+}
+
+/* The FRAME: full content width, Toggle-matched radius, gold loot identity. */
+.sl-markdown-content .flagcap {
+  position: relative;
+  margin: 0.6rem 0 1.4rem;
+  border: 1px solid color-mix(in oklab, var(--fc-id) 38%, transparent);
+  border-radius: 6px;
+  background: color-mix(in oklab, var(--fc-id) 6%, var(--sl-color-bg));
+  transition: border-color 0.18s ease, background-color 0.18s ease, box-shadow 0.25s ease;
+}
+:root[data-theme='light'] .sl-markdown-content .flagcap {
+  /* Raised warm panel like the Toggle (#f2ede0) with a faint gold tint + the V3 depth shadow. */
+  background: color-mix(in oklab, var(--fc-id) 7%, #f2ede0);
+  border-color: color-mix(in oklab, var(--fc-id) 55%, var(--tp-divider));
+  box-shadow: 0 4px 14px -12px rgba(60, 50, 30, 0.4);
+}
+/* Locked frame is interactive (the inner button fills it); lift the border on hover/focus. */
+.sl-markdown-content .flagcap:not(.is-captured):hover {
+  border-color: color-mix(in oklab, var(--fc-id) 62%, transparent);
+  background: color-mix(in oklab, var(--fc-id) 10%, var(--sl-color-bg));
+}
+:root[data-theme='light'] .sl-markdown-content .flagcap:not(.is-captured):hover {
+  background: color-mix(in oklab, var(--fc-id) 11%, #f2ede0);
+}
+
+/* The decrypt affordance: a real <button> that FILLS the frame (so the whole frame is the click target),
+   borderless + transparent (the frame owns the surface), padding matched to the Toggle. */
+.sl-markdown-content .flagcap-btn {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center; /* vertical centering: lock/check, value, label share one centered row */
+  gap: 0.45rem 0.75rem;
+  width: 100%;
+  margin: 0;
+  padding: 0.85rem 0.95rem;
+  font-family: var(--sl-font-mono, ui-monospace, monospace);
+  /* Fixed base size so the flag VALUE (1.02em) and lock/check icon (1.25em), which are em-relative to this
+     button, hold their proportion instead of inflating with the 18.5px prose. Restores the pre-Geist scale. */
+  font-size: var(--component-title-size);
+  text-align: left;
+  color: var(--fc-id);
+  background: transparent;
+  border: 0;
+  border-radius: inherit;
+  cursor: pointer;
+}
+/* Focus ring routed through the token (gold identity, preserving the 65% mix); drawn by the shared
+   :where(...button...):focus-visible rule, outline following the button's inherited radius. */
+.sl-markdown-content .flagcap-btn { --focus-ring: color-mix(in oklab, var(--fc-id) 65%, transparent); }
+/* Captured: the prize sits there inert (copy is the live control); reserve right space for the copy icon. */
+.flagcap.is-captured .flagcap-btn {
+  cursor: default;
+  padding-right: 2.7rem;
+}
+
+/* Glyph: ONE icon whose path swaps from a closed padlock (LOCKED) to a single neutral check (CAPTURED),
+   done in the component script. No flag/crown identity icon. A single icon is one flex child, so the
+   button's align-items:center centers it on the value/label row with no baseline drift (two
+   display-toggled icons drift a few px in flexbox). */
+.flagcap .fc-ico {
+  flex: none;
+  width: 1.25em;
+  height: 1.25em;
+  display: block;
+}
+.flagcap.is-capturing .fc-ico {
+  animation: fc-unlock 700ms ease 1;
+  transform-origin: 50% 62%;
+}
+.flagcap.is-captured .fc-ico {
+  animation: fc-pop 320ms ease 1;
+}
+
+/* The flag value. Three classes outrank Starlight's inline-code rule on this <code>, so the frame owns
+   the surface and the value is transparent gold monospace, the exact same length locked vs captured. */
+.sl-markdown-content .flagcap .flagcap-value {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--fc-val);
+  font-family: var(--sl-font-mono, ui-monospace, monospace);
+  font-size: 1.02em;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+  /* Stays one line on desktop (plenty of room); on a narrow phone column the flag wraps within its box
+     instead of overflowing the frame. */
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}
+/* Locked cyphertext: dimmed identity gold (decorative, aria-hidden). After the base rule so it wins. */
+.sl-markdown-content .flagcap:not(.is-captured) .flagcap-value {
+  color: color-mix(in oklab, var(--fc-id) 88%, transparent);
+}
+
+/* Label: LOCKED -> CAPTURED (the leading glyph carries the check; no second check here). */
+.flagcap-state {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.69rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--fc-id) 75%, var(--sl-color-gray-2));
+}
+.flagcap.is-captured .flagcap-state {
+  color: var(--fc-id);
+}
+
+/* Copy: icon-only, INSIDE the frame (top-right, like the code-block copy button). Hidden until capture,
+   then fades in. The copy icon swaps to a check for ~1.5s on success, then reverts. */
+.sl-markdown-content .flagcap-copy {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0.5rem;
+  margin: auto 0; /* vertically centered in the taller frame (no transform, so fc-fadein stays intact) */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  color: color-mix(in oklab, var(--fc-id) 78%, var(--sl-color-gray-2));
+  background: color-mix(in oklab, var(--fc-id) 8%, var(--sl-color-bg));
+  border: 1px solid color-mix(in oklab, var(--fc-id) 30%, transparent);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+}
+:root[data-theme='light'] .sl-markdown-content .flagcap-copy {
+  background: color-mix(in oklab, var(--fc-id) 10%, #f2ede0);
+}
+.sl-markdown-content .flagcap-copy:hover,
+.sl-markdown-content .flagcap-copy:focus-visible {
+  color: var(--fc-id);
+  border-color: color-mix(in oklab, var(--fc-id) 60%, transparent);
+  background: color-mix(in oklab, var(--fc-id) 16%, var(--sl-color-bg));
+}
+/* Focus ring routed through the token (gold identity, preserving the 60% mix); drawn by the shared rule. */
+.sl-markdown-content .flagcap-copy { --focus-ring: color-mix(in oklab, var(--fc-id) 60%, transparent); }
+.flagcap-copy[hidden] {
+  display: none;
+}
+.flagcap .fc-copy-ico {
+  width: 1em;
+  height: 1em;
+  display: block;
+}
+.flagcap-copy.is-copied {
+  color: var(--fc-id);
+  border-color: color-mix(in oklab, var(--fc-id) 55%, transparent);
+}
+.flagcap.is-captured .flagcap-copy {
+  animation: fc-fadein 0.32s ease both;
+}
+
+/* "Copied!" feedback pill: golden accent, like the code-block copy confirmation. Sits just left of the
+   copy icon, fades in while the copy button is in its is-copied state (~1.5s), then fades out. */
+.sl-markdown-content .flagcap .fc-copy-feedback {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 2.9rem;
+  margin: auto 0;
+  display: inline-flex;
+  align-items: center;
+  height: 1.55rem;
+  padding: 0 0.5rem;
+  font-family: var(--sl-font-mono, ui-monospace, monospace);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--fc-id);
+  background: color-mix(in oklab, var(--fc-id) 16%, var(--sl-color-bg));
+  border: 1px solid color-mix(in oklab, var(--fc-id) 35%, transparent);
+  border-radius: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(4px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+:root[data-theme='light'] .sl-markdown-content .flagcap .fc-copy-feedback {
+  background: color-mix(in oklab, var(--fc-id) 16%, #f2ede0);
+}
+.flagcap.is-copy-active .fc-copy-feedback {
+  opacity: 1;
+  transform: none;
+}
+/* While "Copied!" shows, fade the CAPTURED label so the pill never collides with it on narrow frames. */
+.flagcap.is-copy-active .flagcap-state {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+/* The real flag, always in the DOM for screen readers + copy, visually hidden; plus the polite
+   capture announcement. */
+.flagcap-real,
+.flagcap-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --- Captured frame depth, per theme (full gold border) --- */
+:root[data-theme='dark'] .flagcap.is-captured {
+  border-color: var(--fc-id);
+  background: color-mix(in oklab, var(--fc-id) 12%, var(--sl-color-bg));
+}
+:root[data-theme='light'] .flagcap.is-captured {
+  border-color: color-mix(in oklab, var(--fc-id) 90%, transparent);
+  background: color-mix(in oklab, var(--fc-id) 10%, #f2ede0);
+  box-shadow: 0 2px 8px rgba(60, 50, 30, 0.1), 0 1px 2px rgba(60, 50, 30, 0.06);
+}
+
+/* --- Capture MOMENT: a warm gold glow pulse, BOTH themes (one-shot, fired by .is-sweep) ---
+   The glow lives on a ::after overlay so it never disturbs the captured frame's persistent shadow. */
+.flagcap.is-sweep::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: 0 0 0 0 transparent;
+  animation: fc-glow 760ms ease-out 1;
+}
+.flagcap.is-sweep .flagcap-value {
+  animation: fc-textglow 760ms ease-out 1;
+}
+
+@keyframes fc-unlock {
+  0% { transform: translateY(0) rotate(0); }
+  22% { transform: translateY(-1px) rotate(-7deg); }
+  60% { transform: translateY(0) rotate(5deg); }
+  100% { transform: translateY(0) rotate(0); }
+}
+@keyframes fc-pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes fc-fadein {
+  from { opacity: 0; transform: translateY(2px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes fc-glow {
+  0% { box-shadow: 0 0 0 0 transparent; }
+  35% { box-shadow: 0 0 24px 1px var(--fc-glow); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+@keyframes fc-textglow {
+  0% { text-shadow: none; }
+  35% { text-shadow: 0 0 12px var(--fc-glow-text); }
+  100% { text-shadow: none; }
+}
+} /* @layer components */

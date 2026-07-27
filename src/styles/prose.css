@@ -1,0 +1,420 @@
+@layer starlight, tokens, base, prose, chrome, components, pages, utilities;
+/* Prose: the reading surface inside .sl-markdown-content (type, rhythm, links, quotes, defaults).
+   Layer order, not file order, decides precedence. */
+/* Inline code: its own object (calm neutral chip, identity in the text). Inline code (:not(pre) > code)
+   is a passing REFERENCE inside prose, not a destination, so it stays subordinate to the sentence. The
+   chip is neutral in both themes (no red in the fill or border); the red identity lives in the GLYPHS,
+   where it reads as deliberate and never broadcasts false urgency on neutral tokens like filenames or
+   ports. Soft rounded corners, deliberately the opposite of the sharp-cornered code-block destinations.
+   ONE structure for both themes; only the surface is tuned per theme. Dark: a white-alpha lift that
+   adapts to whatever sits behind it (plain page, raised toggle panel, a summary title), so there is no
+   surface special-casing. Light: a warm fill (#ece2d6) with the shared --tp-divider hairline, the same
+   token every other structural line uses, so the chip edge stays system-coherent. Scoped to
+   :not(pre) > code so it never touches code-block tokens (those live in pre). Unlayered, so it overrides
+   Starlight's default inline-code chip. Red text stays AA on its own fill in both themes (dark is high
+   contrast on the near-black surface, light is about 4.9:1). */
+@layer prose {
+:not(pre) > code {
+  border-radius: 5px;
+  border: 1px solid;
+  padding: 0.12em 0.4em;
+  /* Fixed code scale (rem), NOT em: inline code reads at the ~14px code-block scale and does not inflate
+     with the 18.5px Geist prose. AttackPath sets its own (higher-specificity) inline-code size, so its
+     tiny diagram code is unaffected. */
+  font-size: var(--mono-chrome-size);
+  /* Stay mono even when the surrounding prose is Geist (inline code inherits its parent otherwise). */
+  font-family: var(--sl-font-mono);
+}
+html[data-theme="dark"] :not(pre) > code {
+  color: #ff9b9b;
+  background-color: rgba(255, 255, 255, 0.055);
+  border-color: rgba(255, 255, 255, 0.11);
+}
+html[data-theme="light"] :not(pre) > code {
+  color: #b03326;
+  background-color: #ece2d6;
+  border-color: var(--tp-divider);
+}
+} /* @layer prose */
+
+
+/* ── Toggle / details blocks ─────────────────── */
+
+/* Scoped to .sl-markdown-content so these content-Toggle styles never leak onto Starlight's
+   sidebar group <details> (which was boxing every group and breaking the nesting line). */
+/* Styling a raw <details> is a DELIBERATE prose default, not an oversight: these rules set the
+   baseline card and summary for any content disclosure, and every named variant (.toggle face,
+   .toggle-flag, .pwreveal-block) states its own identity on top from a later layer. Living in
+   `prose` is what makes that layering do the work, so no variant needs specificity armor to win. */
+@layer prose {
+.sl-markdown-content details {
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 6px;
+  padding: 0.4rem 0.75rem;
+  margin: 0.5rem 0;
+}
+
+html[data-theme="dark"] .sl-markdown-content details {
+  border-color: var(--sl-color-gray-4);
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+html[data-theme="light"] .sl-markdown-content details {
+  /* A faintly raised warm panel (lighter than the #ece9e0 page) with a hairline border and a
+     soft shadow, so a Toggle reads as a card lifting off the paper instead of a flat box. */
+  background-color: #f2ede0;
+  /* Same warm divider as the structural hairlines (single source of truth); replaces a fainter
+     rgba(60,50,30,0.16) so the Toggle border is clearly visible on paper and consistent. */
+  border-color: var(--tp-divider);
+  box-shadow: 0 4px 14px -12px rgba(60, 50, 30, 0.4);
+}
+
+/* No accent swap on open: a content Toggle keeps the SAME border expanded as closed, so opening it
+   never changes color. Each theme's closed rule above (gray-4 dark, --tp-divider light) already
+   covers [open], so the old lime open edge is simply removed here (and in the light override below). */
+
+/* Focus-ring alignment: re-pair Starlight's marker/outline pair, which the padding here used to
+   half-cancel. markdown.css (@layer starlight.content) ships a MATCHED pair on every content summary:
+   `margin-inline-start: -0.5rem` + `padding-inline-start: 0.5rem`, commented upstream as "Expand the
+   outline so that the marker cannot distort it". The padding grows the border box leftward so the outline
+   encloses the negatively-margined ::before marker (that marker carries its own `margin-inline: -0.3125rem`),
+   and the margin cancels the resulting layout shift so nothing moves visually. This rule's old
+   `padding: 0.3rem 0` beat that layer and zeroed the padding half while declaring no margin, so the
+   -0.5rem survived ORPHANED (starlight.content outranks starlight.reset's `* { margin: 0 }`, and an
+   unlayered rule that never mentions margin cannot compete). Net: every toggle's summary border box, and
+   its label with it, sat 8px LEFT of the card's content box while the right edge stayed flush, so the
+   focus ring was 8px off-center (deltas to the card's border box: left 3, right 11, against top/bottom 5.4).
+
+   Declaring margin-inline HERE re-pairs it for EVERY content toggle at the source. The inset is the card's
+   own padding difference (0.75rem inline minus 0.4rem block, see the details rule above = 5.6px), so the
+   summary's border box sits the same distance inside the card horizontally as it already does vertically.
+   That makes all four ring deltas EQUAL (5.4px at dpr 1: 1px card border + 6.4px card block padding - 2px
+   outline-offset) with NO outline-offset override, so the shared :where(...):focus-visible rule is
+   untouched. The equality is what holds; the absolute number shifts slightly on fractional-dpr displays
+   because the 1px border and the 2px ring both snap to device pixels.
+
+   The ring is drawn on the SUMMARY, so opening a toggle cannot balloon it around the revealed body.
+   padding-inline restores each label to the card's content box, where it aligns with the .toggle-body text
+   below it (it previously sat 5.6px left of it). padding-block keeps the vertical padding this rule always
+   had, so the [open] padding-bottom tightening below still wins on specificity. The 4px radius plus the
+   shared 2px offset paints the ring at a 6px corner radius, echoing the card's own 6px. */
+.sl-markdown-content details > summary {
+  cursor: pointer;
+  font-weight: 500;
+  /* Component TITLE, held at a fixed size so it does not inflate with the 18.5px Geist prose (it inherits
+     the mono chrome family; without this it tracked the prose container and read oversized). Covers every
+     toggle title built on this base: the regular Toggle, the flag toggle, and PasswordReveal block mode. */
+  font-size: var(--component-title-size);
+  padding-block: 0.3rem;
+  margin-inline: calc(-1 * (0.75rem - 0.4rem));
+  padding-inline: calc(0.75rem - 0.4rem);
+  border-radius: 4px;
+  list-style: none;
+  user-select: none;
+}
+} /* @layer prose */
+
+@layer prose {
+.sl-markdown-content details > summary::marker,
+.sl-markdown-content details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.sl-markdown-content details > summary::before {
+  content: "▶ ";
+  font-size: 0.65em;
+  opacity: 0.5;
+  display: inline-block;
+  transition: transform 0.15s ease;
+  margin-right: 0.2rem;
+}
+
+.sl-markdown-content details[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+/* Tighten the gap under an OPEN toggle title: trim the summary's bottom padding only when open
+   (the closed pill keeps its balanced 0.3rem top/bottom). Paired with the smaller .toggle-body
+   padding-top below, content sits closer to the title. Content toggles only (scoped to
+   .sl-markdown-content), so sidebar group summaries are untouched. */
+.sl-markdown-content details[open] > summary {
+  padding-bottom: 0.15rem;
+}
+} /* @layer prose */
+
+
+/* ── Answer callouts (:::tip[Answer]) ────────── */
+
+@layer prose {
+.starlight-aside--tip {
+  border-left-width: 3px;
+  border-radius: 4px;
+}
+
+html[data-theme="dark"] .starlight-aside--tip {
+  background-color: rgba(50, 200, 100, 0.08);
+}
+
+html[data-theme="light"] .starlight-aside--tip {
+  background-color: rgba(50, 180, 80, 0.07);
+}
+
+/* Answer callouts are Starlight :::tip asides, whose default icon is a rocket. Swap it for a
+   check-in-circle (reads as answer/solution) with a pure CSS mask, so this stays in the theme-pass
+   lane and the new glyph inherits the tip color in both themes. Note: the .starlight-aside__icon IS
+   the inline <svg> (no separate container), so hide its drawn glyph, then repaint the same 1em box
+   with a currentColor fill masked to the check. Size/alignment follow Starlight's own icon box
+   (1em at font-size 1.333em); flex-shrink:0 keeps the box from collapsing. fill-rule evenodd makes
+   the check read as a clean cutout. */
+.starlight-aside--tip .starlight-aside__icon > * {
+  display: none;
+}
+.starlight-aside--tip .starlight-aside__icon {
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
+  background-color: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+} /* @layer prose */
+
+/* ── Writeup prose face + rhythm (Geist), scoped to .sl-markdown-content prose surfaces ONLY ──────────
+   Geist sets running prose (paragraphs, list items, blockquotes, table body cells, strong, and em, the
+   last rendering Geist's true drawn italic). Everything else stays JetBrains Mono: code blocks and
+   inline code, badges, callout labels, .port-label / .task-title, headings (Syne), the Principle coda,
+   and all sidebar / TOC / breadcrumb / pager chrome are either untargeted here or set their own
+   font-family. --sl-font / --sl-font-mono are deliberately NOT changed. figcaption is left out on
+   purpose: it is Expressive Code's code-frame title bar (chrome), not an image caption (image captions
+   are em inside a paragraph, covered below). The callout label row is authored as <p class="cl-header">
+   (chrome markup that happens to be a paragraph), so it is excluded via :not(.cl-header) to keep the
+   uppercase callout labels in JetBrains Mono; callout BODY prose (p / li without that class) stays Geist. */
+@layer prose {
+.sl-markdown-content :is(p, li, blockquote, td, strong, em, dd):not(.cl-header):not(:where(.not-content *)) {
+  font-family: var(--body-face);
+}
+.sl-markdown-content {
+  font-size: var(--prose-size);
+}
+/* td and dd are prose containers that are not p or li, so both rules above and below have to name them
+   or they silently fall out of the reading surface.
+   dd is LIVE: it is the description half of a recon findings rail, emitted by
+   plugins/remark-transform-recon-rail.mjs. Without it the description rendered in
+   the mono container face at Starlight's ambient 1.75 while the paragraph beneath it ran Geist at 1.7,
+   which is what an author would read as "the rail looks like code". dt is deliberately NOT named: it
+   holds the port chip, which is mono by design.
+   td has ZERO rendered effect today, since no file in src/content/docs contains a markdown table, so it
+   matches no element. It is fixed anyway because the gap stays invisible until the first table ships.
+   th is left out for the same reason as dt: a header cell is chrome for the table, not running prose. */
+.sl-markdown-content :is(p, li, td, dd):not(.cl-header):not(:where(.not-content *)) {
+  line-height: var(--prose-leading);
+  letter-spacing: 0;
+  font-weight: 400;
+}
+/* The prose paragraph gap must NOT apply inside blockquotes: a blockquote is a single set-off block, and
+   `blockquote p { margin: 0 }` (below) is meant to zero its inner paragraph. That rule is specificity
+   (0,1,2), so without this exclusion the gap rule (0,2,1) outranks it and leaks ~2x the gap into the quote,
+   which was the real cause of the "too tall" blockquote (not padding). The :not(:where(...)) carries zero
+   specificity, so normal prose paragraphs, list items, and callout body text are entirely unaffected. */
+.sl-markdown-content p:not(.cl-header):not(:where(blockquote *)):not(:where(.not-content *)) {
+  margin-block: var(--prose-paragraph-gap);
+}
+/* A HEADING OWNS THE SPACE ON BOTH SIDES OF ITSELF. Starlight wraps every markdown heading in
+   .sl-heading-wrapper and gives the wrapper the heading's own font-size, so em declared here resolves in
+   the heading's context and both values scale per level with no per-level rule (measured: 52.5 / 17.5 on
+   h2 at 35px, 43.5 / 14.5 on h3 at 29px). The ABOVE value reproduces Starlight's existing 1.5em exactly,
+   so that side is a deliberate zero-diff: it is declared not to change anything but to put both halves of
+   the heading's spacing in one place, under one token pair, instead of leaving the top half implicit.
+
+   This replaced --prose-heading-gap, an em declared on the FOLLOWING element. That is the context defect
+   (see CORE_SPEC section 8): it resolved against the follower's font-size rather than the heading's, so
+   one numeral meant different pixels per follower type, and it lost outright to any follower carrying a
+   larger margin of its own. It never governed the most common case at all. */
+.sl-markdown-content .sl-heading-wrapper {
+  margin-block: var(--heading-space-above) var(--heading-space-below);
+}
+/* The follower must not bring its own top margin, or the larger of the two wins the collapse and the
+   heading stops owning the gap. Two selectors, and the split is load-bearing:
+
+   The bare `+ *` is (0,2,0), enough to beat Starlight's own layered blockquote and list margins.
+   It is NOT enough for a paragraph: the prose paragraph gap rule directly above is (0,2,1), so `+ p`
+   repeats the selector at (0,2,1) to tie it and WINS ON SOURCE ORDER WITHIN THIS LAYER, because this
+   block sits after it. That dependency is the reason these two rules must stay in this order in this
+   file. Moving either one above the paragraph gap rule silently restores an 18px gap under every
+   heading. Specificity armor was the alternative and was rejected: a tie plus source order is the honest
+   expression of "this specific case beats that general one", and it leaves the paragraph rule readable.
+
+   KNOWN AND DELIBERATE GAP: a follower whose margin is declared in a LATER layer cannot be reached from
+   here at any specificity. .flagcap (components layer) keeps its 9.6px margin-top. It does not matter
+   today, because the collapse takes the larger of the two and the heading's 17.5 / 14.5 already wins, but
+   a future component with a margin above 17.5px would take the gap back. Fixing that means moving the
+   component's margin, not adding weight here.
+
+   Deliberately UNGUARDED by :not(:where(.not-content *)): this sets external rhythm on whatever block
+   follows a heading, component roots included; spacing BETWEEN blocks is the surrounding context's
+   business, and the guard convention covers only rules that reach into a component's internals. */
+.sl-markdown-content .sl-heading-wrapper + *,
+.sl-markdown-content .sl-heading-wrapper + p {
+  margin-top: 0;
+}
+.sl-markdown-content strong {
+  font-weight: var(--prose-strong-weight);
+}
+/* Prose text measure. --prose-measure is ALIASED to --sl-content-width in tokens.css, so today this
+   computes to the full column and every element shares one edge, which is the point. The rule is kept
+   rather than deleted: it is the seam that lets prose narrow independently again by writing a literal
+   into that one token, with no rule change here. */
+.sl-markdown-content :is(p, ul, ol, blockquote):not(.cl-header):not(:where(.not-content *)) {
+  max-width: var(--prose-measure);
+}
+} /* @layer prose */
+
+/* ── Headings: Syne display ── */
+@layer prose {
+.sl-markdown-content :is(h1, h2, h3, h4) {
+  font-family: var(--tp-display);
+  letter-spacing: -0.01em;
+}
+.sl-markdown-content h1 { font-weight: 800; }
+.sl-markdown-content h2 { font-weight: 700; }
+} /* @layer prose */
+
+/* Decorative lime # before section headings (purely visual cue) */
+@layer prose {
+.sl-markdown-content h2::before {
+  content: "# ";
+  color: var(--sl-color-accent);
+  font-family: var(--sl-font-mono);
+  font-weight: 700;
+}
+} /* @layer prose */
+
+/* ── Sub-heading hierarchy: lime/cyan duotone ladder (h2 > h3 > h4) ──
+   Calm and theme-aware (no motion). The levels are separated by size (the
+   Starlight heading scale), weight, AND color so they never read as monotone.
+   Note: Syne is only loaded at 600/700/800, and h1/h2 already claim 800/700, so
+   h3 and h4 share weight 600; h3 vs h4 is carried hard by color + size instead.
+   Scoped to .sl-markdown-content only, never chrome. */
+
+/* h2: still dominates via size (29px, Starlight scale) + weight (700, set above) + the
+   lime "# " marker. The heading TEXT now keeps the neutral heading color (white dark /
+   ink light) instead of lime, so a page full of h2s no longer floods with lime. The marker
+   carries the accent. h2 stays a normal full-width block (no width:fit-content /
+   inline-block), so its divider spans the whole content column, not the text width. */
+/* Divider lives on the heading WRAPPER, not the h2. Starlight makes the h2 display:inline so
+   it flows on one line with the anchor link, which means an h2 is only as wide as its text;
+   a rule on the h2 would shrink-wrap. The wrapper (.sl-heading-wrapper.level-h2) is the
+   full-width block that owns both the h2 and its anchor, so the rule spans the whole column
+   AND stays out of the inline flow (no anchor wrapping). padding-bottom reserves the gap. */
+@layer prose {
+.sl-markdown-content .sl-heading-wrapper.level-h2 {
+  position: relative;
+  padding-bottom: 0.4rem;
+}
+.sl-markdown-content .sl-heading-wrapper.level-h2::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 1px;
+  opacity: 0.55;
+  /* lime -> cyan -> fade in one rule. Theme-appropriate cyan via the light override below
+     so it is never a glaring bright cyan on paper. */
+  background: linear-gradient(90deg, var(--sl-color-accent), var(--tp-cyan), transparent);
+}
+:root[data-theme='light'] .sl-markdown-content .sl-heading-wrapper.level-h2::after {
+  /* Decorative rule (no text): vivid deco duotone on paper, lifted opacity so it reads as a
+     confident risograph underline rather than a faint hairline. */
+  background: linear-gradient(90deg, var(--tp-deco-lime), var(--tp-deco-cyan), transparent);
+  opacity: 0.72;
+}
+} /* @layer prose */
+
+/* h3: cyan accent, one clear step down. Lighter weight than h2 and no "#" marker
+   so it differs unmistakably. Cyan is theme-aware via the light override.
+   The :not(:where(.not-content *)) guard mirrors Starlight's own prose rules: components
+   rendered inside docs (e.g. PlatformIndex/WriteupCard) opt out with class="not-content",
+   and these prose styles must respect that too. :where() adds zero specificity. */
+@layer prose {
+.sl-markdown-content h3:not(:where(.not-content *)) {
+  color: var(--tp-cyan);
+  font-weight: 600;
+}
+:root[data-theme='light'] .sl-markdown-content h3:not(:where(.not-content *)) {
+  color: var(--tp-cyan-ink);
+}
+
+/* h4: quietest. Muted, smaller (Starlight scale), no marker. The Starlight gray
+   token is theme-aware and stays legible against the page background in both modes. */
+.sl-markdown-content h4:not(:where(.not-content *)) {
+  color: var(--sl-color-gray-2);
+  font-weight: 600;
+}
+} /* @layer prose */
+
+/* ── Prose links: cyan, lime on hover (guarded off .not-content subtrees, see h3 note) ── */
+@layer prose {
+.sl-markdown-content a:not(:where(.not-content *)) {
+  color: var(--tp-cyan);
+  /* Focus ring echoes the link's own cyan identity rather than the lime default, reusing the same token
+     pair as the color above; the shared :where(a,...):focus-visible rule draws it. The .not-content
+     guard keeps this off component links (WriteupCard etc.), so those keep their own --focus-ring. */
+  --focus-ring: var(--tp-cyan);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in oklab, var(--tp-cyan) 40%, transparent);
+  transition: color .15s, border-color .15s;
+}
+.sl-markdown-content a:not(:where(.not-content *)):hover {
+  color: var(--sl-color-accent);
+  border-bottom-color: var(--sl-color-accent);
+}
+:root[data-theme='light'] .sl-markdown-content a:not(:where(.not-content *)) {
+  color: var(--tp-cyan-ink);
+  --focus-ring: var(--tp-cyan-ink);
+  border-bottom-color: color-mix(in oklab, var(--tp-cyan-ink) 40%, transparent);
+}
+} /* @layer prose */
+
+/* ── Lead blockquote (machine description sits here) ── */
+@layer prose {
+.sl-markdown-content blockquote {
+  border-inline-start: 3px solid var(--sl-color-accent);
+  background: color-mix(in oklab, var(--sl-color-accent) 7%, transparent);
+  border-radius: 0 10px 10px 0;
+  /* The two axes deliberately use different units, see the token block in tokens.css. Vertical is em, so
+     the quote's breathing tracks the text; horizontal is rem, because it is an alignment to .cl's inline
+     padding rather than a rhythm, and it must not move when --prose-size does. The quote text still
+     measures narrower than body text (the quote doing its job), now by the same inset a callout uses. */
+  padding: var(--blockquote-pad-y) var(--blockquote-pad-x);
+  font-style: normal;
+}
+.sl-markdown-content blockquote p { margin: 0; }
+} /* @layer prose */
+
+
+/* Lead blockquote: a calm warm-paper card (subtle olive tint kept light so the body text on it
+   stays AA), but the left bar is the vivid deco-lime panel accent. */
+@layer prose {
+:root[data-theme='light'] .sl-markdown-content blockquote {
+  background: color-mix(in oklab, var(--sl-color-accent) 12%, #f4f1e8);
+  border-inline-start-color: var(--tp-deco-lime);
+  box-shadow: 0 6px 20px -14px rgba(60, 50, 30, 0.4);
+}
+} /* @layer prose */
+/* Open content Toggle keeps the closed divider color on paper (no green edge): opening a Toggle must
+   not change its border, and lime/green must not appear here. Uses --tp-divider, the same token the
+   closed Toggle border and the structural hairlines use. */
+@layer prose {
+:root[data-theme='light'] .sl-markdown-content details[open] {
+  border-color: var(--tp-divider);
+}
+} /* @layer prose */
+
+/* Decorative accent (NOT body text): the lime "#" before each h2 runs the vivid deco-lime on
+   paper, bolder than the AA text ink, for a confident risograph marker. Light-only. */
+@layer prose {
+:root[data-theme='light'] .sl-markdown-content h2::before {
+  color: var(--tp-deco-lime);
+}
+} /* @layer prose */

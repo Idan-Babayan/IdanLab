@@ -7,6 +7,7 @@ import rehypeContentImageLoading from './plugins/rehype-content-image-loading.mj
 import remarkInjectPasswordReveal from './plugins/remark-inject-passwordreveal.mjs';
 import remarkInjectWriteupMeta from './plugins/remark-inject-writeupmeta.mjs';
 import remarkValidateContentTaxonomy from './plugins/remark-validate-content-taxonomy.mjs';
+import remarkTransformReconRail from './plugins/remark-transform-recon-rail.mjs';
 
 export default defineConfig({
   site: 'https://idanlab.dev',
@@ -32,8 +33,12 @@ export default defineConfig({
   // writeup hand-places the component. Runs LAST, after the guard, so the guard keeps seeing only
   // hand-authored markup (its documented boundary) and never validates generated nodes. Frontmatter
   // is attached to the vfile before any remark plugin runs, so this position does not affect the read.
+  // remarkTransformReconRail: rewrites a plain markdown list inside <Callout type="recon"> into the
+  // findings rail's dl/dt/dd structure, so a recon rail is authored as data rather than as markup.
+  // Appended LAST for the same reason as the injector: the taxonomy guard's boundary is hand-authored
+  // markup, and the dl/dt/dd this emits are generated nodes it should never see.
   markdown: {
-    remarkPlugins: [remarkValidateContentTaxonomy, remarkInjectPasswordReveal, remarkInjectWriteupMeta],
+    remarkPlugins: [remarkValidateContentTaxonomy, remarkInjectPasswordReveal, remarkInjectWriteupMeta, remarkTransformReconRail],
     rehypePlugins: [rehypeContentImageLoading],
   },
 
@@ -63,7 +68,18 @@ export default defineConfig({
         { tag: 'script', content: "window.addEventListener('DOMContentLoaded',function(){var b=document.createElement('div');b.id='tp-progress';document.body.appendChild(b);var u=function(){var h=document.documentElement,m=h.scrollHeight-h.clientHeight;b.style.width=(m>0?h.scrollTop/m*100:0)+'%';};document.addEventListener('scroll',u,{passive:true});window.addEventListener('resize',u);u();});" },
       ],
       title: "Idan.Lab",
-      customCss: ['./src/styles/fonts.css', './src/styles/custom.css'],
+      customCss: [
+        './src/styles/layers.css',
+        './src/styles/fonts.css',
+        './src/styles/tokens.css',
+        './src/styles/base.css',
+        './src/styles/prose.css',
+        './src/styles/chrome.css',
+        './src/styles/components.css',
+        './src/styles/pages.css',
+        './src/styles/utilities.css',
+        './src/styles/overrides.css',
+      ],
       // Additive override: render the default right "On this page" sidebar and add the ToggleAll
       // control at the top (see src/components/overrides/PageSidebar.astro). Default TOC preserved.
       components: {
