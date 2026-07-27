@@ -94,6 +94,16 @@ html[data-theme="dark"] {
      prose (paragraphs, list items, callout body, blockquote text) tracks it. Spacing stays em (proportional
      to the text) and is tuned against the 18px body.
        --mono-chrome-size      inline code + port label, at the ~14px code-block scale (fixed rem).
+       --mono-chrome-leading   the leading that goes with that size. A PINNED SIZE IMPLIES A PINNED
+                               LEADING: pinning font-size off the prose scale while leaving line-height
+                               to inherit leaves half a component's metrics still tracking prose, so its
+                               box keeps growing whenever the body does even though its glyphs do not.
+                               1.4 is the code-frame ratio, which is what this size already matches.
+                               KNOWN REMAINING CONSUMER: inline code (:not(pre) > code) reads
+                               --mono-chrome-size but still inherits prose leading. Deliberately out of
+                               scope: inline code sits INSIDE running paragraphs, so pinning its leading
+                               would change prose line boxes, which is a reading-surface decision rather
+                               than a component one.
        --component-title-size  toggle / spoiler titles + FlagCapture base (fixed rem, ~16px).
        --toggle-title-face     regular <Toggle> summary title face. OWNER'S LIVE CALL: var(--body-face) reads
                               it as a content label (Geist, default), var(--sl-font-mono) as terminal voice.
@@ -132,6 +142,7 @@ html[data-theme="dark"] {
   --prose-size: 1.125rem;
   --prose-leading: 1.7;
   --mono-chrome-size: 0.875rem;
+  --mono-chrome-leading: 1.4;
   --component-title-size: 1rem;
   --toggle-title-face: var(--body-face);
   --toggle-title-weight: 600;
