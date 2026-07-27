@@ -216,14 +216,43 @@ html[data-theme="light"] .starlight-aside--tip {
 .sl-markdown-content p:not(.cl-header):not(:where(blockquote *)):not(:where(.not-content *)) {
   margin-block: var(--prose-paragraph-gap);
 }
-/* Gap BELOW a heading, before its text. Starlight wraps every heading in .sl-heading-wrapper and the
-   real content is the wrapper's next sibling (the heading's own next sibling is its anchor link), so this
-   is the clean, level-agnostic hook. Only the space below a heading is set here; the space ABOVE a
-   heading (section separation) stays Starlight's. Overrides whatever margin-top the following element
-   would otherwise use, so the heading-to-text gap is uniform and tunable.
-   Deliberately UNGUARDED by :not(:where(.not-content *)): this sets external rhythm on whatever block follows a heading, component roots included; spacing between blocks is the surrounding context's business, and the guard convention covers only rules that reach into a component's internals. */
-.sl-markdown-content .sl-heading-wrapper + * {
-  margin-top: var(--prose-heading-gap);
+/* A HEADING OWNS THE SPACE ON BOTH SIDES OF ITSELF. Starlight wraps every markdown heading in
+   .sl-heading-wrapper and gives the wrapper the heading's own font-size, so em declared here resolves in
+   the heading's context and both values scale per level with no per-level rule (measured: 52.5 / 17.5 on
+   h2 at 35px, 43.5 / 14.5 on h3 at 29px). The ABOVE value reproduces Starlight's existing 1.5em exactly,
+   so that side is a deliberate zero-diff: it is declared not to change anything but to put both halves of
+   the heading's spacing in one place, under one token pair, instead of leaving the top half implicit.
+
+   This replaced --prose-heading-gap, an em declared on the FOLLOWING element. That is the context defect
+   (see CORE_SPEC section 8): it resolved against the follower's font-size rather than the heading's, so
+   one numeral meant different pixels per follower type, and it lost outright to any follower carrying a
+   larger margin of its own. It never governed the most common case at all. */
+.sl-markdown-content .sl-heading-wrapper {
+  margin-block: var(--heading-space-above) var(--heading-space-below);
+}
+/* The follower must not bring its own top margin, or the larger of the two wins the collapse and the
+   heading stops owning the gap. Two selectors, and the split is load-bearing:
+
+   The bare `+ *` is (0,2,0), enough to beat Starlight's own layered blockquote and list margins.
+   It is NOT enough for a paragraph: the prose paragraph gap rule directly above is (0,2,1), so `+ p`
+   repeats the selector at (0,2,1) to tie it and WINS ON SOURCE ORDER WITHIN THIS LAYER, because this
+   block sits after it. That dependency is the reason these two rules must stay in this order in this
+   file. Moving either one above the paragraph gap rule silently restores an 18px gap under every
+   heading. Specificity armor was the alternative and was rejected: a tie plus source order is the honest
+   expression of "this specific case beats that general one", and it leaves the paragraph rule readable.
+
+   KNOWN AND DELIBERATE GAP: a follower whose margin is declared in a LATER layer cannot be reached from
+   here at any specificity. .flagcap (components layer) keeps its 9.6px margin-top. It does not matter
+   today, because the collapse takes the larger of the two and the heading's 17.5 / 14.5 already wins, but
+   a future component with a margin above 17.5px would take the gap back. Fixing that means moving the
+   component's margin, not adding weight here.
+
+   Deliberately UNGUARDED by :not(:where(.not-content *)): this sets external rhythm on whatever block
+   follows a heading, component roots included; spacing BETWEEN blocks is the surrounding context's
+   business, and the guard convention covers only rules that reach into a component's internals. */
+.sl-markdown-content .sl-heading-wrapper + *,
+.sl-markdown-content .sl-heading-wrapper + p {
+  margin-top: 0;
 }
 .sl-markdown-content strong {
   font-weight: var(--prose-strong-weight);

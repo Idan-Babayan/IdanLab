@@ -101,7 +101,24 @@ html[data-theme="dark"] {
                               the same "is 700 too heavy against Geist" question as prose bold.
        --principle-maxim-size  the closing Principle maxim (fixed rem; a deliberate, slightly emphasized coda).
        --prose-paragraph-gap   vertical gap between paragraphs (em; was 1.35em, felt too large).
-       --prose-heading-gap     gap BELOW a heading, before its text (em; heading TOP margin is untouched).
+       --heading-space-above   space above a heading, and
+       --heading-space-below   space below it, before its text.
+                               BOTH ARE ONLY VALID DECLARED ON .sl-heading-wrapper. That is not a style
+                               note, it is the whole mechanism: Starlight gives the wrapper the heading's
+                               OWN font-size (measured: 35px on level-h2, 29px on level-h3), so em there
+                               resolves in the heading's context and the pair scales per level for free.
+                               Declared anywhere else the em resolves against the wrong text and the
+                               scaling silently stops. This replaced --prose-heading-gap, which was an em
+                               declared on the FOLLOWING element and therefore resolved in the follower's
+                               context, not the heading's: the same numeral meant 10.8px before a
+                               paragraph and 8.6px before a code frame, and it lost outright to any
+                               follower whose own margin was larger.
+                               INVARIANT, keep it when tuning: the ratio is 3:1, and the space BELOW must
+                               stay under --prose-paragraph-gap at every level, so a heading binds to its
+                               text more tightly than paragraphs bind to each other. At 0.5em that holds
+                               while a heading is under 36px (h2 17.5 and h3 14.5 against an 18px
+                               paragraph gap). A markdown h1 would sit exactly at the boundary; none
+                               exists, since the page title is rendered outside .sl-markdown-content.
        --blockquote-pad-y      blockquote vertical padding (em; reduced so the box is not tall).
        --blockquote-pad-x      blockquote horizontal inset. rem, and the UNIT CHANGE (was 1.25em) is the
                                point: this value is an ALIGNMENT to another component, not a rhythm. It
@@ -120,7 +137,8 @@ html[data-theme="dark"] {
   --toggle-title-weight: 600;
   --principle-maxim-size: 1.4rem;
   --prose-paragraph-gap: 1em;
-  --prose-heading-gap: 0.6em;
+  --heading-space-above: 1.5em;
+  --heading-space-below: 0.5em;
   --blockquote-pad-y: 0.6em;
   --blockquote-pad-x: 1.05rem;
 
