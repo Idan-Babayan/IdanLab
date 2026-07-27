@@ -6,6 +6,129 @@
 
 ---
 
+### 2026-07-27 · The recon rail, in three attempts: grid on the list, two components, then a remark transform
+- **Decision:** the recon findings rail is authored as a PLAIN MARKDOWN LIST inside `<Callout type="recon">`
+  and converted at build time by `plugins/remark-transform-recon-rail.mjs` into
+  `<dl class="findings">` with a `<dt>` chip and a `<dd>` note per row. Chips left-align in a computed
+  `max-content` column and a 2px CSS rule marks the column boundary. Three coupled CSS literals, two
+  components, two import lines per file, and an authored separator glyph are all gone.
+- **This entry records the whole arc, because two of the three attempts are instructive and one of them
+  shipped before it was withdrawn.** An earlier draft of this entry described the component mechanism as
+  adopted; that is superseded here.
+  1. **Grid directly on the markdown list. HALTED, and the measurement is the reusable part.** The plan
+     was `display: grid` on the `ul` with `grid-template-columns: subgrid` per `li`. It produced perfect
+     alignment (colon spread 13.20 to 0.00) and then broke 3 of 15 rows: grid generates an anonymous item
+     only around contiguous TEXT, so an element child becomes its own grid item and is BLOCKIFIED. A row
+     containing inline `` `htb.local` `` put the code alone on a new grid row in the tag column and grew
+     28.80px to 51.83px. Blockification is a used-value change with no opt-out, so no CSS fixes it. The
+     markup had to gain a boundary; the CSS could not invent one.
+  2. **Two components, `<Findings>` / `<Finding port="...">`. SHIPPED as `426a4fd`, then withdrawn.** They
+     produced exactly the right DOM: description x spread 13.20 to 0.00, chips at natural widths, inline
+     code inline, 375px continuation error to 0.00. The structure was right and is kept. The MECHANISM was
+     wrong, and it failed the rule that same commit's own docs had just written into CORE_SPEC section 8:
+     content carries data, never presentation. Two import lines and a JSX tree per rail is presentation in
+     a content file, just a different flavour of it than the class names and separator they replaced.
+  3. **A remark transform. ADOPTED.** Keyed on the `<Callout type="recon">` already wrapping the rail, so
+     it needs no new authored signal: the port and the note were already being typed. Authoring is now
+     simpler than before ANY of this work, which is the tell that the boundary is finally in the right
+     place.
+- **The lesson, now written into CORE_SPEC section 8:** a component that must be imported into a content
+  file is itself presentation in that file. The original rule's test ("if changing the look requires
+  editing content files, the boundary is wrong") was passed by the components and still missed this. The
+  sharper test counts what a content file must know about how the thing looks, and an import line counts.
+  When a transform can produce the same structure from data the author already writes, prefer the transform.
+- **All-or-nothing conversion per list, deliberately.** A list converts only if EVERY item parses as
+  `/^(\S+)\s:\s/` on its first text node. Convert partially and the build stays green while a row silently
+  loses its structure; leave the list alone and it renders with bullets, which is visibly wrong at a
+  glance. Loud beats quiet wherever the build cannot tell which the author meant.
+- **`dt` and `dd` are emitted as SIBLINGS with no per-row wrapper**, for the reason attempt 1 measured: both
+  must be direct grid children, and a wrapper would need subgrid.
+- **The mechanism swap was gated at ZERO rendered diff**, which is the only way to claim the transform is
+  equivalent rather than merely similar. 57,831 computed-style cells and 1,279 rects across five surfaces
+  (forest dark, light and 375px, return, busqueda, plus bandit as a no-rail control): **0 cell diffs, 0 rect
+  diffs**. The only DOM difference is the `dl` losing its `data-astro-cid` scope class, which is not a
+  computed style.
+- **The design followed separately (`00aeaa0`), so it could be measured against a verified-equivalent base.**
+  Chips move from right-aligned to left-aligned (`justify-self` end to stretch), chip LEFT edges share one x
+  and right edges go ragged, which is the correct reading order for scanning ports. A 2px rule on
+  `dt::after` replaces the authored separator. The `dt`'s context is pinned to `--mono-chrome-size` /
+  `--mono-chrome-leading`, which does double duty: the rule's `1.6em` height is then declared in the
+  context it governs (remedy 2 of the context law), and the `dt`'s 31.50px inherited strut, which had been
+  sizing every grid row and growing each callout 0.6875px per row, drops to 19.60px so rows are sized by
+  the `dd`'s prose line box again. Measured exactly 0.90px per row recovered: busqueda -1.80, forest -5.40,
+  return -6.30. No compensating declaration anywhere; the growth was removed at its cause.
+- **One ink, two consumers.** The rule reads the callout's own code ink. Investigated before writing: dark
+  inline code read `var(--acc)` and light read `color-mix(in oklab, var(--cl-ink) 80%, #000)`, an
+  EXPRESSION rather than a token, so a second consumer would have restated the derivation and the two would
+  have drifted. That is the `#a86f04` mistake this codebase has already paid for. `--cl-code-ink` names the
+  role, is declared per theme on `.cl` so it resolves against the same element's per-type `--acc` /
+  `--cl-ink`, and both consumers read it. Inline code in every callout type keeps its exact computed colour
+  in both themes, zero diff, and the rule's colour equals it by construction.
+- **Verified:** `npm run build` green at 46 pages at every gate. Chip paint asserted byte-identical across
+  sixteen properties on every chip in both themes. Description first-glyph x spread stays 0.00 and the
+  375px wrapped-continuation error stays 0.00, both inherited invariants. No motion, no `!important`, no
+  new dependencies (`unist-util-visit` is already transitive via `@astrojs/mdx`), pinned versions unchanged.
+- **Status:** Adopted; committed to `dev` as `5e0e9b9` (transform, zero rendered diff), `00aeaa0` (design)
+  and the docs commit below, pushed, not merged. `426a4fd` is NOT reverted: its CSS, `--mono-chrome-leading`,
+  the `dd` face and leading rules, and the Assessment `:has(.findings)` migration are all correct and kept.
+
+### 2026-07-27 · The context law: a font-relative length that governs another context is wrong
+- **Decision:** CORE_SPEC section 8 gains a law. A font-relative length resolves against the element it is
+  DECLARED on; if its purpose is to size, align, or space content in a DIFFERENT font-size context, it is
+  wrong even when it correctly tracks the local font size. Remedies are ordered: delete the number and let
+  a layout primitive compute the relationship, or declare it in the governed element's own context, or use
+  rem/px with a comment naming the coupling.
+- **Why the existing unit rule could not have caught this:** the `layers.css` header rule asked whether an
+  `em` tracked its local font size and reserved `em` for where that was the declared intent. All three
+  failures ANSWER YES to that question. The rail's `4.9em` did track the chip's size; that was the problem,
+  because it was sizing the li's column. The law supersedes the unit rule rather than restating it: one
+  governs whether a unit is honest about itself, the other whether it is honest about what it controls.
+- **Three instances, one defect, found in a single audit:**
+  1. **Recon rail.** `5.6em` on `.cl-recon li` (18px) against `4.9em + 0.7em` on `.port-label` (14px). One
+     intended identity (4.9 + 0.7 = 5.6) that never resolved as one: 100.8px against 78.4px, a 22.4px
+     standing error. Remedy 1. Resolved, see the entry above.
+  2. **Heading gap.** `--prose-heading-gap` declared on the element FOLLOWING the heading, so one numeral
+     meant 18px / 10.8px / 9.6px by follower type and lost outright to any larger margin. Remedy 2.
+     Resolved, see the entry below.
+  3. **Principle cap.** `46ch` on `aside.principle` (18px mono) capping `p.principle-text` (22.4px).
+     Effective measure 36.97 characters, never 46 in any era. STILL OPEN, see ROADMAP.
+- **Three more rules fell out of the same work:** prefer computed relationships to declared ones (a declared
+  relationship is a standing promise to re-derive it, and this project failed that promise across two font
+  changes with no build ever going red); content carries data, never presentation; a pinned size implies a
+  pinned leading. Plus a scope correction: CSS-only governs the theme pass over Starlight, where not forking
+  a Starlight component is absolute, and does NOT govern our own content components.
+- **Status:** Adopted; committed as `8533224` to `dev`, then strengthened by the docs commit for the rail
+  work above (a component imported into content is itself presentation in content). Docs only.
+
+### 2026-07-27 · A heading owns the space on both sides of itself
+- **Decision:** `--prose-heading-gap` is retired for `--heading-space-above` (1.5em) and
+  `--heading-space-below` (0.5em), both declared on `.sl-heading-wrapper`. The above value reproduces
+  Starlight's existing 1.5em exactly, so that half is a deliberate zero-diff.
+- **Why the wrapper is the only valid home:** Starlight gives `.sl-heading-wrapper` the heading's OWN
+  font-size (measured 35px on level-h2, 29px on level-h3), so `em` there resolves in the heading's context
+  and both values scale per level with no per-level rule. Declared on the heading itself the margin would
+  collapse through the wrapper; declared on the follower, which is what the retired token did, it resolves
+  in the follower's context.
+- **What the old token actually did:** it governed the gap in only 5 of 13 cases on a reference page. A
+  paragraph took 18px (the paragraph gap rule outranked it at (0,2,1) against (0,2,0)), a blockquote took
+  the token's 10.8px, and a FlagCapture took 9.6px from the `components` layer. One dial, three outcomes,
+  and it lost the most common case entirely.
+- **Result, measured on five pages in both themes:** h2+blockquote 10.80 to 17.50, h2+paragraph 18.00 to
+  17.50, h3+paragraph 18.00 to 14.50, h3+FlagCapture 9.59 to 14.50. Wrapper margin-top unchanged at
+  52.50 / 43.50.
+- **Invariant recorded in the token comment:** 3:1 ratio, and the space BELOW must stay under
+  `--prose-paragraph-gap` at every level so a heading binds to its text more tightly than paragraphs bind
+  to each other. At 0.5em that holds while a heading is under 36px. A markdown h1 would sit exactly at the
+  boundary; none exists, since the page title renders outside `.sl-markdown-content`.
+- **A source-order dependency, deliberately chosen over specificity armor.** Zeroing the follower's top
+  margin needs two selectors: `+ *` at (0,2,0) for blockquotes and lists, and `+ p` at (0,2,1) to tie the
+  paragraph gap rule and win on SOURCE ORDER within the `prose` layer. Moving either rule above the
+  paragraph gap rule silently restores an 18px gap under every heading. Commented in place.
+- **One follower is out of reach by construction:** `.flagcap` declares its margin in the `components`
+  layer, which no `prose` rule can beat at any specificity, so it keeps 9.60px. Harmless today, since the
+  collapse takes the heading's larger value. Fixing it means moving the component's margin.
+- **Status:** Adopted; committed as `f1dedd2` to `dev`. Two theme-pass modules.
+
 ### 2026-07-26 · `dev` holds the finished CSS refactor and does NOT merge to `main` until the Geist retune lands
 - **Decision:** the refactor workstream is complete and pushed to `dev`, and it stays there. `main` is not
   updated, no PR is opened, and Cloudflare production keeps serving the pre-Geist site until the design

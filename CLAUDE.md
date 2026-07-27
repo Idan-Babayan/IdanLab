@@ -81,17 +81,23 @@ Conventions (see `busqueda.mdx` as the reference and `CORE_SPEC.md` §7):
 - **Writeup images live in `src/assets`** (parallel tree `src/assets/<platform>/<difficulty>/<slug>/...`), referenced from the `.mdx` by a relative Markdown path (`../../../../assets/...`, four `../` from a difficulty-tier writeup) so `astro:assets` optimizes and hashes them (served under `/_astro`). Use plain Markdown image syntax, not `<Image />`. Site-wide click-to-zoom is still provided by the `starlight-image-zoom` plugin (use `data-zoom-off` to opt an image out, e.g. logos).
 - Code blocks use `frame="code"` + a language `title` so bash/python render identically. Bold inside a code fence is impossible — use expressive-code line highlighting (e.g. ```` ```bash {3} ````) to emphasize a line.
 - Flag answers / spoilers go in `:::tip[Answer]` admonitions (often wrapped in a `<Toggle>`). Inline code renders red; `<span class="task-title">` for task headings.
-- **The recon findings rail is `<Findings>` + `<Finding port="...">`, never a hand-written list.** Import both (`import Findings from '@components/Findings.astro'`, `import Finding from '@components/Finding.astro'`) and author one `<Finding>` per port, inline on one line, inside a `<Callout type="recon">`:
+- **The recon findings rail is a PLAIN MARKDOWN LIST inside `<Callout type="recon">`.** No component, no imports, no markup:
 
   ```mdx frame="code" title="src/content/docs/<platform>/<difficulty>/<slug>.mdx"
-  <Findings>
-    <Finding port="53/tcp">DNS, Simple DNS Plus</Finding>
-    <Finding port="389/tcp">LDAP for `htb.local`</Finding>
-  </Findings>
+  <Callout type="recon">
+
+  - 53/tcp : DNS, Simple DNS Plus
+  - 389/tcp : LDAP for `htb.local`
+
+  The concluding paragraph is treated as the Assessment.
+
+  </Callout>
   ```
 
-  Write **no separator**: the old authored `" : "` was presentation living in content and the grid's column boundary replaces it. Author each `<Finding>` **inline** (opening tag, description, closing tag on one line); putting the description on its own line makes MDX wrap it in a `<p>`, which is handled but is not the convention. Backticked inline code works in the description. The port column sizes itself to the widest chip, so nothing needs measuring or tuning when a longer port appears. The concluding paragraph of the callout is auto-treated as the Assessment (hairline + eyebrow), keyed off `:has(.findings)`.
-- `<span class="port-label">` remains available for a port mentioned **inline in prose** (for example "the panel on 80/tcp"), but is no longer hand-written in rails.
+  `plugins/remark-transform-recon-rail.mjs` converts it at build time into `<dl class="findings">` with a `<dt>` chip and a `<dd>` note per row. **The ` : ` is a PARSE DELIMITER, consumed at build time and never rendered.** The separator the reader sees is a CSS rule drawn on `dt::after`, because a separator is presentation. The port token is everything before the first ` : `, so a colon later in the description is safe.
+
+  Conversion is **all or nothing per list**: if any item fails to parse, the whole list is left alone and renders with its bullets, which is visibly wrong so you notice. Backticked inline code works anywhere in the description. The port column sizes itself to the widest chip, so nothing needs measuring when a longer port appears. Mixed rails (a prose bullet among findings) are unsupported by design: author prose as a paragraph outside the list.
+- `<span class="port-label">` is emitted by the transform for rails, and remains available to hand-write for a port mentioned **inline in prose** (for example "the panel on 80/tcp").
 
 ### Content pipeline (Notion → MDX)
 
