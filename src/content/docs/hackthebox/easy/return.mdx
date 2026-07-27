@@ -77,13 +77,13 @@ An aggressive OS scan added nothing the service sweep had not already answered: 
 
 <Callout type="recon">
 
-- <span class="port-label">53/tcp</span> : DNS, Simple DNS Plus
-- <span class="port-label">80/tcp</span> : IIS 10.0, serving the HTB Printer Admin Panel
-- <span class="port-label">88/tcp</span> : Kerberos
-- <span class="port-label">389/tcp</span> : LDAP for `return.local`
-- <span class="port-label">445/tcp</span> : SMB, signing required
-- <span class="port-label">3268/tcp</span> : Global Catalog
-- <span class="port-label">5985/tcp</span> : WinRM, the remote shell once I have credentials
+- 53/tcp : DNS, Simple DNS Plus
+- 80/tcp : IIS 10.0, serving the HTB Printer Admin Panel
+- 88/tcp : Kerberos
+- 389/tcp : LDAP for `return.local`
+- 445/tcp : SMB, signing required
+- 3268/tcp : Global Catalog
+- 5985/tcp : WinRM, the remote shell once I have credentials
 
 The service list is a textbook domain controller, and the printer panel on port 80 is the only human-facing surface. That panel is where I start.
 

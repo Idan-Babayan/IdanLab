@@ -21,3 +21,7 @@ pnpm-debug.log*
 
 # macOS-specific files
 .DS_Store
+
+# local-only design study tools (kept out of source on purpose: this one loads faces from the
+# Google Fonts CDN, and source carries no Google Fonts origin. See DECISIONS 2026-07-25)
+typography-playground.html

@@ -70,12 +70,12 @@ An aggressive scan confirmed Windows Server 2016 and added nothing new, so I lef
 
 <Callout type="recon">
 
-- <span class="port-label">53/tcp</span> : DNS, Simple DNS Plus
-- <span class="port-label">88/tcp</span> : Kerberos
-- <span class="port-label">389/tcp</span> : LDAP for `htb.local`
-- <span class="port-label">445/tcp</span> : SMB, signing required
-- <span class="port-label">3268/tcp</span> : Global Catalog
-- <span class="port-label">5985/tcp</span> : WinRM, the remote shell once I have credentials
+- 53/tcp : DNS, Simple DNS Plus
+- 88/tcp : Kerberos
+- 389/tcp : LDAP for `htb.local`
+- 445/tcp : SMB, signing required
+- 3268/tcp : Global Catalog
+- 5985/tcp : WinRM, the remote shell once I have credentials
 
 This is the domain controller for htb.local, and there is no web surface at all. The directory itself, over LDAP and Kerberos, is the attack surface.
 

@@ -6,6 +6,479 @@
 
 ---
 
+### 2026-07-27 · The release hold is lifted and `dev` ships to production
+- **Decision:** the release hold recorded on 2026-07-26 is LIFTED by owner instruction, and `dev`
+  (29 commits ahead of `main`) merges to `main` by pull request. This is the first production deploy of the
+  Geist body face, the cascade-layer CSS architecture, the derived prose foundation, and the recon rail
+  rearchitecture. `main` had been at `51edb9c` since PR #18 and predated the entire Geist arc.
+- **What the hold was for, stated fairly:** `dev` carried a DESIGN change that was only half done. Geist was
+  the body face but the surfaces around it were still tuned for mono, and a half-refitted body face reads as
+  "the site looks off" to a visitor while every individual rule is correct. Splitting the refactor out and
+  shipping it alone was considered and rejected then, because the refactor's verification baseline was
+  captured against a Geist-carrying tree.
+- **Why the purpose is judged satisfied now:** the four foundation dials stopped being eye-calls and became
+  a derivation. `--sl-content-width` 46rem with `--prose-measure` aliased to it, `--prose-size` 1.125rem,
+  `--prose-leading` 1.7 and `--prose-paragraph-gap` 1em, measured live at 87.6 characters per line against
+  Geist's 0.467em average advance. The body face production will serve is tuned. Everything still open is
+  chrome (the small-chrome type scale), component internals (AttackPath), per-platform ink (the eyebrows) or
+  a single parked cap. None of it is the body face, so none of it is the thing the hold protected against.
+- **The sequencing changes with it:** the outstanding clusters no longer accumulate on `dev` waiting for one
+  release. Each ships as its own pull request into `main`. Holding them together was correct while the body
+  face was half done and is not correct now that it is not.
+- **What ships knowingly unfixed, so nobody discovers these as surprises:**
+  1. **The small-chrome type scale is still frozen at 16px-era ratios.** Eight declarations are round
+     fractions of a 16px body (0.6, 0.625, 0.64, 0.688, 0.69, 0.70, 0.72, 0.75) and scatter against the
+     current 18px. Seventeen distinct sizes sit below 12px with a 9.60px floor.
+  2. **AttackPath internals read at about 0.533 of body size,** confirmed too small, and `.ap-panel-head`
+     declares no font-size at all so the dossier's largest text inherits `--prose-size` while its siblings
+     sit at 11.52px and 11.2px.
+  3. **The HackTheBox and VulnHub platform-index eyebrows fail WCAG AA on paper:** 4.11:1 and 4.16:1
+     measured by canvas readback on the real element, as 12.8px body text needing 4.5:1. PicoCTF passes at
+     4.86:1 and OverTheWire was fixed by the amber pair. This is a real accessibility failure shipping
+     knowingly, and it is the first cluster queued after the merge for that reason.
+  4. **The `46ch` principle cap is still the open third instance of the context law.** `ch` resolves on the
+     aside at 18px mono while the text it caps is 22.4px, so the maxim measures 36.97 characters and never
+     measured 46 in any era. Parked because honouring the declared 46 widens the block by about 120px,
+     which is a design decision rather than a correction.
+  5. **The recon rail's mobile layout is undesigned.** The rail was built and measured at desktop width;
+     at 375px the chip track plus its new gutter takes 96.2px of the column and one Forest row wraps to
+     three lines. Nothing overflows and the continuation error is 0.00, but no one has decided what the
+     rail should look like on a phone.
+- **The pre-flight that preceded the merge,** because measurement in a headless pane had been the only gate
+  for the whole arc and it cannot see a missing asset or a case-sensitivity fault: cold build from a deleted
+  `dist`, `.astro`, `node_modules/.vite` and `node_modules/.astro` (46 pages, exit 0, all 12 images
+  regenerated rather than reused, one pre-existing `/404` route-priority warning that also occurs on `main`);
+  byte-for-byte case comparison of all five `autogenerate.directory` values, 34 resolvable import specifiers
+  and 12 content image paths (all exact); all 12 `@font-face` files present, exactly cased, tracked, and
+  shipped to `dist` with zero unreferenced; `site` confirmed as `https://idanlab.dev`; and a dead-reference
+  sweep confirming `custom.css`, `Findings.astro`, `Finding.astro`, `notion_cleaner.py` and
+  `--prose-heading-gap` exist nowhere as live code.
+- **One staleness finding recorded rather than fixed:** roughly thirty comments across `astro.config.mjs`,
+  `src/lib/`, `src/components/` and `src/styles/` still name `custom.css`, a file deleted in the refactor.
+  None is a live reference (no import, no `customCss` entry, no href), so none affects the build, but they
+  now point at nothing. Folded into the hygiene cluster.
+- **Status:** Adopted (owner instruction). Docs only in this commit; the merge itself follows.
+
+### 2026-07-27 · The rail's column rule gets a gutter, so its clearance is symmetric by construction
+- **Decision:** `.findings` declares two local custom properties, `--findings-gutter` (0.8rem) and
+  `--findings-rule-width` (2px). `column-gap` reads the gutter, the `dt` takes
+  `padding-right: calc(gutter + rule width)`, and `dt::after` reads the rule width. One value with two
+  consumers, so the space on each side of the rule is equal by construction rather than by arithmetic
+  someone has to redo.
+- **The defect:** the `dt` is `justify-self: stretch` over a `max-content` track, so the track was exactly
+  the widest chip, and the rule (absolutely positioned at `right: 0`) therefore landed at that chip's own
+  right border. Measured at dpr 1.25, clearance from a chip's right border edge to the rule's LEFT edge ran
+  14.80 / 6.40 / **-2.00**px at six, seven and eight characters. On the longest tokens the rule painted over
+  the chip's border.
+- **The defect is the WIDEST chip on a rail, not an eight character token,** which corrects how the task was
+  framed. Busqueda's widest token is six characters and collided at -2.00 as well. Token length is a proxy;
+  the track is what decides.
+- **Why padding rather than re-anchoring the rule:** anchoring it to the chip would make its x ragged per
+  row and destroy the rail, which is the design (chips left-align at natural widths, one rule marks the
+  column boundary). The track was simply one gutter too narrow. `max-content` counts padding, so the padding
+  grows the track by itself and no literal about port token widths exists anywhere. Same instinct as remedy
+  1 of the context law: let a layout primitive compute the relationship.
+- **Why gutter PLUS rule width, and not the gutter alone:** the rule occupies its own 2px inside that
+  padding, so padding by the gutter alone would leave the chip side short by exactly the rule's width. Sized
+  as the sum, both sides measure 12.80px exactly rather than approximately.
+- **`right: 0` resolves against the dt's PADDING box,** which is the mechanism that carries the rule out to
+  the track's new right edge instead of squeezing it inward. Recorded in the CSS, because "add right padding"
+  and "the rule does not move relative to the track" are not obviously compatible claims.
+- **Two deliberate zero-diff token substitutions, used as a check:** `column-gap` and the rule width had to
+  compute to exactly what they did before (12.80px and 2px). Both did. Had either moved, the substitution
+  would have been wrong.
+- **Verified by in-page diffing over 48,723 comparable cells across six captures** (forest dark, light and
+  375px, return, busqueda, plus bandit 16-17 as a no-rail control): 469 changed cells, every one of them the
+  enumerated horizontal shift, and the control at **0 of 1,887**. Chip left edges, chip paint across nineteen
+  properties, the rule's own width, height and colour, row heights, the `.findings` box, the `.cl-recon` box,
+  and the Assessment hairline and eyebrow all held at zero in both themes. Clearance is now 12.80 on every
+  widest chip, 21.20 at seven characters and 29.60 at six, and equals the 12.80 gap to the description.
+  `npm run build` green at 46 pages.
+- **One consequence at 375px, recorded rather than tuned away:** the description column narrows by 14.80px,
+  which pushed Forest's `5985/tcp` row from two lines to three and grew that callout by 30.60px. No
+  horizontal overflow, and the wrapped row's continuation error stays 0.00. Whether a narrow screen wants
+  the same 0.8rem gutter as a wide one is a taste call for the retune, and it is now a one-token change.
+- **Line endings, measured because two prior handoffs asserted opposite things:** the index blob is LF and
+  the working tree is CRLF (`core.autocrlf=true`, `text=auto`). Neither "the repo is CRLF" nor "the working
+  copies are LF" is the whole statement; `git ls-files --eol` is.
+- **Status:** Adopted; committed as `73cb444` to `dev`, pushed, not merged. One theme-pass module
+  (`src/styles/components.css`), no component, plugin, config or content edits, no new dependencies.
+
+### 2026-07-27 · The recon rail, in three attempts: grid on the list, two components, then a remark transform
+- **Decision:** the recon findings rail is authored as a PLAIN MARKDOWN LIST inside `<Callout type="recon">`
+  and converted at build time by `plugins/remark-transform-recon-rail.mjs` into
+  `<dl class="findings">` with a `<dt>` chip and a `<dd>` note per row. Chips left-align in a computed
+  `max-content` column and a 2px CSS rule marks the column boundary. Three coupled CSS literals, two
+  components, two import lines per file, and an authored separator glyph are all gone.
+- **This entry records the whole arc, because two of the three attempts are instructive and one of them
+  shipped before it was withdrawn.** An earlier draft of this entry described the component mechanism as
+  adopted; that is superseded here.
+  1. **Grid directly on the markdown list. HALTED, and the measurement is the reusable part.** The plan
+     was `display: grid` on the `ul` with `grid-template-columns: subgrid` per `li`. It produced perfect
+     alignment (colon spread 13.20 to 0.00) and then broke 3 of 15 rows: grid generates an anonymous item
+     only around contiguous TEXT, so an element child becomes its own grid item and is BLOCKIFIED. A row
+     containing inline `` `htb.local` `` put the code alone on a new grid row in the tag column and grew
+     28.80px to 51.83px. Blockification is a used-value change with no opt-out, so no CSS fixes it. The
+     markup had to gain a boundary; the CSS could not invent one.
+  2. **Two components, `<Findings>` / `<Finding port="...">`. SHIPPED as `426a4fd`, then withdrawn.** They
+     produced exactly the right DOM: description x spread 13.20 to 0.00, chips at natural widths, inline
+     code inline, 375px continuation error to 0.00. The structure was right and is kept. The MECHANISM was
+     wrong, and it failed the rule that same commit's own docs had just written into CORE_SPEC section 8:
+     content carries data, never presentation. Two import lines and a JSX tree per rail is presentation in
+     a content file, just a different flavour of it than the class names and separator they replaced.
+  3. **A remark transform. ADOPTED.** Keyed on the `<Callout type="recon">` already wrapping the rail, so
+     it needs no new authored signal: the port and the note were already being typed. Authoring is now
+     simpler than before ANY of this work, which is the tell that the boundary is finally in the right
+     place.
+- **The lesson, now written into CORE_SPEC section 8:** a component that must be imported into a content
+  file is itself presentation in that file. The original rule's test ("if changing the look requires
+  editing content files, the boundary is wrong") was passed by the components and still missed this. The
+  sharper test counts what a content file must know about how the thing looks, and an import line counts.
+  When a transform can produce the same structure from data the author already writes, prefer the transform.
+- **All-or-nothing conversion per list, deliberately.** A list converts only if EVERY item parses as
+  `/^(\S+)\s:\s/` on its first text node. Convert partially and the build stays green while a row silently
+  loses its structure; leave the list alone and it renders with bullets, which is visibly wrong at a
+  glance. Loud beats quiet wherever the build cannot tell which the author meant.
+- **`dt` and `dd` are emitted as SIBLINGS with no per-row wrapper**, for the reason attempt 1 measured: both
+  must be direct grid children, and a wrapper would need subgrid.
+- **The mechanism swap was gated at ZERO rendered diff**, which is the only way to claim the transform is
+  equivalent rather than merely similar. 57,831 computed-style cells and 1,279 rects across five surfaces
+  (forest dark, light and 375px, return, busqueda, plus bandit as a no-rail control): **0 cell diffs, 0 rect
+  diffs**. The only DOM difference is the `dl` losing its `data-astro-cid` scope class, which is not a
+  computed style.
+- **The design followed separately (`00aeaa0`), so it could be measured against a verified-equivalent base.**
+  Chips move from right-aligned to left-aligned (`justify-self` end to stretch), chip LEFT edges share one x
+  and right edges go ragged, which is the correct reading order for scanning ports. A 2px rule on
+  `dt::after` replaces the authored separator. The `dt`'s context is pinned to `--mono-chrome-size` /
+  `--mono-chrome-leading`, which does double duty: the rule's `1.6em` height is then declared in the
+  context it governs (remedy 2 of the context law), and the `dt`'s 31.50px inherited strut, which had been
+  sizing every grid row and growing each callout 0.6875px per row, drops to 19.60px so rows are sized by
+  the `dd`'s prose line box again. Measured exactly 0.90px per row recovered: busqueda -1.80, forest -5.40,
+  return -6.30. No compensating declaration anywhere; the growth was removed at its cause.
+- **One ink, two consumers.** The rule reads the callout's own code ink. Investigated before writing: dark
+  inline code read `var(--acc)` and light read `color-mix(in oklab, var(--cl-ink) 80%, #000)`, an
+  EXPRESSION rather than a token, so a second consumer would have restated the derivation and the two would
+  have drifted. That is the `#a86f04` mistake this codebase has already paid for. `--cl-code-ink` names the
+  role, is declared per theme on `.cl` so it resolves against the same element's per-type `--acc` /
+  `--cl-ink`, and both consumers read it. Inline code in every callout type keeps its exact computed colour
+  in both themes, zero diff, and the rule's colour equals it by construction.
+- **Verified:** `npm run build` green at 46 pages at every gate. Chip paint asserted byte-identical across
+  sixteen properties on every chip in both themes. Description first-glyph x spread stays 0.00 and the
+  375px wrapped-continuation error stays 0.00, both inherited invariants. No motion, no `!important`, no
+  new dependencies (`unist-util-visit` is already transitive via `@astrojs/mdx`), pinned versions unchanged.
+- **Status:** Adopted; committed to `dev` as `5e0e9b9` (transform, zero rendered diff), `00aeaa0` (design)
+  and the docs commit below, pushed, not merged. `426a4fd` is NOT reverted: its CSS, `--mono-chrome-leading`,
+  the `dd` face and leading rules, and the Assessment `:has(.findings)` migration are all correct and kept.
+
+### 2026-07-27 · The context law: a font-relative length that governs another context is wrong
+- **Decision:** CORE_SPEC section 8 gains a law. A font-relative length resolves against the element it is
+  DECLARED on; if its purpose is to size, align, or space content in a DIFFERENT font-size context, it is
+  wrong even when it correctly tracks the local font size. Remedies are ordered: delete the number and let
+  a layout primitive compute the relationship, or declare it in the governed element's own context, or use
+  rem/px with a comment naming the coupling.
+- **Why the existing unit rule could not have caught this:** the `layers.css` header rule asked whether an
+  `em` tracked its local font size and reserved `em` for where that was the declared intent. All three
+  failures ANSWER YES to that question. The rail's `4.9em` did track the chip's size; that was the problem,
+  because it was sizing the li's column. The law supersedes the unit rule rather than restating it: one
+  governs whether a unit is honest about itself, the other whether it is honest about what it controls.
+- **Three instances, one defect, found in a single audit:**
+  1. **Recon rail.** `5.6em` on `.cl-recon li` (18px) against `4.9em + 0.7em` on `.port-label` (14px). One
+     intended identity (4.9 + 0.7 = 5.6) that never resolved as one: 100.8px against 78.4px, a 22.4px
+     standing error. Remedy 1. Resolved, see the entry above.
+  2. **Heading gap.** `--prose-heading-gap` declared on the element FOLLOWING the heading, so one numeral
+     meant 18px / 10.8px / 9.6px by follower type and lost outright to any larger margin. Remedy 2.
+     Resolved, see the entry below.
+  3. **Principle cap.** `46ch` on `aside.principle` (18px mono) capping `p.principle-text` (22.4px).
+     Effective measure 36.97 characters, never 46 in any era. STILL OPEN, see ROADMAP.
+- **Three more rules fell out of the same work:** prefer computed relationships to declared ones (a declared
+  relationship is a standing promise to re-derive it, and this project failed that promise across two font
+  changes with no build ever going red); content carries data, never presentation; a pinned size implies a
+  pinned leading. Plus a scope correction: CSS-only governs the theme pass over Starlight, where not forking
+  a Starlight component is absolute, and does NOT govern our own content components.
+- **Status:** Adopted; committed as `8533224` to `dev`, then strengthened by the docs commit for the rail
+  work above (a component imported into content is itself presentation in content). Docs only.
+
+### 2026-07-27 · A heading owns the space on both sides of itself
+- **Decision:** `--prose-heading-gap` is retired for `--heading-space-above` (1.5em) and
+  `--heading-space-below` (0.5em), both declared on `.sl-heading-wrapper`. The above value reproduces
+  Starlight's existing 1.5em exactly, so that half is a deliberate zero-diff.
+- **Why the wrapper is the only valid home:** Starlight gives `.sl-heading-wrapper` the heading's OWN
+  font-size (measured 35px on level-h2, 29px on level-h3), so `em` there resolves in the heading's context
+  and both values scale per level with no per-level rule. Declared on the heading itself the margin would
+  collapse through the wrapper; declared on the follower, which is what the retired token did, it resolves
+  in the follower's context.
+- **What the old token actually did:** it governed the gap in only 5 of 13 cases on a reference page. A
+  paragraph took 18px (the paragraph gap rule outranked it at (0,2,1) against (0,2,0)), a blockquote took
+  the token's 10.8px, and a FlagCapture took 9.6px from the `components` layer. One dial, three outcomes,
+  and it lost the most common case entirely.
+- **Result, measured on five pages in both themes:** h2+blockquote 10.80 to 17.50, h2+paragraph 18.00 to
+  17.50, h3+paragraph 18.00 to 14.50, h3+FlagCapture 9.59 to 14.50. Wrapper margin-top unchanged at
+  52.50 / 43.50.
+- **Invariant recorded in the token comment:** 3:1 ratio, and the space BELOW must stay under
+  `--prose-paragraph-gap` at every level so a heading binds to its text more tightly than paragraphs bind
+  to each other. At 0.5em that holds while a heading is under 36px. A markdown h1 would sit exactly at the
+  boundary; none exists, since the page title renders outside `.sl-markdown-content`.
+- **A source-order dependency, deliberately chosen over specificity armor.** Zeroing the follower's top
+  margin needs two selectors: `+ *` at (0,2,0) for blockquotes and lists, and `+ p` at (0,2,1) to tie the
+  paragraph gap rule and win on SOURCE ORDER within the `prose` layer. Moving either rule above the
+  paragraph gap rule silently restores an 18px gap under every heading. Commented in place.
+- **One follower is out of reach by construction:** `.flagcap` declares its margin in the `components`
+  layer, which no `prose` rule can beat at any specificity, so it keeps 9.60px. Harmless today, since the
+  collapse takes the heading's larger value. Fixing it means moving the component's margin.
+- **Status:** Adopted; committed as `f1dedd2` to `dev`. Two theme-pass modules.
+
+### 2026-07-26 · `dev` holds the finished CSS refactor and does NOT merge to `main` until the Geist retune lands
+- **Decision:** the refactor workstream is complete and pushed to `dev`, and it stays there. `main` is not
+  updated, no PR is opened, and Cloudflare production keeps serving the pre-Geist site until the design
+  retune below has been done and reviewed. Owner's call, and the reason is not caution about the refactor:
+  it is that `dev` currently carries a HALF-FINISHED DESIGN CHANGE, which is a different thing.
+- **What is actually on `dev` (17 commits ahead of `main`, whose tip is `51edb9c`, PR #18):** two separable
+  bodies of work that happen to share the branch.
+  1. **A design change:** the Geist prose face and the prose/chrome type split (`991bfc4`), plus
+     PasswordReveal's block mode (`b9742fb`). Geist is now the writeup body face, but the rest of the
+     design has NOT been refitted around it. The prose dials are still parked as tokens pending a real
+     screen (see the 2026-07-25 entry), and the spacing, measure and component scales were tuned for the
+     old mono body.
+  2. **Engineering and infrastructure only:** the cascade-layer refactor, the module split, the dead-rule
+     purge, and the governance pass (`59765d6` through `200e9da`). This half is behavior-preserving by
+     construction and was gated at zero changed cells at every step.
+- **Why this blocks the merge even though the refactor is safe:** merging would deploy the Geist face to
+  production in its untuned state. A half-refitted body face is exactly the kind of change that reads as
+  "the site looks off" to a visitor while every individual rule is correct, and this site's whole pitch is
+  that the design is high-effort. The engineering half is invisible to a visitor by design, so it gains
+  nothing from shipping early and loses nothing by waiting.
+- **The merge gate, stated so it is not re-litigated:** `dev` merges to `main` when the Geist retune is
+  done and the owner has seen it on a real screen in both themes. The retune and the refactor ship as ONE
+  release. Splitting them (cherry-picking the refactor to `main` first) was considered and rejected: the
+  refactor's own verification baseline was captured against a Geist-carrying tree, so a `main` that has the
+  refactor without Geist is a configuration nothing was ever measured against.
+- **What the retune inherits, and why the sequencing was right:** a layered, purged, tokenized theme pass.
+  Every dial the retune needs is a custom property in one block in `tokens.css`, precedence is decided by
+  layer order rather than by selector weight, and the dead rules that would have made a retune ambiguous
+  are gone. Doing the plumbing first means the retune is a values exercise, not an archaeology exercise.
+- **Status:** Adopted (owner instruction). No PR, no `main` activity. Tracked as the top ROADMAP item.
+
+### 2026-07-26 · OverTheWire amber splits into an identity accent and an AA text ink
+- **Decision:** the single `--pw-amber` becomes a PAIR: `--otw-amber` (the identity, for non-text uses:
+  borders, focus rings, bars, and display-size type. `#ffc23d` dark / `#a86f04` light, both unchanged) and
+  `--otw-amber-ink` (the AA text ink for body-size text: `#ffc23d` dark, byte-identical, / `#7c5000` light,
+  new). Every consumer was rewired: text to the ink, borders and washes to the accent. This is the only
+  intentional pixel change in the whole refactor workstream.
+- **Why a pair rather than a darker single value:** one value could not serve both jobs on paper. Measured
+  by canvas readback on the real elements, `#a86f04` failed AA as body text on every surface it landed on
+  (3.21:1 on the PasswordReveal row, 3.64:1 on the toggle card, 3.50:1 on paper) while being exactly right
+  as a border and ring, where the bar is 3:1 and it passes. Darkening the single token would have dragged
+  the borders and rings darker for no reason; splitting fixes the text and leaves the identity alone.
+- **The solve (badge-pass method, hold the hue, drop the lightness):** `oklch(0.470 0.101 73.35)` =
+  `#7c5000`, hue held at 72.87 against the identity's 73.35, and 82% of the chroma retained. That last
+  figure matches the recorded finding that amber's sRGB gamut collapses as it darkens and it keeps only
+  about four fifths of its chroma at AA. **Two corrections during the solve, both worth recording:**
+  1. The first candidate (`#8a5300`) drifted the hue by 6.4 degrees under gamut clamping. The method
+     forbids a hue shift, so chroma was backed off until the hue held within a degree. A gamut-clamp drift
+     is still a hue shift; it just is not an intentional one.
+  2. The first hue-holding candidate cleared AA at rest and measured **4.38:1 while HOVERED**, because
+     `.pw-action:hover` paints its own amber wash underneath its own label. **The hover composite, not the
+     resting one, is the surface to solve against.** Re-solved there: 4.78:1 hovered, 5.28:1 at rest.
+- **Display type deliberately keeps the identity amber.** `.pi-name` (57.6px/800) and `.pi-num`
+  (44.8px/700) are large text at the 3:1 bar and pass at 3.50:1. Only `.pi-eyebrow` (12.8px/400) is body
+  text. That split is exactly what the accent/ink pair encodes, and it is why the platform index did not
+  need its shared `--pf-accent` retinted.
+- **A 14th tail rule, and why it was the honest option.** `.pi-eyebrow`'s colour is declared by
+  `PlatformIndex.astro`'s own scoped style, so the theme pass cannot reach it from a layer. Verified in the
+  browser rather than assumed: a layered rule at (0,4,0) did not move it, an unlayered rule did, because an
+  Astro scoped style is unlayered and beats every layered rule at any weight. Retinting `--pf-accent`
+  instead would have dragged three display-type consumers and about fifteen non-text uses. So the fix is
+  one unlayered rule in `overrides.css`, scoped to `.pf-overthewire .pi-eyebrow`, under the tail contract
+  that already names "our own Astro-scoped component styles" (the tail already held two rules beating these
+  same two components). Tail 13 to 14.
+- **Also routed, zero-diff:** the sidebar OverTheWire group focus ring now reads `--otw-amber` instead of a
+  literal. The HackTheBox, VulnHub and PicoCTF ring literals stay forked: there is no root token for the
+  red or the purple, and HackTheBox's hex merely COINCIDES with `--sl-color-accent`. Routing it there would
+  encode a coincidence as a coupling, which is the mistake the seven-way `#a86f04` fork already taught.
+- **Verified:** dark output byte-identical (zero changed cells). Light changed exactly 17 cells of 7,536,
+  one value transition (`#a86f04` to `#7c5000`), collapsing to THREE elements: the PasswordReveal button,
+  the block-mode summary (matched by two manifest entries and proven the same node), and the OverTheWire
+  eyebrow. Every other cell on those elements is an unpainted `currentColor` follower (`border-*-color` at
+  width 0, `outline-color`). Final table, all clearing their bar: hovered button 4.78, resting button 5.28,
+  block summary 5.98, eyebrow 5.76, rings 3.21 and 3.50 against the 3:1 non-text bar.
+- **Found and NOT fixed (different token family, out of scope):** the HackTheBox and VulnHub platform-index
+  eyebrows measure 4.11:1 and 4.16:1 on paper as 12.8px body text, both under 4.5:1. Same defect, different
+  hue, each needs its own solve and its own ink token. Recorded in CORE_SPEC and ROADMAP.
+- **Status:** Adopted; committed as `f5eb43a` to `dev`, pushed, not merged.
+
+### 2026-07-26 · The theme pass moves to declared cascade layers and splits into per-layer modules
+- **Decision:** `custom.css` (2,417 lines, 130,423 bytes, 56 top-level constructs) is retired. The theme
+  pass is now a set of cascade-layer modules under `src/styles/`, one module per layer, with
+  `layers.css` declaring `@layer starlight, tokens, base, prose, chrome, components, pages, utilities;` and
+  `overrides.css` holding the unlayered tail. Precedence is decided by LAYER ORDER, not by file order and
+  not by selector weight. This is an engineering and infrastructure change with no intended visual effect.
+- **The problem it solves (why this was worth doing at all):** the old posture was "custom.css is unlayered,
+  so it beats Starlight". That works until our own rules start fighting EACH OTHER, and they did. The file
+  had accumulated specificity armor (stacked `html[data-theme]` prefixes, element qualifiers, `:root`
+  chains) whose only job was to out-rank another rule in the same file, and the armor was undocumented, so
+  every new rule had to guess how much weight it needed. Layers replace that guessing with a declared
+  order: a `components` rule beats a `prose` rule because it is in a later layer, full stop, and the armor
+  could be deleted rather than migrated.
+- **Phase order, and why the purge came early:** Phase 1 declared the order and wrapped `tokens` and `base`.
+  Phase 2 migrated `prose`, then `chrome` / `components` / `pages` and retired the armor. **Phase 4a (the
+  dead-rule purge) was PULLED FORWARD to sit before the reordering**, which is the sequencing lesson worth
+  keeping: a rule that matches live elements but always loses is dead IN EFFECT, and reordering the cascade
+  can silently revive it. Migrating such a rule converts a harmless no-op into a live regression, so the
+  dead rules were deleted first (including a `.hero h1` duplicate that `h1#_top` outranked in both themes).
+  Phase 3 split the file into modules. Phase 4b did governance and documentation.
+- **The split mechanics, so a future reader can trust it:** every top-level construct travelled with its
+  leading comment run and any same-line trailing comment, byte for byte. Verified by a round trip:
+  re-reading the written modules, stripping the added headers, and re-interleaving the recovered pieces by
+  original source offset reproduced `custom.css` exactly (130,423 bytes in, 130,423 out). Distribution:
+  tokens 7 constructs, base 1, prose 14, chrome 9, components 8, pages 3, utilities 1, overrides 13, which
+  is all 56. Every module repeats the order statement on its first line so any bundler chunk order still
+  establishes the same order.
+- **The layer law that fell out of it:** no `!important` inside a layer. `!important` REVERSES layer order,
+  so an important declaration in a late layer is weaker than one in an early layer, which is a trap rather
+  than a tool. Important declarations therefore live only in the unlayered tail. The tail contract: a rule
+  earns a place in `overrides.css` on exactly one of two grounds, it must beat unlayered CSS (a vendor
+  stylesheet, an inline style, or one of our own Astro-scoped component styles, all of which sit above
+  every layer) or it carries `!important`, and each one carries a comment naming what it beats.
+- **The two instruments, previously conflated (this cost real debugging time):** `.not-content` governs
+  REACH and layer order governs PRECEDENCE. The guard is written `:not(:where(.not-content *))` and, like
+  Starlight's own, it excludes DESCENDANTS only, so a component root that carries the class is still
+  matched and is resolved by precedence. And a rule with no guard at all (the bare `:not(pre) > code`
+  inline-code chip) reaches into every component subtree regardless. What actually protects a component is
+  that its scoped style is unlayered. `AttackPath.astro` carried a comment crediting the guard; corrected.
+- **The verification protocol, which is the reusable part.** A 62-entry, 24-property computed-style harness
+  over 8 pages in both themes, 7,536 comparable cells, diffed in-page so only CHANGED cells ever reach the
+  transcript. Every phase gated at zero changed cells except the amber pass's intended 17. Three traps were
+  found and are now encoded in the instrument:
+  1. **The pane freezes transition timelines** (`visibilityState: "hidden"`), so a mid-flight transition
+     reports its START value forever. This produced a false 4-cell diff whose two halves moved in OPPOSITE
+     directions on two pages, which is the tell that a diff is a race and not a regression. Zeroing
+     `transition-duration` does NOT cancel an already-running frozen transition; only the `transition`
+     shorthand does, and it cannot be in force during the capture or `transition-property` computes as
+     `none`. v4 does both, in that order.
+  2. **devicePixelRatio drifts** between 1 and 1.25 as the pane settles. A pair captured at mixed dpr is
+     not comparable. The rule is to rebuild a same-dpr pair, never to reinterpret the diff.
+  3. **A layered rule cannot override an Astro scoped style**, at any specificity. Measured, not argued.
+- **Verified at every gate:** `npm run build` green at 46 pages; zero `package.json` or lockfile diff
+  throughout; the order statement is the first `@layer` occurrence in document CSS order on a built page;
+  the tail sits at brace depth 0 in the shipped CSS. Two Starlight-authored stylesheets do open with a
+  `starlight.components` block and no order statement of their own; proved pre-existing by rebuilding the
+  committed tree and confirming both files are content-hash identical before and after.
+- **Deliberately NOT done, in this or any future phase of this workstream:** selector flattening and unit
+  conversions. The remaining multi-part selectors either express real precedence within their layer or are
+  load-bearing against unlayered CSS. The unit rule (rem or px for component geometry, em only where
+  scaling with the local font size is the declared intent, with a comment naming the coupling) is WRITTEN
+  in the `layers.css` header and deliberately NOT applied: converting a unit changes rendered geometry, so
+  it belongs to the retune with its own measurements, not to a behavior-preserving refactor.
+- **Status:** Adopted; committed to `dev` across `e6f1602`, `8215858`, `fb70ce9`, `c4b40d3`, `64ad6df`,
+  `ff396d3`, `19c2e49`, `200e9da`, all pushed, none merged to `main`. No new dependencies, pinned versions
+  unchanged, no component edits beyond one comment correction in `AttackPath.astro`.
+
+### 2026-07-25 · PasswordReveal gets a BLOCK mode; the one-off `.spoiler-toggle` class is retired
+- **Decision:** `PasswordReveal` grows a second mode so one component covers both shapes a wargame secret
+  comes in, and the `.spoiler-toggle` class it existed to work around is deleted from `custom.css`.
+  **INLINE** (a `password` prop, no slot) is the original one-line password: blurs in place, copy control,
+  unchanged. **BLOCK** (slot content, no `password` prop) collapses a multi-line secret as a `<details>`.
+  Migrated `overthewire/bandit/16-17.mdx`, the RSA private key that was the last spoiler-toggle on the site.
+- **Why two modes rather than two components:** the rule is that the interaction follows the secret's SHAPE,
+  not its meaning. Inline secrets blur, block secrets collapse, because a secret running to many lines cannot
+  be blurred as one inline run: a blur over a 5-line PEM block is unreadable as a control and reads as broken
+  rendering. The IDENTITY is the same in both cases though (this is a wargame waypoint the reader pastes into
+  SSH, not a trophy), and that is exactly why it is one component and not two: the amber, the "no gold, no
+  decode animation" distinction from FlagCapture, and the reader's mental model are shared, only the geometry
+  differs.
+- **Mode is derived from the slot, never guessed:** `Astro.slots.has('default')` decides, and passing BOTH a
+  `password` prop and slot content, or NEITHER, throws at build time. An ambiguous call should be a build
+  failure, not a silent branch choice, for the same reason the `badges` opt-out rejects non-booleans: a
+  quiet wrong guess ships a broken page on a green build.
+- **Block mode ships with NO copy button on purpose.** The keys it holds are truncated for publication
+  (GitHub push protection blocks real PEM keys, and the truncation is the recorded convention), so a copy
+  control would hand the reader a broken key. Better no affordance than a misleading one. Revisitable if a
+  full, copyable block secret ever ships.
+- **Why this is a consolidation and not a rename:** block mode carries `.toggle`, so it inherits the standard
+  toggle card, the disclosure marker and ToggleAll's bulk expand exactly as the spoiler class did, and its
+  summary face/weight now come from the shared toggle-title rule instead of a bespoke mono 700. The Geist
+  type pass is what surfaced this: after it, `.spoiler-toggle` was the last toggle on the site still
+  carrying its own face and weight, for no reason other than that it predated any system.
+- **The amber now has exactly ONE source, which is the real prize:** `--pw-amber` (accent: label, button,
+  open border. `#ffc23d` dark / `#a86f04` light) and `--pw-amber-rgb` (the `#f59e0b` wash base, consumed as
+  `rgba(var(--pw-amber-rgb), alpha)`). Both modes read them, so they cannot drift apart, and the inline row's
+  scattered literal hexes and `rgba()`s collapse into them. Previously the same amber lived independently in
+  the spoiler block and the `.pwreveal` block, which is precisely how a two-place identity drifts.
+- **Custom properties are safe here, and this is worth stating because the file says otherwise:** the 2026-07-05
+  entry recorded that every colour in this block must be a literal, after a token-based pass rendered as a
+  neutral/near-black box. That failure was `color-mix()` indirection, NOT custom properties. `--pw-amber`
+  holds a literal hex and `--pw-amber-rgb` a literal channel triplet, so nothing has to resolve a colour
+  function. Both are also declared on the bare `:root` fallback (this file's convention), so an absent
+  `data-theme` can never leave the var undefined and invalidate every `rgba()` reading it, which is the one
+  way a token could have reproduced the old failure.
+- **Inherited specificity requirement, still load-bearing:** `.pwreveal-block`'s two border rules keep the
+  `html[data-theme]` prefix the retired class needed. Two generic rules elsewhere set `border-color` on any
+  `.sl-markdown-content details` / `details[open]` (the per-theme card border, and light mode's "no green
+  edge on paper" open-state override), both unconditional on element type, so a plain `.pwreveal-block`
+  selector is silently outranked and the amber border never renders. The prefix is attribute-presence only,
+  not tied to a value, so it still applies in both themes. The shared rules stay untouched.
+- **The injector needed no change (checked, not assumed):** `remark-inject-passwordreveal.mjs` matches
+  `mdxJsxFlowElement` by NAME, so a block-mode tag with children is detected exactly like a self-closing
+  inline one. Two stale `spoiler-toggle` mentions in comments were cleaned up in passing (`Toggle.astro`'s
+  `class` prop and the taxonomy guard's "ignored tokens" note); the class name now appears nowhere in `src/`.
+- **Verified:** `npm run build` green (46 pages); `16-17.mdx` renders one `.pwreveal-block` collapse and no
+  page carries `spoiler-toggle`.
+- **Status:** Adopted (working tree, committed to `dev`, not pushed). Component + one content file + the
+  `custom.css` block; no config, no new dependencies, pinned versions unchanged.
+
+### 2026-07-25 · Writeup prose moves to Geist; chrome is pinned OFF the prose scale
+- **Decision:** running prose in writeup bodies is set in **Geist** (self-hosted subset WOFF2, roman
+  400/600/700 plus a true drawn italic 400). Everything else on a content page stays JetBrains Mono. The
+  face was chosen with a standalone typography playground that rendered the real Busqueda writeup in ~10
+  candidate body faces against the site's real tokens (2026-07-20); that tool is deliberately kept LOCAL
+  and untracked, like the busquedav2 testbed, because it loads faces from the Google Fonts CDN and source
+  carries no Google Fonts origin.
+- **Why:** mono was set for everything, so running prose read as terminal output. The site's terminal voice
+  is the point in code blocks, badges, callout labels and the Principle coda, and it costs nothing to keep
+  it there; long-form prose is the one place it was working against the reading. Headings (Syne) and the
+  whole mono chrome layer are untouched, so the change is additive to the visual language rather than a
+  rebrand.
+- **The mechanism that makes it safe (the load-bearing choice):** `--sl-font` and `--sl-font-mono` are
+  deliberately NOT changed. Geist is applied by ONE scoped rule over
+  `.sl-markdown-content :is(p, li, blockquote, td, strong, em)`, so every surface the rule does not name
+  (sidebar, TOC, breadcrumbs, pager, code frames, badges, headings) is unchanged BY CONSTRUCTION, not by a
+  growing exclusion list. Swapping the Starlight font vars would have inverted that: every piece of chrome
+  would have needed its own carve-out.
+- **Two exclusions, both chrome wearing prose markup:** `.cl-header` (a `Callout`'s label row is authored as
+  a `<p>`) keeps its uppercase mono while callout BODY prose goes Geist, and `figcaption` is left untargeted
+  because it is Expressive Code's code-frame title bar, not an image caption (real image captions are `em`
+  inside a paragraph, so they are already covered).
+- **Chrome does not track the prose body, which is the actual point of the pass.** Mono chrome (inline code,
+  `.port-label`) and component titles (toggle summaries, the `FlagCapture` button base, the `Principle`
+  maxim) are pinned to FIXED rem sizes, so they hold their scale when `--prose-size` moves and the 18px vs
+  18.5px question stays a one-line change. Left on `em` they inflated with the larger body: inline code and
+  the port tag grew out of the code-block scale they are supposed to match, and `FlagCapture`'s flag value
+  (`1.02em`) and lock icon (`1.25em`), both em-relative to that button, grew with it. Inline code also has
+  to re-declare `font-family`, since it otherwise inherits Geist from its paragraph.
+- **Two specificity bugs the pass had to fix (do not "simplify" either selector):**
+  1. **`p.principle-text`, not `.principle-text`.** The prose face rule is (0,2,1) and the plain class is
+     (0,2,0), so Geist and the prose paragraph margin were being forced onto the mono italic maxim. The
+     element qualifier ties the specificity and wins on source order (its block is later in the file).
+  2. **The paragraph gap is excluded from inside blockquotes.** `blockquote p { margin: 0 }` is only
+     (0,1,2), so the new gap rule (0,2,1) outranked it and leaked about 2x the gap into every quote. That,
+     not the padding, was the real cause of the blockquote reading too tall. The exclusion is written
+     `:not(:where(blockquote *))` so it carries ZERO specificity and normal prose is untouched.
+- **Toggle titles became one system in passing:** `--toggle-title-face` / `--toggle-title-weight` on
+  `details.toggle:not(.toggle-flag) > summary` (Geist 600). This supersedes the spoiler toggle's bespoke mono
+  700, which is what exposed that one-off class as the last toggle carrying its own face and weight for no
+  reason; retiring the class itself is a separate change. The gold flag toggle keeps its own identity.
+- **Metric-matched fallbacks by the same method as the existing faces:** `Geist Fallback` is computed with
+  the capsize xWidthAvg method (Geist upm 1000, ascent 1005, descent 295, line-gap 0; roman xWidthAvg 467,
+  italic 460) against Arial, and the ITALIC carries its own overrides against Arial Italic so italic prose
+  does not shift on swap either. New filenames, so the immutable one-year `/fonts/*` cache is not a concern
+  (the rename-on-change rule only bites when replacing a face).
+- **Verified:** `npm run build` green (46 pages); all four Geist faces ship to `dist/fonts/`.
+- **Status:** Adopted (working tree, committed to `dev`, not pushed). **The prose dials are deliberately
+  left as tokens pending the owner's judgement on the deployed preview:** `--prose-size` (18.5px, or
+  `1.125rem` for 18px), `--prose-leading`, `--prose-strong-weight`, and the two `--toggle-title-*` tokens.
+  Tuning any of them is a token edit with no other code change, because the component sizes are decoupled
+  from the prose size. Tracked in ROADMAP.
+
 ### 2026-07-20 · AttackPath production-readiness audit: 8 findings fixed (2 were real WCAG AA failures)
 - **Decision:** a full audit pass over the finished component, hunting for defects rather than confirming the
   known ones were gone. Eight issues found and fixed; everything else measured clean. No redesign, no new

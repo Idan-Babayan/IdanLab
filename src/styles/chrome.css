@@ -1,0 +1,613 @@
+@layer starlight, tokens, base, prose, chrome, components, pages, utilities;
+/* Chrome: everything around the reading column (header, sidebar, TOC, code frames, scrollbars).
+   Layer order, not file order, decides precedence. */
+/* Flag TOC entries: the gold identity in the right "On this page" column, others keep the green
+   active accent. Targeted by their deterministic anchors; this is unlayered so it overrides
+   Starlight's layered a[aria-current] green. A persistent muted gold makes the loot scannable at a
+   glance; full gold on hover and when current. */
+@layer chrome {
+.right-sidebar-panel a[href="#user-flag"],
+.right-sidebar-panel a[href="#root-flag"] {
+  color: color-mix(in oklab, var(--flag-gold) 70%, var(--sl-color-gray-3));
+}
+.right-sidebar-panel a[href="#user-flag"]:hover,
+.right-sidebar-panel a[href="#root-flag"]:hover,
+.right-sidebar-panel a[href="#user-flag"][aria-current="true"],
+.right-sidebar-panel a[href="#root-flag"][aria-current="true"] {
+  color: var(--flag-gold);
+}
+
+/* TOC active-entry color mirrors the content heading ladder: the entry the reader is currently on
+   (aria-current) takes the hue of the heading it points to, so the "On this page" column echoes the
+   in-page hierarchy (h2 green, h3 cyan, h4+ muted). Heading level is read from Starlight's TOC
+   nesting (it nests h3 under h2, h4 under h3, by maxHeadingLevel), so depth maps to level. ONLY the
+   current entry recolors; inactive entries keep their muted default. h1/h2 (top level) keep
+   Starlight's green accent (untouched), and flags keep gold (their rule above wins and they are
+   excluded below). Unlayered, so it beats Starlight's layered a[aria-current] green. Desktop column
+   only; the mobile TOC keeps Starlight's white + checkmark active style. Parity with the heading
+   rules is by shared tokens (--tp-cyan / --sl-color-gray-2); if a heading color changes, change it
+   here too. */
+
+/* h3 (nested one level): cyan, matching the ### heading. Flags are also h3, so their anchors are
+   excluded here (they own the gold rule above). */
+.right-sidebar-panel nav > ul > li > ul > li > a[aria-current="true"]:not([href="#user-flag"]):not([href="#root-flag"]) {
+  color: var(--tp-cyan);
+}
+:root[data-theme='light'] .right-sidebar-panel nav > ul > li > ul > li > a[aria-current="true"]:not([href="#user-flag"]):not([href="#root-flag"]) {
+  color: var(--tp-cyan-ink);
+}
+
+/* h4 / h5 / h6 (nested two or more levels): the muted gray of the h4 heading, continuing the quiet
+   tail of the ladder. These levels are not in the TOC unless tableOfContents.maxHeadingLevel is
+   raised; the rule is here so they are correct when it is. --sl-color-gray-2 is theme-aware (no
+   light override needed), matching the h4 heading rule. */
+.right-sidebar-panel nav > ul > li > ul > li > ul li a[aria-current="true"] {
+  color: var(--sl-color-gray-2);
+}
+
+/* ── Mobile TOC: gold flag entries (parity with the desktop right column) ─────
+   Ports the desktop gold-flag TOC treatment to the mobile TOC dropdown. Mobile renders as
+   <mobile-starlight-toc> (a <details> list) which the desktop .right-sidebar-panel rules never reach,
+   so flags were plain there. Same mechanism as desktop: match the deterministic slug anchors
+   (#user-flag / #root-flag), persistent muted gold, full --flag-gold on hover and when current. Href
+   matching is depth-independent, so this is a near-verbatim re-scope. Unlayered so it beats Starlight's
+   layered mobile active color. --flag-gold is theme-aware (no light override needed). Desktop untouched. */
+mobile-starlight-toc a[href="#user-flag"],
+mobile-starlight-toc a[href="#root-flag"] {
+  color: color-mix(in oklab, var(--flag-gold) 70%, var(--sl-color-gray-3));
+}
+mobile-starlight-toc a[href="#user-flag"]:hover,
+mobile-starlight-toc a[href="#root-flag"]:hover,
+mobile-starlight-toc a[href="#user-flag"][aria-current="true"],
+mobile-starlight-toc a[href="#root-flag"][aria-current="true"] {
+  color: var(--flag-gold);
+}
+
+/* ── Mobile TOC: h3 entries cyan when current (parity with desktop) ───────────
+   Desktop colors the CURRENT h3 TOC entry cyan by reading heading level from nested <ul> depth. The
+   mobile TOC is nested too, but under a different wrapper (mobile-starlight-toc > nav > details >
+   .dropdown > ul), so the desktop `nav > ul > li > ul` chain does not line up. Instead we match the
+   inline `--depth` custom property that Starlight emits per entry: verified in the real mobile DOM
+   (Starlight 0.39.2, 2026-07-10) that each <a> carries style="--depth: N;" with h2 = 0 and h3 = 1, so
+   `[style*="--depth: 1"]` selects exactly the h3 entries. Flags are also h3 (depth 1) and keep gold, so
+   they are excluded here. Unlayered so it beats Starlight's layered mobile active color. Light uses
+   --tp-cyan-ink, matching the desktop light variant. If Starlight changes the emitted format or the h3
+   depth number, update both selectors. */
+mobile-starlight-toc a[aria-current="true"][style*="--depth: 1"]:not([href="#user-flag"]):not([href="#root-flag"]) {
+  color: var(--tp-cyan);
+}
+:root[data-theme='light'] mobile-starlight-toc a[aria-current="true"][style*="--depth: 1"]:not([href="#user-flag"]):not([href="#root-flag"]) {
+  color: var(--tp-cyan-ink);
+}
+
+/* ── Mobile TOC: top-level (h2) entries green when current (parity with desktop) ──
+   On desktop, the current top-level TOC entry is green because Starlight's default active color
+   (--sl-color-text-accent) shows through there. The mobile TOC's default active style is white +
+   checkmark, so the green is added explicitly here. Top-level = h2 (the h1 title is not in the TOC),
+   which in the flat mobile list are the --depth: 0 items (same depth model as the mobile cyan-h3 rule
+   at --depth: 1). Confirmed --depth: 0 for a top-level entry in the real mobile DOM (Starlight 0.39.2),
+   same as the depth model verified for the cyan-h3 rule. Flags render at --depth: 1 (confirmed in the
+   DOM), so this --depth: 0 selector never matches them anyway; the flag :not() exclusions are a harmless
+   safeguard kept for parity with the cyan-h3 rule. --sl-color-text-accent is theme-aware (green #b6ff3c dark / #4d7c0f
+   light), so no separate light override is needed. Unlayered so it beats Starlight's mobile active
+   color. Desktop TOC untouched. */
+mobile-starlight-toc a[aria-current="true"][style*="--depth: 0"]:not([href="#user-flag"]):not([href="#root-flag"]) {
+  color: var(--sl-color-text-accent);
+}
+
+/* ── TOC focus rings echo the heading ladder ──────────────────────────────────
+   The TOC already takes its heading's hue when an entry is CURRENT (flags gold, h3 cyan, h2 green).
+   The focus ring echoes that same identity through --focus-ring, so tabbing to an entry rings in the
+   color of the heading it points to. Keyed off the heading the entry POINTS TO (slug for flags,
+   nesting/--depth for level) and NOT aria-current, so the ring is right whether or not the entry is the
+   active one. Reuses the existing tokens (no new colors); the shared :where(a,...):focus-visible rule
+   still does the drawing. h2 entries need no rule: the lime default already equals the green they take
+   when current (--sl-color-text-accent). h4+ entries sit deeper than the h3 chain below, so they are
+   unmatched and keep the lime default too. */
+
+/* Flags (gold), desktop + mobile. Same slug anchors the gold color rules above use. Reads the AA-grade
+   --flag-gold-val rather than the decorative --flag-gold: on dark the two are the SAME value (#ffc23d, the
+   bright loot gold already clears AA there, so dark is unchanged), but on paper --flag-gold (#C6A243) rings
+   at only 2.00:1, while the deeper antique --flag-gold-val (#7a5a12) measures ~5.2:1. This keeps the gold
+   identity and fixes the contrast ratio itself, rather than thickening a faint line, so the ring stays 2px
+   everywhere. Both flags use the one value-gold, matching the TOC color rules, which likewise do not tier
+   user vs root. */
+.right-sidebar-panel a[href="#user-flag"],
+.right-sidebar-panel a[href="#root-flag"],
+mobile-starlight-toc a[href="#user-flag"],
+mobile-starlight-toc a[href="#root-flag"] {
+  --focus-ring: var(--flag-gold-val);
+}
+
+/* h3 entries (cyan): desktop by the nesting chain, mobile by Starlight's inline --depth: 1. Flags are
+   h3-level, so they are excluded here exactly as in the cyan color rules, and keep their gold. */
+.right-sidebar-panel nav > ul > li > ul > li > a:not([href="#user-flag"]):not([href="#root-flag"]),
+mobile-starlight-toc a[style*="--depth: 1"]:not([href="#user-flag"]):not([href="#root-flag"]) {
+  --focus-ring: var(--tp-cyan);
+}
+:root[data-theme='light'] .right-sidebar-panel nav > ul > li > ul > li > a:not([href="#user-flag"]):not([href="#root-flag"]),
+:root[data-theme='light'] mobile-starlight-toc a[style*="--depth: 1"]:not([href="#user-flag"]):not([href="#root-flag"]) {
+  --focus-ring: var(--tp-cyan-ink);
+}
+} /* @layer chrome */
+
+/* ── Faint atmosphere (fixed + very subtle, reading stays calm) ──
+   Spans the viewport so a low bottom glow can echo the homepage. The two top
+   radials are unchanged: they are anchored to the top with the same offsets,
+   so widening the box from 360px to full height does not move them. */
+@layer chrome {
+body::before {
+  content: "";
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(60vw 300px at 16% -70px, color-mix(in oklab, var(--tp-glow-1) 11%, transparent), transparent 72%),
+    radial-gradient(55vw 280px at 92% -90px, color-mix(in oklab, var(--tp-glow-2) 10%, transparent), transparent 72%),
+    radial-gradient(80vw 360px at 60% 118%, color-mix(in oklab, var(--tp-glow-1) 9%, transparent), color-mix(in oklab, var(--tp-glow-2) 6%, transparent) 55%, transparent 80%);
+}
+:root[data-theme='light'] body::before {
+  /* Structure as texture: light swaps glow-as-atmosphere for a faint warm technical dot-grid,
+     for an engineering / risograph-paper feel. The dots are low-contrast warm ink (6%) on a 22px
+     pitch, sitting behind the reading column, so they read as paper structure, not noise, and
+     never lower body-text contrast. One minimal warm glow stays at the very top for a little
+     life. Static (no motion), so it is inherently prefers-reduced-motion safe. */
+  background-color: transparent;
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(60, 50, 30, 0.06) 1px, transparent 1.6px),
+    radial-gradient(60vw 220px at 50% -90px, color-mix(in oklab, var(--tp-glow-2) 12%, transparent), transparent 72%);
+  background-size: 22px 22px, 100% 100%;
+  background-repeat: repeat, no-repeat;
+  background-position: 0 0, center top;
+}
+/* Grain reads far less on pale paper than on ink: lift it just enough to add tooth. The light grain
+   opacity is set HERE, beside the light atmosphere block, rather than with the base grain rule below
+   (both land on .035 today). This note used to sit at the end of the prose module, where the Phase 3
+   split had carried it because it trails its subject instead of leading it. */
+:root[data-theme='light'] body::after { opacity: .035; }
+
+/* ── Film grain (mirrors the index.astro / about.astro fractalNoise overlay) ──
+   Fixed full-screen texture, non-interactive. Very low opacity so chrome and
+   reading stay legible in both themes. */
+body::after {
+  content: "";
+  position: fixed; inset: 0; pointer-events: none; z-index: 9999; opacity: .035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+} /* @layer chrome */
+/* The header wordmark half of the heading Syne rule, split from the prose half in Phase 2 slice A and
+   moved into the chrome layer in slice B, which is where it now sits. Its declarations are
+   byte-identical to the prose half above. It keeps its physical position so its source order against
+   the later a.site-title rule is unchanged. */
+@layer chrome {
+.site-title,
+a.site-title {
+  font-family: var(--tp-display);
+  letter-spacing: -0.01em;
+}
+
+/* ── Hero echo on the page title only (mirrors .hero h1 gradient text-fill) ──
+   Verified against the live Starlight DOM: the writeup title is frontmatter-driven and
+   renders as `h1#_top` OUTSIDE `.sl-markdown-content` (our writeups start the body at h2),
+   so that is the correct, stable hook (it is also the TOC "Overview"/back-to-top anchor).
+   Also given the Syne display face so it truly echoes the hero. h2/h3/h4 stay solid. */
+h1#_top {
+  font-family: var(--tp-display);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  background: linear-gradient(135deg, var(--sl-color-white), #9fef00);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+:root[data-theme='light'] h1#_top {
+  /* Light-mode title: a dark-green-to-vivid sweep, not the old near-black-to-olive. The start is a
+     deep forest green (not neutral black) so the whole word reads as a green object instead of black,
+     the stops are front-loaded (green by 45%) and the angle is gentle (105deg, mostly horizontal) so
+     SHORT titles (Return, Lame, Bandit N -> M) reach green too, and the end is a brighter grass green
+     so the title pops on paper. Do NOT swap the start for var(--sl-color-black): Starlight's black/white
+     tokens invert per theme, so that token resolves to WHITE in light mode and the start stop would
+     vanish on the paper. The brightest end letters are a deliberate decorative tradeoff, verified
+     readable at the 800-weight display size. Dark mode (white to #9fef00) is unchanged. */
+  background: linear-gradient(105deg, #16280b 0%, #4a7d0d 45%, #62a011 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+} /* @layer chrome */
+
+/* ── Sidebar: active item, obviously filled accent row, distinct from hover ──
+   Raised tint + 3px bar + explicit accessible label color (accent-high, theme-aware:
+   light olive #2f4d09 on pale sidebar, dark pale-lime #daff9e on ink) so the active
+   label clears WCAG AA in both themes instead of inheriting a faint color. Hover stays
+   Starlight's subtle gray, so active and hover never look alike. Scoped to .sidebar so
+   it never touches the TOC "current heading" link (which uses aria-current="true"). */
+@layer chrome {
+.sidebar a[aria-current="page"] {
+  background: color-mix(in oklab, var(--sl-color-accent) 20%, transparent);
+  border-inline-start: 3px solid var(--sl-color-accent);
+  border-radius: 0 6px 6px 0;
+  color: var(--sl-color-accent-high);
+  font-weight: 600;
+}
+/* Light: the active row gets a vivid deco-lime bar + a lime-tinted fill (both decorative), while
+   the label color stays --sl-color-accent-high (#2f4d09) from the base rule, so the TEXT remains
+   AA. The bar is the confident risograph accent; the fill keeps the row reading as filled. */
+:root[data-theme='light'] .sidebar a[aria-current="page"] {
+  background: color-mix(in oklab, var(--tp-deco-lime) 20%, transparent);
+  border-inline-start-color: var(--tp-deco-lime);
+}
+
+/* ── Sidebar: recolor Starlight's native nesting guide line ──
+   Starlight already draws the nesting guide as a left border on each nested <li>
+   (nav.sidebar details > ul > li). We do NOT add our own border (that caused a doubled
+   line); we only recolor the native one so it is clearly visible in both themes. Its default
+   light color (~#edeef3) is nearly invisible on the #f1eee5 paper sidebar. Theme-aware
+   neutrals fix that. Top-level <li>s have border-style:none, so the root list stays line-free. */
+nav.sidebar details > ul > li {
+  border-inline-start-color: rgba(255, 255, 255, 0.14);
+}
+:root[data-theme='light'] nav.sidebar details > ul > li {
+  border-inline-start-color: rgba(0, 0, 0, 0.14);
+}
+} /* @layer chrome */
+@layer chrome {
+@media (min-width: 72rem) {
+  /* Tightening the TOC needs TWO widths, not one. The visible TOC text column is `.right-sidebar-panel
+     .sl-container`, which Starlight derives from --sl-sidebar-width (our 17rem nav) as
+     `width: calc(--sl-sidebar-width - 2*--sl-sidebar-pad-x)` ≈ 15rem, plus 1rem panel padding each side
+     = a 17rem panel. `.right-sidebar-container` is only the reserved/layout column. So narrowing the
+     CONTAINER alone would leave the 17rem panel overflowing it (clipped past the screen edge). Narrow
+     BOTH, in sync: text 13rem + 2*1rem padding = a 15rem panel that fits a 15rem container exactly. This
+     also holds whether the fixed `.right-sidebar` sizes against the viewport or its container. Starlight
+     sets `overflow-wrap: anywhere` on TOC links, so longer entries wrap to ~2 lines rather than clip.
+     13rem/15rem are analysis-based starting targets; nudge up if an entry wraps badly in a real browser. */
+  .right-sidebar-panel .sl-container {
+    width: 13rem;
+  }
+  .right-sidebar-container {
+    width: 15rem;
+    flex: none;
+  }
+  /* Starlight sizes .main-pane to content-width + half the free space, assuming the wide default TOC.
+     With the TOC pinned narrow, let the pane fill the remaining width so the capped reading column can
+     center in it. Scoped exactly like Starlight's own rule so no-TOC intro pages are never touched. */
+  [data-has-sidebar][data-has-toc] .main-pane {
+    width: auto;
+    flex: 1;
+  }
+  /* Center the capped reading column in the pane, overriding Starlight's `auto 0` right-align, so the
+     nav-to-content gutter matches the content-to-TOC gutter (and centered in-content elements like the
+     Principle read as truly centered). Targets the CONTENT .sl-container (inside .main-pane), distinct
+     from the TOC .sl-container narrowed above. Unlayered, so it beats Starlight's layered rule. */
+  [data-has-sidebar][data-has-toc] .main-pane .sl-container {
+    margin-inline: auto;
+  }
+}
+
+/* ── Code-block width containment: long lines scroll, they never widen the column ──
+   A <pre> with a long unwrapped line has a large min-content width. A flex child defaults to
+   min-width: auto (= min-content), which outranks overflow-x: auto, so that width can leak UP through
+   the flex ancestors and push Starlight's content track past --sl-content-width: the column widens, the
+   TOC shifts, body text reflows, and ToggleAll jumps. Most visible when a spoiler <details> reveals the
+   <pre> (layout re-runs on open), but the cause is general to any code block.
+
+   Leak vector confirmed in the browser, not assumed (Busqueda docker-inspect block): with the content
+   cap momentarily removed to expose the latent leak, the long line's min-content propagated to
+   .main-pane (Starlight's flex child in the three-column row, default min-width: auto), which shifted the
+   right TOC by about 200px. min-width: 0 on the block chain (.expressive-code / pre / figure /
+   .toggle-body / details) did NOT contain it: those are block boxes whose min-width: auto is already 0.
+   min-width: 0 on .main-pane DID: the TOC snapped back and the column held at 50rem. .main-frame was
+   tested and did not additionally leak, so it is deliberately left out. Chromium clamps the min-content
+   by the cap's own max-width and so masks this; engines that do not clamp it that way still leak, so the
+   fix is the engine-neutral one. The code block itself is also pinned so its overflow-x: auto is
+   authoritative. Scrollbar stays, code does not wrap, --sl-content-width is unchanged. */
+.sl-markdown-content :is(.expressive-code, pre) {
+  min-width: 0;
+}
+.main-pane {
+  min-width: 0;
+}
+
+/* ── Sidebar: taller rows so a sparse rail feels fuller (sidebar nav only) ──
+   Starlight links/summaries ship a compact ~0.3em vertical padding; raise the per-item
+   block padding and line-height so each row has more presence and a bigger touch target.
+   Padding (not <li> margin) carries the height so the continuous nesting-guide line, the
+   active pill, and the per-platform dots all still align. Never touches the article. */
+nav.sidebar a,
+nav.sidebar summary {
+  padding-block: 0.55rem;
+  line-height: 1.5;
+}
+/* Group labels get the SAME taller padding as the links above (matching treatment so the
+   hierarchy stays balanced). The font size is left at Starlight's default on purpose: bumping
+   it pushed the longer names (HackTheBox, OverTheWire) onto a second line in the narrow mobile
+   drawer, which read as clunky. Fullness comes from the row padding, not a larger glyph. */
+
+/* ── Reading-progress bar (the #tp-progress element is injected by the
+       small script added to astro.config.mjs head) ── */
+#tp-progress {
+  position: fixed; top: 0; left: 0; height: 2px; width: 0; z-index: 1000;
+  background: linear-gradient(90deg, var(--sl-color-accent), var(--tp-cyan));
+  transition: width .08s linear;
+}
+/* Light gets its own paper-appropriate duotone (lime-ink to cyan-ink). Dark is untouched and
+   stays lime -> cyan. The thin bar is decorative, so these darkened tones can be vivid; the
+   :root[data-theme='light'] + #id selector outranks the base rule only in light. */
+:root[data-theme='light'] #tp-progress {
+  background: linear-gradient(90deg, #4d7c0f, #0b7e92);
+}
+
+/* ── Code blocks: a touch more presence (syntax colors stay from your EC themes) ── */
+.expressive-code { margin: 1.4rem 0; }
+/* Sharp rectangular code blocks in BOTH themes (matches dark's clean edges, fixes light's soft look).
+   --ec-brdRad is Expressive Code's own frame radius variable, so zeroing it sharpens the frame, the
+   title/terminal tab corners, and the code body at the source; the explicit frame border-radius:0
+   covers the literal override that used to set 12px. Only code blocks: the EC copy button keeps its
+   own radius, and toggle / button / badge / divider radii elsewhere are untouched. */
+.expressive-code {
+  --ec-brdRad: 0px;
+}
+.expressive-code .frame {
+  border-radius: 0;
+  box-shadow: 0 14px 40px -24px rgba(0, 0, 0, .7);
+}
+/* EC insets the title tab (top) and code body (bottom) by calc(--ec-brdRad + border-width), which
+   leaves a 1px residual radius once --ec-brdRad is 0. Zero it so the tab and code body are perfectly
+   square too. Code blocks only; the copy button (.copy button) is not matched and keeps its radius. */
+.expressive-code .frame .header,
+.expressive-code .frame .title,
+.expressive-code .frame pre {
+  border-radius: 0;
+}
+
+/* Keyboard focus ring wraps the WHOLE code frame, not just the <pre>.
+   EC core ships a "Scrollable block tabindex" JS module that sets tabindex="0" + role="region" on any
+   <pre> whose content overflows (driven by a 250ms-debounced ResizeObserver, so it lands after load and
+   re-evaluates on resize). That is what makes a wide, unwrapped block keyboard-scrollable, and that
+   tabindex is what the shared :where(..., [tabindex]):focus-visible rule matches, so the ring was drawn
+   on the PRE. Two problems, both because the pre is only the LOWER part of the frame (figcaption.header,
+   the language tab, is a sibling ABOVE it): the ring enclosed the code but not the tab, and its top edge
+   landed exactly 2px inside the header's box (the shared outline-offset), where it was PAINTED OVER. The
+   header is position:relative + z-index:1 while the pre is static, so the header paints later; measured
+   live, elementFromPoint at the ring's top edge returns the header, and .title carries an opaque
+   background (#16161e dark), so under the tab the edge vanished completely.
+   Fix: suppress the ring on the pre and draw it on figure.frame, whose border box already spans the
+   header plus the pre exactly (verified: same top as the header, same bottom as the pre). :has() is used
+   deliberately rather than :focus-within, which would also fire on pointer clicks. The color still reads
+   --focus-ring and the geometry matches the shared rule (2px solid, 2px offset), so this changes only
+   WHICH element is ringed, not how the ring looks. No ancestor clips it, and the frame radius is 0
+   (above), so the ring stays square like the frame it traces. */
+.expressive-code .frame > pre:focus-visible {
+  outline: none;
+}
+.expressive-code .frame:has(> pre:focus-visible) {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+} /* @layer chrome */
+
+/* ══════════════════════════════════════════════
+   LIGHT-MODE DEPTH: parity with the dark theme
+   Dark gets depth free from its near-black surfaces; on paper the same panels read flat.
+   These light-only rules add subtle borders + soft warm shadows + tints so code frames,
+   the lead blockquote, and the sidebar separate from the page. Reading stays calm; no motion.
+   Canonical dark token values are untouched (every rule is scoped to data-theme='light').
+   ══════════════════════════════════════════════ */
+
+/* Warm the light code surface: EC's catppuccin-latte editor bg is #fafafa, a cool white slab on the
+   warm paper. Override the EC editor + tab-bar background vars to a soft warm off-white slightly
+   darker than the page paper (#ece9e0), so a code block reads as a distinct warm panel. Light only;
+   dark (github-dark-dimmed) is untouched. Kept light enough that the catppuccin text stays AA. */
+@layer chrome {
+:root[data-theme='light'] .expressive-code {
+  --ec-frm-edBg: #e8e2d3;
+  --ec-frm-edTabBarBg: #e0d8c6;
+  --ec-frm-edActTabBg: #e8e2d3;
+}
+
+/* Code frames: a hairline border + a soft warm shadow (the base shadow is tuned for ink and
+   barely reads on paper). Gives the block a clear edge against #ece9e0. */
+:root[data-theme='light'] .expressive-code .frame {
+  border: 1px solid rgba(60, 50, 30, 0.14);
+  box-shadow: 0 8px 24px -16px rgba(60, 50, 30, 0.45), 0 1px 2px rgba(60, 50, 30, 0.06);
+}
+
+/* Soften the copy "Copied!" feedback on paper. EC's default success tooltip is a saturated teal
+   (--ec-frm-tooltipSuccessBg #438076 with white text), which reads too bold on the warm theme. In
+   LIGHT only, swap EC's success-tooltip vars for a soft pale sage pill with deep-olive text (the light
+   accent-high #2f4d09), so it fits the paper and stays AA (~6.8:1). Dark keeps EC's default. */
+:root[data-theme='light'] .expressive-code {
+  --ec-frm-tooltipSuccessBg: #d6e4c0;
+  --ec-frm-tooltipSuccessFg: #2f4d09;
+}
+
+/* ── Scrollbars ──────────────────────────────────────────────────────────────
+   Starlight ships no scrollbar styling, so the page scroller and the code-block
+   horizontal scroller fall back to the browser default (a cool white bar in light).
+   Theme both, in both engines: WebKit pseudo-elements + Firefox scrollbar-color.
+   Light: warm paper track + warm taupe thumb (clearly not white, the divider-tone
+   family). Dark: a subtle dark channel + muted slate thumb, so the dark look stays
+   undisturbed. The code-block scroller's track matches the code surface so it blends. */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+::-webkit-scrollbar-thumb {
+  border-radius: 8px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Dark: subtle, on-brand (page + default) */
+html[data-theme="dark"] {
+  scrollbar-color: #2e3440 #14161b;
+  scrollbar-width: thin;
+}
+html[data-theme="dark"] ::-webkit-scrollbar-track { background: #14161b; }
+html[data-theme="dark"] ::-webkit-scrollbar-thumb { background-color: #2e3440; }
+html[data-theme="dark"] ::-webkit-scrollbar-thumb:hover { background-color: #3b4252; }
+html[data-theme="dark"] .expressive-code pre { scrollbar-color: #2e3440 #1a1b26; }
+html[data-theme="dark"] .expressive-code pre::-webkit-scrollbar-track { background: #1a1b26; }
+
+/* Light: warm, clearly not white (page + default) */
+html[data-theme="light"] {
+  scrollbar-color: #b3a88f #e4ddcd;
+  scrollbar-width: thin;
+}
+html[data-theme="light"] ::-webkit-scrollbar-track { background: #e4ddcd; }
+html[data-theme="light"] ::-webkit-scrollbar-thumb { background-color: #b3a88f; }
+html[data-theme="light"] ::-webkit-scrollbar-thumb:hover { background-color: #9d9170; }
+html[data-theme="light"] .expressive-code pre { scrollbar-color: #b3a88f #e8e2d3; }
+html[data-theme="light"] .expressive-code pre::-webkit-scrollbar-track { background: #e8e2d3; }
+
+
+/* ── Decisive-line focus layer (Expressive Code {n} markers) ──────────────────
+   Marks the one line that matters in a dense dump (a leaked credential, the ttl tell, the single ./).
+   This is a LINE-LEVEL focus layer that sits UNDER the semantic command-highlighting token colors
+   (sudo magenta, recon vivid, network cyan, inspection muted) and must never fight them. Two rules:
+   the lime lives ONLY in the gutter (the left accent bar), where no token ever sits, and the tint is
+   kept low (<= 12%) so every syntax color reads unchanged on the marked line. If any token ever
+   muddies, the tint loses: lower it. OKLCH-mixed lime, both themes. No motion. Scoped to
+   .expressive-code. Do not color the code tokens here. */
+.expressive-code .ec-line.mark {
+  background: color-mix(in oklab, var(--sl-color-accent) 10%, transparent);
+  border-inline-start: 2px solid var(--sl-color-accent);
+}
+:root[data-theme="light"] .expressive-code .ec-line.mark {
+  background: color-mix(in oklab, var(--tp-deco-lime) 12%, transparent);
+  border-inline-start-color: var(--tp-deco-lime);
+}
+} /* @layer chrome */
+
+/* Sidebar: give the rail a subtle edge + soft shadow so the nav reads as a distinct panel,
+   not the same flat sheet as the content column. */
+@layer chrome {
+:root[data-theme='light'] nav.sidebar {
+  border-inline-end: 1px solid rgba(60, 50, 30, 0.12);
+  box-shadow: inset -12px 0 24px -24px rgba(60, 50, 30, 0.35);
+}
+} /* @layer chrome */
+
+/* ── Header + footer chrome: homepage HUD feel ──
+   Mono, uppercase, letter-spaced to mirror index.astro .hud / .footbar.
+   Targets only chrome (stable Starlight classes), never .sl-markdown-content body copy.
+   Colors use Starlight gray tokens so they stay legible and theme-aware in both modes. */
+
+/* Brand wordmark "Idan.Lab": aligned to the writeup article title (h1#_top) so the header
+   wordmark and the page title read as one Syne display type system. Same theme-aware lime
+   gradient text-fill as the h1 (dark: white -> #9fef00; light: #16280b -> #62a011). Weight 700
+   (lighter than the h1's 800, which reads heavy at header size); letter-spacing matches the h1.
+   The "." is part of the text node, so it takes the same gradient as every other glyph. Wins
+   over the earlier mono treatment via the same selector at later source order. */
+@layer chrome {
+a.site-title {
+  font-family: var(--tp-display);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  background: linear-gradient(135deg, var(--sl-color-white), #9fef00);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  border-bottom: 1px solid transparent;
+  transition: color .15s, border-color .15s, text-shadow .15s;
+}
+:root[data-theme='light'] a.site-title {
+  /* Kept matched to the light h1#_top gradient (same dark-green-to-vivid sweep) so the header wordmark
+     and the page title stay one Syne type system. Front-loaded, so the short "IDAN.LAB" string still
+     transitions into the bright green by the end. */
+  background: linear-gradient(105deg, #16280b 0%, #4a7d0d 45%, #62a011 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+a.site-title:hover {
+  color: var(--sl-color-accent);
+  border-bottom-color: var(--sl-color-accent);
+  text-shadow: 0 0 8px color-mix(in oklab, var(--sl-color-accent) 45%, transparent);
+}
+
+/* Secondary footer chrome: meta row (last updated / edit link) + prev/next eyebrow labels. */
+footer .meta,
+.pagination-links a {
+  font-family: var(--sl-font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+  color: var(--sl-color-gray-3);
+}
+
+/* Pagination destination name stays readable: real casing, full-contrast text color. */
+.pagination-links a .link-title {
+  text-transform: none;
+  letter-spacing: -0.01em;
+  font-size: 1rem;
+  color: var(--sl-color-white);
+}
+
+/* ── Sidebar category markers: clean colored circles (replaces emojis) ──
+   Top-level order: About · HackTheBox · VulnHub · PicoCTF · OverTheWire.
+   About is targeted by its attrs class; platforms by position.
+   If you REORDER the sidebar, update the nth-child numbers (2=HTB … 5=OTW). */
+ul.top-level > li > details > summary .group-label::before,
+.sb-about::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-inline-end: 0.6rem;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+.sb-about::before                                                        { background: #41efff; box-shadow: 0 0 7px rgba(65,239,255,.55); }
+ul.top-level > li:nth-child(2) > details > summary .group-label::before  { background: #b6ff3c; box-shadow: 0 0 7px rgba(182,255,60,.55); }  /* HackTheBox */
+ul.top-level > li:nth-child(3) > details > summary .group-label::before  { background: #ff5c5c; box-shadow: 0 0 7px rgba(255,92,92,.55); }   /* VulnHub */
+ul.top-level > li:nth-child(4) > details > summary .group-label::before  { background: #d96bff; box-shadow: 0 0 7px rgba(217,107,255,.55); } /* PicoCTF */
+ul.top-level > li:nth-child(5) > details > summary .group-label::before  { background: #ffc23d; box-shadow: 0 0 7px rgba(255,194,61,.55); }  /* OverTheWire */
+
+/* Focus ring: each platform group rings in its own identity (matches the dot above + the cards),
+   scoped to the whole platform <li> so its summary and writeup links share the color. Theme-aware:
+   bright hues on the dark rail, and the darkened --pf-accent light values on the pale paper rail so the
+   ring stays legible there (the pale-on-pale case). About (nth-child 1) is not a platform, so it keeps
+   the lime default. Positional like the dots: if the sidebar is reordered, update these too.
+   OverTheWire reads --otw-amber, the identity token, so the rail ring and every other OverTheWire
+   border/ring move together; a ring is non-text and the accent already clears the 3:1 it needs
+   (measured 3.66:1 on the paper rail). The other three are still literals: there is no root-level
+   token holding VulnHub red or PicoCTF purple, and HackTheBox's hex coincides with --sl-color-accent
+   without being the same thing, so routing it there would encode a coincidence as a coupling, which is
+   the mistake the seven-way #a86f04 fork already taught. They stay forked until a platform-token pass
+   gives them a real home. */
+ul.top-level > li:nth-child(2) { --focus-ring: #b6ff3c; }  /* HackTheBox */
+ul.top-level > li:nth-child(3) { --focus-ring: #ff5c5c; }  /* VulnHub */
+ul.top-level > li:nth-child(4) { --focus-ring: #d96bff; }  /* PicoCTF */
+ul.top-level > li:nth-child(5) { --focus-ring: var(--otw-amber); }  /* OverTheWire */
+:root[data-theme='light'] ul.top-level > li:nth-child(2) { --focus-ring: #4d7c0f; }
+:root[data-theme='light'] ul.top-level > li:nth-child(3) { --focus-ring: #d12f2f; }
+:root[data-theme='light'] ul.top-level > li:nth-child(4) { --focus-ring: #8b3dc4; }
+} /* @layer chrome */
+
+
+/* === LIGHT SURFACE DEPTH (V3) ================================================
+   Separate light surfaces with subtle warm shadows, NOT by darkening or shifting
+   hue (color barely moves). Page, raised card, and inset code read as distinct
+   layers via shadow. Light only; dark is byte-for-byte unchanged. Supersedes the
+   reverted darken-by-lightness experiment, which failed by dropping code a hard
+   6.7% L; here code stays near its color and the inset shadow does the separating.
+   Two parts committed separately: code (PRIMARY) and cards (SECONDARY, revert-alone).
+
+   V3 part 1 (PRIMARY): code reads as inset. A tiny color step from the quick-fix-2
+   #e8e2d3 to #e6dfd0 (about 1% L) so the INSET SHADOW, not darkness, makes the
+   boundary. The existing warm frame border is kept (rgba(60,50,30,.14)); the QF2
+   drop shadow is swapped for the inset so the block presses in rather than floats.
+   Main code text stays AAA. */
+@layer chrome {
+:root[data-theme='light'] .expressive-code {
+  --ec-frm-edBg: #e6dfd0;
+  --ec-frm-edActTabBg: #e6dfd0;
+}
+:root[data-theme='light'] .expressive-code .frame {
+  box-shadow: inset 0 1px 2px rgba(60, 50, 30, 0.08);
+}
+} /* @layer chrome */

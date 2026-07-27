@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-07-20.
+> Last updated: 2026-07-27.
 
 ---
 
@@ -28,6 +28,17 @@
   Pages auto-deploys. Also serves at `idanlab.pages.dev`. `astro.config.mjs` sets
   `site: 'https://idanlab.dev'` (drives the sitemap + canonical URLs). Branches: only `main`
   and `dev`; work lands on `dev`, then a PR into `main`.
+- **RELEASE STATE (2026-07-27): the release hold is LIFTED and `dev` ships to `main`.** The hold recorded
+  here on 2026-07-26 kept `dev` (then 17 commits ahead, `main` at `51edb9c` from PR #18) out of production
+  while it carried the Geist prose face without the design refitted around it. It is lifted by owner
+  instruction on 2026-07-27, and `dev` (29 commits ahead) merges to `main` by pull request the same day.
+  **Why the purpose is judged satisfied:** the prose foundation is no longer an eye-call, it is locked and
+  derived (46rem column, 18px, 1.7 leading, 1em paragraph gap, 87.6 characters per line), so the body face
+  production serves is tuned. What remains of the retune is chrome and component internals (the small-chrome
+  type scale, AttackPath internals, per-platform inks, the principle cap), none of which is the body face,
+  and each ships as its own pull request. What ships knowingly unfixed is listed in DECISIONS 2026-07-27.
+  **Unchanged by the lift, because they were never part of it:** `main` is reached only through a pull
+  request, and force pushes, rebases, amends, resets and history rewrites remain forbidden.
 - **robots.txt:** managed in-repo at `public/robots.txt` (served at `/robots.txt`). The in-repo file
   holds the easter-egg breadcrumb comment + a `Sitemap:` line. On deploy, Cloudflare composes its own
   managed block (the Content-Signals header plus the managed bot disallow list: Amazonbot,
@@ -80,7 +91,7 @@
 
 ```
 C:\dev\idanlab\                       # chosen to avoid Hebrew chars in C:\Users\אידן\
-├─ astro.config.mjs                   # Starlight config: site, sidebar, customCss[fonts.css, custom.css], EC themes + pluginPrivCommand, reading-progress head script (no font preloads, see DECISIONS 2026-07-07), image-zoom, vite alias, components overrides (PageSidebar + Footer), markdown remarkPlugins (content-taxonomy validation guard + PasswordReveal import injection) + rehypePlugins (content image loading)
+├─ astro.config.mjs                   # Starlight config: site, sidebar, customCss[layers.css, fonts.css, then the eight theme modules tokens/base/prose/chrome/components/pages/utilities/overrides, in that order], EC themes + pluginPrivCommand, reading-progress head script (no font preloads, see DECISIONS 2026-07-07), image-zoom, vite alias, components overrides (PageSidebar + Footer), markdown remarkPlugins (content-taxonomy validation guard + PasswordReveal import injection) + rehypePlugins (content image loading)
 ├─ src/
 │  ├─ content.config.ts               # docs collection (docsLoader + docsSchema), extended with the WriteupMeta metadata as STRICT optional enums (os Linux|Windows, environment Standalone|Active Directory|Progressive, difficulty Easy|Medium|Hard|Insane) plus optional badges boolean, tags, principle. NO platform field: platform is derived from the directory. Enums mirror src/components/badges/icons.ts exactly
 │  ├─ pages/
@@ -96,11 +107,11 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in C:\Users
 │  ├─ components/
 │  │  ├─ Toggle.astro                 # <details class="toggle"> wrapper; flag prop adds .toggle-flag; renders MDX (incl. code) in slot
 │  │  ├─ FlagCapture.astro            # "Decrypt to Capture" gold flag control (props: type user|root, flag); replaces the heading-plus-duplicate flag Toggle
-│  │  ├─ PasswordReveal.astro         # amber wargame password waypoint (prop: password); blur-to-reveal then copy-in-place, deliberately distinct from FlagCapture (no gold, no decode animation); no per-file import needed, see plugins/remark-inject-passwordreveal.mjs
+│  │  ├─ PasswordReveal.astro         # amber wargame secret waypoint, TWO modes derived from the slot: INLINE (prop: password) blur-to-reveal then copy-in-place, BLOCK (slot content + prop: label) collapses a multi-line secret as a <details class="toggle pwreveal-block">, no copy button. Both wear one amber (--otw-amber accent / --otw-amber-ink AA text ink / --pw-amber-rgb wash base). Deliberately distinct from FlagCapture (no gold, no decode animation); replaced the retired .spoiler-toggle class; no per-file import needed, see plugins/remark-inject-passwordreveal.mjs
 │  │  ├─ ToggleAll.astro              # Expand/Collapse-all control (vanilla TS, scroll-anchored); injected via PageSidebar override
 │  │  ├─ AttackPath.astro             # guided infographic for a LINEAR priv-esc chain (ascending escalating path, SVG connectors, Next-step progression, one-time gold flourish); data-driven from a nodes[] prop, scoped styles, not-content. See DECISIONS 2026-07-19
-│  │  ├─ Callout.astro                # icon-based tagged callout (recon/loot/intel/vuln/defense); .cl styles in custom.css
-│  │  ├─ Principle.astro              # closing epigraph (aside.principle, prop: text): centered italic mono maxim + dinkus + PRINCIPLE label; no card/border/bg; .principle styles in custom.css
+│  │  ├─ Callout.astro                # icon-based tagged callout (recon/loot/intel/vuln/defense); .cl styles in components.css
+│  │  ├─ Principle.astro              # closing epigraph (aside.principle, prop: text): centered italic mono maxim + dinkus + PRINCIPLE label; no card/border/bg; .principle styles in components.css
 │  │  ├─ WriteupCard.astro            # presentational writeup card (props only, reusable for a future /writeups index)
 │  │  ├─ PlatformIndex.astro          # data + hero + difficulty filter + WriteupCard grid; ported homepage effects
 │  │  ├─ NotFound.astro               # 404 breadcrumb body (nudges to /robots.txt)
@@ -110,18 +121,27 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in C:\Users
 │  │     └─ Footer.astro              # additive Starlight override: auto-appends the <Principle> coda from frontmatter and suppresses pagination on writeups that carry one
 │  ├─ lib/
 │  │  └─ ec-priv-command.mjs          # EC plugin: tags command words by category (priv/recon/net/inspect)
-│  └─ styles/
-│     ├─ custom.css                   # Starlight theme + THEME PASS + light art-direction + badges + sidebar + components
-│     └─ fonts.css                    # self-hosted @font-face (subset WOFF2) + metric-matched fallbacks; loaded via customCss and imported by the marketing pages
+│  └─ styles/                         # the theme pass, split into cascade-layer modules (see §5 "The layer contract")
+│     ├─ layers.css                   # the order statement `@layer starlight, tokens, base, prose, chrome, components, pages, utilities;` plus the cascade contract and the unit rule. First customCss entry
+│     ├─ fonts.css                    # self-hosted @font-face (subset WOFF2: Syne, JetBrains Mono, Geist) + metric-matched fallbacks for each; loaded via customCss and imported by the marketing pages. The one module with no layer statement
+│     ├─ tokens.css                   # @layer tokens: every custom property (surfaces, accents, flag gold, OverTheWire amber pair, the prose/chrome type scale). Also owns the prose/chrome type token block (see §6)
+│     ├─ base.css                     # @layer base: the zero-specificity defaults under everything, today the shared focus ring
+│     ├─ prose.css                    # @layer prose: the reading surface inside .sl-markdown-content (type, rhythm, links, quotes, the raw <details> default)
+│     ├─ chrome.css                   # @layer chrome: header, sidebar, TOC, code frames, scrollbars, the three-column layout, light-mode depth
+│     ├─ components.css               # @layer components: badges, toggles, callouts, FlagCapture, PasswordReveal, Principle, WriteupMeta
+│     ├─ pages.css                    # @layer pages: whole-page treatments (splash hero, platform index, the reveal state rules)
+│     ├─ utilities.css                # @layer utilities: single-purpose helpers that must sit above the named layers, today .sr-only
+│     └─ overrides.css                # THE ONLY UNLAYERED SURFACE. The 14-rule tail, each rule carrying an evidence comment naming what it beats (see §8 "The layer law")
 ├─ plugins/
 │  ├─ rehype-content-image-loading.mjs # rehype: sets loading/decoding on content <img> (first eager, rest lazy); wired via astro.config markdown.rehypePlugins
 │  ├─ remark-inject-passwordreveal.mjs # remark: conditionally injects `import PasswordReveal from '@components/PasswordReveal.astro'` into an MDX file's AST at build time, only when that file uses <PasswordReveal/> and has no import of its own; wired via astro.config markdown.remarkPlugins
 │  ├─ remark-inject-writeupmeta.mjs   # remark: injects the <WriteupMeta/> badge row + its import into every writeup at build time. platform is DERIVED from the platform directory (hardcoded map, the single source of truth); os/environment/difficulty are read from frontmatter via file.data.astro.frontmatter and forwarded only when a non-empty string. Gated on the writeup path (non-index .mdx under the four platform dirs), so nothing else can be injected. badges: false opts out; a non-boolean badges FAILS the build (YAML parses no/off/"false" as truthy strings). Transformer must be (tree, file) to see frontmatter. Zero deps (unist-util-visit + acorn). See DECISIONS 2026-07-20
+│  ├─ remark-transform-recon-rail.mjs  # remark: turns a PLAIN MARKDOWN LIST inside <Callout type="recon"> into the findings rail (<dl class="findings"> with a <dt> chip + <dd> note per row) at build time, so a writeup authors data and never presentation. Keyed on the Callout node's type="recon" attribute; direct children only. The authored " : " is a PARSE DELIMITER (/^(\S+)\s:\s/ on the item's first text node), consumed here and never rendered: the separator the reader sees is a CSS rule on dt::after. ALL-OR-NOTHING per list, so one unparseable item leaves the list bulleted and visibly wrong rather than silently half-converted on a green build. Emits dt/dd as SIBLINGS with no per-row wrapper, because both must be direct grid children (a wrapper needs subgrid, which blockifies inline <code> onto its own track). Zero deps (unist-util-visit). Wired LAST in markdown.remarkPlugins. SUPERSEDES the <Findings>/<Finding> components, see DECISIONS 2026-07-27
 │  └─ remark-validate-content-taxonomy.mjs # remark: build-time guardrail that FAILS the build on an unknown hand-authored badge/metadata class token (meta-badge / platform-* / difficulty-* / os-* / port-label / task-title; the machine-meta family was removed 2026-07-19) or an unknown component metadata value (Callout type, FlagCapture type user|root; the WriteupMeta prop enums were retired 2026-07-20 once the component stopped being hand-placed, and now live in the Zod schema instead), with a "did you mean" suggestion; the deliberate alternative to astro check; zero deps (unist-util-visit); its allow-lists are the single source of truth; wired via astro.config markdown.remarkPlugins. See DECISIONS 2026-07-12 and 2026-07-20
 └─ public/
    ├─ robots.txt                      # in-repo; breadcrumb comment + Sitemap line (see §2)
    ├─ favicon.svg                     # site favicon
-   ├─ fonts/*.woff2                   # self-hosted subset fonts (Syne 600/700/800; JetBrains Mono 400/500/700 + 400/500 italic); served at /fonts/
+   ├─ fonts/*.woff2                   # self-hosted subset fonts (Syne 600/700/800; JetBrains Mono 400/500/700 + 400/500 italic; Geist 400/600/700 + 400 italic); served at /fonts/
    ├─ icons/{htb,vulnhub,picoctf,overthewire}.svg
    └─ ethical-hacking.png             # about portrait (TODO: replace with transparent SVG). Writeup screenshots now live in src/assets (see §7); marketing images, if any, go under public/images
 ```
@@ -140,16 +160,35 @@ Two surfaces, deliberately different:
 | **Marketing pages** (home, about) | Standalone `.astro` in `src/pages/` | Immersive, full creative control, own `<head>` | Starlight's splash can't do the hero/constellation |
 | **Content pages** (all writeups + platform landings) | Starlight in `src/content/docs/` | Themed via CSS only; keeps sidebar, search, TOC, EC, a11y, toggle | Never rebuild Starlight's machinery |
 
-- **The "theme pass"** = CSS-only layer in `custom.css` that overrides Starlight's design
+- **The "theme pass"** = the CSS-only module set in `src/styles/` that overrides Starlight's design
   tokens so docs match the marketing pages. It does NOT touch Starlight functionality.
+
+### The layer contract
+
+The theme pass is organised into declared cascade layers, one module per layer, wired in
+`astro.config.mjs` in this order: `layers.css`, `fonts.css`, then `tokens`, `base`, `prose`, `chrome`,
+`components`, `pages`, `utilities`, `overrides`.
+
+- **`layers.css` declares the order:** `@layer starlight, tokens, base, prose, chrome, components,
+  pages, utilities;`. `starlight` is named FIRST so Starlight's own `starlight.*` sublayers sit below
+  every layer of ours, which is what replaced the old "we are unlayered, so we win" posture.
+- **Every module repeats that statement on its first line** (all except `fonts.css`), so any bundler
+  chunk order still establishes the same order. Repeats after the first occurrence are no-ops.
+- **Layer order decides precedence, not file order and not selector weight.** Selector weight only
+  orders ties WITHIN a layer. A rule does not need to out-specify a rule in an earlier layer, which is
+  why the specificity armor the theme pass used to carry (stacked `html[data-theme]` prefixes and the
+  like) was retired rather than migrated.
+- **`overrides.css` is the only unlayered surface.** See §8 "The layer law" for what may live there.
 - **Theme behavior:** homepage is **dark-only** (identical on every device). About + all
   writeups support **light/dark**, synced via Starlight's `localStorage['starlight-theme']`
   key + `data-theme` on `<html>`. About **defaults to dark** (light is opt-in).
 - **Content-embedded components:** platform landings, the 404, and `/secret` are Starlight docs
   that embed scoped Astro components via MDX (`PlatformIndex`, `NotFound`, `SecretTerminal`). They
-  carry Starlight's `not-content` class so prose styling skips them; our `custom.css` prose rules
-  are guarded with `:not(:where(.not-content *))`. Astro scopes component styles with `:where()`
-  (zero specificity), so component CSS must not rely on out-ranking global rules.
+  carry Starlight's `not-content` class so prose styling skips them; most of our prose rules in
+  `prose.css` are guarded with `:not(:where(.not-content *))`. Astro scopes component styles with
+  `:where()` (zero specificity), so component CSS never out-ranks a global rule on selector weight.
+  What actually protects a component subtree is that an Astro scoped style is UNLAYERED, and unlayered
+  author CSS beats every layered rule regardless of weight. See §8 "The two instruments".
 - **Hiding a page from nav:** the sidebar is hand-curated in `astro.config.mjs`, so a new doc is
   hidden by simply not listing it (e.g. `/secret`); add `pagefind:false` + a noindex `head` meta
   to keep it out of search.
@@ -161,16 +200,60 @@ Two surfaces, deliberately different:
 - **Text (dark):** `--text #e9f1ee`, `--muted #79857f`. **(light):** `#12181a`, `#586460`.
 - **Accents (dark):** lime `#b6ff3c`, cyan `#41efff`, magenta `#ff4d9d`.
 - **Accents (light, darkened for contrast):** lime `#4d7c0f`, cyan `#0b7e92`, magenta `#c41d6f`.
-- **Fonts:** display = **Syne** (600/700/800); mono/body/UI = **JetBrains Mono** (400/500/700, plus italic 400/500 for the Principle coda maxim).
+- **Fonts:** display = **Syne** (600/700/800); code/chrome/UI = **JetBrains Mono** (400/500/700, plus italic
+  400/500 for the Principle coda maxim); **writeup prose = Geist** (400/600/700 plus a true drawn italic 400).
   Self-hosted as subset WOFF2 in public/fonts/ (see src/styles/fonts.css), with metric-matched
-  size-adjust fallbacks so the font swap is shift-free; no Google Fonts origin. See DECISIONS 2026-07-04.
+  size-adjust fallbacks so the font swap is shift-free; no Google Fonts origin. See DECISIONS 2026-07-04
+  (self-hosting) and 2026-07-25 (the Geist prose face and the prose/chrome split below).
 - **Starlight var overrides:** `--sl-color-accent` = lime, `--sl-color-bg` = ink,
   `--sl-font` = JetBrains Mono. Headings forced to Syne via CSS.
+
+### Prose vs chrome typography split (writeup bodies)
+
+Writeup PROSE is Geist; everything else on a content page stays JetBrains Mono. The rule that makes this
+safe: **`--sl-font` / `--sl-font-mono` are deliberately NOT changed.** Geist is applied by a scoped rule,
+so every surface not named in it (sidebar, TOC, breadcrumbs, pager, code frames, badges, headings in Syne)
+is unchanged by construction rather than by exclusion. The tokens live in `tokens.css` and the rules in
+`prose.css`. See DECISIONS
+2026-07-25.
+
+- **What Geist takes:** `.sl-markdown-content :is(p, li, blockquote, td, strong, em)`. `em` renders Geist's
+  real drawn italic (italic angle -12, distinct letterforms), not a synthetic slant.
+- **Two deliberate exclusions, both chrome wearing prose markup.** `.cl-header` (the `Callout` label row is
+  authored as a `<p>`) keeps its uppercase mono; callout BODY prose stays Geist. `figcaption` is left
+  untargeted because it is Expressive Code's code-frame title bar, not an image caption (image captions are
+  `em` inside a paragraph, so they are covered).
+- **Chrome does not track the prose body.** Mono chrome (inline code, `.port-label`) and component titles
+  (toggle summaries, the `FlagCapture` button base, the `Principle` maxim) are pinned to FIXED rem sizes, so
+  they hold when `--prose-size` moves; only true prose tracks it. Inline code also re-declares
+  `font-family`, since it otherwise inherits Geist from its paragraph. `FlagCapture` needs a fixed base
+  because its flag value (`1.02em`) and lock icon (`1.25em`) are em-relative to that button.
+- **Everything is a token, in one block at the top of the theme pass:** `--body-face`, `--prose-size`
+  (18px, locked with the measure by the CPL derivation), `--prose-leading` (1.7), `--prose-measure`
+  (aliased to `--sl-content-width`, 46rem), `--prose-strong-weight`, `--mono-chrome-size` and its pinned
+  partner `--mono-chrome-leading`, `--component-title-size`, `--principle-maxim-size`,
+  `--toggle-title-face` / `--toggle-title-weight`, the heading pair `--heading-space-above` /
+  `--heading-space-below`, and `--prose-paragraph-gap` / `--blockquote-pad-y` (+ `-pad-x`).
+  **Spacing is `em` only where it must stay proportional to the text it separates, which is not
+  everywhere:** the heading pair is `em` and is ONLY valid declared on `.sl-heading-wrapper`, because that
+  is where `em` resolves against the heading's own size (see the context law in section 8);
+  `--blockquote-pad-x` is deliberately `rem`, since it aligns to `.cl`'s inline padding rather than
+  tracking prose. `--prose-heading-gap` is retired: it was an `em` on the FOLLOWING element and is the
+  worked example in the context law. Headings keep Starlight's own scale (no override), so the prose size
+  does not drag them.
+- **Two specificity rules that must not be "simplified":** the Principle maxim is targeted as
+  `p.principle-text` (the plain class at (0,2,0) loses to the prose face rule at (0,2,1)), and the prose
+  paragraph gap carries `:not(:where(blockquote *))` because `blockquote p { margin: 0 }` is only (0,1,2)
+  and was being outranked, leaking ~2x the gap into every blockquote.
+- **Toggle titles are one system:** `--toggle-title-face` / `--toggle-title-weight` (Geist 600) on
+  `details.toggle:not(.toggle-flag) > summary`, so no toggle variant carries a bespoke face/weight; the gold
+  flag toggle keeps its own identity.
 
 ### Focus ring system (keyboard accessibility)
 
 The site's keyboard focus indicator. One token drives every ring COLOR; one shared rule draws every ring.
-Both live at the very top of `custom.css`. This is an accessibility feature first: it is how a keyboard
+The token lives in `tokens.css` and the shared rule is the whole of `base.css`. This is an accessibility
+feature first: it is how a keyboard
 user knows where they are, so it is never removed, only aimed. See DECISIONS 2026-07-13 (the token system)
 and 2026-07-17 (the geometry fixes).
 
@@ -190,7 +273,8 @@ and 2026-07-17 (the geometry fixes).
 - **`:where()` holds it at specificity 0 on purpose:** any element with a real geometric need can out-rank
   it without `!important` and without editing the shared rule. That escape hatch is load-bearing (see the
   code-frame exception below). Never add specificity to this rule.
-- `custom.css` is unlayered, so this beats Starlight's layered styles. Starlight 0.39.2 ships no
+- The rule sits in the `base` layer, which the order statement places above every `starlight.*` sublayer,
+  so it beats Starlight's own styles without needing selector weight. Starlight 0.39.2 ships no
   `:focus-visible` outline of its own, so this IS the ring for every content-page control.
 - Uniform 2px width everywhere. Contrast problems are fixed by changing the COLOR to an AA-grade token,
   never by thickening the line (see the light flag gold below).
@@ -202,7 +286,7 @@ ring echoes what the element is rather than inventing an identity. Everything el
 | --- | --- |
 | `WriteupCard` (`.wc-card`) | `--pf-accent` (its platform color) |
 | The 4 platform sidebar groups | positional `nth-child`, theme-aware (HTB lime, VulnHub red, PicoCTF purple, OTW amber) |
-| `FlagCapture` / `PasswordReveal` | gold `color-mix(--fc-id)` / amber `#ffc23d` dark, `#a86f04` light |
+| `FlagCapture` / `PasswordReveal` | gold `color-mix(--fc-id)` / amber `var(--otw-amber)` (`#ffc23d` dark, `#a86f04` light). A ring is non-text, so it reads the accent, not the ink |
 | `ToggleAll` | `--pf-accent-2` cyan (its own hover identity; set in the component's scoped style) |
 | TOC entries | the hue of the heading they point to: flags `--flag-gold-val`, h3 cyan, h2/h4+ lime |
 | In-prose links | `--tp-cyan` / `--tp-cyan-ink` |
@@ -241,7 +325,7 @@ intentional and should stay: it is a fake terminal's command line, where the con
 is the caret (`caret-color: var(--t-lime)`), not a box around the input. It is the only interactive
 element in that terminal and it is auto-focused. Nowhere else on the site is a focus indicator removed.
 
-**Scope:** `custom.css` themes Starlight CONTENT pages only. The two standalone marketing pages carry
+**Scope:** the `src/styles/` modules theme Starlight CONTENT pages only. The two standalone marketing pages carry
 their own equivalent inline rings (`var(--lime)` + per-card `var(--accent)`); folding them into the same
 token is an open ROADMAP item, not a bug.
 
@@ -320,7 +404,7 @@ token is an open ROADMAP item, not a bug.
   "On this page" sidebar by `overrides/PageSidebar.astro` (renders `<Default/>` then the control).
 
 ### Starlight Component Overrides
-- Starlight Component Overrides: Additive Starlight component overrides are an approved architectural pattern alongside `custom.css` and custom components.
+- Starlight Component Overrides: Additive Starlight component overrides are an approved architectural pattern alongside the `src/styles/` theme modules and custom components.
 - Override Strategy: Overrides should wrap and render `<Default />` (or the upstream component) and layer behavior, styling, or markup on top rather than copying or replacing upstream implementations.
 - No Forking by Default Forking, duplicating, or fully replacing Starlight components is discouraged and should only be considered when the desired result cannot be achieved through an additive override.
 - User Approval Required: Introducing a new Starlight component override is a structural architectural change and should be proposed and approved by the user before implementation.
@@ -357,14 +441,27 @@ token (unlike `--flag-gold` / `--flag-gold-val`): everything `--wm-c` paints wan
   L0.40: dark already separated on hue AND lightness, but light had matched lightness, so hue alone at low
   chroma did not read. Deepening restores the second axis (separation dEOK 0.065 light / 0.073 dark). The
   finding: an amber slot CAN hold two identities on paper, but only separating on lightness as well as hue.
-- **The seven-way `#a86f04` fork:** OTW, Linux, `.platform-overthewire`, `.pf-overthewire`, the sidebar
-  focus ring, the spoiler toggle and PasswordReveal independently used the same light amber. They are
-  semantically unrelated ambers that coincided on a hex, NOT a shared token, so they stay forked (this pass
-  moved the two badge ambers off it). The five non-badge ambers are unaudited for light AA (see ROADMAP).
+- **The `#a86f04` fork, now six-way (was seven):** OTW, Linux, `.platform-overthewire`, `.pf-overthewire`,
+  the sidebar focus ring, the spoiler toggle and PasswordReveal independently used the same light amber. They
+  are semantically unrelated ambers that coincided on a hex, NOT a shared token, so they stay forked (the
+  2026-07-17 pass moved the two badge ambers off it). Two of those users have since MERGED, legitimately:
+  the spoiler toggle became PasswordReveal's block mode and both now read one shared token (2026-07-25),
+  which is a real shared identity rather than a coincidence, so it is one entry.
+  **Resolved for the OverTheWire family 2026-07-26:** that shared token became the
+  `--otw-amber` / `--otw-amber-ink` pair, and the sidebar focus ring was routed onto the accent, so the
+  PasswordReveal row, its block mode, the platform-index eyebrow and the rail ring are now ONE identity
+  with a text variant, all measured to AA or the 3:1 non-text bar. `.pf-overthewire`'s display-size type
+  (`.pi-name`, `.pi-num`) keeps the accent deliberately: it sits at the 3:1 large-text bar and passes at
+  3.50:1. `.platform-overthewire` remains moot (it styles nothing since `.machine-meta` retired), and the
+  Linux badge amber stays forked, correctly: it is a different identity that merely shares a hex.
+  **Still open, and a different hue family:** the HackTheBox and VulnHub platform-index eyebrows measure
+  4.11:1 and 4.16:1 on paper as 12.8px body text, both under 4.5:1. Same defect, different token, not
+  covered by the amber pass (see ROADMAP).
 
 ### Light-mode identity (paper-native "risograph")
 Light is art-directed on its own terms (dark is unchanged). All rules scoped to
-`[data-theme='light']` in `custom.css`:
+`[data-theme='light']`, spread across the modules by concern (surfaces in `tokens.css`, chrome in
+`chrome.css`, badges and callouts in `components.css`):
 - **Editorial ink:** body text near-black `#1a1815` on warm paper (crisp, premium).
 - **Texture not glow:** a faint warm technical dot-grid behind content (`body::before`), replacing
   the old bottom atmosphere wash. Static, low contrast, prefers-reduced-motion safe.
@@ -389,7 +486,7 @@ the platform color, the stat breakdown segments are colored by difficulty, and t
 pill uses a cyan ring.
 
 ### Code-block command highlighting (by category, OKLCH palette)
-`ec-priv-command.mjs` tags command words by semantic category, colored in `custom.css` (theme-aware,
+`ec-priv-command.mjs` tags command words by semantic category, colored in `overrides.css` (theme-aware,
 `!important`). The palette is designed in OKLCH and measured against the rendered code bg
 (tokyo-night `#1a1b26` dark, one-light `#fafafa` light), separating the three perceptual channels:
 - **Lightness = contrast (uniform):** one target L per theme (dark `L 0.745`, light `L 0.43`) so all
@@ -414,12 +511,13 @@ pill uses a cyan ring.
 - Mechanism: command-position detection (first word after prompt / `sudo` / `|` `&&` `;`); sudo stays
   content-matched. Command lists are one-line-extendable. Residual risk: an output line whose first
   word is exactly a listed command (rare) can be mis-tagged.
-- EC `{n}` line highlights get a decisive-line focus treatment (custom.css, after the scrollbar rules):
+- EC `{n}` line highlights get a decisive-line focus treatment (`chrome.css`, after the scrollbar rules):
   `.ec-line.mark` gets a lime gutter bar + a low tint (dark accent 10%, light `--tp-deco-lime` 12%) that
-  sits under the command-token colors. custom.css is unlayered so it overrides EC's default blue marked
+  sits under the command-token colors. The `chrome` layer outranks every `starlight.*` sublayer, so it
+  overrides EC's default blue marked
   line cleanly (no `styleOverrides`). See DECISIONS 2026-07-04.
 
-### Tagged callouts (icon-based, `Callout.astro` + `.cl*` in custom.css)
+### Tagged callouts (icon-based, `Callout.astro` + `.cl*` in `components.css`)
 Five semantic writeup callouts, each a 3px accent left border + faint tint + a header (icon + UPPERCASE
 label), theme-aware (vivid border, light-mode ink swap on icon/label): recon (cyan, magnifier), loot
 (amber, padlock), intel (violet, information), vuln (red, warning), defense (green, an inline shield SVG
@@ -436,7 +534,40 @@ slug ids are what the active-color ladder excludes, so flags keep gold instead o
 DECISIONS 2026-06-20.
 
 ### Password waypoint amber (PasswordReveal)
-`PasswordReveal.astro` (prop: `password: string`) is the wargame-password counterpart to FlagCapture,
+
+**Two modes, one component, one amber (2026-07-25).** A wargame secret comes in two shapes and the
+interaction follows the shape:
+
+| Mode | Trigger | Behavior |
+| --- | --- | --- |
+| **INLINE** | `password` prop, no slot | one-line password: blurs in place, copy control (the original) |
+| **BLOCK** | slot content, no `password` prop | multi-line secret (an RSA private key): collapses as a `<details>` |
+
+Inline secrets blur, block secrets collapse: a secret running to many lines cannot be blurred as one inline
+run. **Mode is derived from the slot, never guessed** (`Astro.slots.has('default')`); passing both or
+neither throws at build time rather than silently picking a branch. Block mode takes a `label` prop for its
+summary and carries `.toggle`, so it inherits the standard toggle card, the disclosure marker, ToggleAll's
+bulk expand, and the shared toggle-title face/weight. **Block mode has NO copy button on purpose:** the keys
+it holds are truncated for publication (see the private-key truncation rule), so a copy control would hand
+over a broken key. This replaced the one-off `.spoiler-toggle` class, which existed only because the inline
+component could not hold a block secret; that class is retired and appears nowhere in `src/`.
+
+**The amber has one source, split into an accent and an ink (2026-07-26):** `--otw-amber` (the identity;
+non-text only: borders, focus rings, bars, and display-size type. `#ffc23d` dark / `#a86f04` light),
+`--otw-amber-ink` (the AA text ink for body-size text: `#ffc23d` dark, unchanged, / `#7c5000` light) and
+`--pw-amber-rgb` (the `#f59e0b` wash base, consumed as `rgba(var(--pw-amber-rgb), alpha)` for tints and
+hairlines). The pair supersedes the single `--pw-amber`, which could not serve both jobs on paper: it
+failed AA as body text on every surface it landed on (3.21:1 on the PasswordReveal row, 3.64:1 on the
+toggle card, 3.50:1 on paper) while being exactly right as a border and ring. Both modes read them, so they cannot drift
+apart. Declared on the bare `:root` fallback as well, per this file's convention, so an absent `data-theme`
+can never leave the var undefined and invalidate every `rgba()` reading it. Custom properties are safe here:
+the failure that once made this block literal-only was `color-mix()` indirection, not the properties
+themselves. `.pwreveal-block`'s two border rules keep the `html[data-theme]` prefix inherited from the
+retired class, and still need it (see the specificity note in the CSS).
+
+The inline mode, unchanged, in detail:
+
+`PasswordReveal.astro` is the wargame-password counterpart to FlagCapture,
 deliberately built as its own component (not a FlagCapture variant) because a wargame password
 (OverTheWire Bandit, etc.) is a waypoint the reader pastes into SSH, not a trophy: no gold/loot tokens,
 no signature decode/scramble animation. Layout: a `PASSWORD` label, the value blurred via CSS `filter`
@@ -450,18 +581,22 @@ revealed"/"Password copied" text). Only the button reads as interactive: the con
 label, and the value are all `user-select: none` (copying is the only way to take the value, matching
 FlagCapture's captured-value pattern), and the container/value both get `cursor: default` with no `:hover`
 change to filter/cursor/color. The row itself IS a passive amber card (not a neutral hairline frame):
-literal `rgba(245, 158, 11, ...)` washes/borders (dark 0.08 fill / 0.4 border, light 0.14 fill / 0.55
-border, stronger and more golden), matching the site's canonical OverTheWire system, the same values
-`.spoiler-toggle` uses. The button text/icon is the OTW accent directly, `#ffc23d` dark / `#a86f04` light,
-with an `rgba(245, 158, 11, ...)` border/hover wash. Every color is a literal hex/rgba value (no
-`color-mix()` custom-property indirection, after an intermediate token-based pass rendered as a
+`--pw-amber-rgb` washes/borders (dark 0.08 fill / 0.4 border, light 0.14 fill / 0.55
+border, stronger and more golden), matching the site's canonical OverTheWire system, the same values the
+retired spoiler class used. The button text/icon is the OTW ink `--otw-amber-ink` (`#ffc23d` dark /
+`#7c5000` light), with a `--pw-amber-rgb` border/hover wash; its focus ring reads the accent `--otw-amber`.
+The ink was solved against the button's HOVER surface, not its resting one, because hover paints its own
+amber wash under the label and is therefore the worst case (4.78:1 hovered, 5.28:1 at rest). Every value behind those two tokens is a literal hex/rgba
+(no `color-mix()` custom-property indirection, after an intermediate token-based pass rendered as a
 neutral/near-black box in practice), deliberately NOT `--flag-gold`. The only motion is the blur-to-clear
 filter transition, gated behind `prefers-reduced-motion: no-preference`; the value's `:hover` rule
 deliberately does NOT declare `filter` at all (an earlier `filter: inherit` attempt resolved to the
 parent's "none" and silently un-blurred the still-locked password on hover, see DECISIONS). Styled in
-`custom.css` near the `.spoiler-toggle` rules, including a project-first `.sr-only` utility. Wired into
-`overthewire/bandit/0-1.mdx` alongside the existing spoiler-toggle; rolling out to the remaining 33 Bandit
-pages is tracked in ROADMAP. See DECISIONS 2026-07-05.
+`components.css` immediately after the `.pwreveal-block` rules; the shared `.sr-only` utility it relies on
+lives in `utilities.css`.
+Inline mode is live on 32 of the 34 Bandit level pages (rollout completed 2026-07-11); of the two
+exceptions, `16-17.mdx` is now BLOCK mode (its RSA private key) and one level has no password to reveal.
+See DECISIONS 2026-07-05 (inline) and 2026-07-25 (block mode + the shared amber).
 
 ### TOC active-entry color ladder
 The right "On this page" entry the reader is currently on (`aria-current="true"`) takes the hue of the
@@ -545,16 +680,31 @@ Preserves reading position: anchors on the current heading and corrects scroll s
   `import FlagCapture from '@components/FlagCapture.astro'`. This replaces the old heading + duplicate
   `<Toggle flag>` + `:::tip[Answer]`. Handle user-only and root-only writeups (emit only the flag that
   exists). See DECISIONS 2026-06-27.
-- **Wargame passwords:** emit `<PasswordReveal password="..." />` inline, at the point in the walkthrough
-  where the password is obtained (not frontmatter, not appended at the end). No import line needed: a
-  remark plugin (`plugins/remark-inject-passwordreveal.mjs`, wired via astro.config `markdown.remarkPlugins`)
-  detects the tag in the MDX AST at build time and conditionally injects
-  `import PasswordReveal from '@components/PasswordReveal.astro'`, only in files that actually use the
-  component and only if they have not already imported it. Supersedes the manual per-file import used when
-  PasswordReveal first shipped on `overthewire/bandit/0-1.mdx`. See DECISIONS 2026-07-05.
+- **Wargame secrets:** emit `PasswordReveal` at the point in the walkthrough where the secret is obtained
+  (not frontmatter, not appended at the end). Pick the mode by the secret's SHAPE, never by preference:
+  - one-line password → `<PasswordReveal password="..." />` (inline: blurs in place, copyable).
+  - multi-line secret, e.g. an RSA private key → `<PasswordReveal label="Reveal private key">` wrapping a
+    fenced block, then `</PasswordReveal>` (block: collapses). Truncate the key first (see the
+    private-key rule); block mode has no copy button precisely because the value is truncated.
+  Passing both a `password` prop and slot content, or neither, fails the build on purpose. Never reach for a
+  bare `<Toggle>` with a bespoke class for this, which is what the retired `.spoiler-toggle` was.
+  No import line needed in either mode: a remark plugin (`plugins/remark-inject-passwordreveal.mjs`, wired
+  via astro.config `markdown.remarkPlugins`) detects the tag in the MDX AST at build time and conditionally
+  injects `import PasswordReveal from '@components/PasswordReveal.astro'`, only in files that actually use
+  the component and only if they have not already imported it. It matches `mdxJsxFlowElement` by name, so a
+  block-mode tag WITH children is detected exactly like a self-closing inline one. Supersedes the manual
+  per-file import used when PasswordReveal first shipped on `overthewire/bandit/0-1.mdx`.
+  See DECISIONS 2026-07-05 and 2026-07-25.
 - `**Port 80**` → a cyan mono `.port-label` tag (was red; harmonizes with the recon callout, out-ranks
-  inline code by weight; inside `.cl-recon` a port list becomes an aligned findings table with an
-  `Assessment` eyebrow, see DECISIONS 2026-07-04). Inline code (`:not(pre) > code`) → a rounded NEUTRAL chip with red
+  inline code by weight, see DECISIONS 2026-07-04). **Inside `<Callout type="recon">` a plain markdown
+  list is converted at build time into the findings rail** by `plugins/remark-transform-recon-rail.mjs`,
+  which emits the chip for each row, so `.port-label` is hand-written only for a port mentioned inline in
+  prose. The concluding paragraph keeps the `Assessment` hairline + eyebrow, keyed off `:has(.findings)`.
+  The rail is a two-column grid whose chip track is `max-content` PLUS a gutter: `.findings` declares
+  `--findings-gutter` (0.8rem) and `--findings-rule-width` (2px), `column-gap` reads the gutter and the
+  `dt` takes `padding-right: calc(gutter + rule width)`, so the column rule sits IN a gutter with the same
+  space on both sides at every token length, and still no literal about port widths exists anywhere.
+  See DECISIONS 2026-07-27. Inline code (`:not(pre) > code`) → a rounded NEUTRAL chip with red
   text (identity in the glyphs, no red in the fill or border), its own object (readability-first,
   theme-tuned, deliberately distinct from the sharp code blocks);
   inside a colored callout it instead harmonizes with that callout's accent (reads `--acc` / `--cl-ink`,
@@ -562,7 +712,7 @@ Preserves reading position: anchors on the current heading and corrects scroll s
 - Bold inside code fences is impossible (markdown); to emphasize a code line, manually
   use expressive-code line highlighting, e.g. ` ```bash {3} `.
 
-### Badge / tag system (canonical colors in custom.css)
+### Badge / tag system (canonical colors in `components.css`)
 - Platform (badges): htb lime, vulnhub red, picoctf purple, overthewire amber (each with a
   leading glow dot; canonical palette, see §6).
 - Difficulty: easy green, medium amber, hard red, misc slate.
@@ -570,7 +720,7 @@ Preserves reading position: anchors on the current heading and corrects scroll s
 - Topic `.tag-*`: web orange, crypto teal, forensics amber, reversing pink, pentest green, etc.
 - **`.machine-meta` RETIRED 2026-07-19; the REST of the family is LIVE.** No writeup hand-authors a badge
   row any more (WriteupMeta replaced the last of them, the 34 Bandit pages), so the `.machine-meta`
-  container rule is deleted from `custom.css` and its `machine-` family from the taxonomy guard. Nothing
+  container rule is deleted from the theme pass and its `machine-` family from the taxonomy guard. Nothing
   else went with it: `WriteupCard.astro` emits `meta-badge`, `difficulty-*`, `os-*` and (behind
   `showPlatform`) `platform-*`, and `PlatformIndex` renders those cards on every `{platform}/index.mdx`,
   so those rules are live on all four landing pages. `platform-*` renders 0 times today but is the
@@ -600,8 +750,9 @@ icon.
   (letterboxed by a non-square viewBox) and Linux (a backdrop disc that defined its box) were off; the other
   seven already clustered. Standalone and Active Directory are slated for an artwork redraw ONTO this grid.
 - **`public/icons` copies:** the three polychrome PLATFORM logos (VulnHub, PicoCTF, OverTheWire) are ALSO
-  copied under `public/icons`, consumed by `PlatformIndex.astro` and `about.astro` by literal `/icons/` path
-  (NOT by the sidebar, whose logo CSS is commented out; the sidebar uses colored dots). `public/icons/htb.svg`
+  copied under `public/icons`, consumed by `PlatformIndex.astro` and `about.astro` by literal `/icons/` path.
+  The sidebar is NOT a consumer: it uses colored dots, and the commented-out logo block this note used to
+  cite as the alternative was deleted from the theme pass in the Phase 4a dead-rule purge. `public/icons/htb.svg`
   is RETAINED as the brand mark for those marketing surfaces and now deliberately DIVERGES from the inlined
   monochrome `src/assets/icons/htb.svg`; the former byte-identity was coincidental.
 - **Accessibility:** every inline glyph carries `aria-hidden="true"`, so each chip's accessible name is
@@ -623,8 +774,161 @@ icon.
   square-cornered (sharp) in both themes (DECISIONS 2026-06-29).
 - **Icons:** SVG for logos/icons; PNG acceptable only for detailed illustrations.
 - **Landing is dark-only**; content pages keep the toggle.
-- **Never rebuild Starlight**; content pages are themed via `custom.css` only.
+- **Never rebuild Starlight**; content pages are themed via the `src/styles/` modules only.
 - Real name is fine on the public site.
+
+### The layer law
+
+- **No `!important` inside a layer.** `!important` reverses layer order, so an important declaration in a
+  late layer is WEAKER than one in an early layer. That inversion is a trap, so the theme pass keeps
+  important declarations out of the layered modules entirely.
+- **The tail contract.** `overrides.css` is the only unlayered surface, and a rule earns a place there on
+  exactly one of two grounds: it must beat unlayered CSS (a vendor stylesheet, an inline style, or one of
+  our own Astro-scoped component styles, all of which sit above every layer), or it carries `!important`.
+  Every tail rule carries a comment naming what it beats. The tail is 14 rules today: nine `.ec-cmd-*`
+  colour rules (they beat Expressive Code's inline per-token styles), the two `.pi-index .reveal`
+  transition rules and the V3 light card shadow (they beat WriteupCard's and PlatformIndex's own scoped
+  styles), the `.flagcap` reduced-motion kill, and the OverTheWire platform-index eyebrow ink.
+- **Growing the tail is a decision, not a convenience.** Reach for a layer first; the tail is for cases
+  where layering provably cannot work, and "provably" means measured in a browser, not argued.
+
+### The two instruments
+
+Reach and precedence are separate mechanisms and are routinely confused:
+
+- **`.not-content` governs REACH.** It is a scoping guard on our prose selectors, written
+  `:not(:where(.not-content *))`. Matching Starlight's own convention, it excludes DESCENDANTS of a
+  `.not-content` element, not the element itself. So a component root that carries the class is still
+  matched by a rule that names it, and such self-carriers are resolved by precedence, never by the guard.
+  A rule that carries no guard (the bare `:not(pre) > code` inline-code chip, for one) reaches into every
+  component subtree regardless of `.not-content`.
+- **Layer order governs PRECEDENCE, and components win where they speak.** An Astro scoped style is
+  unlayered, so it beats every layered rule of ours at any selector weight. That is the real reason a
+  component's own styling holds inside its subtree, and it is the mechanism to cite, not the guard.
+- Consequence: to override a component from the theme pass, a layered rule is not enough. It takes a tail
+  rule, under the contract above.
+
+### The `--sl-color-white` inversion rule
+
+Starlight's `--sl-color-white` and `--sl-color-black` INVERT per theme: white resolves to the page's
+foreground, which is near-black on the light paper. A theme-agnostic declaration that reads one of them
+therefore flips meaning between themes. Any such use must be deliberate and must carry a warning comment
+saying so; if the intent is a literal colour, write the literal. This already bit the light `h1#_top`
+gradient, whose start stop would have vanished on paper had it used the token.
+
+### Dead in effect, not just unreferenced
+
+A rule that matches live elements but always LOSES is dead in effect. It is deleted, never migrated: a
+cascade reordering can silently revive it, so carrying it into a new layer structure converts a harmless
+no-op into a live regression. Deadness is established by measurement (does it win anywhere, on any real
+page, in either theme), not by reading the selector. The Phase 4a purge removed rules on exactly this
+ground, including a `.hero h1` duplicate that `h1#_top` outranked in both themes.
+
+### Selector weight, and the flatten that is not happening
+
+Inside a layer, selector weight still orders ties, so it remains a legitimate tool for expressing "this
+specific case beats that general one" within a single concern. What it is no longer used for is
+out-ranking another layer. **Selector flattening is formally dropped from this workstream**, in this and
+any future phase: the remaining multi-part selectors either express real precedence within their layer or
+are load-bearing against unlayered CSS, and flattening them buys tidiness at the cost of the behavior the
+layer contract just made legible. Unit conversions are likewise deferred to the retune (see the unit rule
+in `layers.css`).
+
+### The context law
+
+**A font-relative length resolves against the element it is declared on. If its purpose is to size,
+align, or space content that lives in a DIFFERENT font-size context, it is wrong, even when it correctly
+tracks the local font size.** That last clause is the whole point: every instance below passed the older
+test and still failed, because "does this `em` track its local font size" is a question the broken
+declaration answers yes to.
+
+**Remedies, in strict order. Reach for the first one that applies.**
+
+1. **Delete the number.** Let a layout primitive compute the relationship. A grid track sized
+   `max-content` cannot drift from the thing it measures, because it has no value of its own.
+2. **Declare it in the governed element's own context.** If the number must exist, put it where the
+   `em` resolves against the text it actually governs.
+3. **Use `rem` or `px` so both sides agree,** with a comment naming the coupling it holds.
+
+**The three instances, all found in one audit, all the same defect wearing different clothes.**
+
+| Instance | Declared on | Governs | Result | Remedy |
+| --- | --- | --- | --- | --- |
+| Recon rail | `.cl-recon li` at 18px (`5.6em`) and `.port-label` at 14px (`4.9em` + `0.7em`) | one shared column | 100.8px against 78.4px, a 22.4px error, and `4.9em` could never hold an eight-character token in the chip's context at any size | 1, deleted for a grid |
+| Heading gap | the element FOLLOWING the heading (`--prose-heading-gap`) | the space under a heading | one numeral meant 18px, 10.8px or 9.6px depending on what followed, and it lost outright to any follower with a larger margin | 2, moved onto `.sl-heading-wrapper`, which carries the heading's own size |
+| Principle cap | `aside.principle` at 18px (`46ch`) | `p.principle-text` at 22.4px | the maxim measures 36.97 characters, not 46, and has never measured 46 in any era | **still open**, see ROADMAP |
+
+**This supersedes the narrower unit rule in the `layers.css` header.** That rule asked only whether an
+`em` tracked its local font size and answered yes in all three failures, so it could not have caught any
+of them. It is not wrong, it is insufficient: it governs whether a unit is honest about itself, while
+this law governs whether it is honest about what it controls.
+
+### Prefer computed relationships to declared ones
+
+If two elements must align, express it with a layout primitive rather than a number. **A declared
+relationship is a standing promise to re-derive it every time a font, a size, or a token moves, and this
+project has already failed that promise across two font changes** (JetBrains Mono to Geist, then 18.5px
+to 18px). Nobody re-derived the rail, the principle cap, or the heading gap on either occasion, and no
+build ever went red. A computed relationship removes the promise instead of documenting it.
+
+### Content carries data, never presentation
+
+MDX carries semantic data. Class names, separator glyphs, and layout markup belong to components or to
+build-time transforms. The recon rail was the counter-example: every row hand-wrote a
+`<span class="port-label">` and an authored `" : "` separator, so the rail's appearance was distributed
+across fifteen lines in three content files.
+
+**The test: if changing the look requires editing content files, the boundary is in the wrong place.**
+
+**A COMPONENT THAT MUST BE IMPORTED INTO A CONTENT FILE IS ITSELF PRESENTATION IN THAT FILE.** This is
+the part the first version of this rule missed, and it cost a full iteration. The fix for the rail was
+originally `<Findings>` and `<Finding port="...">`: it produced exactly the right DOM and it did move the
+class names and the separator out of content, so it passed the test as written. But it replaced them with
+two import lines and a JSX tree per rail, which is a different presentation detail in the same place. The
+components passed the letter of the rule and failed its purpose.
+
+**When a build-time transform can produce the same structure from data the author already writes, prefer
+the transform.** The rail is keyed on the `<Callout type="recon">` that was already wrapping it, and the
+port and note were already being typed, so the transform needed no new authored signal at all. The
+authoring that resulted is simpler than what existed before any of this work:
+
+```mdx frame="code" title="the whole authoring surface, after"
+<Callout type="recon">
+
+- 53/tcp : DNS, Simple DNS Plus
+- 389/tcp : LDAP for `htb.local`
+
+</Callout>
+```
+
+**Sharper test, replacing the one above:** count what a content file must know about how the thing looks.
+A class name, a separator glyph, a wrapper element, and an import line are all the same kind of knowledge.
+Zero is the target, and a plain list reaches it.
+
+**The residue, and why it is acceptable:** the ` : ` survives in source. It is not a rendered glyph, it is
+a parse delimiter consumed at build time, and it is the least ambiguous way to mark where the port token
+ends. A convention that has to be learned is cheaper than markup that has to be maintained, but it is not
+free, so it is recorded here rather than treated as invisible.
+
+### A pinned size implies a pinned leading
+
+A component that pins `font-size` off the prose scale must pin `line-height` too, or half its metrics
+still track prose and its box keeps growing whenever the body does even though its glyphs do not.
+`--mono-chrome-leading` (1.4) is the pinned partner to `--mono-chrome-size`.
+**Known remaining consumer: inline code** (`:not(pre) > code`) reads `--mono-chrome-size` but still
+inherits prose leading. Left deliberately, because inline code sits inside running paragraphs, so pinning
+its leading changes prose line boxes: a reading-surface decision, not a component one.
+
+### CSS-only is a scope boundary, not a universal law
+
+"CSS-only" governs **the theme pass over Starlight**, where the rule against forking Starlight components
+is absolute and unchanged. It does **not** govern our own content components. When a presentation problem
+needs structure the content does not have, **add the structure**, in a component or in a build-time
+transform, rather than encoding it as literals in CSS. The rail is the worked example: no arrangement of
+CSS over a flat `<li>` could hold a chip column and a description column in alignment, because the markup
+had no boundary between them, and three CSS literals were the workaround. Adding the boundary made the
+literals unnecessary rather than correct. **Where that structure is added is a separate question from
+whether to add it**, and the rule above answers it: a transform, when the data is already there.
 
 ## 9. Environment & Tooling
 

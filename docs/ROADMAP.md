@@ -5,8 +5,63 @@
 > Each item: `[area] description — owner-note`. Areas: DESIGN, CONTENT, ENG, PRODUCT.
 
 ## Now (in progress)
-- [DESIGN/ENG] Three-column rebalance + full-width intro pages (custom.css): SHIPPED to production (commit
-  `723c2ab`, PR #9 merged 2026-07-11) but STILL NEEDS A REAL-BROWSER FINE-TUNE. The rem values are
+
+- [DESIGN] **THE GEIST RETUNE. No longer a merge gate: the release hold was LIFTED 2026-07-27 and `dev`
+  shipped to `main`.** The hold existed so production would not serve a half-refitted body face. That is
+  satisfied, because the prose foundation is locked and derived rather than eye-called, and everything
+  still open below is chrome or component internals rather than the body face. **The clusters below are
+  now POST-MERGE work and each ships as its own pull request into `main`**, rather than accumulating on
+  `dev` waiting for one release. Nothing here blocks a deploy any more; what ships knowingly unfixed is
+  listed in DECISIONS 2026-07-27. See DECISIONS 2026-07-26 for the original gate and why splitting the
+  refactor from the retune was rejected at the time.
+
+  What the retune inherits, and why it should be a values exercise rather than an archaeology one: the
+  theme pass is now layered, purged and tokenized. Every dial below is a custom property in ONE block at
+  the top of `tokens.css`, precedence is decided by layer order rather than selector weight, and the dead
+  rules that would have made a retune ambiguous are gone.
+
+  1. **The prose dials.** The FOUNDATION four are now LOCKED and derived, not eye-calls: `--prose-size`
+     (1.125rem = 18px), `--prose-leading` (1.7), `--prose-measure` (aliased to `--sl-content-width`,
+     46rem) and `--prose-paragraph-gap` (1em), all recomputed from characters per line against Geist.
+     Recompute from that derivation rather than nudging any of them. Still genuine eye-calls on a real
+     screen: `--prose-strong-weight` (600 vs 700 against Geist), the two toggle-title dials
+     `--toggle-title-face` (`var(--body-face)` reads as a content label, `var(--sl-font-mono)` as terminal
+     voice) + `--toggle-title-weight` (600 vs 700), `--blockquote-pad-y`, and the heading pair
+     `--heading-space-above` / `--heading-space-below` (1.5em / 0.5em, 3:1, and the space below must stay
+     under `--prose-paragraph-gap` at every level). Also confirm italic prose renders Geist's drawn italic
+     rather than a slant. Both themes, wide and 375px.
+     Note `--prose-heading-gap` no longer exists: it was retired 2026-07-27 as an instance of the context
+     law (see DECISIONS), and `--blockquote-pad-x` is deliberately rem, not em.
+  2. **The rest of the design against the new body face.** Geist changed the body but the surfaces around
+     it were tuned for mono: the measure, the vertical rhythm between prose and components, and how the
+     mono chrome (badges, callout labels, code frames, the Principle coda) now reads BESIDE a proportional
+     face rather than matching it. This is the part that has not been done at all.
+  3. **The three-column pass folds in here** (see the item below): it needs the same real-browser session
+     and its values interact with the prose measure.
+  4. **The unit rule is written and not applied** (`layers.css` header): rem or px for component geometry,
+     em only where scaling with the local font size is the declared intent. Applying it belongs to THIS
+     retune, because converting a unit changes rendered geometry and each conversion needs its own
+     before-and-after measurement. Do not sweep it.
+  5. **One recon-rail question to judge at 375px** (added 2026-07-27). The rail's chip track now carries
+     `--findings-gutter` (0.8rem) so the column rule has equal clearance on both sides, which narrowed the
+     description column by 14.80px and pushed one Forest row from two lines to three on a phone. Nothing is
+     broken (no horizontal overflow, continuation error still 0.00), but whether a narrow screen wants the
+     same gutter as a wide one is a taste call, and it is a one-token change. See DECISIONS 2026-07-27.
+
+  Move each settled value to DECISIONS as its cluster lands. Each cluster is its own pull request now,
+  so there is no longer one PR to hold everything back.
+
+- [ENG] **The CSS refactor is DONE and needs no further work** (DECISIONS 2026-07-26). Recorded here only
+  so it is not reopened: `custom.css` is gone, the theme pass is ten modules under `src/styles/` on a
+  declared cascade-layer contract, the dead rules are purged, the specificity armor is retired, and the
+  OverTheWire amber is an accent/ink pair solved to WCAG AA. Verified at zero changed cells of 7,536 at
+  every gate except the amber's intended 17. Selector flattening and unit conversions were deliberately
+  excluded from the workstream (the unit rule is written but unapplied, see the retune item above).
+- [DESIGN/ENG] Three-column rebalance + full-width intro pages (now in `tokens.css` and `chrome.css`):
+  SHIPPED to production (commit
+  `723c2ab`, PR #9 merged 2026-07-11) but STILL NEEDS A REAL-BROWSER FINE-TUNE. **Do this inside the Geist
+  retune session above:** the content cap and the prose measure interact, so tuning them apart wastes a
+  pass. The rem values are
   analysis-based starting targets and the required Chrome/Firefox visual pass has not yet run. Changes: (1) writeup content
   cap `--sl-content-width` 45rem -> 50rem (~75-char line); (2) right TOC tightened, which needs TWO widths because
   the visible TOC text column is `.right-sidebar-panel .sl-container` (Starlight derives it from --sl-sidebar-width,
@@ -25,7 +80,8 @@
   (`body:has(.pi-index) .content-panel:not(:has(.pi-index)){padding-block:0}`). To verify + finalize: wide
   Chrome + Firefox, both themes -- confirm balanced gutters, no ugly TOC wrap at 13/15rem (nudge up if so),
   50rem line length reads ~75 chars and comfortable (step down further only if it feels long), intro pages truly
-  full-width AND hero flush to the top with no dark band, homepage/About unchanged (they do not load custom.css).
+  full-width AND hero flush to the top with no dark band, homepage/About unchanged (they do not load the
+  theme-pass modules).
   Then move to DECISIONS. (Values updated 52->50 / 12,14->13,15 in a later tuning pass.)
 - [ENG/INFRA] Post-deploy verification (PR #9 merged 2026-07-11, `dev` -> `main`): confirm the Cloudflare
   Pages production build for `main` went green and spot-check idanlab.dev (CSP enforced with no console
@@ -85,7 +141,7 @@
   `:focus-visible` rings (currently `outline: 2px solid var(--lime)` + per-card `outline-color:
   var(--accent)` from the 2026-07-13 focus-states work) into the same model: an inline
   `:root{--focus-ring:var(--lime)}` default + the shared `:where(...)` rule + `--focus-ring: var(--accent)`
-  on the platform cards, in EACH page's `<style is:global>` (they do not load custom.css). Net: no ring
+  on the platform cards, in EACH page's `<style is:global>` (they do not load the theme-pass modules). Net: no ring
   color hardcoded anywhere. Keep both themes, `:focus-visible` only, no motion. Note the marketing pages
   have no Starlight `markdown.css` under them, so the orphaned-margin geometry bug fixed on content toggles
   (DECISIONS 2026-07-17) does not apply there.
@@ -130,18 +186,87 @@
   swap on 2026-06-27 kept the inherited tip color). Experiment with a tip accent that better matches the
   overall theme (e.g. green/teal or a paper-harmonious hue), both themes, CSS-only via the Starlight aside
   color tokens. Owner wants to try options later.
+- [DESIGN] Revisit the Active Directory topology glyph (low priority, no urgency). The diamond is not
+  broken and ships as-is: it passes the silhouette test (its outline reads at 15px with the interior
+  contributing nothing, which is exactly why it works). Parked only because Idan may want to move off it
+  later, not because anything is wrong. Context for whoever picks it up, so the dead ends are not re-walked:
+  - Concept A ("one node vs three linked nodes") is REJECTED, do not retry it. Two independently fatal
+    reasons: three ~4px nodes fuse into a Λ letterform at 15px, and Active Directory and Standalone occupy
+    the same scalar `environment` slot so they never co-occur, meaning a node-count contrast has no on-page
+    reference to read against.
+  - The design bar for any replacement: the silhouette carries the meaning, the interior does nothing (at
+    15px, part-count is not a legible channel). Starting directions that fit the bar: folder-tree bracket,
+    nested/concentric forms, hierarchy fork.
+  - Standalone's ring stays regardless. It beat every candidate by resolving its hole at 15px and dodging
+    the prospective PicoCTF two-disc collision. This item is AD only.
+  - Any redraw inherits the current 15px hull-area grid (model B, cap 1.128) and, being a we-authored
+    geometric glyph, should size by hull area rather than clamp. It also retires the Amido `<metadata>`
+    attribution the diamond asset currently carries.
 
 ## Open bugs / known issues
-- [DESIGN/A11y] Non-badge `#a86f04` ambers unaudited for light-mode WCAG AA. The badge light palette pass
+
+- [DESIGN] **The `46ch` Principle cap is the third instance of the context law and is deliberately NOT
+  fixed** (CORE_SPEC section 8, DECISIONS 2026-07-27). `.sl-markdown-content .principle` declares
+  `max-width: 46ch`, and `ch` resolves on the ASIDE (18px JetBrains Mono, 1ch = 10.80px) giving 496.80px,
+  while the text it caps is `p.principle-text` at 22.4px (1ch = 13.44px). The maxim therefore measures
+  **36.97 characters, not 46**, and never has measured 46: 38.3 at authoring (16px context, 1.2rem maxim),
+  38.0 after the Geist pass, 36.97 after the foundation lock. The rendered cap has moved three times
+  without the Principle being touched.
+  **Why it is parked rather than corrected:** the other two instances had a fix that changed alignment
+  without changing intent. This one does not. Honouring the declared 46 characters widens the block from
+  496.80px to about 618px, roughly **+120px**, which visibly changes the coda's proportions on every
+  writeup. That is a design decision about how wide the closing maxim should be, not a correction, and it
+  belongs to the Geist retune where the measure is being judged on a real screen anyway.
+  **When it is picked up,** the remedy is 2 or 3 from the context law: declare the cap on
+  `p.principle-text` so `ch` resolves against the maxim's own 22.4px, or convert to rem and comment the
+  coupling. Decide the character count first, then derive; do not carry 496.80px across.
+
+- [ENG] **Inline code is the last consumer of `--mono-chrome-size` that does not pin its leading**
+  (CORE_SPEC section 8, "a pinned size implies a pinned leading"). `:not(pre) > code` reads the pinned
+  14px but still inherits `--prose-leading`, so half its metrics track prose. Deliberately out of scope so
+  far, and the reason is real rather than lazy: inline code sits INSIDE running paragraphs, so pinning its
+  leading changes prose line boxes. That makes it a reading-surface decision, which belongs to the Geist
+  retune, not a component fix. `.port-label` was the other consumer and is now pinned via
+  `--mono-chrome-leading` (2026-07-27).
+
+- [DESIGN/A11y] **NEW 2026-07-26: the HackTheBox and VulnHub platform-index eyebrows fail WCAG AA on
+  paper.** `.pi-eyebrow` is 12.8px/400, so it needs 4.5:1, and measured by canvas readback on the real
+  element it reads **4.11:1 for HackTheBox (`#4d7c0f`)** and **4.16:1 for VulnHub (`#d12f2f`)**. PicoCTF
+  passes at 4.86:1. This is the same defect the OverTheWire amber pass just fixed, in a different hue
+  family, and it was found by that pass rather than by a separate audit. Each needs its own OKLCH solve
+  (hold hue, drop lightness, gamut-map chroma) and its own ink token, following the `--otw-amber` /
+  `--otw-amber-ink` model. Note the delivery constraint that made the amber fix awkward and will apply
+  again: `.pi-eyebrow`'s colour comes from `PlatformIndex.astro`'s own scoped style via `--pf-accent`, so
+  a layered rule cannot reach it; the OverTheWire fix needed an unlayered tail rule. Doing all three
+  platforms at once would justify either a shared `--pf-accent-ink` token or a single tail rule keyed off
+  `.pf-*`, which is tidier than three separate tail rules. Do NOT retint `--pf-accent` itself: it also
+  feeds display type (`.pi-name`, `.pi-num`) that legitimately passes at the 3:1 large-text bar, plus
+  around fifteen non-text uses. See DECISIONS 2026-07-26.
+
+- [DESIGN/A11y] Non-badge `#a86f04` ambers unaudited for light-mode WCAG AA. **LARGELY RESOLVED 2026-07-26
+  for the OverTheWire family** (DECISIONS): the shared token became the `--otw-amber` / `--otw-amber-ink`
+  pair, so PasswordReveal's button text, its block-mode summary, the OverTheWire platform-index eyebrow and
+  the sidebar rail ring are now one identity with an AA text variant, all measured (4.78 to 5.98:1 for text,
+  3.21 and 3.50:1 for the non-text rings against a 3:1 bar). What remains of the original entry: nothing in
+  the OverTheWire family. `.platform-overthewire` was already moot, and the Linux badge amber stays forked
+  correctly (a different identity that merely shares a hex). Kept here only for the history below.
+  The badge light palette pass
   (DECISIONS 2026-07-17) solved the OTW/Linux CHIP labels to AA and left the seven-way `#a86f04` collision
   forked (correctly: they are unrelated ambers). But the five NON-badge users of that hex were failing at
   2.97:1 on paper when the badges were, and nothing about their surfaces makes them pass. NARROWED
   2026-07-19: `.platform-overthewire` (the old machine-meta badge label) is now MOOT, since `.machine-meta`
   is gone from all content and that selector styles nothing (it goes away with the dead-taxonomy cleanup in
   Now). That leaves `.pf-overthewire` (platform-index accent) and PasswordReveal's button text as body-size
-  text needing 4.5:1, plus the sidebar `nth-child(5)` focus ring and the spoiler-toggle border as non-text
-  (3:1). Audit each on light and solve the text ones in OKLCH the same way (hold hue, drop
-  lightness), leaving the forks independent. Small, self-contained, after the glyph pass.
+  text needing 4.5:1, plus the sidebar `nth-child(5)` focus ring and PasswordReveal's block-mode open border
+  as non-text (3:1). NARROWED AGAIN 2026-07-25: the spoiler-toggle border is no longer a separate user. The
+  class is retired and its border is now `.pwreveal-block` reading the SHARED amber, the same token as
+  PasswordReveal's button text (DECISIONS 2026-07-25), so the two PasswordReveal entries are one fix.
+  **CLOSED 2026-07-26:** that single fix was made, and it turned out to need a token PAIR rather than one
+  re-solved value, because the same amber serves both body text (4.5:1) and borders and rings (3:1) and no
+  single value clears both jobs on paper. `--otw-amber` keeps the identity for the non-text uses and
+  `--otw-amber-ink` carries the AA text ink, solved in OKLCH by the recorded method (hold hue, drop
+  lightness). Every user listed above is now measured and passing; the genuinely unrelated forks (the Linux
+  badge amber) were left independent, as this entry always intended.
 - [ENG] ToggleAll few-pixel shift: expand/collapse can leave a small reversible content offset in real
   Chromium (Chrome/Edge/Opera GX), from native scroll anchoring fighting the manual correction. Fix
   applied: suppress `overflow-anchor` for the operation, restored next frame (DECISIONS 2026-06-20). NOT

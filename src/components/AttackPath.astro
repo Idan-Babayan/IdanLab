@@ -870,8 +870,12 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
     color: var(--sl-color-text);
     overflow-wrap: anywhere;
   }
-  /* Inline <code> inside a dossier row: the component is `not-content`, so the site's prose code chip
-     does not reach in here and this subtree styles its own. */
+  /* Inline <code> inside a dossier row: this subtree styles its own.
+     The mechanism is LAYER ORDER, not `not-content`. The site's inline-code chip is authored as a bare
+     `:not(pre) > code` in the prose layer with no .not-content guard, so it does reach in here; what
+     keeps this rule on top is that an Astro scoped style is UNLAYERED, and unlayered author CSS beats
+     any layered rule regardless of selector weight. The `not-content` class governs REACH for the
+     rules that do carry the guard, which is a separate instrument from precedence. */
   .ap-rows dd :global(code) {
     font-family: var(--sl-font-mono);
     font-size: 0.92em;
