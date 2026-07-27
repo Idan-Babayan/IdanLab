@@ -7,6 +7,7 @@ import rehypeContentImageLoading from './plugins/rehype-content-image-loading.mj
 import remarkInjectPasswordReveal from './plugins/remark-inject-passwordreveal.mjs';
 import remarkInjectWriteupMeta from './plugins/remark-inject-writeupmeta.mjs';
 import remarkValidateContentTaxonomy from './plugins/remark-validate-content-taxonomy.mjs';
+import remarkTransformReconRail from './plugins/remark-transform-recon-rail.mjs';
 
 export default defineConfig({
   site: 'https://idanlab.dev',
@@ -32,8 +33,12 @@ export default defineConfig({
   // writeup hand-places the component. Runs LAST, after the guard, so the guard keeps seeing only
   // hand-authored markup (its documented boundary) and never validates generated nodes. Frontmatter
   // is attached to the vfile before any remark plugin runs, so this position does not affect the read.
+  // remarkTransformReconRail: rewrites a plain markdown list inside <Callout type="recon"> into the
+  // findings rail's dl/dt/dd structure, so a recon rail is authored as data rather than as markup.
+  // Appended LAST for the same reason as the injector: the taxonomy guard's boundary is hand-authored
+  // markup, and the dl/dt/dd this emits are generated nodes it should never see.
   markdown: {
-    remarkPlugins: [remarkValidateContentTaxonomy, remarkInjectPasswordReveal, remarkInjectWriteupMeta],
+    remarkPlugins: [remarkValidateContentTaxonomy, remarkInjectPasswordReveal, remarkInjectWriteupMeta, remarkTransformReconRail],
     rehypePlugins: [rehypeContentImageLoading],
   },
 

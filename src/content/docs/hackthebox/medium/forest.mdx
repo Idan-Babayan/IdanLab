@@ -9,8 +9,6 @@ principle: "Kerberos pre-authentication is not optional."
 
 import Toggle from '@components/Toggle.astro';
 import Callout from '@components/Callout.astro';
-import Findings from '@components/Findings.astro';
-import Finding from '@components/Finding.astro';
 import FlagCapture from '@components/FlagCapture.astro';
 import AttackPath from '@components/AttackPath.astro';
 
@@ -72,14 +70,12 @@ An aggressive scan confirmed Windows Server 2016 and added nothing new, so I lef
 
 <Callout type="recon">
 
-<Findings>
-  <Finding port="53/tcp">DNS, Simple DNS Plus</Finding>
-  <Finding port="88/tcp">Kerberos</Finding>
-  <Finding port="389/tcp">LDAP for `htb.local`</Finding>
-  <Finding port="445/tcp">SMB, signing required</Finding>
-  <Finding port="3268/tcp">Global Catalog</Finding>
-  <Finding port="5985/tcp">WinRM, the remote shell once I have credentials</Finding>
-</Findings>
+- 53/tcp : DNS, Simple DNS Plus
+- 88/tcp : Kerberos
+- 389/tcp : LDAP for `htb.local`
+- 445/tcp : SMB, signing required
+- 3268/tcp : Global Catalog
+- 5985/tcp : WinRM, the remote shell once I have credentials
 
 This is the domain controller for htb.local, and there is no web surface at all. The directory itself, over LDAP and Kerberos, is the attack surface.
 

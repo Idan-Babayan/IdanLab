@@ -500,19 +500,71 @@ html[data-theme="light"] .sl-markdown-content .cl :not(pre) > code {
 }
 
 
-/* ── Recon assessment (Direction 2) ────────────────────────────────────────────
-   The findings rail itself is no longer here. It is <Findings> / <Finding>, and its two columns are
-   COMPUTED by a grid in Findings.astro's own scoped styles: `max-content` measures the widest chip
-   actually present, so no literal governs the column and there is nothing here to keep in sync. What
-   used to live at this spot was three coupled literals (li padding-left / text-indent 5.6em against a
-   chip min-width 4.9em plus margin-right 0.7em) that were one intended arithmetic identity, since
-   4.9 + 0.7 = 5.6, split across two font-size contexts: the li's 18px and the chip's pinned 14px. They
-   were therefore never equal, and the old note here claiming 4.9em "fits the widest port token (for
-   example 5985/tcp)" was not stale but impossible, because eight mono characters plus the chip's own
-   padding need about 5.7em in the chip's context and 4.9em cannot reach that at any font size. See
-   CORE_SPEC section 8.
+/* ── Recon findings rail + assessment (Direction 2) ────────────────────────────
+   The rail's STRUCTURE is emitted at build time by plugins/remark-transform-recon-rail.mjs, which
+   rewrites a plain markdown list inside <Callout type="recon"> into this dl/dt/dd. The author writes
+   `- 53/tcp : DNS, Simple DNS Plus` and never sees any of this. The layout below therefore has exactly
+   one consumer and no component competes for these selectors, which is why it belongs in the theme
+   pass rather than in a component: it lives in the `components` LAYER, so a later layer can still
+   override it, where an Astro scoped style would have been unlayered and unreachable.
 
-   The concluding paragraph is still treated as the ASSESSMENT: a hairline separates it from the facts
+   Its two columns are COMPUTED: `max-content` measures the widest chip actually present, so no literal
+   governs the column and there is nothing here to keep in sync. What used to live at this spot was
+   three coupled literals (li padding-left / text-indent 5.6em against a chip min-width 4.9em plus
+   margin-right 0.7em) that were one intended arithmetic identity, since 4.9 + 0.7 = 5.6, split across
+   two font-size contexts: the li's 18px and the chip's pinned 14px. They were therefore never equal,
+   and the old note here claiming 4.9em "fits the widest port token (for example 5985/tcp)" was not
+   stale but impossible, because eight mono characters plus the chip's own padding need about 5.7em in
+   the chip's context and 4.9em cannot reach that at any font size. See CORE_SPEC section 8.
+
+   The chip's colour, background, border, radius, family and size are NOT declared here: they stay on
+   the shared .port-label rule above, so a port named inline in prose and a port in a rail are the same
+   object. Only layout is below. */
+.sl-markdown-content .findings {
+  display: grid;
+  /* The port column measures itself. No literal, no floor, no padding of short tokens. */
+  grid-template-columns: max-content 1fr;
+  /* Chip and description sit on one shared baseline, as they did in inline flow. Without this,
+     grid's default `normal` alignment stretches the chip to the row height and tears its box open. */
+  align-items: baseline;
+  /* Derived from the chip, not picked: the chip's own inline padding is 0.45em at its pinned 14px,
+     which is 6.3px a side. A gutter has to exceed the chip's internal padding or the chip reads as
+     indented text rather than as a bounded object. Two times 6.3 is 12.6px, rounded onto the rem
+     grid at 0.8rem (12.8px). rem, not em: this is component geometry, not a word space. */
+  column-gap: 0.8rem;
+  /* Reproduces the old rail's rhythm exactly. The li margins were 0.26rem and COLLAPSED to 0.26rem
+     between rows (measured, not assumed); grid does not collapse margins, so the same number is
+     declared once as a gap. A translation, not a change. */
+  row-gap: 0.26rem;
+  /* Reproduces the old ul margins so the callout's outer geometry does not move. */
+  margin: 0.4rem 0 0.2rem;
+}
+
+/* Chips keep their natural widths and meet the column edge on the RIGHT, so the gutter is exactly
+   column-gap on every row regardless of token length. This is what makes the description column
+   start at one x with no arithmetic anywhere. */
+.sl-markdown-content .findings dt {
+  justify-self: end;
+  margin: 0;
+  padding: 0;
+}
+
+/* Starlight ships dd { margin-top: 4px; padding-left: 16px } and dl { margin-top: 16px } (measured).
+   The dl margin is replaced above; these two are zeroed so the grid alone positions the row. */
+.sl-markdown-content .findings dd {
+  margin: 0;
+  padding: 0;
+}
+
+/* The transform emits the description's inline children directly, so a <p> only appears if a future
+   authoring path wraps them. Matches nothing today and exists so that cannot introduce an 18px
+   paragraph margin inside a grid row. */
+.sl-markdown-content .findings dd > p {
+  margin: 0;
+}
+
+/* ── Recon assessment ──────────────────────────────────────────────────────────
+   The concluding paragraph is treated as the ASSESSMENT: a hairline separates it from the facts
    and an uppercase mono eyebrow labels it. The trigger MOVED WITH THE RAIL, from :has(ul) to
    :has(.findings), which is load-bearing rather than cosmetic: the rail is not a list any more, so the
    old selector would have quietly dropped both the hairline and the eyebrow on every rail page while

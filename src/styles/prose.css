@@ -198,7 +198,8 @@ html[data-theme="light"] .starlight-aside--tip {
 }
 /* td and dd are prose containers that are not p or li, so both rules above and below have to name them
    or they silently fall out of the reading surface.
-   dd is LIVE: it is the description half of a <Findings> rail. Without it the description rendered in
+   dd is LIVE: it is the description half of a recon findings rail, emitted by
+   plugins/remark-transform-recon-rail.mjs. Without it the description rendered in
    the mono container face at Starlight's ambient 1.75 while the paragraph beneath it ran Geist at 1.7,
    which is what an author would read as "the rail looks like code". dt is deliberately NOT named: it
    holds the port chip, which is mono by design.
