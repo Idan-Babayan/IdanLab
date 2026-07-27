@@ -132,6 +132,7 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in C:\Users
 │  ├─ rehype-content-image-loading.mjs # rehype: sets loading/decoding on content <img> (first eager, rest lazy); wired via astro.config markdown.rehypePlugins
 │  ├─ remark-inject-passwordreveal.mjs # remark: conditionally injects `import PasswordReveal from '@components/PasswordReveal.astro'` into an MDX file's AST at build time, only when that file uses <PasswordReveal/> and has no import of its own; wired via astro.config markdown.remarkPlugins
 │  ├─ remark-inject-writeupmeta.mjs   # remark: injects the <WriteupMeta/> badge row + its import into every writeup at build time. platform is DERIVED from the platform directory (hardcoded map, the single source of truth); os/environment/difficulty are read from frontmatter via file.data.astro.frontmatter and forwarded only when a non-empty string. Gated on the writeup path (non-index .mdx under the four platform dirs), so nothing else can be injected. badges: false opts out; a non-boolean badges FAILS the build (YAML parses no/off/"false" as truthy strings). Transformer must be (tree, file) to see frontmatter. Zero deps (unist-util-visit + acorn). See DECISIONS 2026-07-20
+│  ├─ remark-transform-recon-rail.mjs  # remark: turns a PLAIN MARKDOWN LIST inside <Callout type="recon"> into the findings rail (<dl class="findings"> with a <dt> chip + <dd> note per row) at build time, so a writeup authors data and never presentation. Keyed on the Callout node's type="recon" attribute; direct children only. The authored " : " is a PARSE DELIMITER (/^(\S+)\s:\s/ on the item's first text node), consumed here and never rendered: the separator the reader sees is a CSS rule on dt::after. ALL-OR-NOTHING per list, so one unparseable item leaves the list bulleted and visibly wrong rather than silently half-converted on a green build. Emits dt/dd as SIBLINGS with no per-row wrapper, because both must be direct grid children (a wrapper needs subgrid, which blockifies inline <code> onto its own track). Zero deps (unist-util-visit). Wired LAST in markdown.remarkPlugins. SUPERSEDES the <Findings>/<Finding> components, see DECISIONS 2026-07-27
 │  └─ remark-validate-content-taxonomy.mjs # remark: build-time guardrail that FAILS the build on an unknown hand-authored badge/metadata class token (meta-badge / platform-* / difficulty-* / os-* / port-label / task-title; the machine-meta family was removed 2026-07-19) or an unknown component metadata value (Callout type, FlagCapture type user|root; the WriteupMeta prop enums were retired 2026-07-20 once the component stopped being hand-placed, and now live in the Zod schema instead), with a "did you mean" suggestion; the deliberate alternative to astro check; zero deps (unist-util-visit); its allow-lists are the single source of truth; wired via astro.config markdown.remarkPlugins. See DECISIONS 2026-07-12 and 2026-07-20
 └─ public/
    ├─ robots.txt                      # in-repo; breadcrumb comment + Sitemap line (see §2)
@@ -691,8 +692,11 @@ Preserves reading position: anchors on the current heading and corrects scroll s
   per-file import used when PasswordReveal first shipped on `overthewire/bandit/0-1.mdx`.
   See DECISIONS 2026-07-05 and 2026-07-25.
 - `**Port 80**` → a cyan mono `.port-label` tag (was red; harmonizes with the recon callout, out-ranks
-  inline code by weight; inside `.cl-recon` a port list becomes an aligned findings table with an
-  `Assessment` eyebrow, see DECISIONS 2026-07-04). Inline code (`:not(pre) > code`) → a rounded NEUTRAL chip with red
+  inline code by weight, see DECISIONS 2026-07-04). **Inside `<Callout type="recon">` a plain markdown
+  list is converted at build time into the findings rail** by `plugins/remark-transform-recon-rail.mjs`,
+  which emits the chip for each row, so `.port-label` is hand-written only for a port mentioned inline in
+  prose. The concluding paragraph keeps the `Assessment` hairline + eyebrow, keyed off `:has(.findings)`.
+  See DECISIONS 2026-07-27. Inline code (`:not(pre) > code`) → a rounded NEUTRAL chip with red
   text (identity in the glyphs, no red in the fill or border), its own object (readability-first,
   theme-tuned, deliberately distinct from the sharp code blocks);
   inside a colored callout it instead harmonizes with that callout's accent (reads `--acc` / `--cl-ink`,
@@ -868,6 +872,36 @@ across fifteen lines in three content files.
 
 **The test: if changing the look requires editing content files, the boundary is in the wrong place.**
 
+**A COMPONENT THAT MUST BE IMPORTED INTO A CONTENT FILE IS ITSELF PRESENTATION IN THAT FILE.** This is
+the part the first version of this rule missed, and it cost a full iteration. The fix for the rail was
+originally `<Findings>` and `<Finding port="...">`: it produced exactly the right DOM and it did move the
+class names and the separator out of content, so it passed the test as written. But it replaced them with
+two import lines and a JSX tree per rail, which is a different presentation detail in the same place. The
+components passed the letter of the rule and failed its purpose.
+
+**When a build-time transform can produce the same structure from data the author already writes, prefer
+the transform.** The rail is keyed on the `<Callout type="recon">` that was already wrapping it, and the
+port and note were already being typed, so the transform needed no new authored signal at all. The
+authoring that resulted is simpler than what existed before any of this work:
+
+```mdx frame="code" title="the whole authoring surface, after"
+<Callout type="recon">
+
+- 53/tcp : DNS, Simple DNS Plus
+- 389/tcp : LDAP for `htb.local`
+
+</Callout>
+```
+
+**Sharper test, replacing the one above:** count what a content file must know about how the thing looks.
+A class name, a separator glyph, a wrapper element, and an import line are all the same kind of knowledge.
+Zero is the target, and a plain list reaches it.
+
+**The residue, and why it is acceptable:** the ` : ` survives in source. It is not a rendered glyph, it is
+a parse delimiter consumed at build time, and it is the least ambiguous way to mark where the port token
+ends. A convention that has to be learned is cheaper than markup that has to be maintained, but it is not
+free, so it is recorded here rather than treated as invisible.
+
 ### A pinned size implies a pinned leading
 
 A component that pins `font-size` off the prose scale must pin `line-height` too, or half its metrics
@@ -881,11 +915,12 @@ its leading changes prose line boxes: a reading-surface decision, not a componen
 
 "CSS-only" governs **the theme pass over Starlight**, where the rule against forking Starlight components
 is absolute and unchanged. It does **not** govern our own content components. When a presentation problem
-needs structure the content does not have, add the structure in a component rather than encoding it as
-literals in CSS. The rail is the worked example: no arrangement of CSS over a flat `<li>` could hold a
-chip column and a description column in alignment, because the markup had no boundary between them, and
-three CSS literals were the workaround. `Findings` / `Finding` added the boundary, and the literals
-became unnecessary rather than correct.
+needs structure the content does not have, **add the structure**, in a component or in a build-time
+transform, rather than encoding it as literals in CSS. The rail is the worked example: no arrangement of
+CSS over a flat `<li>` could hold a chip column and a description column in alignment, because the markup
+had no boundary between them, and three CSS literals were the workaround. Adding the boundary made the
+literals unnecessary rather than correct. **Where that structure is added is a separate question from
+whether to add it**, and the rule above answers it: a transform, when the data is already there.
 
 ## 9. Environment & Tooling
 

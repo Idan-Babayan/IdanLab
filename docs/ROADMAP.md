@@ -17,13 +17,18 @@
   the top of `tokens.css`, precedence is decided by layer order rather than selector weight, and the dead
   rules that would have made a retune ambiguous are gone.
 
-  1. **The prose dials** (structurally done since 2026-07-25, still genuine eye-calls on a real screen):
-     `--prose-size` (18.5px now, `1.125rem` for the 18px variant), `--prose-leading` (~1.5 to 1.55),
-     `--prose-strong-weight` (600 vs 700 against Geist), and the two toggle-title dials
+  1. **The prose dials.** The FOUNDATION four are now LOCKED and derived, not eye-calls: `--prose-size`
+     (1.125rem = 18px), `--prose-leading` (1.7), `--prose-measure` (aliased to `--sl-content-width`,
+     46rem) and `--prose-paragraph-gap` (1em), all recomputed from characters per line against Geist.
+     Recompute from that derivation rather than nudging any of them. Still genuine eye-calls on a real
+     screen: `--prose-strong-weight` (600 vs 700 against Geist), the two toggle-title dials
      `--toggle-title-face` (`var(--body-face)` reads as a content label, `var(--sl-font-mono)` as terminal
-     voice) + `--toggle-title-weight` (600 vs 700). Also the re-tuned spacing
-     (`--prose-paragraph-gap`, `--prose-heading-gap`, `--blockquote-pad-y`), and confirm italic prose
-     renders Geist's drawn italic rather than a slant. Both themes, wide and 375px.
+     voice) + `--toggle-title-weight` (600 vs 700), `--blockquote-pad-y`, and the heading pair
+     `--heading-space-above` / `--heading-space-below` (1.5em / 0.5em, 3:1, and the space below must stay
+     under `--prose-paragraph-gap` at every level). Also confirm italic prose renders Geist's drawn italic
+     rather than a slant. Both themes, wide and 375px.
+     Note `--prose-heading-gap` no longer exists: it was retired 2026-07-27 as an instance of the context
+     law (see DECISIONS), and `--blockquote-pad-x` is deliberately rem, not em.
   2. **The rest of the design against the new body face.** Geist changed the body but the surfaces around
      it were tuned for mono: the measure, the vertical rhythm between prose and components, and how the
      mono chrome (badges, callout labels, code frames, the Principle coda) now reads BESIDE a proportional
@@ -190,6 +195,30 @@
     attribution the diamond asset currently carries.
 
 ## Open bugs / known issues
+
+- [DESIGN] **The `46ch` Principle cap is the third instance of the context law and is deliberately NOT
+  fixed** (CORE_SPEC section 8, DECISIONS 2026-07-27). `.sl-markdown-content .principle` declares
+  `max-width: 46ch`, and `ch` resolves on the ASIDE (18px JetBrains Mono, 1ch = 10.80px) giving 496.80px,
+  while the text it caps is `p.principle-text` at 22.4px (1ch = 13.44px). The maxim therefore measures
+  **36.97 characters, not 46**, and never has measured 46: 38.3 at authoring (16px context, 1.2rem maxim),
+  38.0 after the Geist pass, 36.97 after the foundation lock. The rendered cap has moved three times
+  without the Principle being touched.
+  **Why it is parked rather than corrected:** the other two instances had a fix that changed alignment
+  without changing intent. This one does not. Honouring the declared 46 characters widens the block from
+  496.80px to about 618px, roughly **+120px**, which visibly changes the coda's proportions on every
+  writeup. That is a design decision about how wide the closing maxim should be, not a correction, and it
+  belongs to the Geist retune where the measure is being judged on a real screen anyway.
+  **When it is picked up,** the remedy is 2 or 3 from the context law: declare the cap on
+  `p.principle-text` so `ch` resolves against the maxim's own 22.4px, or convert to rem and comment the
+  coupling. Decide the character count first, then derive; do not carry 496.80px across.
+
+- [ENG] **Inline code is the last consumer of `--mono-chrome-size` that does not pin its leading**
+  (CORE_SPEC section 8, "a pinned size implies a pinned leading"). `:not(pre) > code` reads the pinned
+  14px but still inherits `--prose-leading`, so half its metrics track prose. Deliberately out of scope so
+  far, and the reason is real rather than lazy: inline code sits INSIDE running paragraphs, so pinning its
+  leading changes prose line boxes. That makes it a reading-surface decision, which belongs to the Geist
+  retune, not a component fix. `.port-label` was the other consumer and is now pinned via
+  `--mono-chrome-leading` (2026-07-27).
 
 - [DESIGN/A11y] **NEW 2026-07-26: the HackTheBox and VulnHub platform-index eyebrows fail WCAG AA on
   paper.** `.pi-eyebrow` is 12.8px/400, so it needs 4.5:1, and measured by canvas readback on the real
