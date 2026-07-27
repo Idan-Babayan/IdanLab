@@ -6,6 +6,59 @@
 
 ---
 
+### 2026-07-27 · The release hold is lifted and `dev` ships to production
+- **Decision:** the release hold recorded on 2026-07-26 is LIFTED by owner instruction, and `dev`
+  (29 commits ahead of `main`) merges to `main` by pull request. This is the first production deploy of the
+  Geist body face, the cascade-layer CSS architecture, the derived prose foundation, and the recon rail
+  rearchitecture. `main` had been at `51edb9c` since PR #18 and predated the entire Geist arc.
+- **What the hold was for, stated fairly:** `dev` carried a DESIGN change that was only half done. Geist was
+  the body face but the surfaces around it were still tuned for mono, and a half-refitted body face reads as
+  "the site looks off" to a visitor while every individual rule is correct. Splitting the refactor out and
+  shipping it alone was considered and rejected then, because the refactor's verification baseline was
+  captured against a Geist-carrying tree.
+- **Why the purpose is judged satisfied now:** the four foundation dials stopped being eye-calls and became
+  a derivation. `--sl-content-width` 46rem with `--prose-measure` aliased to it, `--prose-size` 1.125rem,
+  `--prose-leading` 1.7 and `--prose-paragraph-gap` 1em, measured live at 87.6 characters per line against
+  Geist's 0.467em average advance. The body face production will serve is tuned. Everything still open is
+  chrome (the small-chrome type scale), component internals (AttackPath), per-platform ink (the eyebrows) or
+  a single parked cap. None of it is the body face, so none of it is the thing the hold protected against.
+- **The sequencing changes with it:** the outstanding clusters no longer accumulate on `dev` waiting for one
+  release. Each ships as its own pull request into `main`. Holding them together was correct while the body
+  face was half done and is not correct now that it is not.
+- **What ships knowingly unfixed, so nobody discovers these as surprises:**
+  1. **The small-chrome type scale is still frozen at 16px-era ratios.** Eight declarations are round
+     fractions of a 16px body (0.6, 0.625, 0.64, 0.688, 0.69, 0.70, 0.72, 0.75) and scatter against the
+     current 18px. Seventeen distinct sizes sit below 12px with a 9.60px floor.
+  2. **AttackPath internals read at about 0.533 of body size,** confirmed too small, and `.ap-panel-head`
+     declares no font-size at all so the dossier's largest text inherits `--prose-size` while its siblings
+     sit at 11.52px and 11.2px.
+  3. **The HackTheBox and VulnHub platform-index eyebrows fail WCAG AA on paper:** 4.11:1 and 4.16:1
+     measured by canvas readback on the real element, as 12.8px body text needing 4.5:1. PicoCTF passes at
+     4.86:1 and OverTheWire was fixed by the amber pair. This is a real accessibility failure shipping
+     knowingly, and it is the first cluster queued after the merge for that reason.
+  4. **The `46ch` principle cap is still the open third instance of the context law.** `ch` resolves on the
+     aside at 18px mono while the text it caps is 22.4px, so the maxim measures 36.97 characters and never
+     measured 46 in any era. Parked because honouring the declared 46 widens the block by about 120px,
+     which is a design decision rather than a correction.
+  5. **The recon rail's mobile layout is undesigned.** The rail was built and measured at desktop width;
+     at 375px the chip track plus its new gutter takes 96.2px of the column and one Forest row wraps to
+     three lines. Nothing overflows and the continuation error is 0.00, but no one has decided what the
+     rail should look like on a phone.
+- **The pre-flight that preceded the merge,** because measurement in a headless pane had been the only gate
+  for the whole arc and it cannot see a missing asset or a case-sensitivity fault: cold build from a deleted
+  `dist`, `.astro`, `node_modules/.vite` and `node_modules/.astro` (46 pages, exit 0, all 12 images
+  regenerated rather than reused, one pre-existing `/404` route-priority warning that also occurs on `main`);
+  byte-for-byte case comparison of all five `autogenerate.directory` values, 34 resolvable import specifiers
+  and 12 content image paths (all exact); all 12 `@font-face` files present, exactly cased, tracked, and
+  shipped to `dist` with zero unreferenced; `site` confirmed as `https://idanlab.dev`; and a dead-reference
+  sweep confirming `custom.css`, `Findings.astro`, `Finding.astro`, `notion_cleaner.py` and
+  `--prose-heading-gap` exist nowhere as live code.
+- **One staleness finding recorded rather than fixed:** roughly thirty comments across `astro.config.mjs`,
+  `src/lib/`, `src/components/` and `src/styles/` still name `custom.css`, a file deleted in the refactor.
+  None is a live reference (no import, no `customCss` entry, no href), so none affects the build, but they
+  now point at nothing. Folded into the hygiene cluster.
+- **Status:** Adopted (owner instruction). Docs only in this commit; the merge itself follows.
+
 ### 2026-07-27 · The rail's column rule gets a gutter, so its clearance is symmetric by construction
 - **Decision:** `.findings` declares two local custom properties, `--findings-gutter` (0.8rem) and
   `--findings-rule-width` (2px). `column-gap` reads the gutter, the `dt` takes

@@ -6,11 +6,14 @@
 
 ## Now (in progress)
 
-- [DESIGN] **THE GEIST RETUNE. This is the top item and it is the gate on merging `dev` to `main`.**
-  `dev` is 17 commits ahead of `main` and carries the Geist prose face WITHOUT the design being refitted
-  around it. Merging now would deploy a half-tuned body face to production, so nothing merges until this
-  is done and the owner has seen it on a real screen. The refactor and the retune ship as ONE release.
-  See DECISIONS 2026-07-26 (the merge gate) for why splitting them was rejected.
+- [DESIGN] **THE GEIST RETUNE. No longer a merge gate: the release hold was LIFTED 2026-07-27 and `dev`
+  shipped to `main`.** The hold existed so production would not serve a half-refitted body face. That is
+  satisfied, because the prose foundation is locked and derived rather than eye-called, and everything
+  still open below is chrome or component internals rather than the body face. **The clusters below are
+  now POST-MERGE work and each ships as its own pull request into `main`**, rather than accumulating on
+  `dev` waiting for one release. Nothing here blocks a deploy any more; what ships knowingly unfixed is
+  listed in DECISIONS 2026-07-27. See DECISIONS 2026-07-26 for the original gate and why splitting the
+  refactor from the retune was rejected at the time.
 
   What the retune inherits, and why it should be a values exercise rather than an archaeology one: the
   theme pass is now layered, purged and tokenized. Every dial below is a custom property in ONE block at
@@ -45,7 +48,8 @@
      broken (no horizontal overflow, continuation error still 0.00), but whether a narrow screen wants the
      same gutter as a wide one is a taste call, and it is a one-token change. See DECISIONS 2026-07-27.
 
-  Then move the settled values to DECISIONS, and only then open the PR.
+  Move each settled value to DECISIONS as its cluster lands. Each cluster is its own pull request now,
+  so there is no longer one PR to hold everything back.
 
 - [ENG] **The CSS refactor is DONE and needs no further work** (DECISIONS 2026-07-26). Recorded here only
   so it is not reopened: `custom.css` is gone, the theme pass is ten modules under `src/styles/` on a
