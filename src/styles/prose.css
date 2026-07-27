@@ -190,20 +190,22 @@ html[data-theme="light"] .starlight-aside--tip {
    (chrome markup that happens to be a paragraph), so it is excluded via :not(.cl-header) to keep the
    uppercase callout labels in JetBrains Mono; callout BODY prose (p / li without that class) stays Geist. */
 @layer prose {
-.sl-markdown-content :is(p, li, blockquote, td, strong, em):not(.cl-header):not(:where(.not-content *)) {
+.sl-markdown-content :is(p, li, blockquote, td, strong, em, dd):not(.cl-header):not(:where(.not-content *)) {
   font-family: var(--body-face);
 }
 .sl-markdown-content {
   font-size: var(--prose-size);
 }
-/* td is included so a table cell gets the prose LEADING as well as the prose face it already takes from
-   the rule above. Without it a cell rendered Geist at --prose-size but fell back to Starlight's ambient
-   --sl-line-height (1.75) while every paragraph beside it ran 1.7. This has ZERO rendered effect today:
-   no file in src/content/docs contains a markdown table, so the rule currently matches no element. It is
-   fixed now because the gap is invisible until the first table ships, at which point it reads as a
-   mysteriously loose block. th is deliberately left out, matching the face rule above, which also names
-   only td: a header cell is chrome for the table, not running prose. */
-.sl-markdown-content :is(p, li, td):not(.cl-header):not(:where(.not-content *)) {
+/* td and dd are prose containers that are not p or li, so both rules above and below have to name them
+   or they silently fall out of the reading surface.
+   dd is LIVE: it is the description half of a <Findings> rail. Without it the description rendered in
+   the mono container face at Starlight's ambient 1.75 while the paragraph beneath it ran Geist at 1.7,
+   which is what an author would read as "the rail looks like code". dt is deliberately NOT named: it
+   holds the port chip, which is mono by design.
+   td has ZERO rendered effect today, since no file in src/content/docs contains a markdown table, so it
+   matches no element. It is fixed anyway because the gap stays invisible until the first table ships.
+   th is left out for the same reason as dt: a header cell is chrome for the table, not running prose. */
+.sl-markdown-content :is(p, li, td, dd):not(.cl-header):not(:where(.not-content *)) {
   line-height: var(--prose-leading);
   letter-spacing: 0;
   font-weight: 400;

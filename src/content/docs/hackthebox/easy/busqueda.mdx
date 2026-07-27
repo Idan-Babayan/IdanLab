@@ -9,6 +9,8 @@ principle: "Parameterize, do not sanitize."
 
 import Toggle from '@components/Toggle.astro';
 import Callout from '@components/Callout.astro';
+import Findings from '@components/Findings.astro';
+import Finding from '@components/Finding.astro';
 import FlagCapture from '@components/FlagCapture.astro';
 
 > Python command injection in Searchor 2.4.0, escalating to root via a relative-path hijack in a sudo-run script.
@@ -86,8 +88,10 @@ Service Info: Host: searcher.htb; OS: Linux; CPE: cpe:/o:linux:linux_kernel
 
 <Callout type="recon">
 
-- <span class="port-label">22/tcp</span> : OpenSSH 8.9p1 (Ubuntu)
-- <span class="port-label">80/tcp</span> : Apache httpd 2.4.52, redirecting to `http://searcher.htb/`
+<Findings>
+  <Finding port="22/tcp">OpenSSH 8.9p1 (Ubuntu)</Finding>
+  <Finding port="80/tcp">Apache httpd 2.4.52, redirecting to `http://searcher.htb/`</Finding>
+</Findings>
 
 The redirect to a `.htb` hostname is the signal: the server wants a `Host` header, so I teach my machine that name before the site behaves.
 

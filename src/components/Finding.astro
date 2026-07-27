@@ -1,0 +1,29 @@
+---
+/**
+ * Finding: one row of the recon rail. Renders a <dt> carrying the port chip and a <dd> carrying the
+ * description, as SIBLINGS with no wrapper, so both stay direct children of the <dl> in Findings.astro
+ * and participate in its grid directly.
+ *
+ * The description is the slot, and it holds ordinary MDX, so inline `code` renders as <code> and
+ * flows inline. Authored inline (opening tag, text, closing tag on one line), which is what keeps
+ * MDX from wrapping the description in a paragraph.
+ *
+ * There is no separator prop and no separator glyph. The authored " : " that used to sit between the
+ * chip and the description was presentation living in content; a real column boundary makes it
+ * redundant punctuation after an object that already has a border.
+ */
+interface Props {
+  /** The port token, for example "5985/tcp". Rendered verbatim into the chip. */
+  port: string;
+}
+
+const { port } = Astro.props as Props;
+
+// astro build does not type-check .astro props and this repo runs no astro check, so the interface is
+// editor-only. Guard at runtime, matching AttackPath and WriteupMeta.
+if (typeof port !== 'string' || port.trim() === '') {
+  throw new Error('Finding: the `port` prop is required and must be a non-empty string.');
+}
+---
+
+<dt><span class="port-label">{port}</span></dt><dd><slot /></dd>
