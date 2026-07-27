@@ -110,7 +110,7 @@ The authoring flow is: write in Notion, export Markdown, then polish it by hand 
 - Real name is fine on the public site.
 - **Domain:** the canonical domain is **`idanlab.dev`** (moved from `idanstudio.click`, 2026-06-06; old domain kept as a 301 redirect, then retired). See DECISIONS.
 - **Deployment:** Cloudflare Pages auto-deploys on push to **`main`** (also at `idanlab.pages.dev`). Build `npm run build`, output `dist/` (gitignored).
-- **RELEASE HOLD (2026-07-26):** `dev` is ahead of `main` and must NOT be merged yet. It carries the Geist prose face without the design having been refitted around it, alongside the finished CSS refactor. The merge is gated on the Geist retune so production never serves a half-tuned body face; the retune and the refactor ship as one release. Do not open a PR into `main` until Idan says the retune is done. See `docs/CORE_SPEC.md` §2 and the top item in `docs/ROADMAP.md`.
+- **Release hold (2026-07-26): LIFTED 2026-07-27 by owner instruction.** The hold kept `dev` off `main` while the branch carried the Geist prose face without the design refitted around it. Its stated purpose is satisfied: the prose foundation is locked and derived (`--sl-content-width` 46rem, `--prose-size` 18px, `--prose-leading` 1.7, `--prose-paragraph-gap` 1em, measured at 87.6 characters per line), so what production serves is a tuned body face. The retune work that remains is chrome and component internals, not the body face, and those clusters ship as their own pull requests from here. **Two standing rules were never part of the hold and did not lift with it:** `main` is reached only through a pull request, never a direct push, and force pushes, rebases, amends, resets and any history rewrite stay forbidden. See `docs/CORE_SPEC.md` §2 and DECISIONS 2026-07-27.
 
 ## Git policy
 - Never run `git commit` or `git push` unless I explicitly ask. Edit locally; I commit myself.
@@ -129,9 +129,18 @@ directly; changes reach main only via a pull request opened and merged by the
 owner. Force pushes, amends, rebases, resets, merges, and any history rewrite
 remain forbidden without a new owner instruction.
 
-Release hold (2026-07-26, owner instruction): do not propose, prepare, or open a
-pull request into main while the Geist retune is outstanding. dev accumulating
-commits ahead of main is the intended state, not a problem to fix.
+Release hold (2026-07-26, owner instruction): LIFTED 2026-07-27 by owner
+instruction, and dev merged to main by pull request that day. Its purpose was
+to keep a half-refitted body face out of production; the prose foundation is
+now locked and derived, and the remaining retune work is chrome and component
+internals, so the purpose is satisfied. A future session should NOT refuse to
+open a pull request on the strength of this paragraph.
+
+What did NOT lift with it, because it was never part of the hold: main is
+reached only through a pull request, never a direct push, and force pushes,
+rebases, amends, resets and any history rewrite remain forbidden without a new
+owner instruction. Outstanding retune clusters ship as individual pull
+requests from here. See DECISIONS 2026-07-27.
 
 ## My rules
 - NO em dashes in any copy (use commas, colons, or parentheses).
