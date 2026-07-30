@@ -28,6 +28,20 @@ These are far richer than this CLAUDE.md — treat them as primary.
 - **No test runner or linter is configured.** `npm run build` is the validation gate — it fails on TypeScript errors (strict config) and on Starlight sidebar misconfiguration (see below). `npx astro check` does standalone type/content checking.
 - **Never hand-bump dependency versions.** Packages are intentionally pinned at a known-good set; upgrade only from a stable checkpoint via `npx @astrojs/upgrade`. (See DECISIONS.)
 
+### Which server to use
+
+- `npm run dev` (localhost:4321) for implementation and visual iteration. HMR makes it the right loop
+  for anything you are looking at rather than measuring.
+- `npm run build` then `astro preview` for final production verification, for build or deployment
+  behaviour, and for any computed-style measurement that gates a commit. CSS emission order differs
+  between the two servers, and unlayered rules (the `overrides.css` tail and every Astro scoped style)
+  are settled by source order, so dev can resolve a tie differently from production.
+- Never use `astro preview` as the iteration loop.
+- Never compare a baseline captured on one server against an after-state captured on the other.
+
+`.claude/launch.json` carries both: `astro-dev` on 4321 and `astro-preview` on 4331, so a measurement
+run does not have to displace the iteration server.
+
 ## Architecture
 
 ### Two surfaces: "one bespoke page system, everything else Starlight"
