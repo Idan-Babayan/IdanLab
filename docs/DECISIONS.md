@@ -6,6 +6,73 @@
 
 ---
 
+### 2026-07-31 · The platform ink family, and the wash that was causing the failure it hid
+
+- **Decision:** each platform gains a `--pf-ink` beside its `--pf-accent`, and the light hero wash moves
+  off the hero type. Four platform-index eyebrows, plus the filter pill, now clear WCAG AA on paper.
+  `--pf-accent` is NOT retinted. The tail shrinks from 14 rules to 13.
+- **The cluster began from a premise that measurement destroyed.** The brief was "two platforms fail,
+  PicoCTF passes, and OverTheWire's amber is the dark outlier to be re-solved downward". Measured
+  against the surface that actually renders, all four failed, PicoCTF worst-of-the-passing at 3.59, and
+  amber was the only one passing, by 0.29 rather than the 1.26 the record implied. Every light figure in
+  the project's history reproduced EXACTLY when re-measured against bare paper, which is how the cause
+  was identified: the hero carries a wash mixed from the platform's own accent, and nobody had ever
+  composited it. See the composite rule now in CORE_SPEC section 8.
+- **Three levers were modelled and two were rejected on the numbers, not on taste:**
+  1. **Ink only, wash untouched.** Solving each ink on the current washed surface needs OKLCH lightness
+     drops of 0.107 to 0.159 from the accent, landing every platform BELOW the darkest value the project
+     has ever shipped for that hue, with three of four gamut-clamping. Rejected: the family stops
+     reading as platform colour.
+  2. **Dim the wash.** Rejected by a ceiling, which is the load-bearing finding of the whole cluster:
+     **no alpha fixes HackTheBox or VulnHub.** Their bare paper ceilings are 4.11 and 4.16, under the
+     4.5 bar even with the wash removed entirely. Dimming pays full identity (peak alpha 0.322 to 0.161
+     at 16%) and still needs a near-full ink solve.
+  3. **Move the wash. ADOPTED.** Pooling the accent at 86% x and the cyan at 95%, behind the platform
+     mark instead of the type, recovers 0.75 to 1.11 of contrast at FULL wash strength: peak alpha goes
+     0.322 to 0.316, and the hero's darkest point gains depth (dL 0.284 to 0.364) because the two pools
+     now overlap. Contrast is not bought by dimming the atmosphere; the atmosphere is relocated.
+- **Two geometric alternatives measure well and are traps, both recorded in the CSS so they are not
+  retried.** Shifting the glow box up is a percentage of the HERO's height, and heroes differ (279px on
+  HackTheBox, 183px on VulnHub), so `top: -95%` reached bare paper on two platforms and only 3.65 on
+  VulnHub; horizontal relocation is uniform because the gradient position resolves against the glow box,
+  a fixed 360px everywhere. And pulling the gradient's own centre up measures identically to switching
+  the wash off, because peak visible alpha collapses to 0.076: it is lever 2 wearing a geometry costume.
+  Pooling downward was rejected outright, it breaks `.pi-num` from 4.11 to 3.23.
+- **The band converged on 5.76:1 from three independent directions,** which is why it was chosen over
+  the 4.8 to 5.2 the brief opened with. It is where OverTheWire's existing ink already sat once the wash
+  moved, so the other three come up to meet amber and amber does not move at all. It is the only band
+  where ONE ink token also clears the filter pill (the 5.00 band ink fails there even at a 14% fill).
+  And it is where the per-pixel floor stays above 4.5. Family OKLCH lightness spread 0.035, hue drift
+  under half a degree, and all four land lighter than the `--wm-c` chip already shipping in that hue.
+- **The tail shrank rather than grew, and that was the real architectural result.** The brief expected
+  either a shared token plus one tail rule or three separate ones. The OverTheWire tail rule existed
+  only because the 2026-07-26 pass declined to edit `PlatformIndex.astro` and so needed the unlayered
+  tail to beat that component's own scoped `color`. Since this cluster edits the component anyway, the
+  ink is declared where the colour is declared, and the tail rule had nothing left to beat. Its evidence
+  comment was deleted rather than migrated: every figure in it was measured against the wrong surface.
+- **What shipped:** wash geometry (light only), `--pf-ink` (`#3b6400` / `#b60115` / `#7f30b7` /
+  `var(--otw-amber-ink)`, with dark declared once as `var(--pf-accent)`), the eyebrow and the "All"
+  filter label reading it via a local `--accent-ink`, and the active pill fill 22% to 16% on light.
+- **Known and deliberately unfixed.** OverTheWire's `.pi-name` reads **3.41 against a 3:1 bar**, up from
+  3.05 and from a per-pixel failure at 2.93, but still thin. It is display type, so no ink reaches it;
+  the only remedy is retinting the OverTheWire light accent, which drags `.pi-num`, the empty panel, the
+  card bar, the glare and the focus ring with it. Left as an owner call. The filter pill's own per-pixel
+  floor is 4.31 active and 4.52 at rest, because it is the one consumer stacking a translucent fill on a
+  textured surface; model B, the authority, reads 4.74 and 4.97. And the four DIFFICULTY pills fail on
+  light (2.26 to 3.43), which this cluster measured and left alone as badge-consolidation work.
+- **Verified per commit at exactly-these-diffs.** The shipped component CSS differs from pre-cluster in
+  five declarations and nothing else, with **zero motion declarations in the delta** and both
+  `prefers-reduced-motion` blocks intact. Rendered: 1 changed cell of 11,634 for the wash, 9 for the ink
+  (8 of them unpainted `currentColor` followers on the one element), 0 for OverTheWire's ink (the tail
+  deletion is pixel-neutral, only the route changed), 3 for the pill. **Dark measured byte-identical at
+  every commit**, 0 changed cells of 11,634. Zero `package.json` or lockfile diff. `npm run build` green
+  at 46 pages throughout.
+- **Instrument correction worth keeping:** a grid sampler can MISS the light dot-grid (a 2px dot on a
+  22px pitch) and silently report the model B figure as model C. HackTheBox did exactly that. When the
+  per-pixel floor matters, compute it analytically; it is a uniform 0.56 to 0.57 below the paper figure.
+- **Status:** Adopted; committed to `dev` across five commits, pushed, not merged. No dependency
+  changes, pinned versions unchanged, no Starlight fork, no new component.
+
 ### 2026-07-27 · The release hold is lifted and `dev` ships to production
 - **Decision:** the release hold recorded on 2026-07-26 is LIFTED by owner instruction, and `dev`
   (29 commits ahead of `main`) merges to `main` by pull request. This is the first production deploy of the
@@ -36,6 +103,10 @@
      measured by canvas readback on the real element, as 12.8px body text needing 4.5:1. PicoCTF passes at
      4.86:1 and OverTheWire was fixed by the amber pair. This is a real accessibility failure shipping
      knowingly, and it is the first cluster queued after the merge for that reason.
+     **CORRECTED 2026-07-31:** all four figures in this item were measured against BARE PAPER for
+     elements that sit on the hero wash. The real composite read 3.36 / 3.05 / 3.59 / 4.79, so PicoCTF
+     was NOT passing and the amber pair had not fully landed either. Two more consumers were failing
+     unrecorded: the filter pill at 3.15 and OverTheWire's `.pi-name` at 3.05. Resolved by Cluster F.
   4. **The `46ch` principle cap is still the open third instance of the context law.** `ch` resolves on the
      aside at 18px mono while the text it caps is 22.4px, so the maxim measures 36.97 characters and never
      measured 46 in any era. Parked because honouring the declared 46 widens the block by about 120px,
@@ -282,7 +353,10 @@
 - **Display type deliberately keeps the identity amber.** `.pi-name` (57.6px/800) and `.pi-num`
   (44.8px/700) are large text at the 3:1 bar and pass at 3.50:1. Only `.pi-eyebrow` (12.8px/400) is body
   text. That split is exactly what the accent/ink pair encodes, and it is why the platform index did not
-  need its shared `--pf-accent` retinted.
+  need its shared `--pf-accent` retinted. **CORRECTED 2026-07-31:** 3.50 was the bare-paper figure. On
+  the hero's real composite `.pi-name` read **3.05**, a 0.05 margin, and **2.93 on the per-pixel floor,
+  which is a failure**. `.pi-num` genuinely was 3.50, because the wash did not reach it. The split
+  itself stands and the accent still is not retinted; only the number was wrong.
 - **A 14th tail rule, and why it was the honest option.** `.pi-eyebrow`'s colour is declared by
   `PlatformIndex.astro`'s own scoped style, so the theme pass cannot reach it from a layer. Verified in the
   browser rather than assumed: a layered rule at (0,4,0) did not move it, an unlayered rule did, because an
@@ -301,9 +375,14 @@
   eyebrow. Every other cell on those elements is an unpainted `currentColor` follower (`border-*-color` at
   width 0, `outline-color`). Final table, all clearing their bar: hovered button 4.78, resting button 5.28,
   block summary 5.98, eyebrow 5.76, rings 3.21 and 3.50 against the 3:1 non-text bar.
+  **CORRECTED 2026-07-31: the eyebrow figure is wrong.** 5.76 is the ratio against bare paper; the
+  element sits on the hero wash and measured **4.79** there. It passed, but by 0.29 rather than 1.26.
+  The other figures in this list are against their own composited surfaces and stand.
 - **Found and NOT fixed (different token family, out of scope):** the HackTheBox and VulnHub platform-index
   eyebrows measure 4.11:1 and 4.16:1 on paper as 12.8px body text, both under 4.5:1. Same defect, different
   hue, each needs its own solve and its own ink token. Recorded in CORE_SPEC and ROADMAP.
+  **CORRECTED 2026-07-31:** bare-paper figures again. The composite read 3.36 and 3.05, and PicoCTF,
+  dismissed here as passing, read 3.59. It was four platforms.
 - **Status:** Adopted; committed as `f5eb43a` to `dev`, pushed, not merged.
 
 ### 2026-07-26 · The theme pass moves to declared cascade layers and splits into per-layer modules
