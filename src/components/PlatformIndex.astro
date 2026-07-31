@@ -424,7 +424,11 @@ const isEmpty: boolean = total === 0;
 		background: color-mix(in oklab, var(--pill) 12%, transparent);
 		transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
 	}
-	.pi-pill[data-filter='all'] { --pill: var(--accent); }
+	/* The "All" pill is the one pill carrying PLATFORM identity (the rest carry difficulty hues), so
+	   its label reads the ink for the same reason the eyebrow does: 11.84px is body text at 4.5:1.
+	   --pill stays the ACCENT deliberately and is NOT re-declared alongside: it already resolves to
+	   the accent on this element, and it drives the border and fill, which are not text. */
+	.pi-pill[data-filter='all'] { --pill: var(--accent); color: var(--accent-ink); }
 	.pi-pill[data-filter='easy'] { --pill: #16a34a; }
 	.pi-pill[data-filter='medium'] { --pill: #d97706; }
 	.pi-pill[data-filter='hard'] { --pill: #dc2626; }
@@ -442,6 +446,17 @@ const isEmpty: boolean = total === 0;
 		font-weight: 700;
 		background: color-mix(in oklab, var(--pill) 22%, transparent);
 		box-shadow: 0 0 0 2px var(--accent-2), 0 6px 18px -8px var(--accent-2);
+	}
+	/* LIGHT: the active tint drops to 16%. On paper the label sits on a fill mixed from its OWN hue,
+	   which is the one backdrop no wash change can reach, and at 22% even the darkened ink measured
+	   4.40 against a 4.5 bar. 16% is the cheapest cue to spend, because .is-active signals THREE
+	   ways: weight 700, the 2px cyan ring, and the tint. Narrowing the tint step from 1.83x to 1.33x
+	   over the 12% resting fill leaves the other two intact, where darkening the ink further would
+	   have forked --pf-ink for one element and lightening it to a neutral would have made the one
+	   platform-coloured pill read like a misc chip. Measured after: 4.74 active, 4.97 at rest.
+	   Light only; the dark rule above keeps 22% and dark has no failure here (9.46). */
+	html[data-theme='light'] .pi-pill.is-active {
+		background: color-mix(in oklab, var(--pill) 16%, transparent);
 	}
 
 	/* ── GRID ── */
