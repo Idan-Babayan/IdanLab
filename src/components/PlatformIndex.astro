@@ -225,6 +225,13 @@ const isEmpty: boolean = total === 0;
 		/* Platform color leads; universal cyan secondary is the duotone partner (theme-aware). */
 		--accent: var(--pf-accent, var(--sl-color-accent));
 		--accent-2: var(--pf-accent-2, var(--tp-cyan));
+		/* The accent's TEXT variant, for body-size type that has to clear 4.5:1 where the accent only
+		   clears the 3:1 large-text bar. On dark --pf-ink IS --pf-accent, so this changes nothing there.
+		   The fallback is the same graceful degradation the two lines above already apply to
+		   --pf-accent: it fires only for a platform index rendered with no .pf-* token, which is zero
+		   pages today but is exactly what a fifth platform would be on the day it is added. Without it
+		   that page's eyebrow would resolve to no colour at all rather than to the accent. */
+		--accent-ink: var(--pf-ink, var(--accent));
 	}
 
 	/* ── HERO ── */
@@ -284,7 +291,9 @@ const isEmpty: boolean = total === 0;
 		font-size: 0.8rem;
 		letter-spacing: 0.3em;
 		text-transform: uppercase;
-		color: var(--accent);
+		/* 12.8px/400 is body text at the 4.5:1 bar, so it reads the ink, not the accent. The 38px
+		   rule in ::before below stays on the accent: it is a graphic, not text. */
+		color: var(--accent-ink);
 		margin-bottom: 1rem;
 		display: flex;
 		align-items: center;
