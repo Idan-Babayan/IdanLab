@@ -245,10 +245,26 @@ const isEmpty: boolean = total === 0;
 			radial-gradient(52% 100% at 20% 0%, color-mix(in oklab, var(--accent) 22%, transparent), transparent 70%),
 			radial-gradient(46% 90% at 80% 8%, color-mix(in oklab, var(--accent-2) 13%, transparent), transparent 72%);
 	}
+	/* LIGHT: the pools sit behind the MARK, not the type. On paper the wash is the platform's own
+	   accent laid over the surface its own text reads on, so a pool at 20% x put every hero consumer
+	   under a 32% tint of its own colour: the eyebrow measured 3.36 on HackTheBox and 3.05 on VulnHub
+	   against a 4.5 bar. Moving the pool right clears the type at full wash strength (peak alpha 0.322
+	   to 0.316), rather than paying for contrast by dimming the atmosphere. Dark is untouched: it has
+	   no failure to fix (its floor is 5.68) and its own rule above still pools left.
+
+	   TWO ALTERNATIVES THAT MEASURE WELL AND ARE TRAPS. Do not reach for either.
+	   1. Shifting the glow UP instead of sideways. The inset is a percentage of the HERO's height and
+	      heroes differ (measured 279px on HackTheBox against 183px on VulnHub), so `top: -95%` reached
+	      bare paper on two platforms and only 3.65 on VulnHub. Horizontal relocation is uniform because
+	      the gradient position resolves against the GLOW box, a fixed 360px on every page.
+	   2. Pulling the gradient's own centre up (`at 20% -55%`). It reads as a geometry change and is an
+	      alpha cut: peak visible alpha collapses from 0.322 to 0.076, so it is lever 2 wearing a
+	      costume, and it costs the wash for the same result this rule gets for free.
+	   Pooling DOWN was also measured and rejected outright: it breaks .pi-num, 4.11 to 3.23. */
 	html[data-theme='light'] .pi-glow {
 		background:
-			radial-gradient(52% 100% at 20% 0%, color-mix(in oklab, var(--accent) 32%, transparent), transparent 72%),
-			radial-gradient(46% 90% at 80% 8%, color-mix(in oklab, var(--accent-2) 18%, transparent), transparent 74%);
+			radial-gradient(52% 100% at 86% 0%, color-mix(in oklab, var(--accent) 32%, transparent), transparent 72%),
+			radial-gradient(46% 90% at 95% 8%, color-mix(in oklab, var(--accent-2) 18%, transparent), transparent 74%);
 	}
 	.pi-hero-inner {
 		position: relative;
