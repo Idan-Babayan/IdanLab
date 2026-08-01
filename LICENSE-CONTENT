@@ -1,0 +1,73 @@
+Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
+(CC BY-NC-SA 4.0)
+
+Copyright (c) 2026 Idan Babayan
+
+Full license text: https://creativecommons.org/licenses/by-nc-sa/4.0/
+
+
+Scope of this license
+
+This license applies to the following paths in this repository:
+
+  src/content/docs/
+  src/assets/
+  docs/
+  CLAUDE.md
+  README.md
+
+These are the writeups, prose, writeup screenshots, and project documentation.
+
+Code is NOT covered by this license. It is licensed separately under the MIT
+License. See LICENSE.
+
+
+What this license requires
+
+  Attribution      Credit Idan Babayan, link to the license, and state whether
+                   changes were made.
+  NonCommercial    You may not use this material for commercial purposes.
+  ShareAlike       If you remix or build on this material, you must distribute
+                   your contribution under this same license.
+
+
+Third-party assets
+
+Some files in this repository are not the copyright holder's work. They are
+excluded from both this license and the MIT License, and remain under their own
+terms. Neither license grants any rights in them.
+
+  public/fonts/                   Geist, JetBrains Mono, and Syne. Third-party
+                                  typefaces under the SIL Open Font License 1.1,
+                                  verified against each upstream project. The
+                                  full license text ships alongside them at
+                                  public/fonts/OFL.txt.
+
+  public/icons/                   HackTheBox, VulnHub, PicoCTF, and OverTheWire
+  src/assets/icons/               marks. Platform brand marks and logos are the
+                                  property of their respective owners. Use of a
+                                  mark here is nominative reference, not a grant.
+
+  src/assets/icons/               Active Directory glyph, credited upstream to
+    active-directory.svg          Richard Slater / Amido Limited via SVG Repo,
+                                  CC0-1.0.
+
+  src/assets/icons/linux.svg      Depicts Tux, the Linux mascot, created by
+                                  Larry Ewing.
+
+  src/assets/icons/windows.svg    Depicts a Microsoft brand mark.
+
+This list covers the third-party assets identified at the time of writing. It is
+not a warranty that every file in this repository is the copyright holder's own
+work.
+
+
+public/ is deliberately unlicensed
+
+No license is asserted over public/, and the omission is intentional rather than
+an oversight. It contains no original work by the repository owner: the fonts
+and icons are third-party and remain under their own terms, favicon.svg is the
+Astro starter template default, and ethical-hacking.png is third-party. The two
+remaining files, _headers and robots.txt, are deployment configuration with no
+meaningfully copyrightable content, so no license is claimed over them. See the
+matching section in LICENSE.
