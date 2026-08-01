@@ -1,8 +1,10 @@
 # Idan.Lab — Roadmap
 
 > Volatile by design. Groom this often. Format: **Now** (active), **Next** (committed,
-> not started), **Later** (parked). Move items down to DECISIONS.md when resolved.
-> Each item: `[area] description — owner-note`. Areas: DESIGN, CONTENT, ENG, PRODUCT.
+> not started), **Later** (parked). Completed items are DELETED from this file on
+> completion, not archived here. Their shipped state lives in CORE_SPEC and their
+> rationale, if any, in DECISIONS. This file is forward-looking only.
+> Each item: `[area] description - owner-note`. Areas: DESIGN, CONTENT, ENG, PRODUCT.
 
 ## Now (in progress)
 
@@ -132,6 +134,13 @@
   `--ap-fade-w` sets both the mask band and its gutter, so raising or lowering it is the single, safe way to
   make the edge fade stronger or weaker (endpoints stay clear at any value).
 
+- [PRODUCT] Groom ROADMAP under the deletion discipline: several items here are
+  SHIPPED with only verification tails (three-column rebalance, PR #9 post-deploy
+  check, WriteupMeta shipped-but-unwired, domain rebrand). Decide item-by-item
+  what is a live tail to keep versus completed work to delete, and strip the stale
+  inline "move to DECISIONS" instructions (lines 29, etc.) left from the old rule.
+  Do NOT bulk-delete; several have genuine unfinished tails that must survive.
+
 ## Next (committed)
 - [ENG/DESIGN] Unify the two marketing pages (home, about) under the `--focus-ring` token established for
   content pages (CORE_SPEC §6 "Focus ring system"; DECISIONS 2026-07-13). This is now the LAST gap in the
@@ -229,25 +238,38 @@
   retune, not a component fix. `.port-label` was the other consumer and is now pinned via
   `--mono-chrome-leading` (2026-07-27).
 
-- [DESIGN/A11y] **NEW 2026-07-26: the HackTheBox and VulnHub platform-index eyebrows fail WCAG AA on
-  paper.** `.pi-eyebrow` is 12.8px/400, so it needs 4.5:1, and measured by canvas readback on the real
-  element it reads **4.11:1 for HackTheBox (`#4d7c0f`)** and **4.16:1 for VulnHub (`#d12f2f`)**. PicoCTF
-  passes at 4.86:1. This is the same defect the OverTheWire amber pass just fixed, in a different hue
-  family, and it was found by that pass rather than by a separate audit. Each needs its own OKLCH solve
-  (hold hue, drop lightness, gamut-map chroma) and its own ink token, following the `--otw-amber` /
-  `--otw-amber-ink` model. Note the delivery constraint that made the amber fix awkward and will apply
-  again: `.pi-eyebrow`'s colour comes from `PlatformIndex.astro`'s own scoped style via `--pf-accent`, so
-  a layered rule cannot reach it; the OverTheWire fix needed an unlayered tail rule. Doing all three
-  platforms at once would justify either a shared `--pf-accent-ink` token or a single tail rule keyed off
-  `.pf-*`, which is tidier than three separate tail rules. Do NOT retint `--pf-accent` itself: it also
-  feeds display type (`.pi-name`, `.pi-num`) that legitimately passes at the 3:1 large-text bar, plus
-  around fifteen non-text uses. See DECISIONS 2026-07-26.
+- [DESIGN/A11y] **RESOLVED 2026-07-31 (Cluster F, the platform ink family). Kept here only so the
+  correction is not lost.** This item was raised on 2026-07-26 as "HackTheBox 4.11 and VulnHub 4.16 fail,
+  PicoCTF passes at 4.86". **All three figures were measured against bare paper for an element that sits
+  on the hero wash, so all three were wrong and PicoCTF was not passing.** On the real composite the
+  eyebrows read HackTheBox 3.36, VulnHub 3.05, PicoCTF 3.59, OverTheWire 4.79. It was four platforms,
+  not two. Two consumers nobody had recorded were failing as well: the `.pi-pill[data-filter="all"]`
+  filter label at 3.15 active and 3.55 at rest, the worst readings on the site, and OverTheWire's
+  `.pi-name` at 3.05 against a 3:1 bar, which is a model C failure at 2.93.
+  **Shipped:** the light hero wash pools behind the platform mark rather than the type (20% to 86% x,
+  cyan 80% to 95%), and each platform gained a `--pf-ink` at the 5.75 to 5.76 band. The prediction that
+  a shared ink token would need a tail rule per platform was also wrong in the useful direction: the ink
+  is declared inside the component that owns the colour, so the tail SHRANK from 14 rules to 13.
+  `--pf-accent` was not retinted. See DECISIONS 2026-07-31.
+
+- [DESIGN/A11y] **The difficulty filter pills fail WCAG AA on light, all four, in both states.** Found
+  by the Cluster F verification sweep and deliberately NOT fixed there, because they carry the
+  DIFFICULTY palette rather than a platform accent and belong with the badge consolidation. Measured on
+  the real elements at 11.84px, label on its own `color-mix(--pill, transparent)` fill over paper:
+  easy **2.41** at rest / **2.32** active, medium **2.33** / **2.26**, hard **3.33** / **3.15**, misc
+  **3.43** / **3.27** (hard and misc computed, since neither renders on HackTheBox today). Dark passes
+  everywhere, 5.34 to 9.82. The `all` pill on the same rail now reads 4.97 and 4.74, so one control
+  group currently mixes a passing platform pill with four failing difficulty siblings. The same four
+  hues also drive `.pi-bd-*` in the hero stat breakdown and the `.difficulty-*` badges, which is why
+  this wants one decision rather than four patches.
 
 - [DESIGN/A11y] Non-badge `#a86f04` ambers unaudited for light-mode WCAG AA. **LARGELY RESOLVED 2026-07-26
   for the OverTheWire family** (DECISIONS): the shared token became the `--otw-amber` / `--otw-amber-ink`
   pair, so PasswordReveal's button text, its block-mode summary, the OverTheWire platform-index eyebrow and
   the sidebar rail ring are now one identity with an AA text variant, all measured (4.78 to 5.98:1 for text,
-  3.21 and 3.50:1 for the non-text rings against a 3:1 bar). What remains of the original entry: nothing in
+  3.21 and 3.50:1 for the non-text rings against a 3:1 bar). **One figure in that range corrected
+  2026-07-31:** the eyebrow was recorded at 5.76 measured on bare paper, but it sits on the hero wash and
+  actually read 4.79. It reaches 5.76 only since Cluster F pooled the wash off the type. What remains of the original entry: nothing in
   the OverTheWire family. `.platform-overthewire` was already moot, and the Linux badge amber stays forked
   correctly (a different identity that merely shares a hex). Kept here only for the history below.
   The badge light palette pass
@@ -281,3 +303,19 @@
 - [ENG] Command-highlighting residual risk: an OUTPUT line whose first word is exactly a listed command
   (e.g. `ls: cannot access`) can be mis-tagged. Rare; documented in `ec-priv-command.mjs` (EC 0.42
   exposes no token scopes, so strings/comments cannot be skipped by scope).
+- [DESIGN/A11Y] OverTheWire `.pi-name` fails contrast at 3.41:1 (needs 4.5:1 for
+  normal text, 3:1 for large). Platform landing name color. Real accessibility
+  defect, not cosmetic. Decide a compliant color that holds the platform identity.
+- [DESIGN/A11Y] Difficulty pills fail AA on the light theme. The traffic-light
+  `.difficulty-*` badges do not clear contrast on paper. Both themes must pass;
+  light is the failing one. Retune the light-mode pill colors.
+- [DESIGN/A11Y] Principle cap set to `46ch` is unverified against the reading
+  measure. Confirm the character cap gives a comfortable line and is consistent
+  with the 50rem prose width decision, or set it deliberately.
+- [DESIGN] Right rail mobile layout at 375px: unresolved how the TOC rail behaves
+  at the narrow breakpoint. Needs a real-device or 375px-viewport decision, paired
+  with the narrow-screen gutter call below.
+- [DESIGN] Narrow-screen gutter is a taste call, currently undecided. Owner to set
+  the gutter at small breakpoints once the 375px rail behavior is settled.
+- [DESIGN] `--ap-fade-w` as an owner-facing knob: decide whether the accent-fade
+  width is exposed as a tunable CSS variable or fixed. A convention call, not a bug.

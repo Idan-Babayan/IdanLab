@@ -55,3 +55,14 @@ Running it locally:
 Questions, corrections, or just want to talk shop? I'm at **[contact@idanlab.dev](mailto:contact@idanlab.dev)**.
 
 This place is always a work in progress, same as me. Things move, pages get rewritten, and the next box is always more interesting than the last.
+
+## License
+
+This repository is dual licensed, split by path.
+
+- **Code is [MIT](LICENSE).** Everything under `plugins/`, `src/components/`, `src/styles/`, `src/lib/`, and `src/pages/`, plus the config: `astro.config.mjs`, `src/content.config.ts`, `package.json`, `package-lock.json`, `tsconfig.json`, `.gitattributes`, `.gitignore`, `.claude/`, and `.vscode/`.
+- **Writing and images are [CC BY-NC-SA 4.0](LICENSE-CONTENT).** Everything under `src/content/docs/`, `src/assets/`, and `docs/`, plus `README.md` and `CLAUDE.md`. Attribution required, non-commercial use only, derivatives share alike.
+
+`public/` is deliberately unlicensed, because it holds no original work of mine. The fonts and icons are third-party and keep their own terms (the fonts are OFL 1.1, full text at [public/fonts/OFL.txt](public/fonts/OFL.txt)), and `_headers` and `robots.txt` are deployment config with nothing copyrightable in them.
+
+Third-party assets are excluded from both licenses and stay under their own terms. They are listed in [LICENSE-CONTENT](LICENSE-CONTENT).

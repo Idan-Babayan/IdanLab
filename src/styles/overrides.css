@@ -125,27 +125,12 @@ html[data-theme="light"] .ec-cmd-inspect span {
 /* === end FLAG CAPTURE === */
 
 
-/* Platform-index eyebrow, OverTheWire only: the AA text ink instead of the identity amber.
+/* The OverTheWire platform-index eyebrow rule that sat here is REMOVED. It existed only because the
+   pass that added it chose not to edit PlatformIndex.astro, so it needed the unlayered tail to beat
+   that component's own scoped `color: var(--accent)`. The eyebrow now reads --accent-ink inside the
+   component that declares it, which is where a component's own colour belongs, so the tail rule has
+   nothing left to beat and the tail shrinks 14 rules to 13.
 
-   UNLAYERED ON PURPOSE, the same reason as the two PlatformIndex rules above. .pi-eyebrow's colour is
-   declared by PlatformIndex.astro's own scoped style as `color: var(--accent)`, and an Astro scoped
-   style is UNLAYERED, so a layered rule loses to it at any specificity. Verified in the browser: a
-   layered rule at (0,4,0) did not move the eyebrow, while this unlayered one did, and Astro's
-   :where([data-astro-cid-...]) scoping keeps the component rule at (0,1,0) so this wins on specificity
-   without !important and without depending on source order.
-
-   Why only OverTheWire, and why only this element: the component reads ONE token (--accent, which
-   resolves through our --pf-accent), but its consumers split across the two WCAG thresholds. .pi-name
-   (57.6px/800) and .pi-num (44.8px/700) are large text at 3:1 and pass on the identity amber at 3.50:1,
-   so they keep it. .pi-eyebrow is 12.8px/400, body text at 4.5:1, and failed at 3.50:1. Retinting the
-   shared --pf-accent would have dragged the display type and roughly fifteen non-text uses with it, so
-   the ink is applied to the one element that needs it. Measured after: 5.76:1 on paper.
-
-   The other three platforms are deliberately NOT covered here, and two of them are not clean: measured
-   on paper, the HackTheBox eyebrow reads 4.11:1 and the VulnHub eyebrow 4.16:1, both under the 4.5:1
-   this size needs (PicoCTF passes at 4.86:1). That is the same defect in a different hue, but it is a
-   different token family and out of this pass's scope, which is the OverTheWire amber. Recorded in
-   ROADMAP rather than fixed quietly here: each needs its own OKLCH solve and its own ink token. */
-:root[data-theme='light'] .pf-overthewire .pi-eyebrow {
-  color: var(--otw-amber-ink);
-}
+   Its evidence comment is deleted with it rather than migrated, and deliberately so: every contrast
+   figure in it was measured against bare paper for a surface that carries the hero wash, so the
+   numbers it asserted were never true of the element it named. See DECISIONS. */

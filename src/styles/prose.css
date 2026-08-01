@@ -19,7 +19,7 @@
   border: 1px solid;
   padding: 0.12em 0.4em;
   /* Fixed code scale (rem), NOT em: inline code reads at the ~14px code-block scale and does not inflate
-     with the 18.5px Geist prose. AttackPath sets its own (higher-specificity) inline-code size, so its
+     with the 18px Geist prose. AttackPath sets its own (higher-specificity) inline-code size, so its
      tiny diagram code is unaffected. */
   font-size: var(--mono-chrome-size);
   /* Stay mono even when the surrounding prose is Geist (inline code inherits its parent otherwise). */
@@ -101,7 +101,7 @@ html[data-theme="light"] .sl-markdown-content details {
 .sl-markdown-content details > summary {
   cursor: pointer;
   font-weight: 500;
-  /* Component TITLE, held at a fixed size so it does not inflate with the 18.5px Geist prose (it inherits
+  /* Component TITLE, held at a fixed size so it does not inflate with the 18px Geist prose (it inherits
      the mono chrome family; without this it tracked the prose container and read oversized). Covers every
      toggle title built on this base: the regular Toggle, the flag toggle, and PasswordReveal block mode. */
   font-size: var(--component-title-size);

@@ -53,6 +53,38 @@ html[data-theme="light"] .hero h1 {
 :root[data-theme='light'] .pf-vulnhub     { --pf-accent: #d12f2f; }
 :root[data-theme='light'] .pf-picoctf     { --pf-accent: #8b3dc4; }
 :root[data-theme='light'] .pf-overthewire { --pf-accent: #a86f04; }
+
+/* Per-platform TEXT INK, the accent/ink split the OverTheWire amber already established
+   (--otw-amber / --otw-amber-ink, see tokens.css). The accent is consumed by large display type
+   that clears the 3:1 large-text bar and by roughly eighteen non-text uses, so it must not be
+   retinted to fix body-size text; the ink is the variant that carries the 4.5:1 bar, and only the
+   consumers that need it read it.
+
+   DARK NEEDS NO INK. One declaration, not four: on ink the accent already clears AA everywhere
+   (floor 5.68:1), so ink IS accent there, and repeating the four hexes three characters from their
+   source would fork them for nothing. Custom properties substitute lazily, so this resolves against
+   whichever --pf-accent won on the element, and the light block below overrides both explicitly.
+
+   LIGHT is solved in OKLCH by the recorded method: hold the hue, drop the lightness, let chroma
+   gamut-clamp, never shift the hue. Target 5.76:1 on the post-wash-move surface (bare paper), which
+   is where OverTheWire's existing ink already sits, so the other three come UP to meet amber rather
+   than amber moving. Measured hue drift is under half a degree on all three; chroma clamps only on
+   HackTheBox. All four land LIGHTER than the WriteupMeta chip already shipping in that hue
+   (L 0.455 / 0.489 / 0.490 / 0.469 against chip L 0.446 / 0.464 / 0.472 / 0.461), and each moves
+   less from its accent than amber already had. OKLCH lightness spread across the family: 0.035.
+
+   OverTheWire READS --otw-amber-ink rather than repeating #7c5000. That is a declared shared
+   identity (DECISIONS 2026-07-26 unified the PasswordReveal row, its block mode, this eyebrow and
+   the sidebar rail ring into one amber with a text variant), so coupling it is correct here and
+   forking it would be the #a86f04 mistake again. */
+.pf-hackthebox,
+.pf-vulnhub,
+.pf-picoctf,
+.pf-overthewire { --pf-ink: var(--pf-accent); }
+:root[data-theme='light'] .pf-hackthebox  { --pf-ink: #3b6400; }  /* 4.11 -> 5.75, oklch(0.455 0.126 131.79), chroma clamped */
+:root[data-theme='light'] .pf-vulnhub     { --pf-ink: #b60115; }  /* 4.16 -> 5.76, oklch(0.489 0.198  26.48) */
+:root[data-theme='light'] .pf-picoctf     { --pf-ink: #7f30b7; }  /* 4.86 -> 5.75, oklch(0.490 0.202 307.02) */
+:root[data-theme='light'] .pf-overthewire { --pf-ink: var(--otw-amber-ink); }  /* 5.76, unchanged */
 } /* @layer pages */
 
 /* Focus ring: platform cards ring in their platform identity (echoes the accent bar + hover border).

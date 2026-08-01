@@ -1,89 +1,103 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Router for this repository. It tells a session how to operate and what to load. Keep it short: it loads every time.
 
-## Project
+**Idan.Lab** ([idanlab.dev](https://idanlab.dev)): a personal cybersecurity lab notebook and portfolio. CTF writeups (HackTheBox, VulnHub, PicoCTF, OverTheWire) plus a recruiter-facing profile. Astro + Starlight, static, on Cloudflare Pages. Content is the product; the design is deliberately high-effort ("Curiosity is my exploit").
 
-**Idan.Lab** — a personal cybersecurity lab notebook + portfolio ([idanlab.dev](https://idanlab.dev)). It hosts CTF writeups (HackTheBox, VulnHub, PicoCTF, OverTheWire) plus a recruiter-facing profile. Astro + Starlight, static (SSG), deployed on Cloudflare Pages. Content is the product; the design is deliberately high-effort ("Curiosity is my exploit").
+## Documents: four files, four jobs
 
-### Source of truth — read `docs/` first
+| File | Job | Loaded |
+| --- | --- | --- |
+| `CLAUDE.md` | ROUTER. How to operate, what to load. | always |
+| `docs/CORE_SPEC.md` | CURRENT STATE. What is true now, what is forbidden, and `Rejected and settled` for what was already decided against. | always |
+| `docs/ROADMAP.md` | THE FUTURE. Planned, in progress, deliberately deferred. Forward-looking only. | always |
+| `docs/DECISIONS.md` and `docs/DECISIONS-ARCHIVE.md` | THE WHY. Reasoning, rejected alternatives, evidence. | on demand only |
 
-`docs/` is the canonical project memory. Read it before non-trivial changes:
+**Default context set: `CLAUDE.md` + `docs/CORE_SPEC.md` + `docs/ROADMAP.md`.** That is the whole default load.
 
-- **`docs/CORE_SPEC.md`** — durable facts (infra, stack, architecture, conventions). If a chat conflicts with this file, the file wins.
-- **`docs/DECISIONS.md`** — append-only decision log, **newest on top**. Add an entry whenever you make a durable technical/design decision.
-- **`docs/ROADMAP.md`** — volatile Now / Next / Later work list. Groom it; move resolved items into DECISIONS.
+**`docs/DECISIONS.md` and `docs/DECISIONS-ARCHIVE.md` exist, are current, and are maintained.** They are excluded from the default load ON PURPOSE, to keep session context affordable. Their absence is the architecture, not an oversight and not a missing file. Do not add them to the default set.
 
-These are far richer than this CLAUDE.md — treat them as primary.
+If CORE_SPEC conflicts with a chat, CORE_SPEC wins.
+
+## When to read DECISIONS
+
+A session needs three things: what is true, what is forbidden, and what was already decided against. CORE_SPEC carries all three, the third in its `Rejected and settled` section. So read DECISIONS only when:
+
+- writing a new entry (protocol below);
+- a specific "why was this decided this way" question arises that CORE_SPEC does not answer;
+- checking whether something has been proposed before, and `Rejected and settled` does not settle it.
+
+Read `DECISIONS-ARCHIVE.md` only when tracing a superseded decision's history. That is rare. Search both, never browse them.
+
+## Writing to DECISIONS
+
+- **Never write to `docs/DECISIONS.md` or `docs/DECISIONS-ARCHIVE.md` unless I explicitly ask.** Propose the entry in chat, wait for approval, then write.
+- DECISIONS is loaded ON DEMAND AT THE MOMENT OF WRITING, never as persistent session context. A well-formed entry has to know what is already there (a `Supersedes:` line needs the prior entry's exact date and title), so the load happens once, at the point of writing, and only when a decision was actually made.
+
+### The supersession check, part of every write
+
+Before writing an entry, check whether it supersedes an in-force decision. If it does, do the move in the SAME edit:
+
+1. Move the superseded entry from `DECISIONS.md` to `DECISIONS-ARCHIVE.md`.
+2. The moved entry gains, at its top: `Superseded by: <date> · <title>`.
+3. The new entry gains: `Supersedes: <date> · <title>`.
+4. Both references use date and title.
+
+Entries move at the moment of supersession, never on a periodic cleanup pass. Miss this and the superseded entry stays live while a newer one contradicts it, and the structure rots silently.
+
+### Cross-reference convention (standing rule)
+
+Reference a DECISIONS entry by **DATE AND TITLE**.
+
+- Never by git hash. A hash points at history that may be rewritten.
+- Never by positional language: "the entry above", "the entry below", "the top entry", "the previous entry". This is the worse defect of the two. A broken hash fails to resolve and is detectable; a stale positional reference silently resolves to the WRONG entry. In a newest-first log, "the top entry" decays on its own every time an entry is prepended, with no migration needed to break it. Found live in three entries that had been pointing at the wrong decision for weeks.
+
+## ROADMAP rule
+
+Completed items are **deleted** from ROADMAP on completion. Not archived, not moved to a "Shipped" list. They leave at completion, not on a periodic audit. ROADMAP describes the future; a shipped plan is superseded by reality, its state lives in CORE_SPEC and its rationale in DECISIONS.
+
+This is deliberately the OPPOSITE of the DECISIONS rule, which never deletes, because provenance is what DECISIONS is for.
 
 ## Commands
 
 | Command | Action |
 | --- | --- |
 | `npm run dev` | Dev server at `localhost:4321` (alias: `npm start`) |
-| `npm run build` | Production build → `dist/` |
+| `npm run build` | Production build to `dist/` |
 | `npm run preview` | Serve the built site |
-| `npm run astro -- <cmd>` | Astro CLI passthrough (e.g. `astro check`) |
 
-- **No test runner or linter is configured.** `npm run build` is the validation gate — it fails on TypeScript errors (strict config) and on Starlight sidebar misconfiguration (see below). `npx astro check` does standalone type/content checking.
-- **Never hand-bump dependency versions.** Packages are intentionally pinned at a known-good set; upgrade only from a stable checkpoint via `npx @astrojs/upgrade`. (See DECISIONS.)
+- **No test runner and no linter.** `npm run build` is the validation gate: it fails on TypeScript errors and on Starlight sidebar misconfiguration.
+- **`astro check` is not available and must not be added.** It needs `@astrojs/check` plus `typescript`, both absent and both rejected as new dependencies. The build, plus the taxonomy guard in `plugins/remark-validate-content-taxonomy.mjs`, is the substitute.
+- **Never hand-bump dependency versions.** Pinned at a known-good set; upgrade only from a stable checkpoint via `npx @astrojs/upgrade`.
 
-## Architecture
+### Which server
 
-### Two surfaces: "one bespoke page system, everything else Starlight"
+- `npm run dev` for implementation and visual iteration. HMR makes it the right loop for anything you are looking at rather than measuring.
+- `npm run build` then `astro preview` for production verification, deployment behaviour, and any computed-style measurement that gates a commit. CSS emission order differs between the two, and unlayered rules (the `overrides.css` tail and every Astro scoped style) settle by source order, so dev can resolve a tie differently from production.
+- Never iterate on `astro preview`. Never compare a baseline captured on one server against an after-state captured on the other.
 
-The site mixes two page systems on purpose. Picking the wrong one is the easiest mistake here.
+`.claude/launch.json` carries `astro-dev` on 4321 and `astro-preview` on 4331, so a measurement run does not displace the iteration server.
 
-- **Marketing pages** — standalone `.astro` files in `src/pages/` (`index.astro` = `/`, `about.astro` = `/about`). These live **outside** Starlight: each is a full HTML document with its own `<head>`, an inline `<style is:global>` design-token block, and an inline `<script>` for the interactive FX. Full creative control; immersive hero.
-- **Content pages** — everything in `src/content/docs/`: all writeups + the per-platform landing pages (`{platform}/index.mdx`). These are Starlight docs and keep sidebar, search, TOC, expressive-code, a11y, and the theme toggle for free. Collection is wired in `src/content.config.ts` (`docsLoader` + `docsSchema`).
+## Architecture rules
 
-**Route-collision rule (important):** a `src/pages/` route and a Starlight doc must not both claim the same URL. So `src/content/docs/index.mdx` / `about.mdx` must not coexist with `src/pages/index.astro` / `about.astro`.
+Full description in CORE_SPEC §5. What a session must not get wrong:
 
-Both surfaces are now migrated: `/` is owned by `src/pages/index.astro` and `/about` by `src/pages/about.astro`; the old `src/content/docs/index.mdx` and `about.mdx` have been deleted. When adding a new marketing page, delete any Starlight doc that would claim the same route (and vice versa).
-
-### The "theme pass" (CSS-only)
-
-Content pages are made to match the marketing pages purely by overriding Starlight design tokens + targeted rules in the `src/styles/` modules (wired via `customCss` in `astro.config.mjs`: `layers.css` declares the cascade order, then `fonts.css`, then `tokens`, `base`, `prose`, `chrome`, `components`, `pages`, `utilities`, `overrides`). Layer order decides precedence, not file order and not selector weight; `overrides.css` is the only unlayered surface. **Never fork or rebuild Starlight components**: the CSS layer must not touch Starlight's functionality. Reading content stays calm (no tilt / scroll-reveal on writeup bodies).
-
-### Theming model
-
-- Homepage is **dark-only** (identical everywhere).
-- About + all writeups support **light/dark**, synced via Starlight's `localStorage['starlight-theme']` key and `data-theme` on `<html>`. About **defaults to dark**; an inline `<script is:inline>` in `about.astro` applies the stored choice before paint. This shared key is what makes the toggle persist between the custom About page and the Starlight docs.
-
-### Design system & brand
-
-- **Fonts:** Syne (display/headings) + JetBrains Mono (body, UI, and code), self-hosted as subset WOFF2 served from `/fonts/` (see `src/styles/fonts.css`), with metric-matched size-adjust fallbacks so the swap is shift-free. There is no Google Fonts origin in source (migrated 2026-07-04, see DECISIONS).
-- **Tokens:** ink/lime/cyan/magenta on dark; warm paper + darkened accents on light. The `--ink/--lime/--cyan/--magenta/--display/--mono` token block is **duplicated** inside both `index.astro` and `about.astro` `<style is:global>` (extracting it is a ROADMAP item — keep them in sync if you edit one).
-- **Marketing-page FX** (inline JS, all `prefers-reduced-motion`-aware): constellation canvas, text decode/scramble, count-up stats, 3D-tilt cards with cursor glare, magnetic buttons, IntersectionObserver scroll-reveal, click-to-copy email, film-grain + glow overlays.
-- **Reading-progress bar** on Starlight pages is a vanilla-JS snippet injected via the `head` config in `astro.config.mjs`, styled by `#tp-progress` in `chrome.css` (both files are involved).
-- Code-block themes (`expressiveCode`): `github-dark-dimmed` (dark) / `catppuccin-latte` (light).
-- **Platform palette (unified):** one canonical set everywhere (homepage cards, sidebar dots, about-page accents, and writeup badges): HTB lime, VulnHub red, PicoCTF purple, OTW amber. The old writeup-badge set (HTB blue, VulnHub cyan, Pico violet, OTW orange) is retired. Because HTB lime overlaps Easy green, every `.platform-*` badge carries a leading glow dot so it never reads as a difficulty pill. (See CORE_SPEC §6 / DECISIONS 2026-06-01.)
-
-### Sidebar (`astro.config.mjs`)
-
-Hand-curated; each category points at an `autogenerate.directory` relative to `src/content/docs/`. Sidebar markers are CSS-injected colored dots (not emojis).
-
-- **Starlight throws a build error if an `autogenerate` directory does not exist.** That's why HTB Medium/Hard are commented out — create the folder with at least one writeup *before* enabling its sidebar entry.
-- **Directory casing must match exactly.** Difficulty folders are lowercase (`easy`/`medium`/`hard`) and each sidebar `autogenerate.directory` must use that exact casing. Starlight matches the directory against collection entry ids case-sensitively, so pointing at `hackthebox/Easy` would silently drop writeups in `hackthebox/easy/` (the page still builds and is reachable by URL, it just never appears in the sidebar). Windows hides this by resolving the path case-insensitively; a Linux/Cloudflare build fails harder, and a case-only folder rename needs `git mv` (`core.ignorecase=true`). (This bit once: busqueda.mdx vanished from the sidebar until the casing matched; the tree was later migrated from `Easy` to lowercase `easy`.)
-
-### Path alias
-
-`@components` → `src/components`. The **functional** alias is the Vite one in `astro.config.mjs` (`vite.resolve.alias`); it is required for MDX `import` statements to resolve. The matching `tsconfig.json` `paths` entry only satisfies the editor/TypeScript and does **not** affect the build — tsconfig path aliases don't resolve for Vite/MDX.
+- **Two surfaces.** Marketing pages are standalone `.astro` in `src/pages/`: dark-only, own `<head>`, inline token block and inline FX. Everything in `src/content/docs/` is Starlight. Picking the wrong one is the easiest mistake here.
+- **Route collision.** A `src/pages/` route and a Starlight doc must not both claim the same URL. Adding a marketing page means deleting any Starlight doc on that route, and the reverse.
+- **Never fork or rebuild a Starlight component.** The theme pass is CSS only and must not touch Starlight's functionality.
+- **A sidebar `autogenerate.directory` must exist** or the build errors. Create the folder with at least one writeup before enabling its entry. HTB Hard is commented out for this reason (the folder is empty); Medium is live.
+- **Directory casing must match exactly.** Difficulty folders are lowercase. Starlight matches case-sensitively, so pointing at `hackthebox/Easy` silently drops writeups in `hackthebox/easy/`: the page still builds and stays URL-reachable, it just never appears in the sidebar. Windows hides this, a Linux/Cloudflare build does not, and a case-only rename needs `git mv` (`core.ignorecase=true`).
+- **`@components` alias:** the FUNCTIONAL one is the Vite alias in `astro.config.mjs`. The `tsconfig.json` `paths` entry only satisfies the editor and does not affect the build.
+- **The marketing token block is duplicated** in `index.astro` and `about.astro`. Keep them in sync if you edit one.
 
 ## Writeups
 
-Writeups are flat `.mdx` files under `src/content/docs/<platform>/<difficulty>/<slug>.mdx` (e.g. `hackthebox/easy/busqueda.mdx`), one file per writeup with no per-writeup folder. Every writeup follows the same methodology loop: **Recon → Foothold → Escalation → Reflection**, documenting the actual thought process and dead ends, not just commands.
+Flat `.mdx` at `src/content/docs/<platform>/<difficulty>/<slug>.mdx`. Reference file: `busqueda.mdx`. Full conventions in CORE_SPEC §7. The rules that break the build or the page if missed:
 
-Conventions (see `busqueda.mdx` as the reference and `CORE_SPEC.md` §7):
+- **Metadata is FRONTMATTER ONLY.** Set `os`, `environment`, and `difficulty`. The `WriteupMeta` badge row is INJECTED by `plugins/remark-inject-writeupmeta.mjs`: never import it, never write the tag. `platform` is NOT a frontmatter field, it is derived from the directory, so it cannot be mistyped. Values are strict enums in `src/content.config.ts`, so casing matters. Omit `difficulty` for progressive wargames (Bandit). `badges: false` (unquoted boolean, never `no` or `off`) opts a page out.
+- **The recon findings rail is a PLAIN MARKDOWN LIST** inside `<Callout type="recon">`. No component, no import, no markup:
 
-- **Frontmatter is `title` + `description`, plus the writeup metadata: `os`, `environment`, and `difficulty`** (also optional `tags`, `principle`, `badges`). The in-page `WriteupMeta` badge row is **INJECTED, never hand-placed** (since 2026-07-20): `plugins/remark-inject-writeupmeta.mjs` builds it from frontmatter at build time, so do NOT import `WriteupMeta` and do NOT write a `<WriteupMeta ... />` tag in the body. Just set the frontmatter and follow it with the description repeated as a `>` blockquote lead. **`platform` is not a frontmatter field**: it is derived from the writeup's platform directory (`hackthebox` -> `HackTheBox`, and so on), so it can never be mistyped. The values are strict enums in `src/content.config.ts`, matching the component unions exactly, so casing matters (`Linux`, `Windows`, `Standalone`, `Active Directory`, `Progressive`, `Easy`/`Medium`/`Hard`/`Insane`). Omit `difficulty` for progressive wargames (OverTheWire Bandit), which have no rating, and its chip is not rendered. Set `badges: false` (unquoted boolean, never `no` or `off`, which YAML reads as truthy strings and which the injector rejects) to opt a page out. See DECISIONS 2026-07-20.
-- Import the toggle: `import Toggle from '@components/Toggle.astro'`. `Toggle.astro` is a `<details>` wrapper whose `label` accepts an HTML string; code fences inside its slot are fully highlighted.
-- **Writeup images live in `src/assets`** (parallel tree `src/assets/<platform>/<difficulty>/<slug>/...`), referenced from the `.mdx` by a relative Markdown path (`../../../../assets/...`, four `../` from a difficulty-tier writeup) so `astro:assets` optimizes and hashes them (served under `/_astro`). Use plain Markdown image syntax, not `<Image />`. Site-wide click-to-zoom is still provided by the `starlight-image-zoom` plugin (use `data-zoom-off` to opt an image out, e.g. logos).
-- Code blocks use `frame="code"` + a language `title` so bash/python render identically. Bold inside a code fence is impossible — use expressive-code line highlighting (e.g. ```` ```bash {3} ````) to emphasize a line.
-- Flag answers / spoilers go in `:::tip[Answer]` admonitions (often wrapped in a `<Toggle>`). Inline code renders red; `<span class="task-title">` for task headings.
-- **The recon findings rail is a PLAIN MARKDOWN LIST inside `<Callout type="recon">`.** No component, no imports, no markup:
-
-  ```mdx frame="code" title="src/content/docs/<platform>/<difficulty>/<slug>.mdx"
+  ```mdx
   <Callout type="recon">
 
   - 53/tcp : DNS, Simple DNS Plus
@@ -94,64 +108,31 @@ Conventions (see `busqueda.mdx` as the reference and `CORE_SPEC.md` §7):
   </Callout>
   ```
 
-  `plugins/remark-transform-recon-rail.mjs` converts it at build time into `<dl class="findings">` with a `<dt>` chip and a `<dd>` note per row. **The ` : ` is a PARSE DELIMITER, consumed at build time and never rendered.** The separator the reader sees is a CSS rule drawn on `dt::after`, because a separator is presentation. The port token is everything before the first ` : `, so a colon later in the description is safe.
-
-  Conversion is **all or nothing per list**: if any item fails to parse, the whole list is left alone and renders with its bullets, which is visibly wrong so you notice. Backticked inline code works anywhere in the description. The port column sizes itself to the widest chip, so nothing needs measuring when a longer port appears. Mixed rails (a prose bullet among findings) are unsupported by design: author prose as a paragraph outside the list.
-- `<span class="port-label">` is emitted by the transform for rails, and remains available to hand-write for a port mentioned **inline in prose** (for example "the panel on 80/tcp").
-
-### Content pipeline (Notion → MDX)
-
-The authoring flow is: write in Notion, export Markdown, then polish it by hand into convention-compliant MDX (the badges, toggles, `frame="code"`, the `src/assets` relative image paths, and `:::tip` conversions above). The content pipeline is deliberate manual editorial polish against a Notion template, not a text-transformation script: the gap between a raw Notion export and the intended finished writeup is an editorial-judgment problem no script resolves. (A Python cleaner, `notion_cleaner.py`, was previously planned but is retired and was never committed; see `CORE_SPEC.md` §7 and DECISIONS.) These conventions are the source of truth.
-
-## Conventions & deployment
-
-- **No em dashes in any site copy** — hard rule (the owner reads them as an AI tell). Use commas, colons, or parentheses.
-- TypeScript in `.astro` `<script>` blocks uses explicit assertions (`as HTMLElement | null`, `!`, `?? ''`) to keep a clean type-check; match that style.
-- Real name is fine on the public site.
-- **Domain:** the canonical domain is **`idanlab.dev`** (moved from `idanstudio.click`, 2026-06-06; old domain kept as a 301 redirect, then retired). See DECISIONS.
-- **Deployment:** Cloudflare Pages auto-deploys on push to **`main`** (also at `idanlab.pages.dev`). Build `npm run build`, output `dist/` (gitignored).
-- **Release hold (2026-07-26): LIFTED 2026-07-27 by owner instruction.** The hold kept `dev` off `main` while the branch carried the Geist prose face without the design refitted around it. Its stated purpose is satisfied: the prose foundation is locked and derived (`--sl-content-width` 46rem, `--prose-size` 18px, `--prose-leading` 1.7, `--prose-paragraph-gap` 1em, measured at 87.6 characters per line), so what production serves is a tuned body face. The retune work that remains is chrome and component internals, not the body face, and those clusters ship as their own pull requests from here. **Two standing rules were never part of the hold and did not lift with it:** `main` is reached only through a pull request, never a direct push, and force pushes, rebases, amends, resets and any history rewrite stay forbidden. See `docs/CORE_SPEC.md` §2 and DECISIONS 2026-07-27.
+  `plugins/remark-transform-recon-rail.mjs` converts it at build time. **The ` : ` is a PARSE DELIMITER, consumed at build time and never rendered**; the separator the reader sees is a CSS rule, because a separator is presentation. Conversion is all or nothing per list: one unparseable item leaves the whole list as bullets, which is visibly wrong so you notice.
+- **Images live in `src/assets`**, in a mirrored tree, referenced by relative Markdown path (four `../` from a difficulty tier) so `astro:assets` optimizes and hashes them. Plain Markdown image syntax, not `<Image />`.
+- Import the toggle: `import Toggle from '@components/Toggle.astro'`. Code blocks take `frame="code"` plus a language `title`. Bold inside a fence is impossible: use line highlighting, for example ` ```bash {3} `.
+- Flag answers and spoilers go in `:::tip[Answer]` admonitions, often inside a `<Toggle>`.
+- Every writeup follows Recon, Foothold, Escalation, Reflection, and documents the thinking and the dead ends, not just the commands.
 
 ## Git policy
+
 - Never run `git commit` or `git push` unless I explicitly ask. Edit locally; I commit myself.
-- Only use main and dev branches. No others.
-- Never create/rename branches unless I explicitly ask.
+- Only `main` and `dev`. Never create or rename branches unless I explicitly ask.
 - Never create PRs unless I explicitly ask.
-- Never commit, push, or run git commands unless I explicitly ask.
-- Never add “Co-Authored-By: Claude” or modify commit authors.
-- Never rewrite git history (rebase, amend, force push) unless I explicitly request it.
+- Never add "Co-Authored-By: Claude" or modify commit authors.
+- **Never rewrite git history: no rebase, amend, force push, or reset, unless I explicitly request it.**
+- **`main` is reached ONLY through a pull request** opened and merged by the owner. Never push `main` directly.
 - If a task involves git, ask before doing anything.
 
-Delegated authority (2026-07-25, owner instruction): Claude Code may run read
-commands, stage, commit, and push to the working branch (dev) under the
-phase-gate protocol, with build green before any commit. main is never pushed
-directly; changes reach main only via a pull request opened and merged by the
-owner. Force pushes, amends, rebases, resets, merges, and any history rewrite
-remain forbidden without a new owner instruction.
-
-Release hold (2026-07-26, owner instruction): LIFTED 2026-07-27 by owner
-instruction, and dev merged to main by pull request that day. Its purpose was
-to keep a half-refitted body face out of production; the prose foundation is
-now locked and derived, and the remaining retune work is chrome and component
-internals, so the purpose is satisfied. A future session should NOT refuse to
-open a pull request on the strength of this paragraph.
-
-What did NOT lift with it, because it was never part of the hold: main is
-reached only through a pull request, never a direct push, and force pushes,
-rebases, amends, resets and any history rewrite remain forbidden without a new
-owner instruction. Outstanding retune clusters ship as individual pull
-requests from here. See DECISIONS 2026-07-27.
+Delegated authority (2026-07-25, owner instruction): Claude Code may run read commands, stage, commit, and push to `dev` under the phase-gate protocol, with the build green before any commit. Everything above still binds.
 
 ## My rules
-- NO em dashes in any copy (use commas, colons, or parentheses).
-- Don't upgrade dependencies unless I ask (versions are pinned).
-- Marketing pages (src/pages/*.astro) are standalone and dark-only. Writeups are Starlight,
-  themed via the src/styles/ modules under the layer contract (tokens, base, prose, chrome,
-  components, pages, utilities), with overrides.css as the only unlayered surface. Never
-  rebuild Starlight.
-- No !important inside a layer (it reverses layer order). Rules that must beat unlayered CSS,
-  including our own Astro-scoped component styles, go in overrides.css with a comment naming
-  what they beat.
-- No selector flattening and no unit conversions in the theme pass. The unit rule is written in
-  the layers.css header and is applied during the design retune, not before.
-- Treat docs/CORE_SPEC.md as the source of truth once it's committed.
+
+- NO em dashes in any copy. Use commas, colons, or parentheses.
+- Don't upgrade dependencies unless I ask. Versions are pinned.
+- Marketing pages are standalone and dark-only. Writeups are Starlight, themed via the `src/styles/` modules under the layer contract (tokens, base, prose, chrome, components, pages, utilities), with `overrides.css` the only unlayered surface. Never rebuild Starlight.
+- No `!important` inside a layer (it reverses layer order). Rules that must beat unlayered CSS, including our own Astro-scoped component styles, go in `overrides.css` with a comment naming what they beat.
+- No selector flattening and no unit conversions in the theme pass.
+- TypeScript in `.astro` `<script>` blocks uses explicit assertions (`as HTMLElement | null`, `!`, `?? ''`). Match that style.
+- Real name is fine on the public site.
+- `docs/CORE_SPEC.md` is the source of truth.

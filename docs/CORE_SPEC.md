@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-07-27.
+> Last updated: 2026-08-01.
 
 ---
 
@@ -74,6 +74,22 @@
   mode would require allowlisting static.cloudflareinsights.com in script-src.
 - **Local dev:** `npm run dev` → `localhost:4321`.
 
+### Repository visibility and licensing
+
+- **Visibility:** the repository is public and stays public. Closing it, and splitting it into a private
+  infrastructure repo plus a public content repo, were both considered and rejected.
+- **Dual licensed, split by path:** code (Astro config, components, plugins, styles, scripts) is MIT.
+  Content and design (writeups, prose, the "Decrypted" visual language) are CC BY-NC-SA 4.0. The split
+  names the paths each license covers explicitly, stated in the license files themselves plus a README
+  section.
+- **The license files and the README section do not exist yet.** Writing them is a separate open task
+  (see ROADMAP). This bullet records the posture, not the state of the tree.
+- **Retired machines only:** a writeup is published only for a retired machine. Writeups for active
+  machines violate platform terms.
+- **Published flag and password values are deliberate content, not secrets.** On a retired machine whose
+  full solution path is already published, the value carries no information the writeup did not already
+  provide.
+
 ## 3. Tech Stack (pinned)
 
 - **Astro** `6.3.3`
@@ -137,7 +153,7 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 │  ├─ remark-inject-passwordreveal.mjs # remark: conditionally injects `import PasswordReveal from '@components/PasswordReveal.astro'` into an MDX file's AST at build time, only when that file uses <PasswordReveal/> and has no import of its own; wired via astro.config markdown.remarkPlugins
 │  ├─ remark-inject-writeupmeta.mjs   # remark: injects the <WriteupMeta/> badge row + its import into every writeup at build time. platform is DERIVED from the platform directory (hardcoded map, the single source of truth); os/environment/difficulty are read from frontmatter via file.data.astro.frontmatter and forwarded only when a non-empty string. Gated on the writeup path (non-index .mdx under the four platform dirs), so nothing else can be injected. badges: false opts out; a non-boolean badges FAILS the build (YAML parses no/off/"false" as truthy strings). Transformer must be (tree, file) to see frontmatter. Zero deps (unist-util-visit + acorn). See DECISIONS 2026-07-20
 │  ├─ remark-transform-recon-rail.mjs  # remark: turns a PLAIN MARKDOWN LIST inside <Callout type="recon"> into the findings rail (<dl class="findings"> with a <dt> chip + <dd> note per row) at build time, so a writeup authors data and never presentation. Keyed on the Callout node's type="recon" attribute; direct children only. The authored " : " is a PARSE DELIMITER (/^(\S+)\s:\s/ on the item's first text node), consumed here and never rendered: the separator the reader sees is a CSS rule on dt::after. ALL-OR-NOTHING per list, so one unparseable item leaves the list bulleted and visibly wrong rather than silently half-converted on a green build. Emits dt/dd as SIBLINGS with no per-row wrapper, because both must be direct grid children (a wrapper needs subgrid, which blockifies inline <code> onto its own track). Zero deps (unist-util-visit). Wired LAST in markdown.remarkPlugins. SUPERSEDES the <Findings>/<Finding> components, see DECISIONS 2026-07-27
-│  └─ remark-validate-content-taxonomy.mjs # remark: build-time guardrail that FAILS the build on an unknown hand-authored badge/metadata class token (meta-badge / platform-* / difficulty-* / os-* / port-label / task-title; the machine-meta family was removed 2026-07-19) or an unknown component metadata value (Callout type, FlagCapture type user|root; the WriteupMeta prop enums were retired 2026-07-20 once the component stopped being hand-placed, and now live in the Zod schema instead), with a "did you mean" suggestion; the deliberate alternative to astro check; zero deps (unist-util-visit); its allow-lists are the single source of truth; wired via astro.config markdown.remarkPlugins. See DECISIONS 2026-07-12 and 2026-07-20
+│  └─ remark-validate-content-taxonomy.mjs # remark: build-time guardrail that FAILS the build on an unknown hand-authored badge/metadata class token (meta-badge / platform-* / difficulty-* / os-* / port-label / task-title; the machine-meta family was removed 2026-07-19) or an unknown component metadata value (Callout type, FlagCapture type user|root), with a "did you mean" suggestion; the deliberate alternative to astro check; zero deps (unist-util-visit); its allow-lists are the single source of truth; wired via astro.config markdown.remarkPlugins. See DECISIONS 2026-07-12 and 2026-07-20
 └─ public/
    ├─ robots.txt                      # in-repo; breadcrumb comment + Sitemap line (see §2)
    ├─ favicon.svg                     # site favicon
@@ -415,6 +431,30 @@ homepage cards, sidebar dots, about-page accents, and writeup badges). The old b
 cyan / violet / orange) is retired. Because HTB lime overlaps Easy green, every `.platform-*` badge
 carries a leading glowing dot so it never reads as a difficulty pill. (See DECISIONS 2026-06-01.)
 
+### Platform ink family (`--pf-ink`, 2026-07-31)
+
+Each platform carries an ACCENT and an INK, the same split the OverTheWire amber established. The
+accent is the identity and is never retinted: it feeds display type that legitimately clears the 3:1
+large-text bar, plus roughly eighteen non-text uses. The ink is the text variant, read only by
+body-size type that must clear 4.5:1. Both live in `pages.css` beside each other.
+
+- **Dark declares the ink once**, `--pf-ink: var(--pf-accent)` over the four `.pf-*` classes. Dark has
+  no failure anywhere (floor 5.68:1), so ink is accent there, and four repeated hexes would be a fork.
+- **Light values, solved in OKLCH holding hue and dropping lightness:** HackTheBox `#3b6400`, VulnHub
+  `#b60115`, PicoCTF `#7f30b7`, and OverTheWire `var(--otw-amber-ink)` (`#7c5000`, unchanged, and a
+  reference rather than a repeat because that family is a declared shared identity).
+- **The band is 5.75 to 5.76:1**, set by where OverTheWire's existing ink already sat once the hero
+  wash moved, so the other three came up to meet amber and amber did not move. OKLCH lightness spread
+  0.035, and all four land lighter than the `--wm-c` chip already shipping in the same hue.
+- **Consumers:** `.pi-eyebrow` and the `.pi-pill[data-filter="all"]` label, both inside
+  `PlatformIndex.astro`'s scoped style via a local `--accent-ink` alias. The eyebrow's `::before` rule
+  keeps the ACCENT, because it is a graphic and not text.
+- **The wash moved with it.** On light the hero glow pools the platform's own accent over the surface
+  its own text reads on, so the pool was relocated from 20% to 86% x (cyan 80% to 95%), behind the
+  platform mark rather than the type. That recovered 0.75 to 1.11 of contrast at FULL wash strength.
+  Dimming the wash instead was measured and rejected: no alpha fixes HackTheBox or VulnHub, whose bare
+  paper ceilings are 4.11 and 4.16, under the bar even with the wash entirely off.
+
 ### Badge system (WriteupMeta): colour model + light-mode AA palette
 The `WriteupMeta` chip row (Platform / OS / Environment nav chips + a hue-free Difficulty chip) is
 driven by ONE custom property per chip value, `--wm-c`. That single token drives the chip's label,
@@ -450,13 +490,18 @@ token (unlike `--flag-gold` / `--flag-gold-val`): everything `--wm-c` paints wan
   **Resolved for the OverTheWire family 2026-07-26:** that shared token became the
   `--otw-amber` / `--otw-amber-ink` pair, and the sidebar focus ring was routed onto the accent, so the
   PasswordReveal row, its block mode, the platform-index eyebrow and the rail ring are now ONE identity
-  with a text variant, all measured to AA or the 3:1 non-text bar. `.pf-overthewire`'s display-size type
-  (`.pi-name`, `.pi-num`) keeps the accent deliberately: it sits at the 3:1 large-text bar and passes at
-  3.50:1. `.platform-overthewire` remains moot (it styles nothing since `.machine-meta` retired), and the
-  Linux badge amber stays forked, correctly: it is a different identity that merely shares a hex.
-  **Still open, and a different hue family:** the HackTheBox and VulnHub platform-index eyebrows measure
-  4.11:1 and 4.16:1 on paper as 12.8px body text, both under 4.5:1. Same defect, different token, not
-  covered by the amber pass (see ROADMAP).
+  with a text variant. **CORRECTED 2026-07-31:** those figures were measured against bare paper for a
+  surface that carries the hero wash, so they were never true of the elements they named. On the real
+  composite the eyebrow read 4.79:1, not 5.76, and `.pi-name` read 3.05:1, not 3.50. `.pf-overthewire`'s
+  display-size type (`.pi-name`, `.pi-num`) still keeps the accent deliberately at the 3:1 large-text
+  bar, and after the wash move reads 3.41 and 3.50. `.platform-overthewire` remains moot (it styles
+  nothing since `.machine-meta` retired), and the Linux badge amber stays forked, correctly: it is a
+  different identity that merely shares a hex.
+  **RESOLVED 2026-07-31 (Cluster F), and it was four platforms rather than two:** measured against the
+  true composite, every platform-index eyebrow failed on paper, HackTheBox 3.36, VulnHub 3.05, PicoCTF
+  3.59 and OverTheWire 4.79 (the last passing only after the wash moved). PicoCTF had been recorded
+  three times as passing at 4.86. All four now read a per-platform `--pf-ink` at 5.75 to 5.76. See the
+  "Platform ink family" block below and DECISIONS 2026-07-31.
 
 ### Light-mode identity (paper-native "risograph")
 Light is art-directed on its own terms (dark is unchanged). All rules scoped to
@@ -558,8 +603,11 @@ non-text only: borders, focus rings, bars, and display-size type. `#ffc23d` dark
 `--pw-amber-rgb` (the `#f59e0b` wash base, consumed as `rgba(var(--pw-amber-rgb), alpha)` for tints and
 hairlines). The pair supersedes the single `--pw-amber`, which could not serve both jobs on paper: it
 failed AA as body text on every surface it landed on (3.21:1 on the PasswordReveal row, 3.64:1 on the
-toggle card, 3.50:1 on paper) while being exactly right as a border and ring. Both modes read them, so they cannot drift
-apart. Declared on the bare `:root` fallback as well, per this file's convention, so an absent `data-theme`
+toggle card, 3.50:1 on bare paper, and 3.05:1 on the platform-index hero, which carries the wash and
+which the 2026-07-26 pass did not composite) while being exactly right as a border and ring. Both modes
+read them, so they cannot drift apart. Since 2026-07-31 `--pf-ink` for OverTheWire READS
+`--otw-amber-ink` rather than repeating its hex, so the platform ink and the wargame waypoint amber stay
+one identity by construction. Declared on the bare `:root` fallback as well, per this file's convention, so an absent `data-theme`
 can never leave the var undefined and invalidate every `rgba()` reading it. Custom properties are safe here:
 the failure that once made this block literal-only was `color-mix()` indirection, not the properties
 themselves. `.pwreveal-block`'s two border rules keep the `html[data-theme]` prefix inherited from the
@@ -672,6 +720,11 @@ Preserves reading position: anchors on the current heading and corrects scroll s
   NOT a frontmatter field, it is derived from the writeup's directory. Omit `difficulty` for a progressive
   wargame (Bandit) and no chip renders. Set `badges: false` (unquoted boolean, never `no` or `off`) to opt a
   writeup-path page out entirely. The description is still repeated as a `>` blockquote lead.
+  - **Writeup path** is a non-`index` `.mdx` file under one of the four platform directories
+    (`hackthebox`, `vulnhub`, `picoctf`, `overthewire`). Hub and landing pages are authored as `index.*`
+    files and are therefore exempt. A file outside a writeup path is never injected, even when it carries
+    metadata frontmatter. The injector gates on this path test, which is why `platform` is derived from the
+    directory rather than declared.
 - Long/indented code → wrapped in `<Toggle>`; all code blocks get `frame="code"` + a
   language `title` so bash and python look identical.
 - Notion `<aside>` → `:::tip[Answer]`. Task headings → brown `.task-title`.
@@ -720,7 +773,10 @@ Preserves reading position: anchors on the current heading and corrects scroll s
 - Topic `.tag-*`: web orange, crypto teal, forensics amber, reversing pink, pentest green, etc.
 - **`.machine-meta` RETIRED 2026-07-19; the REST of the family is LIVE.** No writeup hand-authors a badge
   row any more (WriteupMeta replaced the last of them, the 34 Bandit pages), so the `.machine-meta`
-  container rule is deleted from the theme pass and its `machine-` family from the taxonomy guard. Nothing
+  container rule is deleted from the theme pass and its `machine-` family from the taxonomy guard. For the
+  same reason the guard no longer validates WriteupMeta component props (retired 2026-07-20 with the
+  injection migration): those values are validated by the strict Zod enums in `content.config.ts` and by the
+  component's own runtime guard. Nothing
   else went with it: `WriteupCard.astro` emits `meta-badge`, `difficulty-*`, `os-*` and (behind
   `showPlatform`) `platform-*`, and `PlatformIndex` renders those cards on every `{platform}/index.mdx`,
   so those rules are live on all four landing pages. `platform-*` renders 0 times today but is the
@@ -807,6 +863,33 @@ Reach and precedence are separate mechanisms and are routinely confused:
   component's own styling holds inside its subtree, and it is the mechanism to cite, not the guard.
 - Consequence: to override a component from the theme pass, a layered rule is not enough. It takes a tail
   rule, under the contract above.
+
+### A contrast figure is meaningless without its composite
+
+**Record the surface a ratio was measured against, or the ratio is unverified.** A contrast number is a
+statement about a PAIR, and the backdrop half of that pair is the half this project keeps getting
+wrong. Text rarely sits on a token: it sits on a stack of a page background, a wash, a translucent
+fill, a state tint, and sometimes a repeating texture.
+
+**This has now shipped a wrong number twice, both times by measuring against a surface simpler than the
+one that renders.** The 2026-07-17 badge pass measured chip labels on bare paper with no card, which
+was right for that element. The 2026-07-26 amber pass reused the same habit on the platform index,
+where it was wrong: the hero carries a wash mixed from the platform's own accent, so every eyebrow
+figure recorded that day was 0.8 to 1.3 too high, and PicoCTF was recorded three separate times as
+passing at 4.86 when it measured 3.59. Nothing caught it for three sessions, because a figure with no
+named surface cannot be checked, only believed.
+
+**The convention, from 2026-07-31:** every ratio written into these docs, into a CSS comment, or into a
+commit message names its backdrop. Where a surface is layered, name the model:
+
+- **Model A, bare.** Page background plus solid ancestor fills only. Useful as a ceiling, never as a
+  verdict for an element that has anything painted over it.
+- **Model B, the composite (AUTHORITATIVE).** Everything continuously painted behind the glyphs:
+  washes, gradients, translucent fills, state tints. This is what "the contrast" means.
+- **Model C, the per-pixel floor.** Model B plus repeating texture (the light dot grid). Report it, and
+  know its limit: a grid sampler can MISS a 2px dot on a 22px pitch and silently return model B, so a
+  model C figure that equals its model B figure is a sampling miss, not a clean surface. Compute the
+  floor analytically when it matters.
 
 ### The `--sl-color-white` inversion rule
 
@@ -945,3 +1028,35 @@ whether to add it**, and the rule above answers it: a transform, when the data i
 - **Marketing pages** — standalone immersive pages (home, about).
 - **Content pages** — Starlight docs (writeups + platform landings).
 - **Platform codes** — HTB (HackTheBox), VH (VulnHub), Pico (PicoCTF), OTW (OverTheWire).
+
+## 11. Rejected and settled
+
+Things considered and decided against, where the rejection still stands. The fact only: the reasoning lives
+in `DECISIONS.md` under the entry named on each line. One rejection per line, unwrapped, so a grep returns
+whole records.
+
+- Upgrading dependencies outside a stable checkpoint, and hand-bumping versions: rejected. See DECISIONS 2026-05-31 · Stay on current package versions (no upgrade).
+- Forking or rebuilding any Starlight component: rejected. See DECISIONS 2026-05-31 · Writeup theme pass is CSS-only.
+- Emoji sidebar markers: rejected. See DECISIONS 2026-05-31 · Sidebar markers: CSS colored dots, not emojis.
+- Em dashes in site copy: rejected. See DECISIONS (earlier) · No em dashes in site copy.
+- The blue / cyan / violet / orange writeup badge palette: rejected. See DECISIONS 2026-06-01 · Canonical platform palette: lime / red / purple / amber.
+- A cross-page global model for the Expand/Collapse-all control: rejected. See DECISIONS 2026-06-20 · ToggleAll control: sidebar placement, scroll anchoring, native-anchor fix.
+- The risograph title-misregistration effect on light: rejected. See DECISIONS 2026-06-14 · Light-mode art-direction: paper-native "risograph".
+- "Co-Authored-By: Claude" and "Generated with Claude Code" trailers: rejected. See DECISIONS 2026-06-14 · Git hygiene: no Claude attribution; trailer scrubbed from history.
+- Redacting a published private key to a placeholder: rejected. See DECISIONS 2026-06-26 · Truncate embedded private keys in writeups (GitHub push protection).
+- GitHub's allow-secret bypass URL for a real key: rejected. See DECISIONS 2026-06-26 · Truncate embedded private keys in writeups (GitHub push protection).
+- Colocated per-writeup folders, and hand-listing writeups in `astro.config.mjs`: rejected. See DECISIONS 2026-06-30 · Content images and writeup structure: flat files + parallel src/assets (supersedes colocated index.mdx).
+- Reusing FlagCapture for wargame passwords: rejected. See DECISIONS 2026-07-05 · PasswordReveal: a dedicated amber component for wargame passwords (not a FlagCapture reuse).
+- Trusted Types in the CSP: rejected, breaks SecretTerminal. See DECISIONS 2026-07-05 · Application-layer security headers via public/_headers; CSP Report-Only as a staging step toward enforcement.
+- HSTS in `public/_headers`: rejected, the Cloudflare zone owns it. See DECISIONS 2026-07-05 · Application-layer security headers via public/_headers; CSP Report-Only as a staging step toward enforcement.
+- Enumerating inline-script hashes to drop `script-src 'unsafe-inline'`: rejected. See DECISIONS 2026-07-05 · Application-layer security headers via public/_headers; CSP Report-Only as a staging step toward enforcement.
+- Any third-party analytics beacon, including a manual Cloudflare install: rejected. See DECISIONS 2026-07-06 · Cloudflare Web Analytics disabled; CSP stays script-src 'self' (no third-party beacon).
+- A script as the content-pipeline mechanism, including `notion_cleaner.py`: rejected. See DECISIONS 2026-07-11 · Content pipeline is manual editorial polish, not a script (retires notion_cleaner.py).
+- `astro check`, and the `@astrojs/check` plus `typescript` dependencies it needs: rejected. See DECISIONS 2026-07-12 · Build-time content-taxonomy guard (remark plugin) as the ruled-out astro check alternative.
+- Deleting the `platform-*` badge rules as unused: rejected. See DECISIONS 2026-07-19 · `.machine-meta` deleted; the REST of the badge family is not dead (corrects the entry below).
+- Grading all 34 Bandit levels, and giving `difficulty` a fallback value: rejected. See DECISIONS 2026-07-19 · WriteupMeta difficulty becomes optional; Bandit's 34 pages migrate off `.machine-meta` (retiring it site-wide).
+- `platform` as a frontmatter field with a missing-key guard: rejected. See DECISIONS 2026-07-20 · WriteupMeta is injected from frontmatter, platform is derived from the directory.
+- Grid on the recon markdown list, and the `<Findings>` / `<Finding>` component pair: rejected. See DECISIONS 2026-07-27 · The recon rail, in three attempts: grid on the list, two components, then a remark transform.
+- Cherry-picking the CSS refactor to `main` ahead of the retune: rejected. See DECISIONS 2026-07-27 · The release hold is lifted and `dev` ships to production.
+- Solving the platform eyebrow inks without moving the hero wash: rejected. See DECISIONS 2026-07-31 · The platform ink family, and the wash that was causing the failure it hid.
+- Dimming the platform hero wash for contrast: rejected, no alpha reaches AA. See DECISIONS 2026-07-31 · The platform ink family, and the wash that was causing the failure it hid.

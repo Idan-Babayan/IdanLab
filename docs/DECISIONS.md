@@ -6,7 +6,75 @@
 
 ---
 
+### 2026-07-31 · The platform ink family, and the wash that was causing the failure it hid
+
+- **Decision:** each platform gains a `--pf-ink` beside its `--pf-accent`, and the light hero wash moves
+  off the hero type. Four platform-index eyebrows, plus the filter pill, now clear WCAG AA on paper.
+  `--pf-accent` is NOT retinted. The tail shrinks from 14 rules to 13.
+- **The cluster began from a premise that measurement destroyed.** The brief was "two platforms fail,
+  PicoCTF passes, and OverTheWire's amber is the dark outlier to be re-solved downward". Measured
+  against the surface that actually renders, all four failed, PicoCTF worst-of-the-passing at 3.59, and
+  amber was the only one passing, by 0.29 rather than the 1.26 the record implied. Every light figure in
+  the project's history reproduced EXACTLY when re-measured against bare paper, which is how the cause
+  was identified: the hero carries a wash mixed from the platform's own accent, and nobody had ever
+  composited it. See the composite rule now in CORE_SPEC section 8.
+- **Three levers were modelled and two were rejected on the numbers, not on taste:**
+  1. **Ink only, wash untouched.** Solving each ink on the current washed surface needs OKLCH lightness
+     drops of 0.107 to 0.159 from the accent, landing every platform BELOW the darkest value the project
+     has ever shipped for that hue, with three of four gamut-clamping. Rejected: the family stops
+     reading as platform colour.
+  2. **Dim the wash.** Rejected by a ceiling, which is the load-bearing finding of the whole cluster:
+     **no alpha fixes HackTheBox or VulnHub.** Their bare paper ceilings are 4.11 and 4.16, under the
+     4.5 bar even with the wash removed entirely. Dimming pays full identity (peak alpha 0.322 to 0.161
+     at 16%) and still needs a near-full ink solve.
+  3. **Move the wash. ADOPTED.** Pooling the accent at 86% x and the cyan at 95%, behind the platform
+     mark instead of the type, recovers 0.75 to 1.11 of contrast at FULL wash strength: peak alpha goes
+     0.322 to 0.316, and the hero's darkest point gains depth (dL 0.284 to 0.364) because the two pools
+     now overlap. Contrast is not bought by dimming the atmosphere; the atmosphere is relocated.
+- **Two geometric alternatives measure well and are traps, both recorded in the CSS so they are not
+  retried.** Shifting the glow box up is a percentage of the HERO's height, and heroes differ (279px on
+  HackTheBox, 183px on VulnHub), so `top: -95%` reached bare paper on two platforms and only 3.65 on
+  VulnHub; horizontal relocation is uniform because the gradient position resolves against the glow box,
+  a fixed 360px everywhere. And pulling the gradient's own centre up measures identically to switching
+  the wash off, because peak visible alpha collapses to 0.076: it is lever 2 wearing a geometry costume.
+  Pooling downward was rejected outright, it breaks `.pi-num` from 4.11 to 3.23.
+- **The band converged on 5.76:1 from three independent directions,** which is why it was chosen over
+  the 4.8 to 5.2 the brief opened with. It is where OverTheWire's existing ink already sat once the wash
+  moved, so the other three come up to meet amber and amber does not move at all. It is the only band
+  where ONE ink token also clears the filter pill (the 5.00 band ink fails there even at a 14% fill).
+  And it is where the per-pixel floor stays above 4.5. Family OKLCH lightness spread 0.035, hue drift
+  under half a degree, and all four land lighter than the `--wm-c` chip already shipping in that hue.
+- **The tail shrank rather than grew, and that was the real architectural result.** The brief expected
+  either a shared token plus one tail rule or three separate ones. The OverTheWire tail rule existed
+  only because the 2026-07-26 pass declined to edit `PlatformIndex.astro` and so needed the unlayered
+  tail to beat that component's own scoped `color`. Since this cluster edits the component anyway, the
+  ink is declared where the colour is declared, and the tail rule had nothing left to beat. Its evidence
+  comment was deleted rather than migrated: every figure in it was measured against the wrong surface.
+- **What shipped:** wash geometry (light only), `--pf-ink` (`#3b6400` / `#b60115` / `#7f30b7` /
+  `var(--otw-amber-ink)`, with dark declared once as `var(--pf-accent)`), the eyebrow and the "All"
+  filter label reading it via a local `--accent-ink`, and the active pill fill 22% to 16% on light.
+- **Known and deliberately unfixed.** OverTheWire's `.pi-name` reads **3.41 against a 3:1 bar**, up from
+  3.05 and from a per-pixel failure at 2.93, but still thin. It is display type, so no ink reaches it;
+  the only remedy is retinting the OverTheWire light accent, which drags `.pi-num`, the empty panel, the
+  card bar, the glare and the focus ring with it. Left as an owner call. The filter pill's own per-pixel
+  floor is 4.31 active and 4.52 at rest, because it is the one consumer stacking a translucent fill on a
+  textured surface; model B, the authority, reads 4.74 and 4.97. And the four DIFFICULTY pills fail on
+  light (2.26 to 3.43), which this cluster measured and left alone as badge-consolidation work.
+- **Verified per commit at exactly-these-diffs.** The shipped component CSS differs from pre-cluster in
+  five declarations and nothing else, with **zero motion declarations in the delta** and both
+  `prefers-reduced-motion` blocks intact. Rendered: 1 changed cell of 11,634 for the wash, 9 for the ink
+  (8 of them unpainted `currentColor` followers on the one element), 0 for OverTheWire's ink (the tail
+  deletion is pixel-neutral, only the route changed), 3 for the pill. **Dark measured byte-identical at
+  every commit**, 0 changed cells of 11,634. Zero `package.json` or lockfile diff. `npm run build` green
+  at 46 pages throughout.
+- **Instrument correction worth keeping:** a grid sampler can MISS the light dot-grid (a 2px dot on a
+  22px pitch) and silently report the model B figure as model C. HackTheBox did exactly that. When the
+  per-pixel floor matters, compute it analytically; it is a uniform 0.56 to 0.57 below the paper figure.
+- **Status:** Adopted; committed to `dev` across five commits, pushed, not merged. No dependency
+  changes, pinned versions unchanged, no Starlight fork, no new component.
+
 ### 2026-07-27 · The release hold is lifted and `dev` ships to production
+- **Supersedes:** 2026-07-26 · `dev` holds the finished CSS refactor and does NOT merge to `main` until the Geist retune lands
 - **Decision:** the release hold recorded on 2026-07-26 is LIFTED by owner instruction, and `dev`
   (29 commits ahead of `main`) merges to `main` by pull request. This is the first production deploy of the
   Geist body face, the cascade-layer CSS architecture, the derived prose foundation, and the recon rail
@@ -36,6 +104,10 @@
      measured by canvas readback on the real element, as 12.8px body text needing 4.5:1. PicoCTF passes at
      4.86:1 and OverTheWire was fixed by the amber pair. This is a real accessibility failure shipping
      knowingly, and it is the first cluster queued after the merge for that reason.
+     **CORRECTED 2026-07-31:** all four figures in this item were measured against BARE PAPER for
+     elements that sit on the hero wash. The real composite read 3.36 / 3.05 / 3.59 / 4.79, so PicoCTF
+     was NOT passing and the amber pair had not fully landed either. Two more consumers were failing
+     unrecorded: the filter pill at 3.15 and OverTheWire's `.pi-name` at 3.05. Resolved by Cluster F.
   4. **The `46ch` principle cap is still the open third instance of the context law.** `ch` resolves on the
      aside at 18px mono while the text it caps is 22.4px, so the maxim measures 36.97 characters and never
      measured 46 in any era. Parked because honouring the declared 46 widens the block by about 120px,
@@ -167,8 +239,12 @@
   375px wrapped-continuation error stays 0.00, both inherited invariants. No motion, no `!important`, no
   new dependencies (`unist-util-visit` is already transitive via `@astrojs/mdx`), pinned versions unchanged.
 - **Status:** Adopted; committed to `dev` as `5e0e9b9` (transform, zero rendered diff), `00aeaa0` (design)
-  and the docs commit below, pushed, not merged. `426a4fd` is NOT reverted: its CSS, `--mono-chrome-leading`,
-  the `dd` face and leading rules, and the Assessment `:has(.findings)` migration are all correct and kept.
+  and the docs commit below, pushed, not merged. **Attempt 2 (`feat(recon): make findings a semantic dl and
+  delete the rail literals`, 2026-07-27) is NOT reverted, only partly superseded.** Withdrawn: the two
+  components it added, `Findings.astro` and `Finding.astro`, and the import line plus JSX tree they required
+  in every writeup that carried a rail. Kept and still live: its CSS, the `--mono-chrome-leading` token, the
+  `dd` face and leading rules, and the Assessment `:has(.findings)` migration. Attempt 3 replaced the
+  MECHANISM and inherited all of it, which is why the structure it established survives its own removal.
 
 ### 2026-07-27 · The context law: a font-relative length that governs another context is wrong
 - **Decision:** CORE_SPEC section 8 gains a law. A font-relative length resolves against the element it is
@@ -227,37 +303,6 @@
   collapse takes the heading's larger value. Fixing it means moving the component's margin.
 - **Status:** Adopted; committed as `f1dedd2` to `dev`. Two theme-pass modules.
 
-### 2026-07-26 · `dev` holds the finished CSS refactor and does NOT merge to `main` until the Geist retune lands
-- **Decision:** the refactor workstream is complete and pushed to `dev`, and it stays there. `main` is not
-  updated, no PR is opened, and Cloudflare production keeps serving the pre-Geist site until the design
-  retune below has been done and reviewed. Owner's call, and the reason is not caution about the refactor:
-  it is that `dev` currently carries a HALF-FINISHED DESIGN CHANGE, which is a different thing.
-- **What is actually on `dev` (17 commits ahead of `main`, whose tip is `51edb9c`, PR #18):** two separable
-  bodies of work that happen to share the branch.
-  1. **A design change:** the Geist prose face and the prose/chrome type split (`991bfc4`), plus
-     PasswordReveal's block mode (`b9742fb`). Geist is now the writeup body face, but the rest of the
-     design has NOT been refitted around it. The prose dials are still parked as tokens pending a real
-     screen (see the 2026-07-25 entry), and the spacing, measure and component scales were tuned for the
-     old mono body.
-  2. **Engineering and infrastructure only:** the cascade-layer refactor, the module split, the dead-rule
-     purge, and the governance pass (`59765d6` through `200e9da`). This half is behavior-preserving by
-     construction and was gated at zero changed cells at every step.
-- **Why this blocks the merge even though the refactor is safe:** merging would deploy the Geist face to
-  production in its untuned state. A half-refitted body face is exactly the kind of change that reads as
-  "the site looks off" to a visitor while every individual rule is correct, and this site's whole pitch is
-  that the design is high-effort. The engineering half is invisible to a visitor by design, so it gains
-  nothing from shipping early and loses nothing by waiting.
-- **The merge gate, stated so it is not re-litigated:** `dev` merges to `main` when the Geist retune is
-  done and the owner has seen it on a real screen in both themes. The retune and the refactor ship as ONE
-  release. Splitting them (cherry-picking the refactor to `main` first) was considered and rejected: the
-  refactor's own verification baseline was captured against a Geist-carrying tree, so a `main` that has the
-  refactor without Geist is a configuration nothing was ever measured against.
-- **What the retune inherits, and why the sequencing was right:** a layered, purged, tokenized theme pass.
-  Every dial the retune needs is a custom property in one block in `tokens.css`, precedence is decided by
-  layer order rather than by selector weight, and the dead rules that would have made a retune ambiguous
-  are gone. Doing the plumbing first means the retune is a values exercise, not an archaeology exercise.
-- **Status:** Adopted (owner instruction). No PR, no `main` activity. Tracked as the top ROADMAP item.
-
 ### 2026-07-26 · OverTheWire amber splits into an identity accent and an AA text ink
 - **Decision:** the single `--pw-amber` becomes a PAIR: `--otw-amber` (the identity, for non-text uses:
   borders, focus rings, bars, and display-size type. `#ffc23d` dark / `#a86f04` light, both unchanged) and
@@ -282,7 +327,10 @@
 - **Display type deliberately keeps the identity amber.** `.pi-name` (57.6px/800) and `.pi-num`
   (44.8px/700) are large text at the 3:1 bar and pass at 3.50:1. Only `.pi-eyebrow` (12.8px/400) is body
   text. That split is exactly what the accent/ink pair encodes, and it is why the platform index did not
-  need its shared `--pf-accent` retinted.
+  need its shared `--pf-accent` retinted. **CORRECTED 2026-07-31:** 3.50 was the bare-paper figure. On
+  the hero's real composite `.pi-name` read **3.05**, a 0.05 margin, and **2.93 on the per-pixel floor,
+  which is a failure**. `.pi-num` genuinely was 3.50, because the wash did not reach it. The split
+  itself stands and the accent still is not retinted; only the number was wrong.
 - **A 14th tail rule, and why it was the honest option.** `.pi-eyebrow`'s colour is declared by
   `PlatformIndex.astro`'s own scoped style, so the theme pass cannot reach it from a layer. Verified in the
   browser rather than assumed: a layered rule at (0,4,0) did not move it, an unlayered rule did, because an
@@ -301,9 +349,14 @@
   eyebrow. Every other cell on those elements is an unpainted `currentColor` follower (`border-*-color` at
   width 0, `outline-color`). Final table, all clearing their bar: hovered button 4.78, resting button 5.28,
   block summary 5.98, eyebrow 5.76, rings 3.21 and 3.50 against the 3:1 non-text bar.
+  **CORRECTED 2026-07-31: the eyebrow figure is wrong.** 5.76 is the ratio against bare paper; the
+  element sits on the hero wash and measured **4.79** there. It passed, but by 0.29 rather than 1.26.
+  The other figures in this list are against their own composited surfaces and stand.
 - **Found and NOT fixed (different token family, out of scope):** the HackTheBox and VulnHub platform-index
   eyebrows measure 4.11:1 and 4.16:1 on paper as 12.8px body text, both under 4.5:1. Same defect, different
   hue, each needs its own solve and its own ink token. Recorded in CORE_SPEC and ROADMAP.
+  **CORRECTED 2026-07-31:** bare-paper figures again. The composite read 3.36 and 3.05, and PicoCTF,
+  dismissed here as passing, read 3.59. It was four platforms.
 - **Status:** Adopted; committed as `f5eb43a` to `dev`, pushed, not merged.
 
 ### 2026-07-26 · The theme pass moves to declared cascade layers and splits into per-layer modules
@@ -374,6 +427,7 @@
   unchanged, no component edits beyond one comment correction in `AttackPath.astro`.
 
 ### 2026-07-25 · PasswordReveal gets a BLOCK mode; the one-off `.spoiler-toggle` class is retired
+- **Supersedes:** 2026-07-11 · PasswordReveal migration complete
 - **Decision:** `PasswordReveal` grows a second mode so one component covers both shapes a wargame secret
   comes in, and the `.spoiler-toggle` class it existed to work around is deleted from `custom.css`.
   **INLINE** (a `password` prop, no slot) is the original one-line password: blurs in place, copy control,
@@ -916,35 +970,6 @@
 - **Status:** Adopted (working tree; NOT committed). Component + content only: no CSS, no config, no new
   deps, pinned versions unchanged.
 
-### 2026-07-17 · busquedav2 testbed dropped before push; badge commits rebased + pushed; merged to main (PR #16)
-- **Decision:** the `busquedav2.mdx` design testbed is NOT pushed and is kept out of the `dev` -> `main` PR.
-  It is a local-only testing page (a re-created successor to the June testbed that the 2026-06-27 FlagCapture
-  entry recorded as deleted), used to verify the WriteupMeta badge work. Keeping it off `origin` and out of
-  the PR keeps it off every path to production.
-- **How (owner-approved edit of UNPUSHED commits only):** it sat in exactly one isolated, unpushed commit,
-  `fd43eb7` (a 467-line pure add touching only that file), third in the 7-commit unpushed stack. It was
-  dropped with `git rebase --onto fd43eb7~1 fd43eb7 dev` (interactive rebase is unavailable in the harness;
-  `--onto` is more precise anyway). The two commits before it kept their hashes (`c793fe7`, `d615f98`); the
-  four after it were replayed onto the new base and so got NEW hashes: `bdb06c4` -> `304c97e` (glyph 14px
-  grid), `4325533` -> `1fcf53e` (light-mode label palette), `3de625a` -> `d7b1550` (Linux OS chip re-hue),
-  `7f492db` -> `00da3cb` (the docs-badges commit). `git diff 7f492db dev` was exactly the 467-line busquedav2
-  deletion and nothing else, proving the four replayed commits are byte-identical in content.
-- **Then pushed, PR'd, and merged to production:** because only an UNPUSHED commit was removed, `origin/dev`
-  stayed a clean ancestor, so `git push origin dev` fast-forwarded (no force). Opened PR #16 (`dev` -> `main`,
-  22 commits / 15 files, +983 / -152), where `origin/main` was a clean ancestor of `dev`, then on the owner's
-  go-ahead merged it to `main` as a history-preserving merge commit (the PR #9 convention, not a squash),
-  triggering the Cloudflare Pages production deploy of idanlab.dev.
-- **Docs reconciled (this pass):** the removed testbed's CURRENT-STATE references are corrected in CORE_SPEC
-  §6 (component inventory) and ROADMAP (the WriteupMeta Now item): the badge system is built and documented
-  but is not currently wired to any page. This entry SUPERSEDES the "(not pushed)" status and the old hashes
-  in the three 2026-07-17 badge entries below (remap above). The historical busquedav2 entries (2026-06-20,
-  2026-06-27) stand as accurate June history and are untouched.
-- **Verified:** `npm run build` green at 45 pages (was 46; the one fewer page IS busquedav2, confirming
-  nothing else was lost). Local `main` was also fast-forwarded to `origin/main` (`cb0a696`) to clear a stale
-  local ref; no `main` history was changed.
-- **Status:** Adopted + shipped to production. `dev` pushed to `origin` and merged to `main` via PR #16. Git
-  plus this docs reconciliation only; no source or dependency changes.
-
 ### 2026-07-17 · Linux OS badge separated from OverTheWire (H60 re-hue + L0.40 deepen)
 - **Decision:** `wm-os-linux` gets its own hue in both themes, distinct from `pf-otw`. Dark `#f0b429` ->
   `#ffa95d`, light `#794e00` -> `#6b3900`. `pf-otw` and every other amber in the file are untouched.
@@ -971,7 +996,7 @@
 - **Verified live (canvas readback, both themes):** Linux light 6.10, dark 8.30; OTW unchanged 4.80 / 9.56;
   separation light 0.065, dark 0.073; both chips read distinct at real chip size. `npm run build` green (46
   pages). custom.css only, no new deps.
-- **Status:** Adopted; committed as `3de625a` to `dev` (not pushed). **CORRECTED 2026-07-17 (push):** rebased to `d7b1550` and pushed when the busquedav2 testbed commit was dropped; shipped to main via PR #16 (see the top entry).
+- **Status:** Adopted; committed as `3de625a` to `dev` (not pushed). **CORRECTED 2026-07-17 (push):** rebased to `d7b1550` and pushed when the busquedav2 testbed commit was dropped; shipped to main via PR #16 (see 2026-07-17 · busquedav2 testbed dropped before push; badge commits rebased + pushed; merged to main (PR #16), now in DECISIONS-ARCHIVE).
 
 ### 2026-07-17 · Badge light-mode label palette solved to WCAG AA in OKLCH
 - **Decision:** the nine WriteupMeta light `--wm-c` values are re-solved so each 12px/600 chip label clears
@@ -1009,7 +1034,7 @@
   unaudited for light AA (see ROADMAP).
 - **Verified live (canvas, both themes):** every light label 4.80 to 4.90, every dark 5.66 to 12.01; backdrop
   `#ece9e0`, no card; every dark value byte-identical (confirmed by diff). `npm run build` green (46 pages).
-- **Status:** Adopted; committed as `4325533` to `dev` (not pushed). **CORRECTED 2026-07-17 (push):** rebased to `1fcf53e` and pushed when the busquedav2 testbed commit was dropped; shipped to main via PR #16 (see the top entry). custom.css only.
+- **Status:** Adopted; committed as `4325533` to `dev` (not pushed). **CORRECTED 2026-07-17 (push):** rebased to `1fcf53e` and pushed when the busquedav2 testbed commit was dropped; shipped to main via PR #16 (see 2026-07-17 · busquedav2 testbed dropped before push; badge commits rebased + pushed; merged to main (PR #16), now in DECISIONS-ARCHIVE). custom.css only.
 
 ### 2026-07-17 · Badge glyphs normalized to a 14px grid; HackTheBox to currentColor; polychrome/monochrome sourcing axis
 - **Decision:** the WriteupMeta glyph set is normalized so every icon's larger ink dimension renders at ~14px
@@ -1057,7 +1082,7 @@
 - **Verified live (both themes):** all nine glyphs within ~1.14x; HackTheBox icon and label compute identical
   in both themes; no disc behind Tux and his light regions survive; no `.st0` leaked globally; every chip's
   textContent is exactly its label. `npm run build` green (46 pages). No new deps.
-- **Status:** Adopted; committed as `bdb06c4` to `dev` (not pushed). **CORRECTED 2026-07-17 (push):** rebased to `304c97e` and pushed when the busquedav2 testbed commit was dropped; shipped to main via PR #16 (see the top entry).
+- **Status:** Adopted; committed as `bdb06c4` to `dev` (not pushed). **CORRECTED 2026-07-17 (push):** rebased to `304c97e` and pushed when the busquedav2 testbed commit was dropped; shipped to main via PR #16 (see 2026-07-17 · busquedav2 testbed dropped before push; badge commits rebased + pushed; merged to main (PR #16), now in DECISIONS-ARCHIVE).
 
 ### 2026-07-17 · Code-block focus ring wraps the whole EC frame, not just the `<pre>`
 - **Decision:** two add-only rules in `custom.css` (right after the sharp-frame radius block): the ring is
@@ -1168,7 +1193,10 @@
 - **Why:** "prefers-reduced-motion respected" is a standing project rule, and the count-up previously
   animated regardless, so this closes an existing gap. Safe because the resting HTML already holds the
   final values (see the flash-fix entry below).
-- **Status:** Adopted, verified in-browser; committed as `1e4fb4f` (was recorded as uncommitted).
+- **Status:** Adopted, verified in-browser (was recorded as uncommitted). **This decision and the resting-HTML
+  entry below shipped TOGETHER, in one commit:** `fix: homepage stats render real values without JS and
+  respect reduced motion` (2026-07-17), which carries both the reduced-motion gate and the resting values.
+  They are recorded as two entries because they are two decisions, not because they were two changes.
 
 ### 2026-07-17 · Landing stats: resting HTML holds final values, no flash
 - **Decision:** The three stat elements render their final values (4, 50+, and the infinity stat) as
@@ -1176,7 +1204,9 @@
   `requestAnimationFrame`) so the final value is never painted while `.reveal` is at opacity 0.
 - **Why:** No-JS visitors, social/OG crawlers, and non-executing search engines now see the real numbers
   instead of 0, and there is no one-frame flash of the final value before the count-up begins.
-- **Status:** Adopted, verified in-browser; committed as `1e4fb4f` (was recorded as uncommitted).
+- **Status:** Adopted, verified in-browser (was recorded as uncommitted). Shipped in the SAME single commit as
+  the reduced-motion gate above, `fix: homepage stats render real values without JS and respect reduced
+  motion` (2026-07-17), not as a separate change.
 
 ### 2026-07-13 · Homepage hero subline is NOT screen-reader fragmented (investigated, no change made)
 - **Finding:** the reported fragmentation of the homepage hero subline does not exist. The subline is plain
@@ -1454,14 +1484,8 @@
   deployed preview by scrolling the hero out of view (loop stops) and back (resumes smoothly, no visual jump).
 - **Status:** Adopted (working tree; not committed). No new dependencies, pinned versions unchanged.
 
-### 2026-07-11 · PasswordReveal migration complete
-- Status update superseding the 2026-07-05 in-progress note. PasswordReveal is now the reveal mechanism
-  on 32 of 34 Bandit level pages. The first level's spoiler-toggle has been removed and the migration
-  commit landed. Two pages are deliberately excluded: one uses a private-key reveal that remains a
-  spoiler-toggle, and one has no password to reveal. The rollout is done; no further per-page migration
-  is pending.
-
 ### 2026-07-11 · Content pipeline is manual editorial polish, not a script (retires notion_cleaner.py)
+- **Supersedes:** 2026-05-31 · Notion → notion_cleaner.py → MDX pipeline
 - **Decision:** The writeup content pipeline is deliberate manual editorial polish against a Notion
   template. The previously referenced Python cleaning script (notion_cleaner.py) is retired and is not
   the mechanism. It never provided the finishing quality intended for published writeups.
@@ -1540,34 +1564,7 @@
 - **Status:** Adopted; committed to `dev`, then merged to `main` (production) via PR the same day
   (2026-07-11).
 
-### 2026-07-11 · Commit split into 4 atomic commits, then dev merged to production (PR #9)
-- **Commit split:** the single working commit `1fdac10` (WriteupMeta badges + badge icons + reoptimized
-  `picoctf.svg` + docs sync + mobile TOC + three-column layout) was re-partitioned into four atomic,
-  individually-building commits with the EXACT same final tree (verified: `git diff 1fdac10 HEAD` empty,
-  identical tree hash `04b803fb`): `7fa5d82` feat(badges) WriteupMeta system (component, `icons.ts`, the
-  interim `picoctf.svg`, `.writeup-meta` styles), `3045505` feat(toc) mobile TOC parity, `02e8bab` docs
-  (badge icon sourcing + spec/roadmap sync), `723c2ab` style(layout) three-column rebalance + full-width
-  intro pages. `custom.css` spanned three concerns (badge, mobile TOC, layout) and was split by hunk across
-  commits 1, 2, and 4. The pre-split tip stays recoverable from the reflog if ever needed.
-- **Merged to production:** `dev` (9 commits ahead of `main`, which was a clean ancestor) merged into `main`
-  via PR #9 as a history-preserving merge commit `998af50` (two parents `546165c` + `723c2ab`, NOT a
-  squash), so all 9 commits stay individually on `main`. The push to `main` triggers the Cloudflare Pages
-  production deploy of idanlab.dev.
-- **What went live** (previously dev-only or uncommitted): CSP is now ENFORCED IN PRODUCTION (was enforced on
-  `dev` only, see 2026-07-06); the font `<link rel=preload>` hints are removed site-wide (2026-07-07); the
-  WriteupMeta badge system is in the repo (still not wired to any writeup, icons still placeholder); the
-  mobile TOC parity is live; and the three-column rebalance + full-width intro pages shipped, though its rem
-  values remain analysis-based and still want a real-browser fine-tune (see ROADMAP).
-- **Font first-paint follow-up (nothing shipped):** the post-preload-removal Chromium first-paint swap was
-  investigated. Three candidate states (preload + swap / `font-display: optional` / preload + optional) were
-  built for the owner to compare, but NONE was adopted, so `font-display: swap` and the no-preload state are
-  unchanged. A separate diagnosis established that the self-hosted fonts DO cache correctly in production: the
-  `/fonts/*` immutable `Cache-Control` from `_headers` is served on the deployed site (verified by curl), so
-  any swap-on-every-navigation is a `npm run dev` artifact (dev applies no `_headers`), not a production bug.
-- **Status:** Adopted + shipped to production. PRs #5 and #9 are both merged; the "deploy enforced CSP to
-  production" and "writeup-structure migration uncommitted" ROADMAP items are resolved and removed from ROADMAP.
-
-## Badge icon sourcing: split by consumption mechanism
+### 2026-07-11 · Badge icon sourcing: split by consumption mechanism
 
 **SUPERSEDED IN PART 2026-07-17** (see the "polychrome/monochrome sourcing axis" entry above). Two
 premises here are now wrong: (1) the axis is polychrome vs monochrome, NOT logo vs glyph, so HackTheBox
@@ -1629,8 +1626,10 @@ as a data URI rather than hashing).
   `oklab(0.785…)` muted gold, h3-current `--tp-cyan`, both identical to before). `npm run build` passes
   (45 pages). Committed as `3045505` and shipped to production via PR #9 (2026-07-11).
 
-### 2026-07-10 · WriteupMeta revised: intentional per-axis color, restrained glow, growing pips (supersedes the two entries below)
-- **What changed from the first build (below):** the badge row was redesigned from platform-only *washes*
+### 2026-07-10 · WriteupMeta revised: intentional per-axis color, restrained glow, growing pips
+- **Supersedes:** 2026-07-10 · WriteupMeta badge system (`src/components/badges/`) added
+- **Supersedes:** 2026-07-10 · `WriteupMeta` badge system: two tiers, shape-coded, navigational chips + a hue-free Difficulty
+- **What changed from the first build, now archived as 2026-07-10 · WriteupMeta badge system (`src/components/badges/`) added:** the badge row was redesigned from platform-only *washes*
   + a bordered divider to INTENTIONAL per-axis color with a restrained glow. Structure, guardrails, and
   a11y are unchanged (`.not-content`, `data-astro-prefetch="false"`, runtime union guard, `sr-only`
   "Difficulty N of 4"); only color, glow, difficulty rendering, and spacing changed.
@@ -1668,56 +1667,6 @@ as a data URI rather than hashing).
   shipped to production via PR #9 (2026-07-11); still not wired to any writeup (auto-injection vs manual
   placement remains an open ROADMAP call).
 
-### 2026-07-10 · WriteupMeta badge system (`src/components/badges/`) added
-- **Decision:** New additive component `WriteupMeta.astro` plus an icon registry `icons.ts` and a
-  `.writeup-meta` CSS block in `custom.css` (placed right after the flag-loot rules). It renders under a
-  writeup title as a two-tier metadata row: a NAVIGATIONAL group (Platform, OS, Environment) as tinted
-  pill chips that are `<a>` anchors to future filter routes, then a trailing EVALUATIVE Difficulty chip
-  (rectangular, hue-free, word + filled pips, NOT a link). Four axes are string-literal unions
-  (`Platform` / `OS` / `Environment` / `Difficulty`). Icons live only in `icons.ts` as inline 24x24
-  `currentColor` SVG strings (placeholder stubs today; Idan swaps the real marks in). Shape-codes intent:
-  pills navigate, the rectangle grades. Usage: `import WriteupMeta from '@components/badges/WriteupMeta.astro'`
-  under the title. NOT yet auto-injected or applied to any writeup (see ROADMAP).
-- **Four Starlight-integration conflicts found and fixed** (the naive spec would have shipped each):
-  1. **Prose-link bleed →** wrapper carries `.not-content`. Every `.sl-markdown-content a` rule is guarded
-     `:not(:where(.not-content *))`, and under `[data-theme='light']` that rule is specificity (0,3,1),
-     which outranks the chip's own `.writeup-meta .wm-chip` (0,2,0): without the opt-out, chip labels
-     rendered teal with a tinted bottom border in light mode (and lime/white on hover in both themes).
-  2. **Token scoping →** `--wm-*` platform tokens are declared on `:root, :root[data-theme='dark']` (not
-     `[data-theme="dark"]` only, as first drafted). This file's dark tokens use the bare-`:root` fallback
-     convention; scoping the wash tokens to the attribute alone would leave them undefined if `data-theme`
-     is ever absent, making every `color-mix()` invalid-at-computed-value and silently dropping the wash.
-  3. **Prefetch of dead routes →** chips carry `data-astro-prefetch="false"`. Starlight enables Astro
-     prefetch by default, so each writeup fired `<link rel=prefetch>` at `/platform|/os|/environment`
-     (all 404 today) just from the block entering the viewport. A click 404 is expected; silent 404
-     prefetch traffic on every page load is not. Remove the attrs when the routes exist.
-  4. **No build-time type check →** component throws on an unknown axis value. `astro build` does not
-     type-check `.astro` props and this repo has no `astro check` (adding `@astrojs/check` + `typescript`
-     is a new dep, forbidden). Without the guard, `difficulty="Hardd"` shipped silently: no pips filled,
-     href became `/platform/undefined`, and screen readers announced "Difficulty undefined of 4." The
-     guard turns a typo into a build failure (verified: exit 1, `npm run build`), honoring the type-safety
-     requirement without new deps.
-- **A11y:** the pip count has an `.sr-only` "Difficulty N of 4" text equivalent (not shape-only); icon
-  SVGs are `aria-hidden`; each chip's accessible name is just its label. Verified in the a11y tree.
-- **Difficulty is hue-free by design** (magnitude by pip count, no traffic-light color), deliberately
-  UNLIKE the existing `.difficulty-*` machine-meta badges (green/amber/red). The two badge systems now
-  coexist; `.machine-meta` is untouched and still used by every current writeup.
-- **Palette note (unresolved):** the spec's `--wm-*` hexes match the canonical unified platform palette
-  (see 2026-06-01) only for HTB; VulnHub/PicoCTF/OTW drift in both themes (PicoCTF most: canonical
-  `#d96bff`/`#8b3dc4` vs `--wm-pico` `#a78bfa`/`#6d28d9`). Implemented as specified (explicit design
-  values), flagged in ROADMAP for Idan to reconcile before this ships on real writeups.
-- **Status:** built (45 pages, clean), verified both themes + narrow-width wrap in the preview. Files are
-  committed as `7fa5d82` (+ docs `02e8bab`) and shipped to production via PR #9 (2026-07-11); not wired to any writeup yet.
-
-### 2026-07-10 · `WriteupMeta` badge system: two tiers, shape-coded, navigational chips + a hue-free Difficulty
-- **Decision:** New additive component tree `src/components/badges/` (`icons.ts` + `WriteupMeta.astro`), styled
-  by a `.writeup-meta` block in `custom.css` placed after the flag/loot rules. Platform, OS and Environment
-  render as clickable pill chips (leading), Difficulty trails as a rectangular word-plus-pips chip that is
-  hue-free and never a link. Shape carries the job: pills navigate, the rectangle grades. Four string-literal
-  unions (`Platform`, `OS`, `Environment`, `Difficulty`) drive `Record<>` registries, so the icon set, the
-  route slug and the pip count all stay exhaustive. No new dependencies; Starlight is not forked.
-- **Why (icons):** `icons.ts` is the single home for the marks. Each is an inline 24x24 SVG string using
-  `fill="currentColor"`, so a
 ### 2026-07-07 · Font `<link rel=preload>` hints removed site-wide (Firefox "preloaded but not used")
 - **Decision:** The two font preload hints (`jetbrains-mono-400.woff2`, `syne-800.woff2`) are removed from
   all three sources that emitted them: the Starlight `head` config in `astro.config.mjs` (docs pages) and
@@ -2091,6 +2040,7 @@ ever wanted later, it would require adding static.cloudflareinsights.com to scri
 - **Status:** Adopted + shipped.
 
 ### 2026-07-04 · Decisive-line focus highlighting for Expressive Code {n} markers
+- **Supersedes:** 2026-06-20 · busquedav2: drop EC line highlights; remove marked-line CSS
 - **Decision:** a fence line marked `{n}` reads as focus: a lime gutter accent bar plus a restrained
   background tint that sits UNDER the semantic command-token colors and never competes with them. custom.css
   only, after the EC scrollbar rules. Tint kept low (dark `--sl-color-accent` 10%, light `--tp-deco-lime`
@@ -2241,12 +2191,12 @@ automatically; no astro.config.mjs edit is needed per writeup.
   tab (top) and code body (bottom) from `calc(--ec-brdRad + border-width)`, so `.frame .header/.title/pre`
   are zeroed too. Code blocks now read as crisp rectangles on paper as they already did on dark. The EC
   copy button keeps its own radius (3.2px); no toggle / button / badge / divider radius is touched.
-- **Light inline-code chip:** (SUPERSEDED same day by the unified inline-code object in the top entry;
+- **Light inline-code chip:** (SUPERSEDED same day by the unified inline-code object in 2026-06-29 · Inline code is its own object: a rounded red hairline chip (theme-tuned);
   kept for history) the light `:not(pre) > code` fill (`#f3ebda`, near-invisible on the `#f2ede0` toggle
   panel and borderless) became a defined cream chip `#f7f0dc` + a warm 1px border `rgba(95,74,38,0.32)`.
   The fill had to stay light to keep the red text (`#c92a2a`) at AA (4.8:1), so it was a touch lighter
   than both surfaces and the border carried the edge on the close-toned panel. Dark was left unchanged
-  in this pass (its default chip was already distinct), which the top entry then unified.
+  in this pass (its default chip was already distinct), which 2026-06-29 · Inline code is its own object: a rounded red hairline chip (theme-tuned) then unified.
 - **Softer light copy toast:** EC's success feedback (`.expressive-code .copy .feedback`, fed by
   `--ec-frm-tooltipSuccessBg` / `-Fg`) was a saturated teal `#438076` + white, too bold on paper.
   Light-only override to a pale sage `#d6e4c0` + deep-olive `#2f4d09` text (7.2:1). Dark keeps EC's default.
@@ -2380,15 +2330,6 @@ automatically; no astro.config.mjs edit is needed per writeup.
 - **Why:** semantic, scannable writeup callouts (recon/loot/intel/vuln/defense) without forking Starlight
   admonitions. Applied to `busquedav2.mdx` (the design testbed).
 - **Status:** Adopted.
-
-### 2026-06-20 · busquedav2: drop EC line highlights; remove marked-line CSS
-- **Decision:** Remove all `{n}` line-highlight markers from `busquedav2.mdx` and delete the custom EC
-  marked-line restyle from `custom.css`. The marked line had been restyled (amber, then a neutral
-  grayscale) to stop EC's default blue reading as a callout; the owner then chose to drop highlights
-  entirely, so the restyle is gone (nothing is marked).
-- **Why:** the highlights were not earning their weight; removing them is cleaner than styling them.
-- **Status:** Adopted (busquedav2). The `notion_cleaner.py` line-highlight convention is now unused; if
-  reintroduced, EC's default marked-line color would need restyling again.
 
 ### 2026-06-20 · Homepage pipeline: Reflection phase reads muted violet
 - **Decision:** The 4th "How I work" pipeline phase title (`.phase:nth-child(4) .pt`, Reflection) is
@@ -2574,7 +2515,7 @@ automatically; no astro.config.mjs edit is needed per writeup.
 - **Status:** Adopted. (Pipeline note: `notion_cleaner.py -d easy` must output into `Easy/`.)
 - **SUPERSEDED 2026-06-30:** difficulty directories are now LOWERCASE (`hackthebox/easy`), and
   `astro.config.mjs` was restored to `hackthebox/easy`, as part of the flat-files + parallel `src/assets`
-  migration (see the top entry). The case-only folder rename was registered in git with `git mv`; with
+  migration (see 2026-06-30 · Content images and writeup structure: flat files + parallel src/assets). The case-only folder rename was registered in git with `git mv`; with
   `core.ignorecase=true` git otherwise misses it and would ship a split `Easy/` + `easy/` tree that drops
   a writeup from the sidebar on the case-sensitive Linux build. The case-sensitivity lesson still holds,
   now on the lowercase form: on-disk difficulty dirs and every `autogenerate.directory` must match exactly.
@@ -2618,12 +2559,6 @@ automatically; no astro.config.mjs edit is needed per writeup.
   Starlight in `src/content/docs/`. `index.mdx`/`about.mdx` must not exist (route collision).
 - **Why:** Starlight's splash can't deliver the immersive hero; Starlight's machinery is perfect
   for the writeups. Best of both, no fighting the framework.
-- **Status:** Adopted.
-
-### (earlier) · Notion → notion_cleaner.py → MDX pipeline
-- **Decision:** Author in Notion, normalize with a Python script into clean MDX.
-- **Why:** Comfortable authoring in Notion; the script enforces all conventions (badges,
-  toggles, code-frame normalization, image paths) so 50+ writeups stay consistent.
 - **Status:** Adopted.
 
 ### (earlier) · No em dashes in site copy
