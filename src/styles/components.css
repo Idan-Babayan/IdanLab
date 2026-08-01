@@ -842,7 +842,7 @@ html[data-theme="light"] .sl-markdown-content .cl :not(pre) > code {
   padding: 0.85rem 0.95rem;
   font-family: var(--sl-font-mono, ui-monospace, monospace);
   /* Fixed base size so the flag VALUE (1.02em) and lock/check icon (1.25em), which are em-relative to this
-     button, hold their proportion instead of inflating with the 18.5px prose. Restores the pre-Geist scale. */
+     button, hold their proportion instead of inflating with the 18px prose. Restores the pre-Geist scale. */
   font-size: var(--component-title-size);
   text-align: left;
   color: var(--fc-id);
