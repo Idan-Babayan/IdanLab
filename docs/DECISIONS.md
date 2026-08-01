@@ -996,7 +996,7 @@
 - **Verified live (canvas readback, both themes):** Linux light 6.10, dark 8.30; OTW unchanged 4.80 / 9.56;
   separation light 0.065, dark 0.073; both chips read distinct at real chip size. `npm run build` green (46
   pages). custom.css only, no new deps.
-- **Status:** Adopted; committed as `3de625a` to `dev` (not pushed). **CORRECTED 2026-07-17 (push):** rebased to `d7b1550` and pushed when the busquedav2 testbed commit was dropped; shipped to main via PR #16 (see the top entry).
+- **Status:** Adopted; committed as `3de625a` to `dev` (not pushed). **CORRECTED 2026-07-17 (push):** rebased to `d7b1550` and pushed when the busquedav2 testbed commit was dropped; shipped to main via PR #16 (see 2026-07-17 · busquedav2 testbed dropped before push; badge commits rebased + pushed; merged to main (PR #16), now in DECISIONS-ARCHIVE).
 
 ### 2026-07-17 · Badge light-mode label palette solved to WCAG AA in OKLCH
 - **Decision:** the nine WriteupMeta light `--wm-c` values are re-solved so each 12px/600 chip label clears
@@ -1034,7 +1034,7 @@
   unaudited for light AA (see ROADMAP).
 - **Verified live (canvas, both themes):** every light label 4.80 to 4.90, every dark 5.66 to 12.01; backdrop
   `#ece9e0`, no card; every dark value byte-identical (confirmed by diff). `npm run build` green (46 pages).
-- **Status:** Adopted; committed as `4325533` to `dev` (not pushed). **CORRECTED 2026-07-17 (push):** rebased to `1fcf53e` and pushed when the busquedav2 testbed commit was dropped; shipped to main via PR #16 (see the top entry). custom.css only.
+- **Status:** Adopted; committed as `4325533` to `dev` (not pushed). **CORRECTED 2026-07-17 (push):** rebased to `1fcf53e` and pushed when the busquedav2 testbed commit was dropped; shipped to main via PR #16 (see 2026-07-17 · busquedav2 testbed dropped before push; badge commits rebased + pushed; merged to main (PR #16), now in DECISIONS-ARCHIVE). custom.css only.
 
 ### 2026-07-17 · Badge glyphs normalized to a 14px grid; HackTheBox to currentColor; polychrome/monochrome sourcing axis
 - **Decision:** the WriteupMeta glyph set is normalized so every icon's larger ink dimension renders at ~14px
@@ -1082,7 +1082,7 @@
 - **Verified live (both themes):** all nine glyphs within ~1.14x; HackTheBox icon and label compute identical
   in both themes; no disc behind Tux and his light regions survive; no `.st0` leaked globally; every chip's
   textContent is exactly its label. `npm run build` green (46 pages). No new deps.
-- **Status:** Adopted; committed as `bdb06c4` to `dev` (not pushed). **CORRECTED 2026-07-17 (push):** rebased to `304c97e` and pushed when the busquedav2 testbed commit was dropped; shipped to main via PR #16 (see the top entry).
+- **Status:** Adopted; committed as `bdb06c4` to `dev` (not pushed). **CORRECTED 2026-07-17 (push):** rebased to `304c97e` and pushed when the busquedav2 testbed commit was dropped; shipped to main via PR #16 (see 2026-07-17 · busquedav2 testbed dropped before push; badge commits rebased + pushed; merged to main (PR #16), now in DECISIONS-ARCHIVE).
 
 ### 2026-07-17 · Code-block focus ring wraps the whole EC frame, not just the `<pre>`
 - **Decision:** two add-only rules in `custom.css` (right after the sharp-frame radius block): the ring is
@@ -1485,7 +1485,7 @@
 - **Status:** Adopted (working tree; not committed). No new dependencies, pinned versions unchanged.
 
 ### 2026-07-11 · Content pipeline is manual editorial polish, not a script (retires notion_cleaner.py)
-- **Supersedes:** (earlier) · Notion → notion_cleaner.py → MDX pipeline
+- **Supersedes:** 2026-05-31 · Notion → notion_cleaner.py → MDX pipeline
 - **Decision:** The writeup content pipeline is deliberate manual editorial polish against a Notion
   template. The previously referenced Python cleaning script (notion_cleaner.py) is retired and is not
   the mechanism. It never provided the finishing quality intended for published writeups.
@@ -1626,10 +1626,10 @@ as a data URI rather than hashing).
   `oklab(0.785…)` muted gold, h3-current `--tp-cyan`, both identical to before). `npm run build` passes
   (45 pages). Committed as `3045505` and shipped to production via PR #9 (2026-07-11).
 
-### 2026-07-10 · WriteupMeta revised: intentional per-axis color, restrained glow, growing pips (supersedes the two entries below)
+### 2026-07-10 · WriteupMeta revised: intentional per-axis color, restrained glow, growing pips
 - **Supersedes:** 2026-07-10 · WriteupMeta badge system (`src/components/badges/`) added
 - **Supersedes:** 2026-07-10 · `WriteupMeta` badge system: two tiers, shape-coded, navigational chips + a hue-free Difficulty
-- **What changed from the first build (below):** the badge row was redesigned from platform-only *washes*
+- **What changed from the first build, now archived as 2026-07-10 · WriteupMeta badge system (`src/components/badges/`) added:** the badge row was redesigned from platform-only *washes*
   + a bordered divider to INTENTIONAL per-axis color with a restrained glow. Structure, guardrails, and
   a11y are unchanged (`.not-content`, `data-astro-prefetch="false"`, runtime union guard, `sr-only`
   "Difficulty N of 4"); only color, glow, difficulty rendering, and spacing changed.
@@ -2191,12 +2191,12 @@ automatically; no astro.config.mjs edit is needed per writeup.
   tab (top) and code body (bottom) from `calc(--ec-brdRad + border-width)`, so `.frame .header/.title/pre`
   are zeroed too. Code blocks now read as crisp rectangles on paper as they already did on dark. The EC
   copy button keeps its own radius (3.2px); no toggle / button / badge / divider radius is touched.
-- **Light inline-code chip:** (SUPERSEDED same day by the unified inline-code object in the top entry;
+- **Light inline-code chip:** (SUPERSEDED same day by the unified inline-code object in 2026-06-29 · Inline code is its own object: a rounded red hairline chip (theme-tuned);
   kept for history) the light `:not(pre) > code` fill (`#f3ebda`, near-invisible on the `#f2ede0` toggle
   panel and borderless) became a defined cream chip `#f7f0dc` + a warm 1px border `rgba(95,74,38,0.32)`.
   The fill had to stay light to keep the red text (`#c92a2a`) at AA (4.8:1), so it was a touch lighter
   than both surfaces and the border carried the edge on the close-toned panel. Dark was left unchanged
-  in this pass (its default chip was already distinct), which the top entry then unified.
+  in this pass (its default chip was already distinct), which 2026-06-29 · Inline code is its own object: a rounded red hairline chip (theme-tuned) then unified.
 - **Softer light copy toast:** EC's success feedback (`.expressive-code .copy .feedback`, fed by
   `--ec-frm-tooltipSuccessBg` / `-Fg`) was a saturated teal `#438076` + white, too bold on paper.
   Light-only override to a pale sage `#d6e4c0` + deep-olive `#2f4d09` text (7.2:1). Dark keeps EC's default.
@@ -2515,7 +2515,7 @@ automatically; no astro.config.mjs edit is needed per writeup.
 - **Status:** Adopted. (Pipeline note: `notion_cleaner.py -d easy` must output into `Easy/`.)
 - **SUPERSEDED 2026-06-30:** difficulty directories are now LOWERCASE (`hackthebox/easy`), and
   `astro.config.mjs` was restored to `hackthebox/easy`, as part of the flat-files + parallel `src/assets`
-  migration (see the top entry). The case-only folder rename was registered in git with `git mv`; with
+  migration (see 2026-06-30 · Content images and writeup structure: flat files + parallel src/assets). The case-only folder rename was registered in git with `git mv`; with
   `core.ignorecase=true` git otherwise misses it and would ship a split `Easy/` + `easy/` tree that drops
   a writeup from the sidebar on the case-sensitive Linux build. The case-sensitivity lesson still holds,
   now on the lowercase form: on-disk difficulty dirs and every `autogenerate.directory` must match exactly.

@@ -27,10 +27,10 @@
   2. **Engineering and infrastructure only:** the cascade-layer refactor, the module split, the dead-rule
      purge, and the governance pass, running from the prose-guard fix of 2026-07-25 through the
      docs-alignment commit of 2026-07-26 and documented in full by the entry "2026-07-26 · The theme pass
-     moves to declared cascade layers and splits into per-layer modules" below. This half is
+     moves to declared cascade layers and splits into per-layer modules" in DECISIONS.md. This half is
      behavior-preserving by construction and was gated at zero changed cells at every step, with one
      intended exception inside the span: the OverTheWire amber split changed 17 cells by design (see
-     "2026-07-26 · OverTheWire amber splits into an identity accent and an AA text ink" below).
+     "2026-07-26 · OverTheWire amber splits into an identity accent and an AA text ink" in DECISIONS.md).
 - **Why this blocks the merge even though the refactor is safe:** merging would deploy the Geist face to
   production in its untuned state. A half-refitted body face is exactly the kind of change that reads as
   "the site looks off" to a visitor while every individual rule is correct, and this site's whole pitch is
@@ -80,7 +80,7 @@
 - **Docs reconciled (this pass):** the removed testbed's CURRENT-STATE references are corrected in CORE_SPEC
   §6 (component inventory) and ROADMAP (the WriteupMeta Now item): the badge system is built and documented
   but is not currently wired to any page. This entry SUPERSEDES the "(not pushed)" status and the old hashes
-  in the three 2026-07-17 badge entries below (see the replay account above). The historical busquedav2
+  in the three 2026-07-17 badge entries, which stay live in DECISIONS.md (see the replay account above). The historical busquedav2
   entries (2026-06-20, 2026-06-27) stand as accurate June history and are untouched.
 - **Verified:** `npm run build` green at 45 pages (was 46; the one fewer page IS busquedav2, confirming
   nothing else was lost). Local `main` was also fast-forwarded to `origin/main` (`cb0a696`) to clear a stale
@@ -190,7 +190,7 @@
 - **Status:** Adopted (busquedav2). The `notion_cleaner.py` line-highlight convention is now unused; if
   reintroduced, EC's default marked-line color would need restyling again.
 
-### (earlier) · Notion → notion_cleaner.py → MDX pipeline
+### 2026-05-31 · Notion → notion_cleaner.py → MDX pipeline
 - **Superseded by:** 2026-07-11 · Content pipeline is manual editorial polish, not a script (retires notion_cleaner.py)
 - **Decision:** Author in Notion, normalize with a Python script into clean MDX.
 - **Why:** Comfortable authoring in Notion; the script enforces all conventions (badges,
