@@ -238,8 +238,12 @@
   375px wrapped-continuation error stays 0.00, both inherited invariants. No motion, no `!important`, no
   new dependencies (`unist-util-visit` is already transitive via `@astrojs/mdx`), pinned versions unchanged.
 - **Status:** Adopted; committed to `dev` as `5e0e9b9` (transform, zero rendered diff), `00aeaa0` (design)
-  and the docs commit below, pushed, not merged. `426a4fd` is NOT reverted: its CSS, `--mono-chrome-leading`,
-  the `dd` face and leading rules, and the Assessment `:has(.findings)` migration are all correct and kept.
+  and the docs commit below, pushed, not merged. **Attempt 2 (`feat(recon): make findings a semantic dl and
+  delete the rail literals`, 2026-07-27) is NOT reverted, only partly superseded.** Withdrawn: the two
+  components it added, `Findings.astro` and `Finding.astro`, and the import line plus JSX tree they required
+  in every writeup that carried a rail. Kept and still live: its CSS, the `--mono-chrome-leading` token, the
+  `dd` face and leading rules, and the Assessment `:has(.findings)` migration. Attempt 3 replaced the
+  MECHANISM and inherited all of it, which is why the structure it established survives its own removal.
 
 ### 2026-07-27 · The context law: a font-relative length that governs another context is wrong
 - **Decision:** CORE_SPEC section 8 gains a law. A font-relative length resolves against the element it is
@@ -311,8 +315,10 @@
      screen (see the 2026-07-25 entry), and the spacing, measure and component scales were tuned for the
      old mono body.
   2. **Engineering and infrastructure only:** the cascade-layer refactor, the module split, the dead-rule
-     purge, and the governance pass (`59765d6` through `200e9da`). This half is behavior-preserving by
-     construction and was gated at zero changed cells at every step.
+     purge, and the governance pass, running from the prose-guard fix of 2026-07-25 through the
+     docs-alignment commit of 2026-07-26 and documented in full by the entry "2026-07-26 · The theme pass
+     moves to declared cascade layers and splits into per-layer modules" below. This half is
+     behavior-preserving by construction and was gated at zero changed cells at every step.
 - **Why this blocks the merge even though the refactor is safe:** merging would deploy the Geist face to
   production in its untuned state. A half-refitted body face is exactly the kind of change that reads as
   "the site looks off" to a visitor while every individual rule is correct, and this site's whole pitch is
@@ -1001,13 +1007,24 @@
   entry recorded as deleted), used to verify the WriteupMeta badge work. Keeping it off `origin` and out of
   the PR keeps it off every path to production.
 - **How (owner-approved edit of UNPUSHED commits only):** it sat in exactly one isolated, unpushed commit,
-  `fd43eb7` (a 467-line pure add touching only that file), third in the 7-commit unpushed stack. It was
-  dropped with `git rebase --onto fd43eb7~1 fd43eb7 dev` (interactive rebase is unavailable in the harness;
-  `--onto` is more precise anyway). The two commits before it kept their hashes (`c793fe7`, `d615f98`); the
-  four after it were replayed onto the new base and so got NEW hashes: `bdb06c4` -> `304c97e` (glyph 14px
-  grid), `4325533` -> `1fcf53e` (light-mode label palette), `3de625a` -> `d7b1550` (Linux OS chip re-hue),
-  `7f492db` -> `00da3cb` (the docs-badges commit). `git diff 7f492db dev` was exactly the 467-line busquedav2
-  deletion and nothing else, proving the four replayed commits are byte-identical in content.
+  third in the 7-commit unpushed stack, a 467-line pure add touching `busquedav2.mdx` and nothing else. That
+  commit (`feat(busquedav2): modernize the testbed (WriteupMeta badges + principle frontmatter)`, 2026-07-17)
+  had brought the testbed onto the then-current writeup conventions: the hand-authored `.machine-meta` badge
+  row replaced by a single `WriteupMeta` component (platform HackTheBox, os Linux, environment Standalone,
+  difficulty Easy), and the closing Principle migrated to `principle:` frontmatter so the Footer override
+  auto-appends the coda and suppresses pagination beneath it. It was dropped by replaying the stack onto the
+  commit that preceded it (interactive rebase is unavailable in the harness, and a non-interactive replay is
+  more precise anyway). The commit is gone from history by design and is not meant to be recovered.
+- **What the replay did to the rest of the stack:** the two commits BEFORE the dropped one were left
+  untouched by the rebase, `docs(roadmap): record topic-tags deferral and os frontmatter enum` and
+  `content(busqueda): editorial revisions and decisive-line code highlights`, both 2026-07-17. The four AFTER
+  it were replayed onto the new base, each becoming a new commit object carrying byte-identical content under
+  an unchanged subject line: `fix(badges): normalize the HackTheBox and Linux glyphs onto a 14px icon grid`,
+  `fix(badges): solve the light-mode badge label palette to WCAG AA`, `fix(badges): separate the Linux OS
+  chip from OverTheWire (re-hue H60 + deepen light)`, and `docs(badges): document the WriteupMeta badge
+  system across the three canonical docs`, all 2026-07-17 and the first three each with their own entry
+  below. Verified by diffing the pre-rebase tip against the rebased branch: the only difference was the
+  467-line busquedav2 deletion, nothing else, which is what proves the replay preserved content exactly.
 - **Then pushed, PR'd, and merged to production:** because only an UNPUSHED commit was removed, `origin/dev`
   stayed a clean ancestor, so `git push origin dev` fast-forwarded (no force). Opened PR #16 (`dev` -> `main`,
   22 commits / 15 files, +983 / -152), where `origin/main` was a clean ancestor of `dev`, then on the owner's
@@ -1016,8 +1033,8 @@
 - **Docs reconciled (this pass):** the removed testbed's CURRENT-STATE references are corrected in CORE_SPEC
   §6 (component inventory) and ROADMAP (the WriteupMeta Now item): the badge system is built and documented
   but is not currently wired to any page. This entry SUPERSEDES the "(not pushed)" status and the old hashes
-  in the three 2026-07-17 badge entries below (remap above). The historical busquedav2 entries (2026-06-20,
-  2026-06-27) stand as accurate June history and are untouched.
+  in the three 2026-07-17 badge entries below (see the replay account above). The historical busquedav2
+  entries (2026-06-20, 2026-06-27) stand as accurate June history and are untouched.
 - **Verified:** `npm run build` green at 45 pages (was 46; the one fewer page IS busquedav2, confirming
   nothing else was lost). Local `main` was also fast-forwarded to `origin/main` (`cb0a696`) to clear a stale
   local ref; no `main` history was changed.
@@ -1247,7 +1264,10 @@
 - **Why:** "prefers-reduced-motion respected" is a standing project rule, and the count-up previously
   animated regardless, so this closes an existing gap. Safe because the resting HTML already holds the
   final values (see the flash-fix entry below).
-- **Status:** Adopted, verified in-browser; committed as `1e4fb4f` (was recorded as uncommitted).
+- **Status:** Adopted, verified in-browser (was recorded as uncommitted). **This decision and the resting-HTML
+  entry below shipped TOGETHER, in one commit:** `fix: homepage stats render real values without JS and
+  respect reduced motion` (2026-07-17), which carries both the reduced-motion gate and the resting values.
+  They are recorded as two entries because they are two decisions, not because they were two changes.
 
 ### 2026-07-17 · Landing stats: resting HTML holds final values, no flash
 - **Decision:** The three stat elements render their final values (4, 50+, and the infinity stat) as
@@ -1255,7 +1275,9 @@
   `requestAnimationFrame`) so the final value is never painted while `.reveal` is at opacity 0.
 - **Why:** No-JS visitors, social/OG crawlers, and non-executing search engines now see the real numbers
   instead of 0, and there is no one-frame flash of the final value before the count-up begins.
-- **Status:** Adopted, verified in-browser; committed as `1e4fb4f` (was recorded as uncommitted).
+- **Status:** Adopted, verified in-browser (was recorded as uncommitted). Shipped in the SAME single commit as
+  the reduced-motion gate above, `fix: homepage stats render real values without JS and respect reduced
+  motion` (2026-07-17), not as a separate change.
 
 ### 2026-07-13 · Homepage hero subline is NOT screen-reader fragmented (investigated, no change made)
 - **Finding:** the reported fragmentation of the homepage hero subline does not exist. The subline is plain
@@ -1629,9 +1651,10 @@
   intro pages. `custom.css` spanned three concerns (badge, mobile TOC, layout) and was split by hunk across
   commits 1, 2, and 4. The pre-split tip stays recoverable from the reflog if ever needed.
 - **Merged to production:** `dev` (9 commits ahead of `main`, which was a clean ancestor) merged into `main`
-  via PR #9 as a history-preserving merge commit `998af50` (two parents `546165c` + `723c2ab`, NOT a
-  squash), so all 9 commits stay individually on `main`. The push to `main` triggers the Cloudflare Pages
-  production deploy of idanlab.dev.
+  via PR #9 as a history-preserving merge commit, NOT a squash. What proves it is that the merge has TWO
+  parents: the previous `main` tip (the PR #8 merge of 2026-07-06) and the last commit on `dev`
+  (`style(layout): three-column rebalance and full-width intro pages`, 2026-07-11). So all 9 commits stay
+  individually on `main`. The push to `main` triggers the Cloudflare Pages production deploy of idanlab.dev.
 - **What went live** (previously dev-only or uncommitted): CSP is now ENFORCED IN PRODUCTION (was enforced on
   `dev` only, see 2026-07-06); the font `<link rel=preload>` hints are removed site-wide (2026-07-07); the
   WriteupMeta badge system is in the repo (still not wired to any writeup, icons still placeholder); the
