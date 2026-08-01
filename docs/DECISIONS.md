@@ -318,7 +318,9 @@
      purge, and the governance pass, running from the prose-guard fix of 2026-07-25 through the
      docs-alignment commit of 2026-07-26 and documented in full by the entry "2026-07-26 · The theme pass
      moves to declared cascade layers and splits into per-layer modules" below. This half is
-     behavior-preserving by construction and was gated at zero changed cells at every step.
+     behavior-preserving by construction and was gated at zero changed cells at every step, with one
+     intended exception inside the span: the OverTheWire amber split changed 17 cells by design (see
+     "2026-07-26 · OverTheWire amber splits into an identity accent and an AA text ink" below).
 - **Why this blocks the merge even though the refactor is safe:** merging would deploy the Geist face to
   production in its untuned state. A half-refitted body face is exactly the kind of change that reads as
   "the site looks off" to a visitor while every individual rule is correct, and this site's whole pitch is
