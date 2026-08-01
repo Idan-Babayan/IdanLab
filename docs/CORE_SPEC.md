@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-07-27.
+> Last updated: 2026-08-01.
 
 ---
 
@@ -74,6 +74,22 @@
   mode would require allowlisting static.cloudflareinsights.com in script-src.
 - **Local dev:** `npm run dev` → `localhost:4321`.
 
+### Repository visibility and licensing
+
+- **Visibility:** the repository is public and stays public. Closing it, and splitting it into a private
+  infrastructure repo plus a public content repo, were both considered and rejected.
+- **Dual licensed, split by path:** code (Astro config, components, plugins, styles, scripts) is MIT.
+  Content and design (writeups, prose, the "Decrypted" visual language) are CC BY-NC-SA 4.0. The split
+  names the paths each license covers explicitly, stated in the license files themselves plus a README
+  section.
+- **The license files and the README section do not exist yet.** Writing them is a separate open task
+  (see ROADMAP). This bullet records the posture, not the state of the tree.
+- **Retired machines only:** a writeup is published only for a retired machine. Writeups for active
+  machines violate platform terms.
+- **Published flag and password values are deliberate content, not secrets.** On a retired machine whose
+  full solution path is already published, the value carries no information the writeup did not already
+  provide.
+
 ## 3. Tech Stack (pinned)
 
 - **Astro** `6.3.3`
@@ -137,7 +153,7 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 │  ├─ remark-inject-passwordreveal.mjs # remark: conditionally injects `import PasswordReveal from '@components/PasswordReveal.astro'` into an MDX file's AST at build time, only when that file uses <PasswordReveal/> and has no import of its own; wired via astro.config markdown.remarkPlugins
 │  ├─ remark-inject-writeupmeta.mjs   # remark: injects the <WriteupMeta/> badge row + its import into every writeup at build time. platform is DERIVED from the platform directory (hardcoded map, the single source of truth); os/environment/difficulty are read from frontmatter via file.data.astro.frontmatter and forwarded only when a non-empty string. Gated on the writeup path (non-index .mdx under the four platform dirs), so nothing else can be injected. badges: false opts out; a non-boolean badges FAILS the build (YAML parses no/off/"false" as truthy strings). Transformer must be (tree, file) to see frontmatter. Zero deps (unist-util-visit + acorn). See DECISIONS 2026-07-20
 │  ├─ remark-transform-recon-rail.mjs  # remark: turns a PLAIN MARKDOWN LIST inside <Callout type="recon"> into the findings rail (<dl class="findings"> with a <dt> chip + <dd> note per row) at build time, so a writeup authors data and never presentation. Keyed on the Callout node's type="recon" attribute; direct children only. The authored " : " is a PARSE DELIMITER (/^(\S+)\s:\s/ on the item's first text node), consumed here and never rendered: the separator the reader sees is a CSS rule on dt::after. ALL-OR-NOTHING per list, so one unparseable item leaves the list bulleted and visibly wrong rather than silently half-converted on a green build. Emits dt/dd as SIBLINGS with no per-row wrapper, because both must be direct grid children (a wrapper needs subgrid, which blockifies inline <code> onto its own track). Zero deps (unist-util-visit). Wired LAST in markdown.remarkPlugins. SUPERSEDES the <Findings>/<Finding> components, see DECISIONS 2026-07-27
-│  └─ remark-validate-content-taxonomy.mjs # remark: build-time guardrail that FAILS the build on an unknown hand-authored badge/metadata class token (meta-badge / platform-* / difficulty-* / os-* / port-label / task-title; the machine-meta family was removed 2026-07-19) or an unknown component metadata value (Callout type, FlagCapture type user|root; the WriteupMeta prop enums were retired 2026-07-20 once the component stopped being hand-placed, and now live in the Zod schema instead), with a "did you mean" suggestion; the deliberate alternative to astro check; zero deps (unist-util-visit); its allow-lists are the single source of truth; wired via astro.config markdown.remarkPlugins. See DECISIONS 2026-07-12 and 2026-07-20
+│  └─ remark-validate-content-taxonomy.mjs # remark: build-time guardrail that FAILS the build on an unknown hand-authored badge/metadata class token (meta-badge / platform-* / difficulty-* / os-* / port-label / task-title; the machine-meta family was removed 2026-07-19) or an unknown component metadata value (Callout type, FlagCapture type user|root), with a "did you mean" suggestion; the deliberate alternative to astro check; zero deps (unist-util-visit); its allow-lists are the single source of truth; wired via astro.config markdown.remarkPlugins. See DECISIONS 2026-07-12 and 2026-07-20
 └─ public/
    ├─ robots.txt                      # in-repo; breadcrumb comment + Sitemap line (see §2)
    ├─ favicon.svg                     # site favicon
@@ -704,6 +720,11 @@ Preserves reading position: anchors on the current heading and corrects scroll s
   NOT a frontmatter field, it is derived from the writeup's directory. Omit `difficulty` for a progressive
   wargame (Bandit) and no chip renders. Set `badges: false` (unquoted boolean, never `no` or `off`) to opt a
   writeup-path page out entirely. The description is still repeated as a `>` blockquote lead.
+  - **Writeup path** is a non-`index` `.mdx` file under one of the four platform directories
+    (`hackthebox`, `vulnhub`, `picoctf`, `overthewire`). Hub and landing pages are authored as `index.*`
+    files and are therefore exempt. A file outside a writeup path is never injected, even when it carries
+    metadata frontmatter. The injector gates on this path test, which is why `platform` is derived from the
+    directory rather than declared.
 - Long/indented code → wrapped in `<Toggle>`; all code blocks get `frame="code"` + a
   language `title` so bash and python look identical.
 - Notion `<aside>` → `:::tip[Answer]`. Task headings → brown `.task-title`.
@@ -752,7 +773,10 @@ Preserves reading position: anchors on the current heading and corrects scroll s
 - Topic `.tag-*`: web orange, crypto teal, forensics amber, reversing pink, pentest green, etc.
 - **`.machine-meta` RETIRED 2026-07-19; the REST of the family is LIVE.** No writeup hand-authors a badge
   row any more (WriteupMeta replaced the last of them, the 34 Bandit pages), so the `.machine-meta`
-  container rule is deleted from the theme pass and its `machine-` family from the taxonomy guard. Nothing
+  container rule is deleted from the theme pass and its `machine-` family from the taxonomy guard. For the
+  same reason the guard no longer validates WriteupMeta component props (retired 2026-07-20 with the
+  injection migration): those values are validated by the strict Zod enums in `content.config.ts` and by the
+  component's own runtime guard. Nothing
   else went with it: `WriteupCard.astro` emits `meta-badge`, `difficulty-*`, `os-*` and (behind
   `showPlatform`) `platform-*`, and `PlatformIndex` renders those cards on every `{platform}/index.mdx`,
   so those rules are live on all four landing pages. `platform-*` renders 0 times today but is the
