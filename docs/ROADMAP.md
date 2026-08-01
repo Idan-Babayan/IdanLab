@@ -1,8 +1,10 @@
 # Idan.Lab — Roadmap
 
 > Volatile by design. Groom this often. Format: **Now** (active), **Next** (committed,
-> not started), **Later** (parked). Move items down to DECISIONS.md when resolved.
-> Each item: `[area] description — owner-note`. Areas: DESIGN, CONTENT, ENG, PRODUCT.
+> not started), **Later** (parked). Completed items are DELETED from this file on
+> completion, not archived here. Their shipped state lives in CORE_SPEC and their
+> rationale, if any, in DECISIONS. This file is forward-looking only.
+> Each item: `[area] description - owner-note`. Areas: DESIGN, CONTENT, ENG, PRODUCT.
 
 ## Now (in progress)
 
@@ -131,6 +133,13 @@
   and stable, so further reuse is purely authoring new chains. One knob is left to taste:
   `--ap-fade-w` sets both the mask band and its gutter, so raising or lowering it is the single, safe way to
   make the edge fade stronger or weaker (endpoints stay clear at any value).
+
+- [PRODUCT] Groom ROADMAP under the deletion discipline: several items here are
+  SHIPPED with only verification tails (three-column rebalance, PR #9 post-deploy
+  check, WriteupMeta shipped-but-unwired, domain rebrand). Decide item-by-item
+  what is a live tail to keep versus completed work to delete, and strip the stale
+  inline "move to DECISIONS" instructions (lines 29, etc.) left from the old rule.
+  Do NOT bulk-delete; several have genuine unfinished tails that must survive.
 
 ## Next (committed)
 - [ENG/DESIGN] Unify the two marketing pages (home, about) under the `--focus-ring` token established for
@@ -294,3 +303,19 @@
 - [ENG] Command-highlighting residual risk: an OUTPUT line whose first word is exactly a listed command
   (e.g. `ls: cannot access`) can be mis-tagged. Rare; documented in `ec-priv-command.mjs` (EC 0.42
   exposes no token scopes, so strings/comments cannot be skipped by scope).
+- [DESIGN/A11Y] OverTheWire `.pi-name` fails contrast at 3.41:1 (needs 4.5:1 for
+  normal text, 3:1 for large). Platform landing name color. Real accessibility
+  defect, not cosmetic. Decide a compliant color that holds the platform identity.
+- [DESIGN/A11Y] Difficulty pills fail AA on the light theme. The traffic-light
+  `.difficulty-*` badges do not clear contrast on paper. Both themes must pass;
+  light is the failing one. Retune the light-mode pill colors.
+- [DESIGN/A11Y] Principle cap set to `46ch` is unverified against the reading
+  measure. Confirm the character cap gives a comfortable line and is consistent
+  with the 50rem prose width decision, or set it deliberately.
+- [DESIGN] Right rail mobile layout at 375px: unresolved how the TOC rail behaves
+  at the narrow breakpoint. Needs a real-device or 375px-viewport decision, paired
+  with the narrow-screen gutter call below.
+- [DESIGN] Narrow-screen gutter is a taste call, currently undecided. Owner to set
+  the gutter at small breakpoints once the 375px rail behavior is settled.
+- [DESIGN] `--ap-fade-w` as an owner-facing knob: decide whether the accent-fade
+  width is exposed as a tunable CSS variable or fixed. A convention call, not a bug.
