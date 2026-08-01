@@ -1028,3 +1028,35 @@ whether to add it**, and the rule above answers it: a transform, when the data i
 - **Marketing pages** — standalone immersive pages (home, about).
 - **Content pages** — Starlight docs (writeups + platform landings).
 - **Platform codes** — HTB (HackTheBox), VH (VulnHub), Pico (PicoCTF), OTW (OverTheWire).
+
+## 11. Rejected and settled
+
+Things considered and decided against, where the rejection still stands. The fact only: the reasoning lives
+in `DECISIONS.md` under the entry named on each line. One rejection per line, unwrapped, so a grep returns
+whole records.
+
+- Upgrading dependencies outside a stable checkpoint, and hand-bumping versions: rejected. See DECISIONS 2026-05-31 · Stay on current package versions (no upgrade).
+- Forking or rebuilding any Starlight component: rejected. See DECISIONS 2026-05-31 · Writeup theme pass is CSS-only.
+- Emoji sidebar markers: rejected. See DECISIONS 2026-05-31 · Sidebar markers: CSS colored dots, not emojis.
+- Em dashes in site copy: rejected. See DECISIONS (earlier) · No em dashes in site copy.
+- The blue / cyan / violet / orange writeup badge palette: rejected. See DECISIONS 2026-06-01 · Canonical platform palette: lime / red / purple / amber.
+- A cross-page global model for the Expand/Collapse-all control: rejected. See DECISIONS 2026-06-20 · ToggleAll control: sidebar placement, scroll anchoring, native-anchor fix.
+- The risograph title-misregistration effect on light: rejected. See DECISIONS 2026-06-14 · Light-mode art-direction: paper-native "risograph".
+- "Co-Authored-By: Claude" and "Generated with Claude Code" trailers: rejected. See DECISIONS 2026-06-14 · Git hygiene: no Claude attribution; trailer scrubbed from history.
+- Redacting a published private key to a placeholder: rejected. See DECISIONS 2026-06-26 · Truncate embedded private keys in writeups (GitHub push protection).
+- GitHub's allow-secret bypass URL for a real key: rejected. See DECISIONS 2026-06-26 · Truncate embedded private keys in writeups (GitHub push protection).
+- Colocated per-writeup folders, and hand-listing writeups in `astro.config.mjs`: rejected. See DECISIONS 2026-06-30 · Content images and writeup structure: flat files + parallel src/assets (supersedes colocated index.mdx).
+- Reusing FlagCapture for wargame passwords: rejected. See DECISIONS 2026-07-05 · PasswordReveal: a dedicated amber component for wargame passwords (not a FlagCapture reuse).
+- Trusted Types in the CSP: rejected, breaks SecretTerminal. See DECISIONS 2026-07-05 · Application-layer security headers via public/_headers; CSP Report-Only as a staging step toward enforcement.
+- HSTS in `public/_headers`: rejected, the Cloudflare zone owns it. See DECISIONS 2026-07-05 · Application-layer security headers via public/_headers; CSP Report-Only as a staging step toward enforcement.
+- Enumerating inline-script hashes to drop `script-src 'unsafe-inline'`: rejected. See DECISIONS 2026-07-05 · Application-layer security headers via public/_headers; CSP Report-Only as a staging step toward enforcement.
+- Any third-party analytics beacon, including a manual Cloudflare install: rejected. See DECISIONS 2026-07-06 · Cloudflare Web Analytics disabled; CSP stays script-src 'self' (no third-party beacon).
+- A script as the content-pipeline mechanism, including `notion_cleaner.py`: rejected. See DECISIONS 2026-07-11 · Content pipeline is manual editorial polish, not a script (retires notion_cleaner.py).
+- `astro check`, and the `@astrojs/check` plus `typescript` dependencies it needs: rejected. See DECISIONS 2026-07-12 · Build-time content-taxonomy guard (remark plugin) as the ruled-out astro check alternative.
+- Deleting the `platform-*` badge rules as unused: rejected. See DECISIONS 2026-07-19 · `.machine-meta` deleted; the REST of the badge family is not dead (corrects the entry below).
+- Grading all 34 Bandit levels, and giving `difficulty` a fallback value: rejected. See DECISIONS 2026-07-19 · WriteupMeta difficulty becomes optional; Bandit's 34 pages migrate off `.machine-meta` (retiring it site-wide).
+- `platform` as a frontmatter field with a missing-key guard: rejected. See DECISIONS 2026-07-20 · WriteupMeta is injected from frontmatter, platform is derived from the directory.
+- Grid on the recon markdown list, and the `<Findings>` / `<Finding>` component pair: rejected. See DECISIONS 2026-07-27 · The recon rail, in three attempts: grid on the list, two components, then a remark transform.
+- Cherry-picking the CSS refactor to `main` ahead of the retune: rejected. See DECISIONS 2026-07-27 · The release hold is lifted and `dev` ships to production.
+- Solving the platform eyebrow inks without moving the hero wash: rejected. See DECISIONS 2026-07-31 · The platform ink family, and the wash that was causing the failure it hid.
+- Dimming the platform hero wash for contrast: rejected, no alpha reaches AA. See DECISIONS 2026-07-31 · The platform ink family, and the wash that was causing the failure it hid.
