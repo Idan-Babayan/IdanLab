@@ -1671,7 +1671,7 @@
 - **Status:** Adopted + shipped to production. PRs #5 and #9 are both merged; the "deploy enforced CSP to
   production" and "writeup-structure migration uncommitted" ROADMAP items are resolved and removed from ROADMAP.
 
-## Badge icon sourcing: split by consumption mechanism
+### 2026-07-11 · Badge icon sourcing: split by consumption mechanism
 
 **SUPERSEDED IN PART 2026-07-17** (see the "polychrome/monochrome sourcing axis" entry above). Two
 premises here are now wrong: (1) the axis is polychrome vs monochrome, NOT logo vs glyph, so HackTheBox
@@ -1822,6 +1822,9 @@ as a data URI rather than hashing).
   route slug and the pip count all stay exhaustive. No new dependencies; Starlight is not forked.
 - **Why (icons):** `icons.ts` is the single home for the marks. Each is an inline 24x24 SVG string using
   `fill="currentColor"`, so a
+- **[TRUNCATED: this entry is cut off mid-sentence and the rest of it is missing. Not reconstructed.
+  Superseded by 2026-07-10 · WriteupMeta revised: intentional per-axis color, restrained glow, growing pips.]**
+
 ### 2026-07-07 · Font `<link rel=preload>` hints removed site-wide (Firefox "preloaded but not used")
 - **Decision:** The two font preload hints (`jetbrains-mono-400.woff2`, `syne-800.woff2`) are removed from
   all three sources that emitted them: the Starlight `head` config in `astro.config.mjs` (docs pages) and
