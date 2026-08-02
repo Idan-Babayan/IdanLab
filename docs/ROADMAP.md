@@ -38,8 +38,8 @@
      it were tuned for mono: the measure, the vertical rhythm between prose and components, and how the
      mono chrome (badges, callout labels, code frames, the Principle coda) now reads BESIDE a proportional
      face rather than matching it. This is the part that has not been done at all.
-  3. **The three-column pass folds in here** (see the item below): it needs the same real-browser session
-     and its values interact with the prose measure.
+  3. **The three-column verification folds in here** (see the three-column item in this section): it needs
+     the same real-browser session and its values interact with the prose measure.
   4. **The unit rule is written and not applied** (`layers.css` header): rem or px for component geometry,
      em only where scaling with the local font size is the declared intent. Applying it belongs to THIS
      retune, because converting a unit changes rendered geometry and each conversion needs its own
@@ -50,96 +50,50 @@
      broken (no horizontal overflow, continuation error still 0.00), but whether a narrow screen wants the
      same gutter as a wide one is a taste call, and it is a one-token change. See DECISIONS 2026-07-27.
 
-  Move each settled value to DECISIONS as its cluster lands. Each cluster is its own pull request now,
-  so there is no longer one PR to hold everything back.
+  Record each settled value in DECISIONS as its cluster lands, and delete the dial from this item once it
+  is settled. Each cluster is its own pull request now, so there is no longer one PR to hold everything back.
 
-- [ENG] **The CSS refactor is DONE and needs no further work** (DECISIONS 2026-07-26). Recorded here only
-  so it is not reopened: `custom.css` is gone, the theme pass is ten modules under `src/styles/` on a
-  declared cascade-layer contract, the dead rules are purged, the specificity armor is retired, and the
-  OverTheWire amber is an accent/ink pair solved to WCAG AA. Verified at zero changed cells of 7,536 at
-  every gate except the amber's intended 17. Selector flattening and unit conversions were deliberately
-  excluded from the workstream (the unit rule is written but unapplied, see the retune item above).
-- [DESIGN/ENG] Three-column rebalance + full-width intro pages (now in `tokens.css` and `chrome.css`):
-  SHIPPED to production (commit
-  `723c2ab`, PR #9 merged 2026-07-11) but STILL NEEDS A REAL-BROWSER FINE-TUNE. **Do this inside the Geist
-  retune session above:** the content cap and the prose measure interact, so tuning them apart wastes a
-  pass. The rem values are
-  analysis-based starting targets and the required Chrome/Firefox visual pass has not yet run. Changes: (1) writeup content
-  cap `--sl-content-width` 45rem -> 50rem (~75-char line); (2) right TOC tightened, which needs TWO widths because
-  the visible TOC text column is `.right-sidebar-panel .sl-container` (Starlight derives it from --sl-sidebar-width,
-  ~15rem), NOT `.right-sidebar-container` (the layout column) -- narrowing only the container would leave the 17rem
-  panel overflowing, so both are set in sync (text 13rem, container 15rem; `overflow-wrap:anywhere` makes entries wrap,
-  not clip); (3) `.main-pane` set to flex:1 + content `.sl-container` `margin-inline:auto` so the reading column
-  centers with matching gutters (fixes the Principle looking off-center); (4) intro pages (.pi-index) go full
-  width via `body:has(.pi-index){--sl-content-width:100%}` (superseded the old 60rem); (5) intro hero flush to
-  top: added `padding-top:0` to the hero panel rule `body:has(.pi-index) .content-panel + .content-panel`
-  (the 2nd ContentPanel, holding .pi-index; the 1st holds the hidden PageTitle). Diagnosed analytically, NOT
-  in a browser: `<main>` has no top padding (--sl-main-pad `0 0 3vh 0`), the hero's own top is only 0.5rem, so
-  the ~1.5rem "small gap" is Starlight's `.content-panel` top padding on the hero panel. OPEN QUESTION for the
-  browser pass: the 1st (hidden-title) panel is an empty `.content-panel` with 1.5rem top+bottom padding (~3rem);
-  the hero's `.pi-glow` is `position:absolute; top:-40%` and unclipped so it should bleed up and cover that, but
-  if a residual band remains above the hero, also collapse that panel
-  (`body:has(.pi-index) .content-panel:not(:has(.pi-index)){padding-block:0}`). To verify + finalize: wide
-  Chrome + Firefox, both themes -- confirm balanced gutters, no ugly TOC wrap at 13/15rem (nudge up if so),
-  50rem line length reads ~75 chars and comfortable (step down further only if it feels long), intro pages truly
-  full-width AND hero flush to the top with no dark band, homepage/About unchanged (they do not load the
-  theme-pass modules).
-  Then move to DECISIONS. (Values updated 52->50 / 12,14->13,15 in a later tuning pass.)
-- [ENG/INFRA] Post-deploy verification (PR #9 merged 2026-07-11, `dev` -> `main`): confirm the Cloudflare
-  Pages production build for `main` went green and spot-check idanlab.dev (CSP enforced with no console
-  violations, fonts load and cache from `/fonts/*`, no visual regressions from the layout rebalance). The
-  enforced-CSP deploy, PR #5, and the writeup-structure migration are all done now (see DECISIONS
-  2026-07-11 / 2026-07-06 / 2026-06-30).
+- [DESIGN/ENG] Three-column layout: the REAL-BROWSER VERIFICATION PASS has not run. The layout itself
+  shipped and is live; only the visual confirmation remains. **Do it inside the Geist retune session
+  above**, because the content cap and the prose measure interact and tuning them apart wastes a pass.
+  Confirm in wide Chrome and Firefox, both themes: balanced gutters on the reading column, no ugly TOC
+  wrap at the 13rem text / 15rem container pair (nudge up if it wraps badly), the line length reads
+  comfortably, intro pages are truly full-width with the hero flush to the top and no dark band above it,
+  and the homepage and About are unchanged (they do not load the theme-pass modules). If a residual band
+  does remain above an intro hero, collapse the empty hidden-title panel
+  (`body:has(.pi-index) .content-panel:not(:has(.pi-index)){padding-block:0}`).
+  **FLAGGED, may be moot:** this item's original target was a 50rem content cap, but the Geist foundation
+  lock set `--sl-content-width` to 46rem as a derived value (DECISIONS 2026-07-27 · The release hold is
+  lifted and `dev` ships to production). The retune may supersede this verification entirely rather than
+  satisfy it. Judge that at the start of the session rather than assuming either way.
 - [CONTENT] Revisit `404.mdx`: owner made manual changes on 2026-06-28 and wants to review/refine it
   again on a later day.
-- [ENG/INFRA] Domain rebrand: in-repo done (site=idanlab.dev, wordmark/titles, copy, robots Sitemap).
-  Remaining (owner/other chats): Pages custom domain, 301 from idanstudio.click, Cloudflare email on
-  @idanlab.dev, Search Console + sitemap resubmit, external link updates. Confirm
-  `https://idanlab.dev/sitemap-index.xml` resolves after deploy.
+- [ENG/INFRA] Domain rebrand, remaining work only (in-repo is done): Pages custom domain, the 301 from
+  idanstudio.click and its eventual sunset, Cloudflare email on @idanlab.dev, Search Console and sitemap
+  resubmit, external link updates. All owner-side or other-chat work.
 - [CONTENT] Verify the ToggleAll few-pixel shift fix in real browsers (see Open bugs), then it can be
   considered closed.
-- [ENG/DESIGN] WriteupMeta badge system (`src/components/badges/`) is now the metadata row on EVERY
-  writeup, and the hand-authored `.machine-meta` row it replaced is gone from `src/content/docs` entirely
-  (busqueda / return / forest earlier, then all 34 OverTheWire Bandit pages on 2026-07-19). The DESIGN is
-  complete and documented (CORE_SPEC §6/§7 "Badge system"): real icon marks on a 14px grid, light-mode
-  labels solved to WCAG AA in OKLCH, the Linux OS chip re-hued off OverTheWire's amber, accessibility clean.
-  RESOLVED and recorded in DECISIONS: the palette reconciliation, the `Progressive` env colour, the
-  placeholder-stub icons, the "renders on no page" status, and `difficulty` becoming optional so a
-  progressive wargame need not invent a rating (DECISIONS 2026-07-19). RESOLVED 2026-07-20: the
-  hand-placement question is settled the other way. WriteupMeta is now INJECTED from frontmatter by
-  `plugins/remark-inject-writeupmeta.mjs`, with `platform` derived from the writeup's directory rather
-  than authored, and all 37 writeups migrated. Validation was consolidated in the same pass (strict Zod
-  enums in `content.config.ts`; the dormant WriteupMeta prop checks retired from the taxonomy guard).
-  See DECISIONS 2026-07-20. Remaining:
-  1. **Filter routes:** the chips render as non-interactive `<span>` until `/platform`, `/os`,
-     `/environment` exist; restore the commented `<a>` and drop `data-astro-prefetch="false"` when they land.
-     Same machinery as the `/principles` index. Engineering.
-  (The "retire the dead badge taxonomy" item that sat here is DONE and moved to DECISIONS 2026-07-19,
-  with a correction: only `.machine-meta` was dead. The `.meta-badge` / `.difficulty-*` / `.os-*` /
-  `.platform-*` rules are still emitted by `WriteupCard` on the platform landing pages and were kept.)
+- [ENG] WriteupMeta filter routes: `/platform`, `/os` and `/environment` do not exist, so the three
+  navigational chips render as non-interactive `<span>` rather than `<a>`. When the routes land, restore
+  the anchors kept commented in `WriteupMeta.astro` (they restore verbatim) and drop the temporary
+  `data-astro-prefetch="false"`, which exists only to stop every writeup prefetching dead routes. Same
+  machinery as the deferred `/principles` index, so the two are worth building together. The badge system
+  itself is complete and injected from frontmatter; this is the only piece left.
 
-- [CONTENT] Reuse `AttackPath` on the other multi-hop writeups. Live on TWO so far, both under `## Summary`:
-  Forest (6 hops, 2026-07-19) and Return (5 hops, 2026-07-20; see the production-polish DECISIONS entry). It
-  is data-driven, so adding one is authoring a `nodes[]` array, no component change. Good candidates are any
-  chain with 3 or more hops. Deliberately NOT retrofitted onto single-hop writeups, where a two-node path
-  says less than the prose already does. Note it is linear only: a writeup whose escalation genuinely branches
-  needs a design decision first, not a quiet extension of this component. The component itself had a
-  production-polish pass on 2026-07-20 (parallel connector-label rule, loaded-face-only weight step, 24px dot
-  touch targets, plus the edge mask moved onto a gutter so it no longer softens the start / goal nodes;
-  validated across both themes / phone-tablet-desktop / touch + keyboard / reduced-motion), followed by a
-  production-readiness audit the same day that fixed eight more findings, including two real WCAG AA text
-  failures (the future state's group opacity, and the active kind label on paper), a keyboard focus-loss bug
-  at the end of the chain, and progress state not reaching assistive tech. It is considered signature-quality
-  and stable, so further reuse is purely authoring new chains. One knob is left to taste:
-  `--ap-fade-w` sets both the mask band and its gutter, so raising or lowering it is the single, safe way to
-  make the edge fade stronger or weaker (endpoints stay clear at any value).
+- [CONTENT] Reuse `AttackPath` on other multi-hop writeups. Live on two so far, Forest and Return, both
+  under `## Summary`. It is data-driven, so adding one is authoring a `nodes[]` array with no component
+  change, and the component is considered signature-quality and stable. Good candidates are any chain with
+  3 or more hops. Deliberately NOT retrofitted onto single-hop writeups, where a two-node path says less
+  than the prose already does. It is LINEAR ONLY: a writeup whose escalation genuinely branches needs a
+  design decision first, not a quiet extension of this component.
 
-- [PRODUCT] Groom ROADMAP under the deletion discipline: several items here are
-  SHIPPED with only verification tails (three-column rebalance, PR #9 post-deploy
-  check, WriteupMeta shipped-but-unwired, domain rebrand). Decide item-by-item
-  what is a live tail to keep versus completed work to delete, and strip the stale
-  inline "move to DECISIONS" instructions (lines 29, etc.) left from the old rule.
-  Do NOT bulk-delete; several have genuine unfinished tails that must survive.
+- [ENG/INFRA] GitHub Support request for the pull request refs: PENDING, and may be declined. The identity
+  rewrite cleaned `main` and `dev`, but 23 server-managed `refs/pull/N/head` refs still hold pre-rewrite
+  history carrying the old author address, and they are not writable by push. GitHub's documented policy
+  is that Support removes sensitive data only where the risk cannot be mitigated by rotating credentials,
+  and an email address is not a credential. Track the outcome; if declined, the residual is permanent and
+  should be recorded as accepted rather than re-attempted. See DECISIONS 2026-08-01 · One identity across
+  all history: the repository is rewritten and force-pushed.
 
 ## Next (committed)
 - [ENG/DESIGN] Unify the two marketing pages (home, about) under the `--focus-ring` token established for
@@ -163,6 +117,14 @@
   `<Principle>` to frontmatter (remove the inline component + import, add `principle:`).
 - [PRODUCT] Global `/writeups` index (path 3): reuse `WriteupCard` with `showPlatform` true for a
   mixed cross-platform grid (the card was built for this).
+- [ENG] Dependabot: add an `overrides` block clearing the seven alerts that are reachable without touching
+  any pinned direct dependency (js-yaml, postcss, svgo, vite), and take the in-range Astro minor that
+  clears two more. Deliberately deferred rather than urgent: none of the 13 open alerts has a realistic
+  path in this threat model, verified against built output. The argument for acting is presentation, not
+  security, since a visitor checking the Dependabot tab will not run the threat model first. The remaining
+  four are a breaking `sharp` bump with no in-range fix and three that are the deferred Astro 7 upgrade
+  wearing a security label. See DECISIONS 2026-08-01 · Thirteen Dependabot alerts triaged and deliberately
+  deferred.
 
 ## Later (parked)
 - [CONTENT] Revisit a scripted content-cleaning pass only if manual polish proves to not scale; deliberately deferred, not abandoned.
@@ -238,20 +200,6 @@
   retune, not a component fix. `.port-label` was the other consumer and is now pinned via
   `--mono-chrome-leading` (2026-07-27).
 
-- [DESIGN/A11y] **RESOLVED 2026-07-31 (Cluster F, the platform ink family). Kept here only so the
-  correction is not lost.** This item was raised on 2026-07-26 as "HackTheBox 4.11 and VulnHub 4.16 fail,
-  PicoCTF passes at 4.86". **All three figures were measured against bare paper for an element that sits
-  on the hero wash, so all three were wrong and PicoCTF was not passing.** On the real composite the
-  eyebrows read HackTheBox 3.36, VulnHub 3.05, PicoCTF 3.59, OverTheWire 4.79. It was four platforms,
-  not two. Two consumers nobody had recorded were failing as well: the `.pi-pill[data-filter="all"]`
-  filter label at 3.15 active and 3.55 at rest, the worst readings on the site, and OverTheWire's
-  `.pi-name` at 3.05 against a 3:1 bar, which is a model C failure at 2.93.
-  **Shipped:** the light hero wash pools behind the platform mark rather than the type (20% to 86% x,
-  cyan 80% to 95%), and each platform gained a `--pf-ink` at the 5.75 to 5.76 band. The prediction that
-  a shared ink token would need a tail rule per platform was also wrong in the useful direction: the ink
-  is declared inside the component that owns the colour, so the tail SHRANK from 14 rules to 13.
-  `--pf-accent` was not retinted. See DECISIONS 2026-07-31.
-
 - [DESIGN/A11y] **The difficulty filter pills fail WCAG AA on light, all four, in both states.** Found
   by the Cluster F verification sweep and deliberately NOT fixed there, because they carry the
   DIFFICULTY palette rather than a platform accent and belong with the badge consolidation. Measured on
@@ -263,32 +211,6 @@
   hues also drive `.pi-bd-*` in the hero stat breakdown and the `.difficulty-*` badges, which is why
   this wants one decision rather than four patches.
 
-- [DESIGN/A11y] Non-badge `#a86f04` ambers unaudited for light-mode WCAG AA. **LARGELY RESOLVED 2026-07-26
-  for the OverTheWire family** (DECISIONS): the shared token became the `--otw-amber` / `--otw-amber-ink`
-  pair, so PasswordReveal's button text, its block-mode summary, the OverTheWire platform-index eyebrow and
-  the sidebar rail ring are now one identity with an AA text variant, all measured (4.78 to 5.98:1 for text,
-  3.21 and 3.50:1 for the non-text rings against a 3:1 bar). **One figure in that range corrected
-  2026-07-31:** the eyebrow was recorded at 5.76 measured on bare paper, but it sits on the hero wash and
-  actually read 4.79. It reaches 5.76 only since Cluster F pooled the wash off the type. What remains of the original entry: nothing in
-  the OverTheWire family. `.platform-overthewire` was already moot, and the Linux badge amber stays forked
-  correctly (a different identity that merely shares a hex). Kept here only for the history below.
-  The badge light palette pass
-  (DECISIONS 2026-07-17) solved the OTW/Linux CHIP labels to AA and left the seven-way `#a86f04` collision
-  forked (correctly: they are unrelated ambers). But the five NON-badge users of that hex were failing at
-  2.97:1 on paper when the badges were, and nothing about their surfaces makes them pass. NARROWED
-  2026-07-19: `.platform-overthewire` (the old machine-meta badge label) is now MOOT, since `.machine-meta`
-  is gone from all content and that selector styles nothing (it goes away with the dead-taxonomy cleanup in
-  Now). That leaves `.pf-overthewire` (platform-index accent) and PasswordReveal's button text as body-size
-  text needing 4.5:1, plus the sidebar `nth-child(5)` focus ring and PasswordReveal's block-mode open border
-  as non-text (3:1). NARROWED AGAIN 2026-07-25: the spoiler-toggle border is no longer a separate user. The
-  class is retired and its border is now `.pwreveal-block` reading the SHARED amber, the same token as
-  PasswordReveal's button text (DECISIONS 2026-07-25), so the two PasswordReveal entries are one fix.
-  **CLOSED 2026-07-26:** that single fix was made, and it turned out to need a token PAIR rather than one
-  re-solved value, because the same amber serves both body text (4.5:1) and borders and rings (3:1) and no
-  single value clears both jobs on paper. `--otw-amber` keeps the identity for the non-text uses and
-  `--otw-amber-ink` carries the AA text ink, solved in OKLCH by the recorded method (hold hue, drop
-  lightness). Every user listed above is now measured and passing; the genuinely unrelated forks (the Linux
-  badge amber) were left independent, as this entry always intended.
 - [ENG] ToggleAll few-pixel shift: expand/collapse can leave a small reversible content offset in real
   Chromium (Chrome/Edge/Opera GX), from native scroll anchoring fighting the manual correction. Fix
   applied: suppress `overflow-anchor` for the operation, restored next frame (DECISIONS 2026-06-20). NOT

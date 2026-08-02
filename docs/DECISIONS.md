@@ -1,10 +1,171 @@
 # Idan.Lab — Decisions Log
 
-> Append-only. Newest at top. Each entry records a decision and *why*, so future-you (and
-> Claude) never re-litigate settled questions. Format: date · decision · rationale · status.
-> When a ROADMAP item is resolved, record the decision here.
+> Newest at top. Superseded entries move to `DECISIONS-ARCHIVE.md` rather than being deleted. Each
+> entry records a decision and *why*, so future-you (and Claude) never re-litigate settled questions.
+> Format: date · decision · rationale · status. When a ROADMAP item is resolved, record the decision here.
 
 ---
+
+### 2026-08-01 · Four documents, four jobs: DECISIONS leaves the default context set
+- **Decision:** the project runs on four documents with four jobs. `CLAUDE.md` is the ROUTER (always
+  loaded: how to operate, what to load, what not to load). `docs/CORE_SPEC.md` is CURRENT STATE (always
+  loaded: what is true, what is forbidden, plus `Rejected and settled` for what was already decided
+  against). `docs/ROADMAP.md` is THE FUTURE (always loaded, forward-looking only). `docs/DECISIONS.md` and
+  `docs/DECISIONS-ARCHIVE.md` are THE WHY, loaded ON DEMAND ONLY. **The default session context set is
+  `CLAUDE.md` plus `CORE_SPEC.md` plus `ROADMAP.md`, and nothing else.**
+- **Why: this file had two conflicting jobs.** At roughly 2,700 lines it was serving as both an
+  append-only provenance log and an always-loaded context document. A log must grow forever or it stops
+  being provenance. A context document must stay small or it stops being affordable. Those two
+  requirements move in opposite directions, so one document cannot satisfy both, and the fix is to split
+  the JOBS rather than to trim the log.
+- **What a session actually needs from the always-loaded set:** what is true, what is forbidden, and what
+  was already decided against. CORE_SPEC carries all three, the third through its `Rejected and settled`
+  section. That is what makes dropping DECISIONS from the default load safe rather than lossy.
+- **The exclusion is stated as deliberate, in the router, in the strongest terms available.** An absent
+  file reads as a missing file, and the predictable failure is a future session "helpfully" re-adding it
+  to the default set. So `CLAUDE.md` states that the two decision files exist, are current, are
+  maintained, and are excluded ON PURPOSE.
+- **The router rewrite and the context-set change ship in ONE commit,** for the same reason: either alone
+  leaves a window where the absence looks accidental.
+- **Status:** Adopted. `CLAUDE.md` rewritten from 170 lines to 138, with every operating instruction
+  retained (verified by audit) and current-state facts dropped rather than duplicated, since CORE_SPEC
+  already carries them.
+
+### 2026-08-01 · DECISIONS splits by STATUS, and entries move at the moment of supersession
+- **Decision:** `docs/DECISIONS.md` holds decisions that are IN FORCE. `docs/DECISIONS-ARCHIVE.md` holds
+  decisions that are SUPERSEDED, with their full reasoning intact. Nothing is ever deleted; entries MOVE.
+  This is deliberately the opposite of the ROADMAP rule, which deletes on completion, because provenance
+  is exactly what this file is for.
+- **The organizing axis is STATUS, never DATE.** Age does not predict relevance. Some of the earliest
+  decisions are fully in force (no Starlight forks, pinned versions, no em dashes), while several from the
+  past two weeks are already superseded (the platform-in-frontmatter injector design, `.machine-meta`, the
+  `notion_cleaner.py` pipeline, the `<Findings>` and `<Finding>` component pair). Sorting by date would
+  archive live constraints and keep dead ones.
+- **The move happens at the MOMENT of supersession, in the SAME edit that records the superseding
+  decision.** Never on a periodic cleanup pass. Miss it and the superseded entry stays live while a newer
+  one contradicts it, which is silent rot. Both directions are written: the archived entry gains
+  `Superseded by: <date> · <title>` and the live entry gains `Supersedes: <date> · <title>`, so a chain is
+  walkable without touching git.
+- **The finding that made the migration far smaller than planned:** a classification pass over all 94
+  entries found only **107 of 2,741 lines cleanly superseded**. The bulk sits in **925 lines across 26
+  PARTIALLY superseded entries**, where a live constraint and a dead mechanism share a single entry.
+- **Those 26 are deliberately left live.** Splitting them is 26 entry-level surgeries, each a judgement
+  call about which half still binds and each carrying real risk of archiving something still in force.
+  They resolve through the move-on-supersession discipline over time instead. An over-inclusive live file
+  is a correct outcome of a classification pass; an over-inclusive archive is not, because archiving a
+  live decision removes it from context and it then gets re-litigated or silently violated.
+- **Status:** Adopted. Eight entries moved: six cleanly superseded, plus two git-process records that were
+  never decisions. Live file 94 entries to 86.
+
+### 2026-08-01 · Cross-references use date and title, never a hash and never a position
+- **Decision:** a DECISIONS entry is referenced by **DATE AND TITLE**. Never by git hash. Never by
+  positional language ("the entry above", "the entry below", "the top entry", "the previous entry").
+- **Why not a hash:** a hash points at history that may be rewritten, and this repository rewrote its
+  history on the same day this rule was written, invalidating every hash the file contained.
+- **Why positional is the WORSE of the two, which is the non-obvious part:** a broken hash fails to
+  resolve and is therefore detectable. A stale positional reference silently resolves to the WRONG entry
+  and reads as correct. In a newest-first log, "the top entry" decays on its own every time an entry is
+  prepended, with no migration required to break it.
+- **Found live, not theorised:** three entries had been pointing at the wrong decision for weeks by
+  exactly this mechanism, and the archive migration broke six more. Nine were rewritten. Seven positional
+  references remain, each pointing at an immediately adjacent entry that has not moved, verified by
+  adjacency and left alone as latent rather than broken.
+- **Status:** Adopted (standing rule, recorded in `CLAUDE.md`).
+
+### 2026-08-01 · One identity across all history: the repository is rewritten and force-pushed
+- **Decision:** all 185 commits on `main` and `dev` are rewritten to a single author identity,
+  `Idan-Babayan <contact@idanlab.dev>`. Three author-name variants sharing one old email are normalized:
+  `Idan-Babayan` (160 commits), `idani5678-svg` (29), and `Idan Babayan` (18). The Hebrew username is
+  removed from `docs/CORE_SPEC.md` across 176 commits, in TWO line variants (the current path and a
+  pre-rebrand one that a single-variant rule would have missed). Executed with `git filter-repo` as
+  standalone tooling, then force-pushed with `--force-with-lease` pinned to the recorded pre-rewrite tips.
+  This is a ONE-TIME owner-authorized exception to the standing no-history-rewrite policy, which is
+  otherwise unchanged.
+- **`GitHub <noreply@github.com>` is deliberately left untouched** as committer on 18 web-UI merge
+  commits. It is accurate, it is not the owner's address, and remapping it would falsify who performed
+  those merges.
+- **The root cause, which the rewrite alone would NOT have fixed:** the machine's GLOBAL git config still
+  defaulted to the old address. This repository escaped it only because of a local override, which is why
+  every other repository on the account carried it. The global default is corrected; without that, the
+  next `git init` reintroduces the problem immediately.
+- **`MobileCApp` received the same treatment,** including removal of Claude attribution from its commits,
+  since it is public and carried the old address on four of its five commits.
+- **The residual, recorded honestly:** GitHub's server-managed `refs/pull/N/head` refs still hold the
+  pre-rewrite history. There are 23 of them, holding 181 commits of which 177 carry the old address, and
+  they are not writable by push. A support request is pending. GitHub's documented policy is that Support
+  removes sensitive data only where the risk cannot be mitigated by rotating credentials, and an email
+  address is not a credential, so the request may well be declined. **The rewrite cleans canonical
+  history; it does not retroactively unpublish.** Existing clones, forks and caches are outside its reach
+  entirely.
+- **Status:** Adopted and shipped. Verified from a fresh clone of the remote: branch refs carry exactly one
+  author identity and zero Hebrew blobs. Commit counts and merge topology unchanged (170 on `main`, 181 on
+  `dev`, 19 merges preserved), and the only content difference against a pre-rewrite backup mirror is the
+  single `CORE_SPEC` line.
+
+### 2026-08-01 · Secrets audit: clean, and the scoping is what made it meaningful
+- **Decision:** a read-only secrets and hygiene audit over all history found **zero committed secrets,
+  tokens, keys, or credentials**. No remediation was required and none was performed.
+- **The scoping constraint is the load-bearing part.** This repository intentionally publishes roughly 90
+  credential-shaped strings as EDITORIAL CONTENT: Bandit level passwords, HackTheBox flag hashes, NTLM
+  hashes, truncated PEM markers, and the Gitea credentials in the Busqueda writeup. `src/content/docs/`
+  and `src/assets/` are therefore excluded from all entropy and generic-credential rules. Without that
+  exclusion the scan returns a wall of intentional hits and buries any real signal.
+- **Proven rather than asserted:** a scoped Gitleaks run (provider rules PLUS entropy, closing the gap a
+  provider-only scanner leaves) returned **0 findings**, while an unscoped control run returned **35
+  findings, every one of them inside the excluded content paths and none outside**. GitHub's own secret
+  scanning independently reports zero alerts over the same history.
+- **Why the surface is structurally small,** which is the honest reason for a clean result rather than
+  luck: static SSG with no server and no runtime, no database, no API keys, no CI, `dist/` gitignored and
+  never committed, no `.env` or `.npmrc` or wrangler config in any commit, and Cloudflare Pages deploying
+  through the GitHub App rather than a committed token. There is very little here for a secret to be.
+- **What the audit did find was metadata, not secrets:** three author-name variants and a Hebrew username
+  in a documented path, both handled by the identity rewrite of the same date.
+- **Status:** Adopted (finding recorded, no action taken). Read-only throughout; working tree unchanged.
+
+### 2026-08-01 · Dual licensing: MIT for code, CC BY-NC-SA 4.0 for content, because licenses cover FILES
+- **Decision:** code is MIT and written content and images are CC BY-NC-SA 4.0, split on paths that
+  already exist in the repository. `LICENSE` covers `plugins/`, `src/components/`, `src/styles/`,
+  `src/lib/`, `src/pages/` and the root configuration files. `LICENSE-CONTENT` covers
+  `src/content/docs/`, `src/assets/`, `docs/`, `README.md` and `CLAUDE.md`.
+- **The principle that made the boundary tractable: a license covers FILES, not abstract works.** An
+  earlier framing tried to license "the visual design expressed by the theme", which is not a licensable
+  object, and that framing was the entire source of the `src/styles/` ambiguity. Copyright already
+  protects expressive copying of CSS without a license needing to describe an aesthetic, and attempting to
+  describe one makes the document weaker rather than stronger. Once the question becomes "which files",
+  `src/styles/` is obviously code and goes to MIT.
+- **Every boundary falls on a directory or file-type line that already existed.** No directory is
+  subdivided. Where a path could not be assigned it was reported for an owner decision rather than
+  resolved creatively.
+- **`public/` is deliberately UNCLAIMED, and both license files say so explicitly** so the omission reads
+  as intentional rather than as an oversight. It contains no original work by the owner: third-party fonts
+  and icons, the Astro starter favicon, a third-party image, and two deployment configuration files with
+  no meaningfully copyrightable content.
+- **SIL OFL 1.1 text added at `public/fonts/OFL.txt`, closing a real compliance gap.** The OFL requires its
+  text to accompany redistributed fonts, and none shipped. The cause is mechanical: subsetting with
+  `pyftsubset` strips the `licenseDescription` and `licenseURL` name-table fields, confirmed absent in all
+  12 shipped WOFF2 files. Geist, JetBrains Mono and Syne were each verified OFL 1.1 against their upstream
+  projects rather than assumed.
+- **Status:** Adopted and shipped to `main`. `src/assets/houston.webp` (the Astro starter mascot, not the
+  owner's work, referenced nowhere in source or build output) deleted in the same commit.
+
+### 2026-08-01 · Thirteen Dependabot alerts triaged and deliberately deferred
+- **Decision:** Dependabot is enabled (both vulnerability alerts and automated security updates, both
+  previously off) and its 13 open alerts (6 high, 5 moderate, 2 low) are triaged and DEFERRED. None is
+  patched. Pinned versions stand.
+- **Zero of the 13 have a realistic path in this threat model,** and this was verified against BUILT
+  OUTPUT rather than assumed. `dist/` carries no view transitions, no hydrated islands, and none of the
+  alerted build tooling; source carries no spread props in any component. Every exploit requires one of: a
+  running server (there is none), attacker-controlled build input (all content is authored locally by the
+  owner), or a code path the site does not use.
+- **The split, so the deferral reads as a decision rather than an omission:** seven alerts are cheaply
+  fixable through an `overrides` block without touching any pinned direct dependency. The remaining six
+  are one in-range Astro minor, one breaking `sharp` bump with no in-range fix, and three that are the
+  deferred Astro 7 upgrade wearing a security label.
+- **Recorded as PRESENTATION rather than security,** which is the only honest argument for acting: a
+  visitor or a recruiter checking the Dependabot tab will not run the threat model first, and a public
+  repository showing six HIGH alerts reads badly regardless of whether any of them is exploitable here.
+- **Status:** Adopted (deferred, tracked). Read-only analysis; no dependency, `package.json`, or lockfile
+  change.
 
 ### 2026-07-31 · The platform ink family, and the wash that was causing the failure it hid
 
