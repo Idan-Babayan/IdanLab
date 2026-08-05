@@ -28,17 +28,11 @@
   Pages auto-deploys. Also serves at `idanlab.pages.dev`. `astro.config.mjs` sets
   `site: 'https://idanlab.dev'` (drives the sitemap + canonical URLs). Branches: only `main`
   and `dev`; work lands on `dev`, then a PR into `main`.
-- **RELEASE STATE (2026-07-27): the release hold is LIFTED and `dev` ships to `main`.** The hold recorded
-  here on 2026-07-26 kept `dev` (then 17 commits ahead, `main` at `51edb9c` from PR #18) out of production
-  while it carried the Geist prose face without the design refitted around it. It is lifted by owner
-  instruction on 2026-07-27, and `dev` (29 commits ahead) merges to `main` by pull request the same day.
-  **Why the purpose is judged satisfied:** the prose foundation is no longer an eye-call, it is locked and
-  derived (46rem column, 18px, 1.7 leading, 1em paragraph gap, 87.6 characters per line), so the body face
-  production serves is tuned. What remains of the retune is chrome and component internals (the small-chrome
-  type scale, AttackPath internals, per-platform inks, the principle cap), none of which is the body face,
-  and each ships as its own pull request. What ships knowingly unfixed is listed in DECISIONS 2026-07-27.
-  **Unchanged by the lift, because they were never part of it:** `main` is reached only through a pull
-  request, and force pushes, rebases, amends, resets and history rewrites remain forbidden.
+- **RELEASE STATE: no release hold. `dev` ships to `main`, and each cluster ships as its own pull
+  request** rather than accumulating for one release. **`main` is reached only through a pull request,
+  and force pushes, rebases, amends, resets and history rewrites are forbidden.** Reasoning for the
+  2026-07-26 hold and its lift: DECISIONS 2026-07-27 · The release hold is lifted and `dev` ships to
+  production.
 - **robots.txt:** managed in-repo at `public/robots.txt` (served at `/robots.txt`). The in-repo file
   holds the easter-egg breadcrumb comment + a `Sitemap:` line. On deploy, Cloudflare composes its own
   managed block (the Content-Signals header plus the managed bot disallow list: Amazonbot,
@@ -109,7 +103,7 @@
 C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Windows user profile path
 ├─ astro.config.mjs                   # Starlight config: site, sidebar, customCss[layers.css, fonts.css, then the eight theme modules tokens/base/prose/chrome/components/pages/utilities/overrides, in that order], EC themes + pluginPrivCommand, reading-progress head script (no font preloads, see DECISIONS 2026-07-07), image-zoom, vite alias, components overrides (PageSidebar + Footer), markdown remarkPlugins (content-taxonomy validation guard + PasswordReveal import injection) + rehypePlugins (content image loading)
 ├─ src/
-│  ├─ content.config.ts               # docs collection (docsLoader + docsSchema), extended with the WriteupMeta metadata as STRICT optional enums (os Linux|Windows, environment Standalone|Active Directory|Progressive, difficulty Easy|Medium|Hard|Insane) plus optional badges boolean, tags, principle. NO platform field: platform is derived from the directory. Enums mirror src/components/badges/icons.ts exactly
+│  ├─ content.config.ts               # docs collection (docsLoader + docsSchema) + the writeup metadata schema (§7)
 │  ├─ pages/
 │  │  ├─ index.astro                  # HOMEPAGE: standalone immersive page (NOT Starlight). Dark-only.
 │  │  └─ about.astro                  # ABOUT: standalone immersive page. Has dark/light toggle.
@@ -150,10 +144,10 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 │     └─ overrides.css                # THE ONLY UNLAYERED SURFACE. The 14-rule tail, each rule carrying an evidence comment naming what it beats (see §8 "The layer law")
 ├─ plugins/
 │  ├─ rehype-content-image-loading.mjs # rehype: sets loading/decoding on content <img> (first eager, rest lazy); wired via astro.config markdown.rehypePlugins
-│  ├─ remark-inject-passwordreveal.mjs # remark: conditionally injects `import PasswordReveal from '@components/PasswordReveal.astro'` into an MDX file's AST at build time, only when that file uses <PasswordReveal/> and has no import of its own; wired via astro.config markdown.remarkPlugins
-│  ├─ remark-inject-writeupmeta.mjs   # remark: injects the <WriteupMeta/> badge row + its import into every writeup at build time. platform is DERIVED from the platform directory (hardcoded map, the single source of truth); os/environment/difficulty are read from frontmatter via file.data.astro.frontmatter and forwarded only when a non-empty string. Gated on the writeup path (non-index .mdx under the four platform dirs), so nothing else can be injected. badges: false opts out; a non-boolean badges FAILS the build (YAML parses no/off/"false" as truthy strings). Transformer must be (tree, file) to see frontmatter. Zero deps (unist-util-visit + acorn). See DECISIONS 2026-07-20
-│  ├─ remark-transform-recon-rail.mjs  # remark: turns a PLAIN MARKDOWN LIST inside <Callout type="recon"> into the findings rail (<dl class="findings"> with a <dt> chip + <dd> note per row) at build time, so a writeup authors data and never presentation. Keyed on the Callout node's type="recon" attribute; direct children only. The authored " : " is a PARSE DELIMITER (/^(\S+)\s:\s/ on the item's first text node), consumed here and never rendered: the separator the reader sees is a CSS rule on dt::after. ALL-OR-NOTHING per list, so one unparseable item leaves the list bulleted and visibly wrong rather than silently half-converted on a green build. Emits dt/dd as SIBLINGS with no per-row wrapper, because both must be direct grid children (a wrapper needs subgrid, which blockifies inline <code> onto its own track). Zero deps (unist-util-visit). Wired LAST in markdown.remarkPlugins. SUPERSEDES the <Findings>/<Finding> components, see DECISIONS 2026-07-27
-│  └─ remark-validate-content-taxonomy.mjs # remark: build-time guardrail that FAILS the build on an unknown hand-authored badge/metadata class token (meta-badge / platform-* / difficulty-* / os-* / port-label / task-title; the machine-meta family was removed 2026-07-19) or an unknown component metadata value (Callout type, FlagCapture type user|root), with a "did you mean" suggestion; the deliberate alternative to astro check; zero deps (unist-util-visit); its allow-lists are the single source of truth; wired via astro.config markdown.remarkPlugins. See DECISIONS 2026-07-12 and 2026-07-20
+│  ├─ remark-inject-passwordreveal.mjs # remark: injects the PasswordReveal import (§7 "Build-time plugins")
+│  ├─ remark-inject-writeupmeta.mjs   # remark: injects the WriteupMeta badge row (§7 "Build-time plugins")
+│  ├─ remark-transform-recon-rail.mjs  # remark: builds the recon findings rail (§7 "Build-time plugins")
+│  └─ remark-validate-content-taxonomy.mjs # remark: taxonomy build guard (§7 "Build-time plugins")
 └─ public/
    ├─ robots.txt                      # in-repo; breadcrumb comment + Sitemap line (see §2)
    ├─ favicon.svg                     # site favicon
@@ -702,6 +696,26 @@ Preserves reading position: anchors on the current heading and corrects scroll s
      + hashes them.
 3. Commit + push → Cloudflare deploys.
 
+### Build-time plugins (wired in `astro.config.mjs` `markdown.remarkPlugins`)
+
+Four remark plugins run over the MDX source. All are zero-dependency (`unist-util-visit`, plus `acorn`
+for the injectors), and all see hand-authored markup only, never component output. Order matters in one
+place: the recon-rail transform is wired LAST.
+
+- **`remark-inject-writeupmeta.mjs`** injects the `<WriteupMeta />` row and its import. Gated on the
+  writeup path, so nothing outside one can be injected. Behavior detail in the MDX conventions below.
+- **`remark-inject-passwordreveal.mjs`** injects the `PasswordReveal` import, only into files that use
+  the tag and do not already import it.
+- **`remark-transform-recon-rail.mjs`** converts the recon findings list into the rail. It emits `dt`
+  and `dd` as SIBLINGS with no per-row wrapper, because both must be direct grid children (a wrapper
+  would need subgrid, which blockifies inline `<code>` onto its own track).
+- **`remark-validate-content-taxonomy.mjs`** FAILS the build on an unknown hand-authored badge or
+  metadata class token (`meta-badge`, `platform-*`, `difficulty-*`, `os-*`, `port-label`, `task-title`)
+  or an unknown component metadata value (`Callout` type, `FlagCapture` type `user|root`), with a "did
+  you mean" suggestion. **Its allow-lists are the single source of truth**, and it is the deliberate
+  alternative to `astro check`. It does not validate frontmatter: strict Zod enums in
+  `content.config.ts` do that. See DECISIONS 2026-07-12 and 2026-07-20.
+
 ### MDX conventions (applied by hand)
 - Writeups are stored as flat .mdx files under src/content/docs
   (<platform>/<difficulty>/<machine>.mdx), one file per writeup with no per-writeup
@@ -841,10 +855,10 @@ icon.
 - **The tail contract.** `overrides.css` is the only unlayered surface, and a rule earns a place there on
   exactly one of two grounds: it must beat unlayered CSS (a vendor stylesheet, an inline style, or one of
   our own Astro-scoped component styles, all of which sit above every layer), or it carries `!important`.
-  Every tail rule carries a comment naming what it beats. The tail is 14 rules today: nine `.ec-cmd-*`
+  Every tail rule carries a comment naming what it beats. The tail is 13 rules today: nine `.ec-cmd-*`
   colour rules (they beat Expressive Code's inline per-token styles), the two `.pi-index .reveal`
   transition rules and the V3 light card shadow (they beat WriteupCard's and PlatformIndex's own scoped
-  styles), the `.flagcap` reduced-motion kill, and the OverTheWire platform-index eyebrow ink.
+  styles), and the `.flagcap` reduced-motion kill.
 - **Growing the tail is a decision, not a convenience.** Reach for a layer first; the tail is for cases
   where layering provably cannot work, and "provably" means measured in a browser, not argued.
 
@@ -871,16 +885,10 @@ statement about a PAIR, and the backdrop half of that pair is the half this proj
 wrong. Text rarely sits on a token: it sits on a stack of a page background, a wash, a translucent
 fill, a state tint, and sometimes a repeating texture.
 
-**This has now shipped a wrong number twice, both times by measuring against a surface simpler than the
-one that renders.** The 2026-07-17 badge pass measured chip labels on bare paper with no card, which
-was right for that element. The 2026-07-26 amber pass reused the same habit on the platform index,
-where it was wrong: the hero carries a wash mixed from the platform's own accent, so every eyebrow
-figure recorded that day was 0.8 to 1.3 too high, and PicoCTF was recorded three separate times as
-passing at 4.86 when it measured 3.59. Nothing caught it for three sessions, because a figure with no
-named surface cannot be checked, only believed.
-
-**The convention, from 2026-07-31:** every ratio written into these docs, into a CSS comment, or into a
-commit message names its backdrop. Where a surface is layered, name the model:
+**Every ratio written into these docs, into a CSS comment, or into a commit message names its
+backdrop.** Where a surface is layered, name the model. (This convention exists because the project
+shipped a wrong number twice by measuring against a simpler surface than the one that renders; see
+DECISIONS 2026-07-31 · The platform ink family, and the wash that was causing the failure it hid.)
 
 - **Model A, bare.** Page background plus solid ancestor fills only. Useful as a ceiling, never as a
   verdict for an element that has anything painted over it.
@@ -904,8 +912,8 @@ gradient, whose start stop would have vanished on paper had it used the token.
 A rule that matches live elements but always LOSES is dead in effect. It is deleted, never migrated: a
 cascade reordering can silently revive it, so carrying it into a new layer structure converts a harmless
 no-op into a live regression. Deadness is established by measurement (does it win anywhere, on any real
-page, in either theme), not by reading the selector. The Phase 4a purge removed rules on exactly this
-ground, including a `.hero h1` duplicate that `h1#_top` outranked in both themes.
+page, in either theme), not by reading the selector. See DECISIONS 2026-07-26 · The theme pass moves to
+declared cascade layers and splits into per-layer modules.
 
 ### Selector weight, and the flatten that is not happening
 
@@ -933,60 +941,38 @@ declaration answers yes to.
    `em` resolves against the text it actually governs.
 3. **Use `rem` or `px` so both sides agree,** with a comment naming the coupling it holds.
 
-**The three instances, all found in one audit, all the same defect wearing different clothes.**
+**This supersedes the narrower unit rule in the `layers.css` header,** which asks only whether an `em`
+tracks its local font size. That question answers yes in every instance of this defect, so it cannot
+catch one. It is insufficient, not wrong.
 
-| Instance | Declared on | Governs | Result | Remedy |
-| --- | --- | --- | --- | --- |
-| Recon rail | `.cl-recon li` at 18px (`5.6em`) and `.port-label` at 14px (`4.9em` + `0.7em`) | one shared column | 100.8px against 78.4px, a 22.4px error, and `4.9em` could never hold an eight-character token in the chip's context at any size | 1, deleted for a grid |
-| Heading gap | the element FOLLOWING the heading (`--prose-heading-gap`) | the space under a heading | one numeral meant 18px, 10.8px or 9.6px depending on what followed, and it lost outright to any follower with a larger margin | 2, moved onto `.sl-heading-wrapper`, which carries the heading's own size |
-| Principle cap | `aside.principle` at 18px (`46ch`) | `p.principle-text` at 22.4px | the maxim measures 36.97 characters, not 46, and has never measured 46 in any era | **still open**, see ROADMAP |
-
-**This supersedes the narrower unit rule in the `layers.css` header.** That rule asked only whether an
-`em` tracked its local font size and answered yes in all three failures, so it could not have caught any
-of them. It is not wrong, it is insufficient: it governs whether a unit is honest about itself, while
-this law governs whether it is honest about what it controls.
+**One instance is still open:** the `46ch` Principle cap, which measures 36.97 characters rather than 46.
+See ROADMAP. The two resolved instances and the full audit are in DECISIONS 2026-07-27 · The context law:
+a font-relative length that governs another context is wrong.
 
 ### Prefer computed relationships to declared ones
 
 If two elements must align, express it with a layout primitive rather than a number. **A declared
 relationship is a standing promise to re-derive it every time a font, a size, or a token moves, and this
-project has already failed that promise across two font changes** (JetBrains Mono to Geist, then 18.5px
-to 18px). Nobody re-derived the rail, the principle cap, or the heading gap on either occasion, and no
-build ever went red. A computed relationship removes the promise instead of documenting it.
+project has already failed that promise across two font changes with no build ever going red.** A
+computed relationship removes the promise instead of documenting it.
 
 ### Content carries data, never presentation
 
 MDX carries semantic data. Class names, separator glyphs, and layout markup belong to components or to
-build-time transforms. The recon rail was the counter-example: every row hand-wrote a
-`<span class="port-label">` and an authored `" : "` separator, so the rail's appearance was distributed
-across fifteen lines in three content files.
+build-time transforms.
 
-**The test: if changing the look requires editing content files, the boundary is in the wrong place.**
+**A COMPONENT THAT MUST BE IMPORTED INTO A CONTENT FILE IS ITSELF PRESENTATION IN THAT FILE.**
 
-**A COMPONENT THAT MUST BE IMPORTED INTO A CONTENT FILE IS ITSELF PRESENTATION IN THAT FILE.** This is
-the part the first version of this rule missed, and it cost a full iteration. The fix for the rail was
-originally `<Findings>` and `<Finding port="...">`: it produced exactly the right DOM and it did move the
-class names and the separator out of content, so it passed the test as written. But it replaced them with
-two import lines and a JSX tree per rail, which is a different presentation detail in the same place. The
-components passed the letter of the rule and failed its purpose.
+**The test:** count what a content file must know about how the thing looks. A class name, a separator
+glyph, a wrapper element, and an import line are all the same kind of knowledge. **Zero is the target.**
+An earlier, weaker form of this test ("if changing the look requires editing content files, the boundary
+is wrong") is superseded, because a component pair passed it while still putting an import line and a JSX
+tree in every content file.
 
 **When a build-time transform can produce the same structure from data the author already writes, prefer
-the transform.** The rail is keyed on the `<Callout type="recon">` that was already wrapping it, and the
-port and note were already being typed, so the transform needed no new authored signal at all. The
-authoring that resulted is simpler than what existed before any of this work:
-
-```mdx frame="code" title="the whole authoring surface, after"
-<Callout type="recon">
-
-- 53/tcp : DNS, Simple DNS Plus
-- 389/tcp : LDAP for `htb.local`
-
-</Callout>
-```
-
-**Sharper test, replacing the one above:** count what a content file must know about how the thing looks.
-A class name, a separator glyph, a wrapper element, and an import line are all the same kind of knowledge.
-Zero is the target, and a plain list reaches it.
+the transform.** The worked example, including the component attempt that passed the old test and failed
+its purpose, is in DECISIONS 2026-07-27 · The recon rail, in three attempts: grid on the list, two
+components, then a remark transform.
 
 **The residue, and why it is acceptable:** the ` : ` survives in source. It is not a rendered glyph, it is
 a parse delimiter consumed at build time, and it is the least ambiguous way to mark where the port token
@@ -1007,11 +993,10 @@ its leading changes prose line boxes: a reading-surface decision, not a componen
 "CSS-only" governs **the theme pass over Starlight**, where the rule against forking Starlight components
 is absolute and unchanged. It does **not** govern our own content components. When a presentation problem
 needs structure the content does not have, **add the structure**, in a component or in a build-time
-transform, rather than encoding it as literals in CSS. The rail is the worked example: no arrangement of
-CSS over a flat `<li>` could hold a chip column and a description column in alignment, because the markup
-had no boundary between them, and three CSS literals were the workaround. Adding the boundary made the
-literals unnecessary rather than correct. **Where that structure is added is a separate question from
-whether to add it**, and the rule above answers it: a transform, when the data is already there.
+transform, rather than encoding it as literals in CSS. **Where that structure is added is a separate
+question from whether to add it**, and the rule above answers it: a transform, when the data is already
+there. Worked example in DECISIONS 2026-07-27 · The recon rail, in three attempts: grid on the list, two
+components, then a remark transform.
 
 ## 9. Environment & Tooling
 

@@ -122,6 +122,9 @@ Flat `.mdx` at `src/content/docs/<platform>/<difficulty>/<slug>.mdx`. Reference 
 - Never add "Co-Authored-By: Claude" or modify commit authors.
 - **Never rewrite git history: no rebase, amend, force push, or reset, unless I explicitly request it.**
 - **`main` is reached ONLY through a pull request** opened and merged by the owner. Never push `main` directly.
+- **Identity is `Idan-Babayan <contact@idanlab.dev>`** on every commit, merge, and other git operation. No other email address, ever.
+- **Merge into `main` from the command line, never the GitHub web UI.** The account has "keep my email addresses private" enabled, so a web-UI merge authors with a `users.noreply.github.com` address, reintroducing a second identity into a history that was deliberately normalized to one. It also mints a new pull request ref.
+- Before committing, confirm `git config user.email` is `contact@idanlab.dev` and `git config user.name` is `Idan-Babayan`.
 - If a task involves git, ask before doing anything.
 
 Delegated authority (2026-07-25, owner instruction): Claude Code may run read commands, stage, commit, and push to `dev` under the phase-gate protocol, with the build green before any commit. Everything above still binds.
