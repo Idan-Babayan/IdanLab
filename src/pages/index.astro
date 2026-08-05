@@ -53,9 +53,10 @@ import '../styles/fonts.css';
          crawlers, and search engines see the real numbers, not 0. countUp resets to the start
          value and animates up as a progressive enhancement (see the script below). -->
     <div class="stat"><div class="num" data-count="4">4</div><div class="lbl">Platforms</div></div>
-    <div class="stat"><div class="num" data-count="50" data-suffix="+">50+</div><div class="lbl">Writeups</div></div>
+    <div class="stat"><div class="num" data-count="50" data-suffix="+">50+</div><div class="lbl">Machines solved</div></div>
     <div class="stat"><div class="num" data-text="∞">∞</div><div class="lbl">Curiosity</div></div>
   </div>
+  <p class="stats-note reveal">Writeups are published progressively as they are refined.</p>
 </section>
 
 <!-- PLATFORMS -->
@@ -214,6 +215,14 @@ import '../styles/fonts.css';
     color: var(--muted); margin-top: .8rem; }
   .stat:nth-child(2) .num { color: var(--cyan); }
   .stat:nth-child(3) .num { color: var(--magenta); }
+  /* Caption under the stats panel. Deliberately NOT in the label register: no uppercase and no
+     tracking, so it reads as a sentence rather than as a fourth stat label. .8rem is the existing
+     .eyebrow step, one notch above .lbl (.72rem); var(--muted) is the page's de-emphasis token,
+     the same one .lbl, .sub and .foot-sub already use. No italic on purpose: the only italic on
+     this page is .headline .alt, where it marks the hero accent, so italic here would read as
+     emphasis, the opposite of the intent. */
+  .stats-note { font-family: var(--mono); font-size: .8rem; line-height: 1.7;
+    color: var(--muted); margin-top: 1rem; }
 
   .grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(250px,1fr)); gap: 1.25rem; }
   .card {
