@@ -75,9 +75,11 @@
 ### 2026-08-01 · One identity across all history: the repository is rewritten and force-pushed
 - **Decision:** all 185 commits on `main` and `dev` are rewritten to a single author identity,
   `Idan-Babayan <contact@idanlab.dev>`. Three author-name variants sharing one old email are normalized:
-  `Idan-Babayan` (160 commits), `idani5678-svg` (29), and `Idan Babayan` (18). The Hebrew username is
-  removed from `docs/CORE_SPEC.md` across 176 commits, in TWO line variants (the current path and a
-  pre-rebrand one that a single-variant rule would have missed). Executed with `git filter-repo` as
+  `Idan-Babayan` (160 commits), a GitHub default-derived username from the old account (29), and
+  `Idan Babayan` (18). That third variant is deliberately not reproduced here: its local part matches the
+  removed address's, so naming it would point straight back at what the rewrite removed. The Hebrew
+  username is removed from `docs/CORE_SPEC.md` across 176 commits, in TWO line variants (the current path
+  and a pre-rebrand one that a single-variant rule would have missed). Executed with `git filter-repo` as
   standalone tooling, then force-pushed with `--force-with-lease` pinned to the recorded pre-rewrite tips.
   This is a ONE-TIME owner-authorized exception to the standing no-history-rewrite policy, which is
   otherwise unchanged.
