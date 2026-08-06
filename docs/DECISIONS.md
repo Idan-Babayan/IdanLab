@@ -6,6 +6,82 @@
 
 ---
 
+### 2026-08-06 · Supersession has two forms: `Supersedes:` archives, `Supersedes in part:` does not
+- **Decision:** the supersession protocol distinguishes two markers. `Supersedes: <date> · <title>` means
+  WHOLESALE: the old entry is entirely replaced, gains `Superseded by: <date> · <title>`, and moves to
+  `DECISIONS-ARCHIVE.md` in the same edit. `Supersedes in part: <date> · <title>` means only some of the old
+  entry is replaced; the new entry NAMES the bullet or claim that dies, and the old entry stays live in
+  `DECISIONS.md`, is not archived, and gains no `Superseded by:` line, because it is not superseded.
+- **When unsure, the partial form is correct, because the two errors are not symmetric.** Archiving a
+  still-live entry removes its surviving content from the default context set with nothing signalling the
+  loss, so it gets re-litigated or silently violated. Retaining a partly-stale entry costs only tidiness,
+  and it is self-correcting: the next session working that area sees both and resolves it. Prefer the
+  recoverable error.
+- **This EXTENDS rather than replaces 2026-08-01 · DECISIONS splits by STATUS, and entries move at the
+  moment of supersession.** That entry already found the category, counting 26 partially superseded entries
+  across 925 lines where a live constraint and a dead mechanism share one entry, and already stated the
+  asymmetry: an over-inclusive live file is a correct outcome, an over-inclusive archive is not. What was
+  missing is NOTATION. The discipline lived in DECISIONS while `CLAUDE.md`, the document a session actually
+  loads, described only the wholesale case. That mismatch is the real gap, and it is what this closes.
+- **Partial supersession is not new here, and the correction strengthens the case.** 2026-08-06 · Merges to
+  `main` run from the command line, not through a pull request was the first to use the `Supersedes in part:`
+  LABEL, not the first partial supersession. The log already carried four incompatible ad hoc spellings:
+  `Supersedes:` naming one bullet (2026-07-07 · Font `<link rel=preload>` hints removed site-wide (Firefox
+  "preloaded but not used")); "supersedes a line in" (2026-07-17 · Code-block focus ring wraps the whole EC
+  frame, not just the `<pre>`, and 2026-07-17 · Toggle focus ring aligns to its tab (re-pairs Starlight's
+  orphaned summary margin)); "NOT reverted, only partly superseded" (2026-07-27 · The recon rail, in three
+  attempts: grid on the list, two components, then a remark transform); and a bare `Supersedes` naming a
+  single color (2026-06-29 · Inline code is its own object: a rounded red hairline chip (theme-tuned)). Four
+  spellings for one relationship is why the rule could not be applied by pattern matching.
+- **The hazard is live in the file right now, not hypothetical.** 2026-07-07 · Font `<link rel=preload>`
+  hints removed site-wide (Firefox "preloaded but not used") carries a bare `Supersedes:` pointing at
+  2026-07-04 · Self-hosted fonts (subset WOFF2 + metric-matched fallbacks), Google Fonts removed, while
+  actually killing only its "Preloads" bullet. That target is still live and carries the whole self-hosted
+  font architecture: the `@font-face` contract, the subsetting rationale, and the metric-matched fallbacks.
+  A session applying the old protocol literally would archive all of it to retire one bullet.
+- **Fixed by rule, not by rewriting the past.** No archive move is performed and no existing marker is
+  relabelled. Reclassifying prior entries is a separate pass with its own judgement calls, and doing it
+  incidentally here would be the exact over-reach this entry argues against.
+- **Status:** Adopted. Recorded in `CLAUDE.md` under the supersession check. First exercised by 2026-08-06 ·
+  Merges to `main` run from the command line, not through a pull request, which used the partial form and
+  deliberately left 2026-07-27 · The release hold is lifted and `dev` ships to production live.
+
+### 2026-08-06 · Merges to `main` run from the command line, not through a pull request
+- **Supersedes in part:** 2026-07-27 · The release hold is lifted and `dev` ships to production. Only that
+  entry's sequencing bullet ("Each ships as its own pull request into `main`") is replaced here. Its core
+  decision, the lift of the hold and the list of what shipped knowingly unfixed, stands unchanged, so the
+  entry is deliberately NOT archived. Whether it leaves the live file is the owner's call.
+- **Decision:** `dev` reaches `main` by `git merge --no-ff dev` run locally, followed by a plain push. No
+  pull request, and never the GitHub web UI. `--no-ff` keeps an explicit two-parent merge commit. `--squash`
+  is forbidden, because collapsing a cluster into one commit destroys the atomic history this project
+  preserves on purpose.
+- **What this fixes in the documentation itself:** `CLAUDE.md` carried "`main` is reached ONLY through a
+  pull request" two bullets above a newer rule saying to merge from the command line. Those contradicted
+  each other while sitting adjacent, which is precisely the drift the four-document architecture exists to
+  prevent. The two are now one rule.
+- **Reason one, identity.** The account has "keep my email addresses private" enabled, so a merge performed
+  in the web UI authors as `users.noreply.github.com`. That reintroduces a second author identity into a
+  history that was deliberately normalized to exactly one. See 2026-08-01 · One identity across all history:
+  the repository is rewritten and force-pushed.
+- **Reason two, refs that cannot be retracted.** Opening a pull request mints a server-managed
+  `refs/pull/N/head` that pins its entire ancestry permanently. It is not writable by push, so nothing done
+  locally retracts it. A pull request opened today would pin today's ancestry forever.
+- **The second reason is demonstrated, not predicted.** A GitHub Support request is currently open to remove
+  the existing `refs/pull/N/head` refs, which still hold pre-rewrite commits carrying the removed address.
+  The same audit found 17 commits reachable from NO ref at all, orphaned by the rewrite yet still served
+  publicly by the remote. Unreferenced is not unreachable, and a pull request ref makes that condition
+  permanent by design rather than by accident. Opening a new pull request while that request is mid-flight
+  would also add a ref to the very set being swept.
+- **Both reasons are standing, not situational.** Neither expires when the Support request resolves: privacy
+  mode stays on, and PR refs stay unremovable by push. If Support declines, nothing changes either.
+- **What is unchanged:** force pushes, rebases, amends and resets remain forbidden absent an explicit owner
+  request. Pushing `main` still requires an explicit instruction; the 2026-07-25 delegated authority covers
+  `dev` only.
+- **Status:** Adopted. Practiced on the two most recent merges to `main`, both run from the command line with
+  `--no-ff`, each producing a two-parent merge commit authored `Idan-Babayan <contact@idanlab.dev>`.
+  Recorded in `CLAUDE.md` under Git policy. `docs/CORE_SPEC.md` still carries the superseded pull-request
+  wording in its RELEASE STATE bullet; that is flagged for the owner, not edited here.
+
 ### 2026-08-01 · Four documents, four jobs: DECISIONS leaves the default context set
 - **Decision:** the project runs on four documents with four jobs. `CLAUDE.md` is the ROUTER (always
   loaded: how to operate, what to load, what not to load). `docs/CORE_SPEC.md` is CURRENT STATE (always
@@ -256,6 +332,10 @@
 - **The sequencing changes with it:** the outstanding clusters no longer accumulate on `dev` waiting for one
   release. Each ships as its own pull request into `main`. Holding them together was correct while the body
   face was half done and is not correct now that it is not.
+  **Partly superseded by:** 2026-08-06 · Merges to `main` run from the command line, not through a pull
+  request, specifically the pull-request mechanism named in this bullet, now a local `git merge --no-ff dev`
+  followed by a plain push. That clusters ship independently rather than accumulating for one release is
+  unchanged, and the rest of this entry stays in force.
 - **What ships knowingly unfixed, so nobody discovers these as surprises:**
   1. **The small-chrome type scale is still frozen at 16px-era ratios.** Eight declarations are round
      fractions of a 16px body (0.6, 0.625, 0.64, 0.688, 0.69, 0.70, 0.72, 0.75) and scatter against the
@@ -975,12 +1055,17 @@
   fires once on first arrival and does NOT replay on revisit; arrow keys, node clicks and dots all revisit;
   no visible scrollbar with 1511px of path scrolling inside 318px on mobile and no page-level horizontal
   scroll. `npm run build` green (46 pages), no console errors, no new dependencies.
-- **Status:** Adopted (working tree; not committed). SUPERSEDED IN PART by the native-surface rework
-  below (same day): the interaction, geometry and structure recorded here stand, but the surfaces,
-  container background, and goal treatment described in the original build were reworked off invented
-  values onto the site's own fabric.
+- **Status:** Adopted (working tree; not committed).
+- **Partly superseded by:** 2026-07-19 · AttackPath reworked onto the site's native fabric (surfaces, prize
+  identity, computed escalation), specifically the surfaces, container background, and goal treatment
+  described in the original build, which were reworked off invented values onto the site's own fabric. The
+  interaction, geometry and structure recorded here stand, so this entry stays live and is not archived.
 
 ### 2026-07-19 · AttackPath reworked onto the site's native fabric (surfaces, prize identity, computed escalation)
+- **Supersedes in part:** 2026-07-19 · AttackPath: a guided, data-driven infographic for linear
+  privilege-escalation chains, specifically its surfaces, container background and goal treatment, which
+  were built on invented values. Its interaction, geometry and structure stand, so it stays live and is not
+  archived.
 - **Decision:** the AttackPath surfaces are rebuilt entirely from the site's existing design language so it
   reads as a rich REGION of the writeup, distinct only by behaviour, not a foreign widget in a separate
   skin. The approved interaction (guided Next-step, ascending path, escalating nodes, structural
@@ -1200,6 +1285,9 @@
 - **Status:** Adopted; committed as `4325533` to `dev` (not pushed). **CORRECTED 2026-07-17 (push):** rebased to `1fcf53e` and pushed when the busquedav2 testbed commit was dropped; shipped to main via PR #16 (see 2026-07-17 · busquedav2 testbed dropped before push; badge commits rebased + pushed; merged to main (PR #16), now in DECISIONS-ARCHIVE). custom.css only.
 
 ### 2026-07-17 · Badge glyphs normalized to a 14px grid; HackTheBox to currentColor; polychrome/monochrome sourcing axis
+- **Supersedes in part:** 2026-07-11 · Badge icon sourcing: split by consumption mechanism, specifically its
+  "logo vs glyph" sourcing axis and its public-copy rationale. That entry's consumption-mechanism split
+  stands, so it stays live and is not archived.
 - **Decision:** the WriteupMeta glyph set is normalized so every icon's larger ink dimension renders at ~14px
   in the 15px `.wm-ico` box, and HackTheBox moves from a native-colour `<img>` to an inline `currentColor`
   glyph. Geometry and colour plumbing only, never artwork (Standalone and Active Directory are slated for a
@@ -1267,7 +1355,10 @@
   header plus pre exactly (same top as the header, same bottom as the pre, verified).
 - **`:has()` not `:focus-within`:** `:focus-within` also fires on pointer clicks. `:has(> pre:focus-visible)`
   is the precise form and keeps the keyboard-only contract.
-- **Premise correction (supersedes a line in the 2026-07-13 token entry):** that entry recorded "Code blocks
+- **Supersedes in part:** 2026-07-13 · Site-wide focus-ring token (--focus-ring) on content pages: one color,
+  identity where it exists, lime default, specifically its "Code blocks have no `tabindex`, so they are
+  untouched" claim. The rest of that entry stays in force and it is not archived.
+- **Premise correction:** that entry recorded "Code blocks
   have no `tabindex`, so they are untouched." That is FALSE. It is true of the static HTML and true if the
   DOM is inspected too early, which is how it was missed: EC's module runs on a 250ms-debounced
   ResizeObserver plus `requestIdleCallback`, so the attribute appears after load and re-evaluates on resize.
@@ -1319,7 +1410,10 @@
   instead of one for an exception). **Lesson recorded: when a cause is traced to a SHARED rule, the blast
   radius is every consumer of that rule, and the report must say so even if the brief scopes the fix
   narrower.**
-- **Premise correction (supersedes the 2026-07-13 TOC/prose entry):** that entry concluded the spoiler-toggle
+- **Supersedes in part:** 2026-07-13 · Focus ring extended to TOC entries + prose links; spoiler-toggle
+  already correct; light flag gold strengthened, specifically its conclusion that the spoiler toggle needed
+  no change. The rest of that entry stays in force and it is not archived.
+- **Premise correction:** that entry concluded the spoiler-toggle
   "ALREADY rings the lime default ... which is exactly the requested end state. NO change was needed or made."
   That was true of the ring's COLOR only. Its GEOMETRY was wrong the whole time (8px off-center), which a
   color-only check could not see.
@@ -1680,6 +1774,8 @@
   mechanism is chosen.
 
 ### 2026-07-11 · picoCTF icon rebuilt as a true vector (815 B, replaces 65 KB raster-in-SVG)
+- **Supersedes in part:** 2026-07-11 · Badge icon sourcing: split by consumption mechanism, specifically its
+  PicoCTF interim-asset paragraph. The rest of that entry stays in force and it is not archived.
 - **Decision:** both copies of the picoCTF badge (`public/icons/picoctf.svg` and
   `src/assets/icons/picoctf.svg`) are replaced by a hand-constructed 815-byte true-vector SVG:
   4 elements (disc `<circle>`, shadow `<path>`, letterform `<path>`, dot `<circle>`), flat colors
@@ -1729,8 +1825,8 @@
 
 ### 2026-07-11 · Badge icon sourcing: split by consumption mechanism
 
-**SUPERSEDED IN PART 2026-07-17** (see the "polychrome/monochrome sourcing axis" entry above). Two
-premises here are now wrong: (1) the axis is polychrome vs monochrome, NOT logo vs glyph, so HackTheBox
+**Partly superseded by:** 2026-07-17 · Badge glyphs normalized to a 14px grid; HackTheBox to currentColor;
+polychrome/monochrome sourcing axis. Two premises here are now wrong: (1) the axis is polychrome vs monochrome, NOT logo vs glyph, so HackTheBox
 (a single-fill logo) is now an inlined `currentColor` glyph, leaving three native-colour platform `<img>`
 logos (VulnHub, PicoCTF, OverTheWire) plus Linux; (2) the `public/icons` copies do NOT serve "the sidebar
 CSS backgrounds" (the sidebar uses colored dots; its logo CSS is commented out), they serve
@@ -1754,10 +1850,11 @@ Forcing all assets to hashed files was rejected as a global change to solve a no
 The PicoCTF asset is an improvised raster-in-SVG (65 KB after SVGO); it is an accepted interim
 asset. A clean lightweight PicoCTF source is a Design follow-up.
 
-**SUPERSEDED 2026-07-11:** the PicoCTF badge is no longer a 65 KB raster-in-SVG interim asset. It was
-rebuilt as an 815-byte true-vector SVG and is design-final, closing that Design follow-up (see the
-"picoCTF icon rebuilt as a true vector" entry above, which also notes the new sub-4 KB file now inlines
-as a data URI rather than hashing).
+**Partly superseded by:** 2026-07-11 · picoCTF icon rebuilt as a true vector (815 B, replaces 65 KB
+raster-in-SVG), specifically the PicoCTF interim-asset paragraph directly above. The PicoCTF badge is no
+longer a 65 KB raster-in-SVG interim asset. It was rebuilt as an 815-byte true-vector SVG and is
+design-final, closing that Design follow-up. That entry also notes the new sub-4 KB file now inlines as a
+data URI rather than hashing.
 
 ### 2026-07-10 · Mobile TOC parity: gold flag entries + cyan current-h3 (CSS-only, additive)
 - **Decision:** Extend the two desktop "On this page" treatments to the mobile TOC dropdown
@@ -1845,9 +1942,11 @@ as a data URI rather than hashing).
   two marketing pages and via Starlight `customCss`) with metric-matched size-adjust fallbacks and
   `font-display: swap`, so first paint stays shift-free with no preload. `@font-face`, the fallback
   declarations, and `public/fonts/` were not touched.
-- **Supersedes:** the "Preloads" bullet of the 2026-07-04 self-hosted-fonts entry, and the 2026-07-05
-  crossorigin correction (which had switched these preloads from `crossorigin="true"` to bare
-  `crossorigin`). With the preloads gone, the crossorigin value is moot.
+- **Supersedes in part:** 2026-07-04 · Self-hosted fonts (subset WOFF2 + metric-matched fallbacks), Google
+  Fonts removed, specifically its "Preloads" bullet. Everything else in that entry stays IN FORCE and it is
+  NOT archived: the `@font-face` contract, the subsetting rationale, and the metric-matched fallbacks. Also
+  retires the 2026-07-05 crossorigin correction (which had switched these preloads from `crossorigin="true"`
+  to bare `crossorigin`). With the preloads gone, the crossorigin value is moot.
 - **Verified:** `npm run build` green; zero `<link rel="preload" ... fonts/>` anywhere in `dist/`; the
   reading-progress head script is byte-for-byte unchanged; theme-orthogonal (identical hints in dark and
   light), so both themes are unaffected.
@@ -2176,6 +2275,10 @@ ever wanted later, it would require adding static.cloudflareinsights.com to scri
   Liberation so the shift-free swap also applies on Linux, then the generic.
 - **Preloads:** only jetbrains-mono-400 and syne-800 (the dominant above-the-fold body/code and display
   faces), crossorigin. font-display: swap on every real face.
+  **Partly superseded by:** 2026-07-07 · Font `<link rel=preload>` hints removed site-wide (Firefox
+  "preloaded but not used"), specifically this Preloads bullet: both hints were removed site-wide. The
+  `@font-face` contract, the subsetting rationale, the metric-matched fallbacks and `font-display: swap`
+  all stay in force, so this entry is not archived.
 - **Verified:** zero fonts.googleapis/gstatic references (source + dist), both themes render identically,
   the Principle coda now uses a REAL JetBrains Mono italic, no tofu on terminal glyphs, build green
   (45 pages). Supersedes the "loaded from Google Fonts" note in CORE_SPEC and the self-host ROADMAP item.
@@ -2270,8 +2373,14 @@ ever wanted later, it would require adding static.cloudflareinsights.com to scri
 
 ### 2026-06-30 · Content images and writeup structure: flat files + parallel src/assets (supersedes colocated index.mdx)
 
-Supersedes: the prior decision to colocate writeup images next to each writeup
-and name each writeup index.mdx.
+Replaces an earlier undocumented convention: writeup images were colocated next to
+each writeup and each writeup was named index.mdx. That convention predates this log
+and has no entry of its own, so there is nothing to archive.
+
+Supersedes in part: 2026-06-01 · Difficulty dirs are Capitalized; sidebar config
+matches casing exactly, specifically its Capitalized-directory decision. That entry's
+case-sensitivity rule still holds on the lowercase form, so it stays live and is not
+archived.
 
 Decision: Writeups are flat .mdx files under src/content/docs (one file per
 writeup, no per-writeup folder). Their images live in a parallel tree under
@@ -2336,10 +2445,12 @@ automatically; no astro.config.mjs edit is needed per writeup.
 - **Colors:** DARK text `#ff9b9b`, fill `rgba(255,120,120,0.07)`, border `rgba(255,120,120,0.26)`. LIGHT
   text `#b03326`, fill `#f3e4d6`, border `rgba(150,74,38,0.32)`. Red text stays AA on its own fill (dark
   9.2:1, light 5.0:1, both verified on the live build in a real writeup).
-- **Supersedes** the light-only cream chip (`#f7f0dc`) from the polish entry below: this unifies both
-  themes and drops the toggle-title special case.
+- **Supersedes in part:** 2026-06-29 · Light/code/toggle polish: sharp code frames, light inline-code chip,
+  softer copy toast, tighter toggle gap, specifically its light-only cream chip (`#f7f0dc`). This unifies both
+  themes and drops the toggle-title special case. The rest of that entry stays in force and it is not
+  archived.
 - **Status:** Adopted + shipped (custom.css only; `npm run build` green, 44 pages).
-- **SUPERSEDED 2026-06-30 (surface only):** the chip is now NEUTRAL and the red identity lives only in
+- **Amended 2026-06-30 (surface only), no separate entry:** the chip is now NEUTRAL and the red identity lives only in
   the text. Structure (5px radius, 1px border, 0.12em 0.4em padding, 0.875em, red mono text) and the
   no-special-casing behavior are unchanged; only the fill + border moved off red so neutral tokens
   (filenames, ports) never broadcast false urgency. New values: DARK fill `rgba(255,255,255,0.055)` +
@@ -2354,8 +2465,10 @@ automatically; no astro.config.mjs edit is needed per writeup.
   tab (top) and code body (bottom) from `calc(--ec-brdRad + border-width)`, so `.frame .header/.title/pre`
   are zeroed too. Code blocks now read as crisp rectangles on paper as they already did on dark. The EC
   copy button keeps its own radius (3.2px); no toggle / button / badge / divider radius is touched.
-- **Light inline-code chip:** (SUPERSEDED same day by the unified inline-code object in 2026-06-29 · Inline code is its own object: a rounded red hairline chip (theme-tuned);
-  kept for history) the light `:not(pre) > code` fill (`#f3ebda`, near-invisible on the `#f2ede0` toggle
+- **Light inline-code chip.** **Partly superseded by:** 2026-06-29 · Inline code is its own object: a rounded
+  red hairline chip (theme-tuned), which replaced this light-only cream chip with one unified two-theme
+  object the same day. Kept for history, and the rest of this entry stays in force. The light
+  `:not(pre) > code` fill (`#f3ebda`, near-invisible on the `#f2ede0` toggle
   panel and borderless) became a defined cream chip `#f7f0dc` + a warm 1px border `rgba(95,74,38,0.32)`.
   The fill had to stay light to keep the red text (`#c92a2a`) at AA (4.8:1), so it was a touch lighter
   than both surfaces and the border carried the edge on the close-toned panel. Dark was left unchanged
@@ -2399,8 +2512,10 @@ automatically; no astro.config.mjs edit is needed per writeup.
   hidden), acting on the same `.sl-markdown-content details.toggle:not(.toggle-flag)` set. A bulk
   expand/collapse adds nothing over a single lone toggle, so single-toggle pages (every current
   single-toggle Bandit level) now behave like the zero-toggle pages and drop the control. It is count-driven,
-  so it clears automatically with no per-writeup edits. Supersedes the "hides only when zero toggles" clause
-  in the 2026-06-20 entry below.
+  so it clears automatically with no per-writeup edits.
+- **Supersedes in part:** 2026-06-20 · ToggleAll control: sidebar placement, scroll anchoring, native-anchor
+  fix, specifically its "self-hides when a page has no toggles" threshold. The rest of that entry stays in
+  force and it is not archived.
 - **Rationale:** the control is a bulk affordance; with one toggle it is redundant with the toggle itself and
   just adds chrome to the TOC column.
 - **Verified:** live build at 1440w. Single-toggle `bandit/0-1` (control gone), multi-toggle `bandit/16-17`
@@ -2449,9 +2564,10 @@ automatically; no astro.config.mjs edit is needed per writeup.
 - **Status:** Adopted + shipped. Built and verified live (both themes, reduced-motion, copy) on the
   `busquedav2.mdx` testbed; owner then migrated `busqueda.mdx`'s User/Root flags to `<FlagCapture>` and
   deleted `busquedav2.mdx`. Shipped in PR #5 (`dev` -> `main`), `npm run build` green (44 pages).
-  Supersedes the `.toggle-flag` reveal from the 2026-06-20 flag-loot entry (the heading + gold TOC from
-  that entry are unchanged). The Bandit "Reveal Password" toggles are a candidate for the same swap (see
-  ROADMAP).
+  The Bandit "Reveal Password" toggles are a candidate for the same swap (see ROADMAP).
+- **Supersedes in part:** 2026-06-20 · Flag loot gold: one signal for User/Root Flag (heading, toggle, TOC),
+  specifically its `.toggle-flag` reveal. The gold heading and the gold TOC entry from that entry are
+  unchanged, so it stays in force and is not archived.
 
 ### 2026-06-26 · Truncate embedded private keys in writeups (GitHub push protection)
 - **Decision:** Writeups whose level reward is an SSH/RSA private key (OverTheWire Bandit
@@ -2476,6 +2592,9 @@ automatically; no astro.config.mjs edit is needed per writeup.
   `.task-title`, with a flag-SVG mask icon as `::before`), the reveal toggle (`.toggle-flag`, refactored
   to the token), and the right TOC entry (muted gold at rest for scannability, full gold on hover/current;
   other TOC entries keep the green `--sl-color-text-accent`). custom.css only; no glow or motion.
+  **Partly superseded by:** 2026-06-27 · FlagCapture "Decrypt to Capture" replaces the flag reveal toggle,
+  specifically the `.toggle-flag` reveal named here. The gold heading and the gold TOC entry are unchanged,
+  so this entry stays in force and is not archived.
 - **Why:** the concept previously read as three different colors (brown heading, gold toggle, green TOC);
   one gold makes it scan as the writeup's prize.
 - **Dependency / interim:** flag headings have no dedicated class (they reuse `.task-title`, shared with
@@ -2514,7 +2633,9 @@ automatically; no astro.config.mjs edit is needed per writeup.
   override that renders `<Default />` then `<ToggleAll />` (official API, no fork; wired in
   `astro.config.mjs` `components`). It targets `.sl-markdown-content details.toggle:not(.toggle-flag)`
   (Toggle gained a stable `.toggle` class), so it never touches sidebar/nav/code or spoiler flags.
-  Self-hides when a page has no toggles (raised 2026-06-28 to: fewer than two toggles, see top entry);
+  Self-hides when a page has no toggles (**partly superseded by:** 2026-06-28 · ToggleAll hides below two
+  toggles (single-toggle pages too), which raised the threshold to fewer than two toggles; the rest of this
+  entry stays in force);
   desktop-only (`sl-hidden lg:sl-block`; the right sidebar is
   `position:fixed`, so it follows scroll). Per-page model (a cross-page global was rejected).
 - **Look:** the original bordered pill (neutral gray text + border, cyan accent on hover/focus). An
@@ -2555,8 +2676,9 @@ automatically; no astro.config.mjs edit is needed per writeup.
   applies to the three redesigned categories and sudo keeps its hue/color (gaining only bold). Light
   vivid chroma is gamut-limited at `L 0.43` (warm/teal hues cannot be both dark and saturated on white),
   so light reads more muted than dark; this is the honest cost of the 7:1 floor on a paper bg.
-- **Status:** Adopted. Supersedes the color values in the 2026-06-14 command-highlighting entry below
-  (its mechanism + category structure still stand). Colors live in `custom.css` only (`oklch()` +
+- **Supersedes in part:** 2026-06-14 · Code-block command highlighting by semantic category, specifically its
+  color values. Its mechanism and category structure still stand, so it stays in force and is not archived.
+- **Status:** Adopted. Colors live in `custom.css` only (`oklch()` +
   `!important`); command-list additions (`cd`, `echo`, `ping` to inspect; `whatweb` to recon) are in
   `ec-priv-command.mjs`.
 
@@ -2572,7 +2694,9 @@ automatically; no astro.config.mjs edit is needed per writeup.
   gold not lime because lime is too close to the theme command-green; recon hue is theme-tuned
   (gold on ink, burnt-orange on paper) to clear the theme amber. All four are WCAG AA on the code bg
   and mutually distinct in both themes.
-- **Status:** Adopted and committed/pushed (superseded by the 2026-06-15 OKLCH entry above). Residual
+- **Status:** Adopted and committed/pushed. Its COLOR VALUES only are superseded by 2026-06-15 ·
+  Command-highlight palette rebuilt on a principled OKLCH basis (+ bold weight); the mechanism and category
+  structure recorded here still stand, which is why this entry is not archived. Residual
   risk: an output line whose first word is exactly a listed command can be mis-tagged (rare).
 
 ### 2026-06-14 · Platform-index duotone: platform color + universal cyan secondary
@@ -2676,9 +2800,11 @@ automatically; no astro.config.mjs edit is needed per writeup.
   path case-insensitively; a Linux/Cloudflare build would fail harder. Chose to match the
   existing on-disk Capitalized folders rather than rename them.
 - **Status:** Adopted. (Pipeline note: `notion_cleaner.py -d easy` must output into `Easy/`.)
-- **SUPERSEDED 2026-06-30:** difficulty directories are now LOWERCASE (`hackthebox/easy`), and
-  `astro.config.mjs` was restored to `hackthebox/easy`, as part of the flat-files + parallel `src/assets`
-  migration (see 2026-06-30 · Content images and writeup structure: flat files + parallel src/assets). The case-only folder rename was registered in git with `git mv`; with
+- **Partly superseded by:** 2026-06-30 · Content images and writeup structure: flat files + parallel
+  src/assets, specifically the Capitalized-directory decision recorded here. Difficulty directories are now
+  LOWERCASE (`hackthebox/easy`), and
+  `astro.config.mjs` was restored to `hackthebox/easy`, as part of that flat-files + parallel `src/assets`
+  migration. The case-only folder rename was registered in git with `git mv`; with
   `core.ignorecase=true` git otherwise misses it and would ship a split `Easy/` + `easy/` tree that drops
   a writeup from the sidebar on the case-sensitive Linux build. The case-sensitivity lesson still holds,
   now on the lowercase form: on-disk difficulty dirs and every `autogenerate.directory` must match exactly.

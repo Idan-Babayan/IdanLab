@@ -36,12 +36,20 @@ Read `DECISIONS-ARCHIVE.md` only when tracing a superseded decision's history. T
 
 ### The supersession check, part of every write
 
-Before writing an entry, check whether it supersedes an in-force decision. If it does, do the move in the SAME edit:
+Before writing an entry, check whether it supersedes an in-force decision. If it does, pick the form first, then do the move in the SAME edit.
+
+**`Supersedes:` is WHOLESALE.** The old entry is entirely replaced:
 
 1. Move the superseded entry from `DECISIONS.md` to `DECISIONS-ARCHIVE.md`.
 2. The moved entry gains, at its top: `Superseded by: <date> · <title>`.
 3. The new entry gains: `Supersedes: <date> · <title>`.
 4. Both references use date and title.
+
+**`Supersedes in part:` is PARTIAL.** Only some of the old entry is replaced. Name the specific bullet or claim that dies. The old entry STAYS LIVE in `DECISIONS.md`, is NOT archived, and gains NO `Superseded by:` line, because it is not superseded.
+
+**`Partly superseded by:` is the RECIPROCAL of `Supersedes in part:`,** and both halves of a partial pair should exist. The live entry gains `Partly superseded by: <date> · <title>`, naming what specifically is stale, placed AT THE AFFECTED BULLET rather than at the top: a reader meets the caveat where the stale claim is, instead of carrying a top-of-entry warning through the whole entry. It stays live and is NOT archived. Do not confuse it with `Superseded by:`, which appears ONLY on an archived entry and ONLY at its top.
+
+When unsure which applies, use `Supersedes in part:` and name what is replaced. The two errors are not symmetric: archiving a live entry silently removes content from the default context, while leaving a partly-stale entry live is merely untidy.
 
 Entries move at the moment of supersession, never on a periodic cleanup pass. Miss this and the superseded entry stays live while a newer one contradicts it, and the structure rots silently.
 
@@ -121,9 +129,8 @@ Flat `.mdx` at `src/content/docs/<platform>/<difficulty>/<slug>.mdx`. Reference 
 - Never create PRs unless I explicitly ask.
 - Never add "Co-Authored-By: Claude" or modify commit authors.
 - **Never rewrite git history: no rebase, amend, force push, or reset, unless I explicitly request it.**
-- **`main` is reached ONLY through a pull request** opened and merged by the owner. Never push `main` directly.
+- **`main` is reached by a COMMAND-LINE merge, never a pull request and never the GitHub web UI.** Run `git merge --no-ff dev` so the merge is an explicit two-parent commit. Never `--squash`: it would collapse the atomic commit history this project preserves on purpose. Two standing reasons, both permanent, not situational: (1) the account has "keep my email addresses private" enabled, so a web-UI merge authors with a `users.noreply.github.com` address, reintroducing a second identity into a history that was deliberately normalized to one; (2) a pull request mints a `refs/pull/N/head` that pins its entire ancestry permanently and is not removable by push, which is why a GitHub Support request is currently open. Pushing `main` still needs an explicit instruction. Reasoning: DECISIONS 2026-08-06 · Merges to `main` run from the command line, not through a pull request.
 - **Identity is `Idan-Babayan <contact@idanlab.dev>`** on every commit, merge, and other git operation. No other email address, ever.
-- **Merge into `main` from the command line, never the GitHub web UI.** The account has "keep my email addresses private" enabled, so a web-UI merge authors with a `users.noreply.github.com` address, reintroducing a second identity into a history that was deliberately normalized to one. It also mints a new pull request ref.
 - Before committing, confirm `git config user.email` is `contact@idanlab.dev` and `git config user.name` is `Idan-Babayan`.
 - If a task involves git, ask before doing anything.
 
