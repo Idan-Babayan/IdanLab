@@ -1051,10 +1051,11 @@
   fires once on first arrival and does NOT replay on revisit; arrow keys, node clicks and dots all revisit;
   no visible scrollbar with 1511px of path scrolling inside 318px on mobile and no page-level horizontal
   scroll. `npm run build` green (46 pages), no console errors, no new dependencies.
-- **Status:** Adopted (working tree; not committed). SUPERSEDED IN PART by the native-surface rework
-  below (same day): the interaction, geometry and structure recorded here stand, but the surfaces,
-  container background, and goal treatment described in the original build were reworked off invented
-  values onto the site's own fabric.
+- **Status:** Adopted (working tree; not committed).
+- **Partly superseded by:** 2026-07-19 · AttackPath reworked onto the site's native fabric (surfaces, prize
+  identity, computed escalation), specifically the surfaces, container background, and goal treatment
+  described in the original build, which were reworked off invented values onto the site's own fabric. The
+  interaction, geometry and structure recorded here stand, so this entry stays live and is not archived.
 
 ### 2026-07-19 · AttackPath reworked onto the site's native fabric (surfaces, prize identity, computed escalation)
 - **Decision:** the AttackPath surfaces are rebuilt entirely from the site's existing design language so it
@@ -1811,8 +1812,8 @@
 
 ### 2026-07-11 · Badge icon sourcing: split by consumption mechanism
 
-**SUPERSEDED IN PART 2026-07-17** (see the "polychrome/monochrome sourcing axis" entry above). Two
-premises here are now wrong: (1) the axis is polychrome vs monochrome, NOT logo vs glyph, so HackTheBox
+**Partly superseded by:** 2026-07-17 · Badge glyphs normalized to a 14px grid; HackTheBox to currentColor;
+polychrome/monochrome sourcing axis. Two premises here are now wrong: (1) the axis is polychrome vs monochrome, NOT logo vs glyph, so HackTheBox
 (a single-fill logo) is now an inlined `currentColor` glyph, leaving three native-colour platform `<img>`
 logos (VulnHub, PicoCTF, OverTheWire) plus Linux; (2) the `public/icons` copies do NOT serve "the sidebar
 CSS backgrounds" (the sidebar uses colored dots; its logo CSS is commented out), they serve
@@ -1836,10 +1837,11 @@ Forcing all assets to hashed files was rejected as a global change to solve a no
 The PicoCTF asset is an improvised raster-in-SVG (65 KB after SVGO); it is an accepted interim
 asset. A clean lightweight PicoCTF source is a Design follow-up.
 
-**SUPERSEDED 2026-07-11:** the PicoCTF badge is no longer a 65 KB raster-in-SVG interim asset. It was
-rebuilt as an 815-byte true-vector SVG and is design-final, closing that Design follow-up (see the
-"picoCTF icon rebuilt as a true vector" entry above, which also notes the new sub-4 KB file now inlines
-as a data URI rather than hashing).
+**Partly superseded by:** 2026-07-11 · picoCTF icon rebuilt as a true vector (815 B, replaces 65 KB
+raster-in-SVG), specifically the PicoCTF interim-asset paragraph directly above. The PicoCTF badge is no
+longer a 65 KB raster-in-SVG interim asset. It was rebuilt as an 815-byte true-vector SVG and is
+design-final, closing that Design follow-up. That entry also notes the new sub-4 KB file now inlines as a
+data URI rather than hashing.
 
 ### 2026-07-10 · Mobile TOC parity: gold flag entries + cyan current-h3 (CSS-only, additive)
 - **Decision:** Extend the two desktop "On this page" treatments to the mobile TOC dropdown
@@ -2440,8 +2442,10 @@ automatically; no astro.config.mjs edit is needed per writeup.
   tab (top) and code body (bottom) from `calc(--ec-brdRad + border-width)`, so `.frame .header/.title/pre`
   are zeroed too. Code blocks now read as crisp rectangles on paper as they already did on dark. The EC
   copy button keeps its own radius (3.2px); no toggle / button / badge / divider radius is touched.
-- **Light inline-code chip:** (SUPERSEDED same day by the unified inline-code object in 2026-06-29 · Inline code is its own object: a rounded red hairline chip (theme-tuned);
-  kept for history) the light `:not(pre) > code` fill (`#f3ebda`, near-invisible on the `#f2ede0` toggle
+- **Light inline-code chip.** **Partly superseded by:** 2026-06-29 · Inline code is its own object: a rounded
+  red hairline chip (theme-tuned), which replaced this light-only cream chip with one unified two-theme
+  object the same day. Kept for history, and the rest of this entry stays in force. The light
+  `:not(pre) > code` fill (`#f3ebda`, near-invisible on the `#f2ede0` toggle
   panel and borderless) became a defined cream chip `#f7f0dc` + a warm 1px border `rgba(95,74,38,0.32)`.
   The fill had to stay light to keep the red text (`#c92a2a`) at AA (4.8:1), so it was a touch lighter
   than both surfaces and the border carried the edge on the close-toned panel. Dark was left unchanged
@@ -2768,9 +2772,11 @@ automatically; no astro.config.mjs edit is needed per writeup.
   path case-insensitively; a Linux/Cloudflare build would fail harder. Chose to match the
   existing on-disk Capitalized folders rather than rename them.
 - **Status:** Adopted. (Pipeline note: `notion_cleaner.py -d easy` must output into `Easy/`.)
-- **SUPERSEDED 2026-06-30:** difficulty directories are now LOWERCASE (`hackthebox/easy`), and
-  `astro.config.mjs` was restored to `hackthebox/easy`, as part of the flat-files + parallel `src/assets`
-  migration (see 2026-06-30 · Content images and writeup structure: flat files + parallel src/assets). The case-only folder rename was registered in git with `git mv`; with
+- **Partly superseded by:** 2026-06-30 · Content images and writeup structure: flat files + parallel
+  src/assets, specifically the Capitalized-directory decision recorded here. Difficulty directories are now
+  LOWERCASE (`hackthebox/easy`), and
+  `astro.config.mjs` was restored to `hackthebox/easy`, as part of that flat-files + parallel `src/assets`
+  migration. The case-only folder rename was registered in git with `git mv`; with
   `core.ignorecase=true` git otherwise misses it and would ship a split `Easy/` + `easy/` tree that drops
   a writeup from the sidebar on the case-sensitive Linux build. The case-sensitivity lesson still holds,
   now on the lowercase form: on-disk difficulty dirs and every `autogenerate.directory` must match exactly.

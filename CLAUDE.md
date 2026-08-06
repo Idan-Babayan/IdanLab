@@ -47,6 +47,8 @@ Before writing an entry, check whether it supersedes an in-force decision. If it
 
 **`Supersedes in part:` is PARTIAL.** Only some of the old entry is replaced. Name the specific bullet or claim that dies. The old entry STAYS LIVE in `DECISIONS.md`, is NOT archived, and gains NO `Superseded by:` line, because it is not superseded.
 
+**`Partly superseded by:` is the RECIPROCAL of `Supersedes in part:`,** and both halves of a partial pair should exist. The live entry gains `Partly superseded by: <date> · <title>`, naming what specifically is stale, placed AT THE AFFECTED BULLET rather than at the top: a reader meets the caveat where the stale claim is, instead of carrying a top-of-entry warning through the whole entry. It stays live and is NOT archived. Do not confuse it with `Superseded by:`, which appears ONLY on an archived entry and ONLY at its top.
+
 When unsure which applies, use `Supersedes in part:` and name what is replaced. The two errors are not symmetric: archiving a live entry silently removes content from the default context, while leaving a partly-stale entry live is merely untidy.
 
 Entries move at the moment of supersession, never on a periodic cleanup pass. Miss this and the superseded entry stays live while a newer one contradicts it, and the structure rots silently.
