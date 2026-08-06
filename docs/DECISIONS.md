@@ -332,6 +332,10 @@
 - **The sequencing changes with it:** the outstanding clusters no longer accumulate on `dev` waiting for one
   release. Each ships as its own pull request into `main`. Holding them together was correct while the body
   face was half done and is not correct now that it is not.
+  **Partly superseded by:** 2026-08-06 · Merges to `main` run from the command line, not through a pull
+  request, specifically the pull-request mechanism named in this bullet, now a local `git merge --no-ff dev`
+  followed by a plain push. That clusters ship independently rather than accumulating for one release is
+  unchanged, and the rest of this entry stays in force.
 - **What ships knowingly unfixed, so nobody discovers these as surprises:**
   1. **The small-chrome type scale is still frozen at 16px-era ratios.** Eight declarations are round
      fractions of a 16px body (0.6, 0.625, 0.64, 0.688, 0.69, 0.70, 0.72, 0.75) and scatter against the
@@ -1058,6 +1062,10 @@
   interaction, geometry and structure recorded here stand, so this entry stays live and is not archived.
 
 ### 2026-07-19 · AttackPath reworked onto the site's native fabric (surfaces, prize identity, computed escalation)
+- **Supersedes in part:** 2026-07-19 · AttackPath: a guided, data-driven infographic for linear
+  privilege-escalation chains, specifically its surfaces, container background and goal treatment, which
+  were built on invented values. Its interaction, geometry and structure stand, so it stays live and is not
+  archived.
 - **Decision:** the AttackPath surfaces are rebuilt entirely from the site's existing design language so it
   reads as a rich REGION of the writeup, distinct only by behaviour, not a foreign widget in a separate
   skin. The approved interaction (guided Next-step, ascending path, escalating nodes, structural
@@ -1277,6 +1285,9 @@
 - **Status:** Adopted; committed as `4325533` to `dev` (not pushed). **CORRECTED 2026-07-17 (push):** rebased to `1fcf53e` and pushed when the busquedav2 testbed commit was dropped; shipped to main via PR #16 (see 2026-07-17 · busquedav2 testbed dropped before push; badge commits rebased + pushed; merged to main (PR #16), now in DECISIONS-ARCHIVE). custom.css only.
 
 ### 2026-07-17 · Badge glyphs normalized to a 14px grid; HackTheBox to currentColor; polychrome/monochrome sourcing axis
+- **Supersedes in part:** 2026-07-11 · Badge icon sourcing: split by consumption mechanism, specifically its
+  "logo vs glyph" sourcing axis and its public-copy rationale. That entry's consumption-mechanism split
+  stands, so it stays live and is not archived.
 - **Decision:** the WriteupMeta glyph set is normalized so every icon's larger ink dimension renders at ~14px
   in the 15px `.wm-ico` box, and HackTheBox moves from a native-colour `<img>` to an inline `currentColor`
   glyph. Geometry and colour plumbing only, never artwork (Standalone and Active Directory are slated for a
@@ -1763,6 +1774,8 @@
   mechanism is chosen.
 
 ### 2026-07-11 · picoCTF icon rebuilt as a true vector (815 B, replaces 65 KB raster-in-SVG)
+- **Supersedes in part:** 2026-07-11 · Badge icon sourcing: split by consumption mechanism, specifically its
+  PicoCTF interim-asset paragraph. The rest of that entry stays in force and it is not archived.
 - **Decision:** both copies of the picoCTF badge (`public/icons/picoctf.svg` and
   `src/assets/icons/picoctf.svg`) are replaced by a hand-constructed 815-byte true-vector SVG:
   4 elements (disc `<circle>`, shadow `<path>`, letterform `<path>`, dot `<circle>`), flat colors
@@ -2262,6 +2275,10 @@ ever wanted later, it would require adding static.cloudflareinsights.com to scri
   Liberation so the shift-free swap also applies on Linux, then the generic.
 - **Preloads:** only jetbrains-mono-400 and syne-800 (the dominant above-the-fold body/code and display
   faces), crossorigin. font-display: swap on every real face.
+  **Partly superseded by:** 2026-07-07 · Font `<link rel=preload>` hints removed site-wide (Firefox
+  "preloaded but not used"), specifically this Preloads bullet: both hints were removed site-wide. The
+  `@font-face` contract, the subsetting rationale, the metric-matched fallbacks and `font-display: swap`
+  all stay in force, so this entry is not archived.
 - **Verified:** zero fonts.googleapis/gstatic references (source + dist), both themes render identically,
   the Principle coda now uses a REAL JetBrains Mono italic, no tofu on terminal glyphs, build green
   (45 pages). Supersedes the "loaded from Google Fonts" note in CORE_SPEC and the self-host ROADMAP item.
@@ -2356,8 +2373,14 @@ ever wanted later, it would require adding static.cloudflareinsights.com to scri
 
 ### 2026-06-30 · Content images and writeup structure: flat files + parallel src/assets (supersedes colocated index.mdx)
 
-Supersedes: the prior decision to colocate writeup images next to each writeup
-and name each writeup index.mdx.
+Replaces an earlier undocumented convention: writeup images were colocated next to
+each writeup and each writeup was named index.mdx. That convention predates this log
+and has no entry of its own, so there is nothing to archive.
+
+Supersedes in part: 2026-06-01 · Difficulty dirs are Capitalized; sidebar config
+matches casing exactly, specifically its Capitalized-directory decision. That entry's
+case-sensitivity rule still holds on the lowercase form, so it stays live and is not
+archived.
 
 Decision: Writeups are flat .mdx files under src/content/docs (one file per
 writeup, no per-writeup folder). Their images live in a parallel tree under
@@ -2427,7 +2450,7 @@ automatically; no astro.config.mjs edit is needed per writeup.
   themes and drops the toggle-title special case. The rest of that entry stays in force and it is not
   archived.
 - **Status:** Adopted + shipped (custom.css only; `npm run build` green, 44 pages).
-- **SUPERSEDED 2026-06-30 (surface only):** the chip is now NEUTRAL and the red identity lives only in
+- **Amended 2026-06-30 (surface only), no separate entry:** the chip is now NEUTRAL and the red identity lives only in
   the text. Structure (5px radius, 1px border, 0.12em 0.4em padding, 0.875em, red mono text) and the
   no-special-casing behavior are unchanged; only the fill + border moved off red so neutral tokens
   (filenames, ports) never broadcast false urgency. New values: DARK fill `rgba(255,255,255,0.055)` +
@@ -2569,6 +2592,9 @@ automatically; no astro.config.mjs edit is needed per writeup.
   `.task-title`, with a flag-SVG mask icon as `::before`), the reveal toggle (`.toggle-flag`, refactored
   to the token), and the right TOC entry (muted gold at rest for scannability, full gold on hover/current;
   other TOC entries keep the green `--sl-color-text-accent`). custom.css only; no glow or motion.
+  **Partly superseded by:** 2026-06-27 · FlagCapture "Decrypt to Capture" replaces the flag reveal toggle,
+  specifically the `.toggle-flag` reveal named here. The gold heading and the gold TOC entry are unchanged,
+  so this entry stays in force and is not archived.
 - **Why:** the concept previously read as three different colors (brown heading, gold toggle, green TOC);
   one gold makes it scan as the writeup's prize.
 - **Dependency / interim:** flag headings have no dedicated class (they reuse `.task-title`, shared with
@@ -2607,7 +2633,9 @@ automatically; no astro.config.mjs edit is needed per writeup.
   override that renders `<Default />` then `<ToggleAll />` (official API, no fork; wired in
   `astro.config.mjs` `components`). It targets `.sl-markdown-content details.toggle:not(.toggle-flag)`
   (Toggle gained a stable `.toggle` class), so it never touches sidebar/nav/code or spoiler flags.
-  Self-hides when a page has no toggles (raised 2026-06-28 to: fewer than two toggles, see top entry);
+  Self-hides when a page has no toggles (**partly superseded by:** 2026-06-28 · ToggleAll hides below two
+  toggles (single-toggle pages too), which raised the threshold to fewer than two toggles; the rest of this
+  entry stays in force);
   desktop-only (`sl-hidden lg:sl-block`; the right sidebar is
   `position:fixed`, so it follows scroll). Per-page model (a cross-page global was rejected).
 - **Look:** the original bordered pill (neutral gray text + border, cyan accent on hover/focus). An
