@@ -6,6 +6,46 @@
 
 ---
 
+### 2026-08-06 · Supersession has two forms: `Supersedes:` archives, `Supersedes in part:` does not
+- **Decision:** the supersession protocol distinguishes two markers. `Supersedes: <date> · <title>` means
+  WHOLESALE: the old entry is entirely replaced, gains `Superseded by: <date> · <title>`, and moves to
+  `DECISIONS-ARCHIVE.md` in the same edit. `Supersedes in part: <date> · <title>` means only some of the old
+  entry is replaced; the new entry NAMES the bullet or claim that dies, and the old entry stays live in
+  `DECISIONS.md`, is not archived, and gains no `Superseded by:` line, because it is not superseded.
+- **When unsure, the partial form is correct, because the two errors are not symmetric.** Archiving a
+  still-live entry removes its surviving content from the default context set with nothing signalling the
+  loss, so it gets re-litigated or silently violated. Retaining a partly-stale entry costs only tidiness,
+  and it is self-correcting: the next session working that area sees both and resolves it. Prefer the
+  recoverable error.
+- **This EXTENDS rather than replaces 2026-08-01 · DECISIONS splits by STATUS, and entries move at the
+  moment of supersession.** That entry already found the category, counting 26 partially superseded entries
+  across 925 lines where a live constraint and a dead mechanism share one entry, and already stated the
+  asymmetry: an over-inclusive live file is a correct outcome, an over-inclusive archive is not. What was
+  missing is NOTATION. The discipline lived in DECISIONS while `CLAUDE.md`, the document a session actually
+  loads, described only the wholesale case. That mismatch is the real gap, and it is what this closes.
+- **Partial supersession is not new here, and the correction strengthens the case.** 2026-08-06 · Merges to
+  `main` run from the command line, not through a pull request was the first to use the `Supersedes in part:`
+  LABEL, not the first partial supersession. The log already carried four incompatible ad hoc spellings:
+  `Supersedes:` naming one bullet (2026-07-07 · Font `<link rel=preload>` hints removed site-wide (Firefox
+  "preloaded but not used")); "supersedes a line in" (2026-07-17 · Code-block focus ring wraps the whole EC
+  frame, not just the `<pre>`, and 2026-07-17 · Toggle focus ring aligns to its tab (re-pairs Starlight's
+  orphaned summary margin)); "NOT reverted, only partly superseded" (2026-07-27 · The recon rail, in three
+  attempts: grid on the list, two components, then a remark transform); and a bare `Supersedes` naming a
+  single color (2026-06-29 · Inline code is its own object: a rounded red hairline chip (theme-tuned)). Four
+  spellings for one relationship is why the rule could not be applied by pattern matching.
+- **The hazard is live in the file right now, not hypothetical.** 2026-07-07 · Font `<link rel=preload>`
+  hints removed site-wide (Firefox "preloaded but not used") carries a bare `Supersedes:` pointing at
+  2026-07-04 · Self-hosted fonts (subset WOFF2 + metric-matched fallbacks), Google Fonts removed, while
+  actually killing only its "Preloads" bullet. That target is still live and carries the whole self-hosted
+  font architecture: the `@font-face` contract, the subsetting rationale, and the metric-matched fallbacks.
+  A session applying the old protocol literally would archive all of it to retire one bullet.
+- **Fixed by rule, not by rewriting the past.** No archive move is performed and no existing marker is
+  relabelled. Reclassifying prior entries is a separate pass with its own judgement calls, and doing it
+  incidentally here would be the exact over-reach this entry argues against.
+- **Status:** Adopted. Recorded in `CLAUDE.md` under the supersession check. First exercised by 2026-08-06 ·
+  Merges to `main` run from the command line, not through a pull request, which used the partial form and
+  deliberately left 2026-07-27 · The release hold is lifted and `dev` ships to production live.
+
 ### 2026-08-06 · Merges to `main` run from the command line, not through a pull request
 - **Supersedes in part:** 2026-07-27 · The release hold is lifted and `dev` ships to production. Only that
   entry's sequencing bullet ("Each ships as its own pull request into `main`") is replaced here. Its core

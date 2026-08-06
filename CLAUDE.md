@@ -36,12 +36,18 @@ Read `DECISIONS-ARCHIVE.md` only when tracing a superseded decision's history. T
 
 ### The supersession check, part of every write
 
-Before writing an entry, check whether it supersedes an in-force decision. If it does, do the move in the SAME edit:
+Before writing an entry, check whether it supersedes an in-force decision. If it does, pick the form first, then do the move in the SAME edit.
+
+**`Supersedes:` is WHOLESALE.** The old entry is entirely replaced:
 
 1. Move the superseded entry from `DECISIONS.md` to `DECISIONS-ARCHIVE.md`.
 2. The moved entry gains, at its top: `Superseded by: <date> · <title>`.
 3. The new entry gains: `Supersedes: <date> · <title>`.
 4. Both references use date and title.
+
+**`Supersedes in part:` is PARTIAL.** Only some of the old entry is replaced. Name the specific bullet or claim that dies. The old entry STAYS LIVE in `DECISIONS.md`, is NOT archived, and gains NO `Superseded by:` line, because it is not superseded.
+
+When unsure which applies, use `Supersedes in part:` and name what is replaced. The two errors are not symmetric: archiving a live entry silently removes content from the default context, while leaving a partly-stale entry live is merely untidy.
 
 Entries move at the moment of supersession, never on a periodic cleanup pass. Miss this and the superseded entry stays live while a newer one contradicts it, and the structure rots silently.
 
