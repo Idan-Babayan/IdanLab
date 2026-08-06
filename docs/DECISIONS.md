@@ -1355,10 +1355,9 @@
   header plus pre exactly (same top as the header, same bottom as the pre, verified).
 - **`:has()` not `:focus-within`:** `:focus-within` also fires on pointer clicks. `:has(> pre:focus-visible)`
   is the precise form and keeps the keyboard-only contract.
-- **Supersedes in part:** 2026-07-13 · Site-wide focus-ring token (--focus-ring) on content pages: one color,
-  identity where it exists, lime default, specifically its "Code blocks have no `tabindex`, so they are
-  untouched" claim. The rest of that entry stays in force and it is not archived.
-- **Premise correction:** that entry recorded "Code blocks
+- **Premise correction, not a supersession:** the claim was wrong when written, so 2026-07-13 · Site-wide
+  focus-ring token (--focus-ring) on content pages: one color, identity where it exists, lime default carries
+  a CORRECTED note rather than a partial-supersession marker. It recorded "Code blocks
   have no `tabindex`, so they are untouched." That is FALSE. It is true of the static HTML and true if the
   DOM is inspected too early, which is how it was missed: EC's module runs on a 250ms-debounced
   ResizeObserver plus `requestIdleCallback`, so the attribute appears after load and re-evaluates on resize.
@@ -1410,10 +1409,9 @@
   instead of one for an exception). **Lesson recorded: when a cause is traced to a SHARED rule, the blast
   radius is every consumer of that rule, and the report must say so even if the brief scopes the fix
   narrower.**
-- **Supersedes in part:** 2026-07-13 · Focus ring extended to TOC entries + prose links; spoiler-toggle
-  already correct; light flag gold strengthened, specifically its conclusion that the spoiler toggle needed
-  no change. The rest of that entry stays in force and it is not archived.
-- **Premise correction:** that entry concluded the spoiler-toggle
+- **Premise correction, not a supersession:** the conclusion was wrong when written, so 2026-07-13 · Focus
+  ring extended to TOC entries + prose links; spoiler-toggle already correct; light flag gold strengthened
+  carries a CORRECTED note rather than a partial-supersession marker. It concluded the spoiler-toggle
   "ALREADY rings the lime default ... which is exactly the requested end state. NO change was needed or made."
   That was true of the ring's COLOR only. Its GEOMETRY was wrong the whole time (8px off-center), which a
   color-only check could not see.
@@ -2694,9 +2692,10 @@ automatically; no astro.config.mjs edit is needed per writeup.
   gold not lime because lime is too close to the theme command-green; recon hue is theme-tuned
   (gold on ink, burnt-orange on paper) to clear the theme amber. All four are WCAG AA on the code bg
   and mutually distinct in both themes.
-- **Status:** Adopted and committed/pushed. Its COLOR VALUES only are superseded by 2026-06-15 ·
-  Command-highlight palette rebuilt on a principled OKLCH basis (+ bold weight); the mechanism and category
-  structure recorded here still stand, which is why this entry is not archived. Residual
+- **Partly superseded by:** 2026-06-15 · Command-highlight palette rebuilt on a principled OKLCH basis
+  (+ bold weight), specifically the color values recorded here. The mechanism and category structure still
+  stand, so this entry stays in force and is not archived.
+- **Status:** Adopted and committed/pushed. Residual
   risk: an output line whose first word is exactly a listed command can be mis-tagged (rare).
 
 ### 2026-06-14 · Platform-index duotone: platform color + universal cyan secondary
