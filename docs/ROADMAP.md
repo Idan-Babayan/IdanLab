@@ -12,8 +12,8 @@
   shipped to `main`.** The hold existed so production would not serve a half-refitted body face. That is
   satisfied, because the prose foundation is locked and derived rather than eye-called, and everything
   still open below is chrome or component internals rather than the body face. **The clusters below are
-  now POST-MERGE work and each ships as its own pull request into `main`**, rather than accumulating on
-  `dev` waiting for one release. Nothing here blocks a deploy any more; what ships knowingly unfixed is
+  now POST-MERGE work and each ships to `main` on its own**, by a `git merge --no-ff dev` run locally
+  rather than a pull request, instead of accumulating on `dev` waiting for one release. Nothing here blocks a deploy any more; what ships knowingly unfixed is
   listed in DECISIONS 2026-07-27. See DECISIONS 2026-07-26 for the original gate and why splitting the
   refactor from the retune was rejected at the time.
 
@@ -51,7 +51,8 @@
      same gutter as a wide one is a taste call, and it is a one-token change. See DECISIONS 2026-07-27.
 
   Record each settled value in DECISIONS as its cluster lands, and delete the dial from this item once it
-  is settled. Each cluster is its own pull request now, so there is no longer one PR to hold everything back.
+  is settled. Each cluster merges to `main` on its own now, so there is no longer one release holding
+  everything back.
 
 - [DESIGN/ENG] Three-column layout: the REAL-BROWSER VERIFICATION PASS has not run. The layout itself
   shipped and is live; only the visual confirmation remains. **Do it inside the Geist retune session

@@ -27,12 +27,15 @@
 - **Repo:** `github.com/Idan-Babayan/IdanLab` (public, mixed case). Push to `main` → Cloudflare
   Pages auto-deploys. Also serves at `idanlab.pages.dev`. `astro.config.mjs` sets
   `site: 'https://idanlab.dev'` (drives the sitemap + canonical URLs). Branches: only `main`
-  and `dev`; work lands on `dev`, then a PR into `main`.
-- **RELEASE STATE: no release hold. `dev` ships to `main`, and each cluster ships as its own pull
-  request** rather than accumulating for one release. **`main` is reached only through a pull request,
-  and force pushes, rebases, amends, resets and history rewrites are forbidden.** Reasoning for the
-  2026-07-26 hold and its lift: DECISIONS 2026-07-27 · The release hold is lifted and `dev` ships to
-  production.
+  and `dev`; work lands on `dev`, then reaches `main` by a command-line merge.
+- **RELEASE STATE: no release hold. `dev` ships to `main`, and each cluster ships independently as it
+  lands** rather than accumulating for one release. **`main` is reached ONLY by `git merge --no-ff dev` run
+  locally followed by a plain push, never a pull request and never the GitHub web UI, and force pushes,
+  rebases, amends, resets and history rewrites are forbidden.** Never `--squash`, which would collapse the
+  atomic commit history. A pull request mints a permanent `refs/pull/N/head` and the web UI authors under a
+  second identity, which is why both are excluded: DECISIONS 2026-08-06 · Merges to `main` run from the
+  command line, not through a pull request. Reasoning for the 2026-07-26 hold and its lift: DECISIONS
+  2026-07-27 · The release hold is lifted and `dev` ships to production.
 - **robots.txt:** managed in-repo at `public/robots.txt` (served at `/robots.txt`). The in-repo file
   holds the easter-egg breadcrumb comment + a `Sitemap:` line. On deploy, Cloudflare composes its own
   managed block (the Content-Signals header plus the managed bot disallow list: Amazonbot,
