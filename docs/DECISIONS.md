@@ -1343,7 +1343,10 @@
   header plus pre exactly (same top as the header, same bottom as the pre, verified).
 - **`:has()` not `:focus-within`:** `:focus-within` also fires on pointer clicks. `:has(> pre:focus-visible)`
   is the precise form and keeps the keyboard-only contract.
-- **Premise correction (supersedes a line in the 2026-07-13 token entry):** that entry recorded "Code blocks
+- **Supersedes in part:** 2026-07-13 · Site-wide focus-ring token (--focus-ring) on content pages: one color,
+  identity where it exists, lime default, specifically its "Code blocks have no `tabindex`, so they are
+  untouched" claim. The rest of that entry stays in force and it is not archived.
+- **Premise correction:** that entry recorded "Code blocks
   have no `tabindex`, so they are untouched." That is FALSE. It is true of the static HTML and true if the
   DOM is inspected too early, which is how it was missed: EC's module runs on a 250ms-debounced
   ResizeObserver plus `requestIdleCallback`, so the attribute appears after load and re-evaluates on resize.
@@ -1395,7 +1398,10 @@
   instead of one for an exception). **Lesson recorded: when a cause is traced to a SHARED rule, the blast
   radius is every consumer of that rule, and the report must say so even if the brief scopes the fix
   narrower.**
-- **Premise correction (supersedes the 2026-07-13 TOC/prose entry):** that entry concluded the spoiler-toggle
+- **Supersedes in part:** 2026-07-13 · Focus ring extended to TOC entries + prose links; spoiler-toggle
+  already correct; light flag gold strengthened, specifically its conclusion that the spoiler toggle needed
+  no change. The rest of that entry stays in force and it is not archived.
+- **Premise correction:** that entry concluded the spoiler-toggle
   "ALREADY rings the lime default ... which is exactly the requested end state. NO change was needed or made."
   That was true of the ring's COLOR only. Its GEOMETRY was wrong the whole time (8px off-center), which a
   color-only check could not see.
@@ -1921,9 +1927,11 @@ as a data URI rather than hashing).
   two marketing pages and via Starlight `customCss`) with metric-matched size-adjust fallbacks and
   `font-display: swap`, so first paint stays shift-free with no preload. `@font-face`, the fallback
   declarations, and `public/fonts/` were not touched.
-- **Supersedes:** the "Preloads" bullet of the 2026-07-04 self-hosted-fonts entry, and the 2026-07-05
-  crossorigin correction (which had switched these preloads from `crossorigin="true"` to bare
-  `crossorigin`). With the preloads gone, the crossorigin value is moot.
+- **Supersedes in part:** 2026-07-04 · Self-hosted fonts (subset WOFF2 + metric-matched fallbacks), Google
+  Fonts removed, specifically its "Preloads" bullet. Everything else in that entry stays IN FORCE and it is
+  NOT archived: the `@font-face` contract, the subsetting rationale, and the metric-matched fallbacks. Also
+  retires the 2026-07-05 crossorigin correction (which had switched these preloads from `crossorigin="true"`
+  to bare `crossorigin`). With the preloads gone, the crossorigin value is moot.
 - **Verified:** `npm run build` green; zero `<link rel="preload" ... fonts/>` anywhere in `dist/`; the
   reading-progress head script is byte-for-byte unchanged; theme-orthogonal (identical hints in dark and
   light), so both themes are unaffected.
@@ -2412,8 +2420,10 @@ automatically; no astro.config.mjs edit is needed per writeup.
 - **Colors:** DARK text `#ff9b9b`, fill `rgba(255,120,120,0.07)`, border `rgba(255,120,120,0.26)`. LIGHT
   text `#b03326`, fill `#f3e4d6`, border `rgba(150,74,38,0.32)`. Red text stays AA on its own fill (dark
   9.2:1, light 5.0:1, both verified on the live build in a real writeup).
-- **Supersedes** the light-only cream chip (`#f7f0dc`) from the polish entry below: this unifies both
-  themes and drops the toggle-title special case.
+- **Supersedes in part:** 2026-06-29 · Light/code/toggle polish: sharp code frames, light inline-code chip,
+  softer copy toast, tighter toggle gap, specifically its light-only cream chip (`#f7f0dc`). This unifies both
+  themes and drops the toggle-title special case. The rest of that entry stays in force and it is not
+  archived.
 - **Status:** Adopted + shipped (custom.css only; `npm run build` green, 44 pages).
 - **SUPERSEDED 2026-06-30 (surface only):** the chip is now NEUTRAL and the red identity lives only in
   the text. Structure (5px radius, 1px border, 0.12em 0.4em padding, 0.875em, red mono text) and the
@@ -2475,8 +2485,10 @@ automatically; no astro.config.mjs edit is needed per writeup.
   hidden), acting on the same `.sl-markdown-content details.toggle:not(.toggle-flag)` set. A bulk
   expand/collapse adds nothing over a single lone toggle, so single-toggle pages (every current
   single-toggle Bandit level) now behave like the zero-toggle pages and drop the control. It is count-driven,
-  so it clears automatically with no per-writeup edits. Supersedes the "hides only when zero toggles" clause
-  in the 2026-06-20 entry below.
+  so it clears automatically with no per-writeup edits.
+- **Supersedes in part:** 2026-06-20 · ToggleAll control: sidebar placement, scroll anchoring, native-anchor
+  fix, specifically its "self-hides when a page has no toggles" threshold. The rest of that entry stays in
+  force and it is not archived.
 - **Rationale:** the control is a bulk affordance; with one toggle it is redundant with the toggle itself and
   just adds chrome to the TOC column.
 - **Verified:** live build at 1440w. Single-toggle `bandit/0-1` (control gone), multi-toggle `bandit/16-17`
@@ -2525,9 +2537,10 @@ automatically; no astro.config.mjs edit is needed per writeup.
 - **Status:** Adopted + shipped. Built and verified live (both themes, reduced-motion, copy) on the
   `busquedav2.mdx` testbed; owner then migrated `busqueda.mdx`'s User/Root flags to `<FlagCapture>` and
   deleted `busquedav2.mdx`. Shipped in PR #5 (`dev` -> `main`), `npm run build` green (44 pages).
-  Supersedes the `.toggle-flag` reveal from the 2026-06-20 flag-loot entry (the heading + gold TOC from
-  that entry are unchanged). The Bandit "Reveal Password" toggles are a candidate for the same swap (see
-  ROADMAP).
+  The Bandit "Reveal Password" toggles are a candidate for the same swap (see ROADMAP).
+- **Supersedes in part:** 2026-06-20 · Flag loot gold: one signal for User/Root Flag (heading, toggle, TOC),
+  specifically its `.toggle-flag` reveal. The gold heading and the gold TOC entry from that entry are
+  unchanged, so it stays in force and is not archived.
 
 ### 2026-06-26 · Truncate embedded private keys in writeups (GitHub push protection)
 - **Decision:** Writeups whose level reward is an SSH/RSA private key (OverTheWire Bandit
@@ -2631,8 +2644,9 @@ automatically; no astro.config.mjs edit is needed per writeup.
   applies to the three redesigned categories and sudo keeps its hue/color (gaining only bold). Light
   vivid chroma is gamut-limited at `L 0.43` (warm/teal hues cannot be both dark and saturated on white),
   so light reads more muted than dark; this is the honest cost of the 7:1 floor on a paper bg.
-- **Status:** Adopted. Supersedes the color values in the 2026-06-14 command-highlighting entry below
-  (its mechanism + category structure still stand). Colors live in `custom.css` only (`oklch()` +
+- **Supersedes in part:** 2026-06-14 · Code-block command highlighting by semantic category, specifically its
+  color values. Its mechanism and category structure still stand, so it stays in force and is not archived.
+- **Status:** Adopted. Colors live in `custom.css` only (`oklch()` +
   `!important`); command-list additions (`cd`, `echo`, `ping` to inspect; `whatweb` to recon) are in
   `ec-priv-command.mjs`.
 
@@ -2648,7 +2662,9 @@ automatically; no astro.config.mjs edit is needed per writeup.
   gold not lime because lime is too close to the theme command-green; recon hue is theme-tuned
   (gold on ink, burnt-orange on paper) to clear the theme amber. All four are WCAG AA on the code bg
   and mutually distinct in both themes.
-- **Status:** Adopted and committed/pushed (superseded by the 2026-06-15 OKLCH entry above). Residual
+- **Status:** Adopted and committed/pushed. Its COLOR VALUES only are superseded by 2026-06-15 ·
+  Command-highlight palette rebuilt on a principled OKLCH basis (+ bold weight); the mechanism and category
+  structure recorded here still stand, which is why this entry is not archived. Residual
   risk: an output line whose first word is exactly a listed command can be mis-tagged (rare).
 
 ### 2026-06-14 · Platform-index duotone: platform color + universal cyan secondary
