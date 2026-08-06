@@ -121,9 +121,8 @@ Flat `.mdx` at `src/content/docs/<platform>/<difficulty>/<slug>.mdx`. Reference 
 - Never create PRs unless I explicitly ask.
 - Never add "Co-Authored-By: Claude" or modify commit authors.
 - **Never rewrite git history: no rebase, amend, force push, or reset, unless I explicitly request it.**
-- **`main` is reached ONLY through a pull request** opened and merged by the owner. Never push `main` directly.
+- **`main` is reached by a COMMAND-LINE merge, never a pull request and never the GitHub web UI.** Run `git merge --no-ff dev` so the merge is an explicit two-parent commit. Never `--squash`: it would collapse the atomic commit history this project preserves on purpose. Two standing reasons, both permanent, not situational: (1) the account has "keep my email addresses private" enabled, so a web-UI merge authors with a `users.noreply.github.com` address, reintroducing a second identity into a history that was deliberately normalized to one; (2) a pull request mints a `refs/pull/N/head` that pins its entire ancestry permanently and is not removable by push, which is why a GitHub Support request is currently open. Pushing `main` still needs an explicit instruction. Reasoning: DECISIONS 2026-08-06 · Merges to `main` run from the command line, not through a pull request.
 - **Identity is `Idan-Babayan <contact@idanlab.dev>`** on every commit, merge, and other git operation. No other email address, ever.
-- **Merge into `main` from the command line, never the GitHub web UI.** The account has "keep my email addresses private" enabled, so a web-UI merge authors with a `users.noreply.github.com` address, reintroducing a second identity into a history that was deliberately normalized to one. It also mints a new pull request ref.
 - Before committing, confirm `git config user.email` is `contact@idanlab.dev` and `git config user.name` is `Idan-Babayan`.
 - If a task involves git, ask before doing anything.
 

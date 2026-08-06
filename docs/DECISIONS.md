@@ -6,6 +6,42 @@
 
 ---
 
+### 2026-08-06 · Merges to `main` run from the command line, not through a pull request
+- **Supersedes in part:** 2026-07-27 · The release hold is lifted and `dev` ships to production. Only that
+  entry's sequencing bullet ("Each ships as its own pull request into `main`") is replaced here. Its core
+  decision, the lift of the hold and the list of what shipped knowingly unfixed, stands unchanged, so the
+  entry is deliberately NOT archived. Whether it leaves the live file is the owner's call.
+- **Decision:** `dev` reaches `main` by `git merge --no-ff dev` run locally, followed by a plain push. No
+  pull request, and never the GitHub web UI. `--no-ff` keeps an explicit two-parent merge commit. `--squash`
+  is forbidden, because collapsing a cluster into one commit destroys the atomic history this project
+  preserves on purpose.
+- **What this fixes in the documentation itself:** `CLAUDE.md` carried "`main` is reached ONLY through a
+  pull request" two bullets above a newer rule saying to merge from the command line. Those contradicted
+  each other while sitting adjacent, which is precisely the drift the four-document architecture exists to
+  prevent. The two are now one rule.
+- **Reason one, identity.** The account has "keep my email addresses private" enabled, so a merge performed
+  in the web UI authors as `users.noreply.github.com`. That reintroduces a second author identity into a
+  history that was deliberately normalized to exactly one. See 2026-08-01 · One identity across all history:
+  the repository is rewritten and force-pushed.
+- **Reason two, refs that cannot be retracted.** Opening a pull request mints a server-managed
+  `refs/pull/N/head` that pins its entire ancestry permanently. It is not writable by push, so nothing done
+  locally retracts it. A pull request opened today would pin today's ancestry forever.
+- **The second reason is demonstrated, not predicted.** A GitHub Support request is currently open to remove
+  the existing `refs/pull/N/head` refs, which still hold pre-rewrite commits carrying the removed address.
+  The same audit found 17 commits reachable from NO ref at all, orphaned by the rewrite yet still served
+  publicly by the remote. Unreferenced is not unreachable, and a pull request ref makes that condition
+  permanent by design rather than by accident. Opening a new pull request while that request is mid-flight
+  would also add a ref to the very set being swept.
+- **Both reasons are standing, not situational.** Neither expires when the Support request resolves: privacy
+  mode stays on, and PR refs stay unremovable by push. If Support declines, nothing changes either.
+- **What is unchanged:** force pushes, rebases, amends and resets remain forbidden absent an explicit owner
+  request. Pushing `main` still requires an explicit instruction; the 2026-07-25 delegated authority covers
+  `dev` only.
+- **Status:** Adopted. Practiced on the two most recent merges to `main`, both run from the command line with
+  `--no-ff`, each producing a two-parent merge commit authored `Idan-Babayan <contact@idanlab.dev>`.
+  Recorded in `CLAUDE.md` under Git policy. `docs/CORE_SPEC.md` still carries the superseded pull-request
+  wording in its RELEASE STATE bullet; that is flagged for the owner, not edited here.
+
 ### 2026-08-01 · Four documents, four jobs: DECISIONS leaves the default context set
 - **Decision:** the project runs on four documents with four jobs. `CLAUDE.md` is the ROUTER (always
   loaded: how to operate, what to load, what not to load). `docs/CORE_SPEC.md` is CURRENT STATE (always
