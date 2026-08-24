@@ -13,6 +13,7 @@ import '../styles/fonts.css';
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>About | Idan.Lab</title>
   <meta name="description" content="Idan Babayan: cybersecurity student, CTF player, and offensive security enthusiast documenting the journey from recon to root." />
+  <meta name="author" content="Idan Babayan" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="canonical" href="https://idanlab.dev/about/" />
   <!-- Social cards. Standalone pages own their <head>, so unlike the Starlight docs (which get these
@@ -20,10 +21,19 @@ import '../styles/fonts.css';
        absolute URL because crawlers do not resolve relative paths. -->
   <meta property="og:type" content="profile" />
   <meta property="og:site_name" content="Idan.Lab" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="profile:first_name" content="Idan" />
+  <meta property="profile:last_name" content="Babayan" />
   <meta property="og:url" content="https://idanlab.dev/about/" />
   <meta property="og:title" content="About | Idan.Lab" />
   <meta property="og:description" content="Idan Babayan: cybersecurity student, CTF player, and offensive security enthusiast documenting the journey from recon to root." />
-  <meta property="og:image" content="https://idanlab.dev/og.png" />
+  <!-- name="image" duplicates og:image because LinkedIn's own documented example carries
+       both attributes on one tag. Declared dimensions let a scraper lay the card out
+       without fetching the file first. -->
+  <meta name="image" property="og:image" content="https://idanlab.dev/og.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Idan.Lab, a lab notebook of CTF writeups and security notes" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="About | Idan.Lab" />
   <meta name="twitter:description" content="Idan Babayan: cybersecurity student, CTF player, and offensive security enthusiast documenting the journey from recon to root." />
