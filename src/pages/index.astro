@@ -4,29 +4,42 @@
 // Owns the "/" route.
 // Self-hosted fonts (@font-face + metric-matched fallbacks) shared with the Starlight docs.
 import '../styles/fonts.css';
+
+// Head strings live here, not inline in the markup, so Astro escapes them on output. Literal HTML
+// written in an .astro template passes through VERBATIM: the title's "&" stayed a bare ampersand,
+// which is legal HTML5 but aborts a strict parser mid-head. LinkedIn's scraper is one, and it quit
+// at og:title and never reached og:image, so the landing page shared with no card while /about and
+// the Starlight pages (same og:image) were fine, because neither has an "&". Bound as {TITLE} it
+// emits &#38;. Keep these as expressions; do not re-inline the raw text.
+const TITLE = 'Idan.Lab | CTF Writeups & Security Notes';
+const DESCRIPTION =
+  'Curiosity is my exploit. A living lab notebook of machine walkthroughs and capture-the-flag solutions by Idan Babayan.';
+const PAGE_URL = 'https://idanlab.dev/';
+const OG_IMAGE = 'https://idanlab.dev/og.png';
 ---
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Idan.Lab | CTF Writeups & Security Notes</title>
-  <meta name="description" content="Curiosity is my exploit. A living lab notebook of machine walkthroughs and capture-the-flag solutions by Idan Babayan." />
+  <title>{TITLE}</title>
+  <meta name="description" content={DESCRIPTION} />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-  <link rel="canonical" href="https://idanlab.dev/" />
+  <link rel="canonical" href={PAGE_URL} />
   <!-- Social cards. Standalone pages own their <head>, so unlike the Starlight docs (which get these
        from src/components/overrides/Head.astro) they are written out in full here. og:image is an
-       absolute URL because crawlers do not resolve relative paths. -->
+       absolute URL because crawlers do not resolve relative paths. Values are bound as expressions
+       so Astro escapes them; see the note on TITLE in the frontmatter. -->
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Idan.Lab" />
-  <meta property="og:url" content="https://idanlab.dev/" />
-  <meta property="og:title" content="Idan.Lab | CTF Writeups & Security Notes" />
-  <meta property="og:description" content="Curiosity is my exploit. A living lab notebook of machine walkthroughs and capture-the-flag solutions by Idan Babayan." />
-  <meta property="og:image" content="https://idanlab.dev/og.png" />
+  <meta property="og:url" content={PAGE_URL} />
+  <meta property="og:title" content={TITLE} />
+  <meta property="og:description" content={DESCRIPTION} />
+  <meta property="og:image" content={OG_IMAGE} />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Idan.Lab | CTF Writeups & Security Notes" />
-  <meta name="twitter:description" content="Curiosity is my exploit. A living lab notebook of machine walkthroughs and capture-the-flag solutions by Idan Babayan." />
-  <meta name="twitter:image" content="https://idanlab.dev/og.png" />
+  <meta name="twitter:title" content={TITLE} />
+  <meta name="twitter:description" content={DESCRIPTION} />
+  <meta name="twitter:image" content={OG_IMAGE} />
   <!-- Fonts load via @font-face in src/styles/fonts.css (imported at the top of this file) with
        metric-matched fallbacks; no <link rel="preload"> on purpose. Firefox flagged the used font
        preloads as "not used"; the preload only shortened first-load FOUT. Do not re-add font preloads. -->
