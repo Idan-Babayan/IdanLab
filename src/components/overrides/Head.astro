@@ -1,0 +1,33 @@
+---
+// src/components/overrides/Head.astro
+//
+// Additive override of Starlight's Head (approved pattern, the third instance after PageSidebar and
+// Footer). Renders <Default /> untouched, then appends ONLY the social tags Starlight does not emit.
+//
+// Starlight 0.40 already emits, per page: og:title, og:type, og:url, og:locale, og:description,
+// og:site_name and twitter:card. Re-declaring any of those here would duplicate them, so this file
+// adds exactly the four that are missing: og:image, twitter:image, twitter:title, twitter:description.
+//
+// twitter:title / twitter:description are taken from the page's own frontmatter so they track the
+// per-page values Starlight already puts in og:title / og:description, rather than pinning a constant
+// site-wide string over every page. Falling back to the site title and description keeps pages that
+// declare neither correct.
+//
+// og:image is absolute because crawlers do not resolve relative paths. new URL() against Astro.site
+// (astro.config.mjs `site`) is what makes it absolute without hardcoding the origin twice.
+import Default from '@astrojs/starlight/components/Head.astro';
+
+const { entry, siteTitle } = Astro.locals.starlightRoute;
+const SITE_DESCRIPTION =
+  'Curiosity is my exploit. A living lab notebook of machine walkthroughs and capture-the-flag solutions by Idan Babayan.';
+
+const title = (entry.data.title as string | undefined) ?? siteTitle;
+const description = (entry.data.description as string | undefined) ?? SITE_DESCRIPTION;
+const image = new URL('/og.png', Astro.site).href;
+---
+
+<Default><slot /></Default>
+<meta property="og:image" content={image} />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={image} />
