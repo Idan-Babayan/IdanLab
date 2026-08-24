@@ -13,6 +13,20 @@ import '../styles/fonts.css';
   <title>Idan.Lab | CTF Writeups & Security Notes</title>
   <meta name="description" content="Curiosity is my exploit. A living lab notebook of machine walkthroughs and capture-the-flag solutions by Idan Babayan." />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="canonical" href="https://idanlab.dev/" />
+  <!-- Social cards. Standalone pages own their <head>, so unlike the Starlight docs (which get these
+       from src/components/overrides/Head.astro) they are written out in full here. og:image is an
+       absolute URL because crawlers do not resolve relative paths. -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Idan.Lab" />
+  <meta property="og:url" content="https://idanlab.dev/" />
+  <meta property="og:title" content="Idan.Lab | CTF Writeups & Security Notes" />
+  <meta property="og:description" content="Curiosity is my exploit. A living lab notebook of machine walkthroughs and capture-the-flag solutions by Idan Babayan." />
+  <meta property="og:image" content="https://idanlab.dev/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Idan.Lab | CTF Writeups & Security Notes" />
+  <meta name="twitter:description" content="Curiosity is my exploit. A living lab notebook of machine walkthroughs and capture-the-flag solutions by Idan Babayan." />
+  <meta name="twitter:image" content="https://idanlab.dev/og.png" />
   <!-- Fonts load via @font-face in src/styles/fonts.css (imported at the top of this file) with
        metric-matched fallbacks; no <link rel="preload"> on purpose. Firefox flagged the used font
        preloads as "not used"; the preload only shortened first-load FOUT. Do not re-add font preloads. -->

@@ -88,6 +88,9 @@ export default defineConfig({
         // pagination on writeups that carry one (see src/components/overrides/Footer.astro). All other
         // pages render the default footer unchanged.
         Footer: './src/components/overrides/Footer.astro',
+        // Additive Head override: appends only the four social tags Starlight does not emit
+        // (og:image, twitter:image/title/description). See src/components/overrides/Head.astro.
+        Head: './src/components/overrides/Head.astro',
       },
       description: 'CTF Writeups, Machine Walkthroughs & Security Notes By Idan Babayan',
       social: [
