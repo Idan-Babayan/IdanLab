@@ -16,6 +16,8 @@ const DESCRIPTION =
   'Curiosity is my exploit. A living lab notebook of machine walkthroughs and capture-the-flag solutions by Idan Babayan.';
 const PAGE_URL = 'https://idanlab.dev/';
 const OG_IMAGE = 'https://idanlab.dev/og.png';
+const AUTHOR = 'Idan Babayan';
+const OG_ALT = 'Idan.Lab, a lab notebook of CTF writeups and security notes';
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -24,6 +26,7 @@ const OG_IMAGE = 'https://idanlab.dev/og.png';
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{TITLE}</title>
   <meta name="description" content={DESCRIPTION} />
+  <meta name="author" content={AUTHOR} />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="canonical" href={PAGE_URL} />
   <!-- Social cards. Standalone pages own their <head>, so unlike the Starlight docs (which get these
@@ -32,10 +35,18 @@ const OG_IMAGE = 'https://idanlab.dev/og.png';
        so Astro escapes them; see the note on TITLE in the frontmatter. -->
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Idan.Lab" />
+  <meta property="og:locale" content="en_US" />
   <meta property="og:url" content={PAGE_URL} />
   <meta property="og:title" content={TITLE} />
   <meta property="og:description" content={DESCRIPTION} />
-  <meta property="og:image" content={OG_IMAGE} />
+  <!-- name="image" duplicates og:image because LinkedIn's own documented example
+       carries both attributes on one tag; property alone is spec-correct, and the
+       extra name costs nothing. Declared dimensions let a scraper lay the card out
+       without fetching the file first, which some platforms skip the image over. -->
+  <meta name="image" property="og:image" content={OG_IMAGE} />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content={OG_ALT} />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content={TITLE} />
   <meta name="twitter:description" content={DESCRIPTION} />
