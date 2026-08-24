@@ -23,7 +23,7 @@ const SITE_DESCRIPTION =
 
 const title = (entry.data.title as string | undefined) ?? siteTitle;
 const description = (entry.data.description as string | undefined) ?? SITE_DESCRIPTION;
-const image = new URL('/og.png', Astro.site).href;
+const image = new URL('/og.jpg', Astro.site).href;
 
 // The site had no author metadata at all: third-party scrapers read it back as
 // null and LinkedIn's inspector reported "no author found". Starlight does not
@@ -36,7 +36,7 @@ const OG_ALT = 'Idan.Lab, a lab notebook of CTF writeups and security notes';
 <meta name="author" content={AUTHOR} />
 <meta property="og:image" content={image} />
 <meta property="og:image:secure_url" content={image} />
-<meta property="og:image:type" content="image/png" />
+<meta property="og:image:type" content="image/jpeg" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 <meta property="og:image:alt" content={OG_ALT} />
