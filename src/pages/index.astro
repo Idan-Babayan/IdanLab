@@ -3,6 +3,9 @@
 // Lives OUTSIDE Starlight's layout for full creative control.
 // Owns the "/" route.
 // Self-hosted fonts (@font-face + metric-matched fallbacks) shared with the Starlight docs.
+// Fonts load via @font-face in src/styles/fonts.css with metric-matched fallbacks;
+// no <link rel="preload"> on purpose. Firefox flagged the used font preloads as
+// "not used" and the preload only shortened first-load FOUT. Do not re-add them.
 import '../styles/fonts.css';
 
 // Head strings live here, not inline in the markup, so Astro escapes them on output. Literal HTML
@@ -18,6 +21,18 @@ const PAGE_URL = 'https://idanlab.dev/';
 const OG_IMAGE = 'https://idanlab.dev/og.png';
 const AUTHOR = 'Idan Babayan';
 const OG_ALT = 'Idan.Lab, a lab notebook of CTF writeups and security notes';
+
+// NO HTML COMMENTS IN <head>. They used to sit between the og: tags and one of
+// them contained a literal "<head>" in its prose. That is valid HTML and every
+// browser ignores it, but a scraper that regex-scans the head rather than really
+// parsing it can trip on a tag-like string inside a comment, and LinkedIn kept
+// reporting "no image found" for this page while reading tags declared ABOVE the
+// comments perfectly well. Notes belong here in frontmatter, which emits nothing.
+//
+// og:image is also plain property=, not the name="image" property="og:image" pair
+// from LinkedIn's docs. The plain form is what demonstrably works on /about and
+// the Starlight pages of this same site, so it is the known-good control; the
+// paired form was an untested variable introduced while debugging.
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -29,21 +44,15 @@ const OG_ALT = 'Idan.Lab, a lab notebook of CTF writeups and security notes';
   <meta name="author" content={AUTHOR} />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="canonical" href={PAGE_URL} />
-  <!-- Social cards. Standalone pages own their <head>, so unlike the Starlight docs (which get these
-       from src/components/overrides/Head.astro) they are written out in full here. og:image is an
-       absolute URL because crawlers do not resolve relative paths. Values are bound as expressions
-       so Astro escapes them; see the note on TITLE in the frontmatter. -->
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Idan.Lab" />
   <meta property="og:locale" content="en_US" />
   <meta property="og:url" content={PAGE_URL} />
   <meta property="og:title" content={TITLE} />
   <meta property="og:description" content={DESCRIPTION} />
-  <!-- name="image" duplicates og:image because LinkedIn's own documented example
-       carries both attributes on one tag; property alone is spec-correct, and the
-       extra name costs nothing. Declared dimensions let a scraper lay the card out
-       without fetching the file first, which some platforms skip the image over. -->
-  <meta name="image" property="og:image" content={OG_IMAGE} />
+  <meta property="og:image" content={OG_IMAGE} />
+  <meta property="og:image:secure_url" content={OG_IMAGE} />
+  <meta property="og:image:type" content="image/png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content={OG_ALT} />
@@ -51,9 +60,6 @@ const OG_ALT = 'Idan.Lab, a lab notebook of CTF writeups and security notes';
   <meta name="twitter:title" content={TITLE} />
   <meta name="twitter:description" content={DESCRIPTION} />
   <meta name="twitter:image" content={OG_IMAGE} />
-  <!-- Fonts load via @font-face in src/styles/fonts.css (imported at the top of this file) with
-       metric-matched fallbacks; no <link rel="preload"> on purpose. Firefox flagged the used font
-       preloads as "not used"; the preload only shortened first-load FOUT. Do not re-add font preloads. -->
 </head>
 <body>
 
