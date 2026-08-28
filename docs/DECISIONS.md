@@ -6,6 +6,115 @@
 
 ---
 
+### 2026-08-29 · Lightning CSS evaluates `color-mix()` at build time, so CSS bytes vary by build machine
+- **Decision:** `dist/` CSS is byte-comparable ACROSS BUILDS ON ONE MACHINE and is NOT byte-comparable
+  across platforms. A local-versus-deployed CSS hash difference is expected and is not a finding. HTML,
+  JavaScript and generated images are unaffected and stay comparable everywhere. Recorded as a durable
+  fact about the build rather than as a bug: nothing is broken and nothing needs fixing.
+- **What changed:** before the Astro 7 upgrade the CSS minifier left `color-mix()` alone and shipped it
+  unevaluated, so the browser computed it at paint time and identical source produced identical CSS on
+  any machine. Astro 7 makes Lightning CSS the default minifier, and Lightning CSS RESOLVES a
+  `color-mix()` whose operands are all literal into an absolute colour at build time. The build machine's
+  floating-point result is therefore baked into the output, and into the content hash.
+- **The evidence, one source tree, two machines:** `common.css` is 108210 bytes on both the Windows local
+  build and the Linux Cloudflare builder, and differs at character 1376. Local
+  `--sl-color-bg-nav:oklab(13.7599% -.00308788 -.00327165/.78)`, deployed
+  `--sl-color-bg-nav:oklab(13.7599% -.00308787 -.00327167/.78)`. That is a difference in the eighth
+  significant digit of two oklab channels, and both are the resolved form of the authored
+  `color-mix(in oklab, #07090a 78%, transparent)`.
+- **Rendering impact: none.** A difference of ~1e-8 in an oklab channel is orders of magnitude below
+  8-bit quantisation, so the two builds paint the same pixels. The 66 `color-mix()` calls whose operands
+  include a `var()` cannot be resolved statically and still ship unevaluated, exactly as before.
+- **Why it matters anyway:** the whole five-phase upgrade rested on byte-identical `dist/` comparison as
+  its primary correctness assertion. That method is still sound, but its scope is now narrower than it
+  looks, and the narrowing is silent: a future check that compares a local manifest against deployed
+  output will report a CSS difference that means nothing, and will look exactly like a real regression.
+  Per-platform reproducibility was re-verified cold-to-cold after this surfaced and still holds at
+  159/159 files.
+- **The same mechanism has a second, visible consequence.** Lightning CSS also PRESERVES authored
+  `oklch()` instead of lowering it to sRGB hex, which the previous minifier did. The four `.ec-cmd-*`
+  command colours and `.port-label` now ship as the `oklch()` / `oklab()` the design authored, so on a
+  wide-gamut display they render at full authored chroma instead of sRGB-clamped, and identically on an
+  sRGB display. That makes the palette in DECISIONS 2026-06-15 · Command-highlight palette rebuilt on a
+  principled OKLCH basis (+ bold weight) ship as specified for the first time, so that entry stands and
+  is NOT superseded by this one.
+- **Rejected: pinning the minifier back with `build.cssMinify: 'esbuild'`.** It would restore both the
+  old lowering and platform-identical bytes, but it costs declaring `esbuild` as a direct devDependency
+  (today it is only transitive via Vite) and gives up Lightning CSS everywhere else, to buy back a
+  comparison method only the migration harness needed and a colour clamp the design never wanted.
+  Reconsider only if cross-platform byte-identity becomes a real requirement.
+- **Verified:** found during the Phase 4b deployed check, comparing `/hackthebox/easy/busqueda/` built
+  locally against the same page on `dev.idanlab.pages.dev`. Two other differences in that comparison were
+  run down and are NOT this one: 31 CRLF pairs, from `core.autocrlf=true` putting CRLF into checked-out
+  `.svg` sources (`linux.svg` is identical after newline normalisation, 14813 bytes local against 14723
+  deployed), and the `.svg` content hash that follows from it. Every generated image hash is identical
+  local and deployed, so `astro:assets` and sharp 0.35.4 are platform-stable.
+- **Status:** Recorded 2026-08-29. No code change and no configuration change. Written down so the next
+  local-versus-deployed CSS diff is recognised in a minute instead of costing an afternoon.
+
+### 2026-08-25 · Open Graph and Twitter Cards on both surfaces, from a static card and an additive Head override
+- **Decision:** every page emits Open Graph and Twitter Card metadata, and `og:image` points at one
+  site-wide static card, `public/og.jpg` (1200x630, RGB, no alpha). The Starlight docs get the tags
+  Starlight omits from a third additive component override, `src/components/overrides/Head.astro`. The
+  two marketing pages own their `<head>`, so they carry the full set inline with their own values plus a
+  canonical link. State recorded in CORE_SPEC §2 "Social and SEO metadata".
+- **Why an override rather than the `head` array in `astro.config.mjs`:** the config array is STATIC and
+  cannot vary per page. A `twitter:title` declared there would have pinned one constant string over every
+  writeup, contradicting the per-page `og:title` Starlight already emits correctly. The override renders
+  `<Default />` untouched and appends only what is missing (`og:image`, `twitter:image`, `twitter:title`,
+  `twitter:description`, later joined by `author` and the `og:image:*` set), reading title and description
+  from the page's own frontmatter with a site-level fallback. No default markup is reimplemented and no tag
+  is declared twice. Same additive pattern as the PageSidebar and Footer overrides, and the third instance
+  of it.
+- **Why a static card rather than a generated one:** the share surface is one identity, not per-page art,
+  so a generator would add an image-generation dependency to a build that currently has none, in order to
+  produce 46 near-identical cards. The card is drawn from the site's own self-hosted faces rather than a
+  lookalike: Syne 800 for the headline, carrying the same synthesized italic the hero uses on Curiosity,
+  JetBrains Mono for the eyebrow, subline and footer chrome, and the landing page's ink, lime, cyan and
+  magenta including the three atmospheric glows. Living in `public/` also keeps it outside `astro:assets`
+  hashing, and it falls under the `/*` header rule rather than the immutable `/_astro/*` or `/fonts/*`
+  rules, so it can be replaced in place with no cache-busting rename.
+- **Size:** a raw export was 772 KB, because smooth 24-bit gradients do not pack in PNG. Quantizing to 64
+  levels per channel is invisible on these ink-dark tones and landed at 330 KB. Coarser steps halve it
+  again but band visibly across the glows, which this design cannot afford.
+- **The debugging, in the order it happened, because most of it was aimed at the wrong layer.** LinkedIn
+  reported "no image found" for the landing page while `/about` and every Starlight page, all pointing at
+  the same URL, rendered fine. Three rounds followed, each eliminating something in the HTML: the bare `&`
+  in "CTF Writeups & Security Notes" (literal text in an `.astro` template passes through verbatim, which
+  is legal HTML5 but stops a strict scraper mid-head, and everything LinkedIn did report came from tags
+  declared before it); the HTML comments in the head, two of which held tag-like strings that a
+  regex-scanning scraper can match inside, as our own check did when it extracted a preload link from
+  within a comment; and the `name="image" property="og:image"` pair from LinkedIn's documentation, reverted
+  to the plain `property=` form that demonstrably worked on the pages that were already fine.
+- **The re-framing that ended it:** Post Inspector read a `name="author"` tag 80 seconds after it went
+  live, which proved the PARSER was healthy and reading current markup, so every round spent on tag syntax
+  was debugging a layer the evidence showed was working. LinkedIn runs two pipelines, a bot that parses the
+  HTML and a separate media service that refetches and re-encodes the image, and "no image found" is a
+  misleading label for a failure in the second. `og.png` was emitted by canvas with an alpha channel (color
+  type 6) that `sharp` reported as uniformly opaque, so it carried no information at 3.6x the file size,
+  and alpha is the usual differentiator when a re-encoder handles PNG less reliably than JPEG. The PNG was
+  flattened onto the ink background (330 KB to 98 KB, identical pixels) and `og:image` moved to a new
+  `og.jpg` (RGB, 80 KB, quality 88, 4:4:4 chroma subsampling so the colored text edges do not bleed).
+- **The escaping and comment fixes are KEPT even though neither was the fix,** because both are correct
+  independently: a bound expression cannot regress into a bare ampersand when someone edits the copy, and a
+  comment-free head gives a regex scanner nothing to trip on. They are recorded as standing rules in
+  CORE_SPEC §2 rather than as one-off repairs.
+- **CSP needed NO change.** The card is same-origin, so the enforced `img-src 'self' data:` already covers
+  it. An externally hosted og:image would need its origin added to the policy, which is a standing argument
+  for keeping the card same-origin. Noted in the CORE_SPEC security-headers bullet.
+- **Does NOT supersede 2026-07-07 · Font `<link rel=preload>` hints removed site-wide (Firefox "preloaded
+  but not used").** No preload is re-added and each of the three sources still carries its rationale
+  comment. On the two marketing pages that comment moved from an HTML comment inside `<head>` to page
+  frontmatter, so it no longer emits; the `astro.config.mjs` copy is untouched. That entry stands in full.
+- **Verified:** `npm run build` green (46 pages, exit 0). Across `dist/`, all 46 pages carry exactly one
+  `og:image`, all pointing at `https://idanlab.dev/og.jpg`, and exactly one `author`; a doc page carries
+  one each of `twitter:card`, `twitter:title`, `twitter:description` and `twitter:image`, so the override
+  duplicates nothing Starlight emits; the landing page head contains zero HTML comments.
+- **Status:** Adopted and shipped, on `dev` as `6d6df91`, `881271d`, `af8b7f8`, `b560705`, `6245a60`,
+  `844c017` (2026-08-24 and 2026-08-25). CONFIRMED: LinkedIn renders the card. The final commit bundled
+  three changes (alpha removal, format and URL) as one hypothesis about the media service, so which of the
+  three mattered is unknown, and the clean-bisect test it named is no longer needed. Documented 2026-08-29.
+
 ### 2026-08-06 · Supersession has two forms: `Supersedes:` archives, `Supersedes in part:` does not
 - **Decision:** the supersession protocol distinguishes two markers. `Supersedes: <date> · <title>` means
   WHOLESALE: the old entry is entirely replaced, gains `Superseded by: <date> · <title>`, and moves to

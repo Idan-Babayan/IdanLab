@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-08-01.
+> Last updated: 2026-08-29.
 
 ---
 
@@ -50,7 +50,9 @@
   Content-Security-Policy is ENFORCED IN PRODUCTION (live since PR #9 merged 2026-07-11; flipped from `Content-Security-Policy-Report-Only` after full
   cross-browser plus real-Safari verification): `font-src 'self'` (fonts self-hosted, no external origins),
   `style-src 'self' 'unsafe-inline'` (Starlight / Expressive Code inline styles, effectively permanent),
-  `img-src 'self' data:` (icon data URIs), `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`,
+  `img-src 'self' data:` (icon data URIs; it also covers the same-origin social card at `/og.jpg`, so
+  the Open Graph work needed NO policy change, and an externally hosted og:image would need its origin
+  added here), `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`,
   plus `frame-ancestors 'none'` and `upgrade-insecure-requests`, which were inert under Report-Only and are
   now ACTIVE (frame-ancestors backs up the enforced `X-Frame-Options: DENY`; upgrade-insecure-requests
   upgrades same-origin subresources to HTTPS). `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'`:
@@ -70,6 +72,39 @@
   site loads no external scripts (all scripts are same-origin). Re-enabling analytics in any
   mode would require allowlisting static.cloudflareinsights.com in script-src.
 - **Local dev:** `npm run dev` → `localhost:4321`.
+
+### Social and SEO metadata
+
+- **Every page carries Open Graph and Twitter Card tags,** so a link shared to LinkedIn, WhatsApp or
+  Slack renders a card. Reasoning, including the debugging that shaped it: DECISIONS 2026-08-25 · Open
+  Graph and Twitter Cards on both surfaces, from a static card and an additive Head override.
+- **Two emitters, one per surface.** Starlight already emits `og:title`, `og:type`, `og:url`,
+  `og:locale`, `og:description`, `og:site_name` and `twitter:card` per doc page. Everything it omits
+  comes from `src/components/overrides/Head.astro` (`author`, `og:image`, `og:image:secure_url`,
+  `og:image:type`, `og:image:width`, `og:image:height`, `og:image:alt`, `twitter:title`,
+  `twitter:description`, `twitter:image`), which reads title and description from the page's own
+  frontmatter and falls back to the site title and description. The marketing pages sit outside
+  Starlight and own their `<head>`, so they carry the FULL set inline with their own values plus a
+  `<link rel="canonical">`. `og:type` is `website` on the landing page and `profile` on about, which
+  also carries `profile:first_name` and `profile:last_name`. Nothing is declared twice on either
+  surface: verified in `dist/`, all 46 pages carry exactly one `og:image` and one `author`.
+- **The static `head` array in `astro.config.mjs` is the WRONG seam for per-page tags.** It cannot vary
+  per page, so a `twitter:title` declared there would pin one constant string over every writeup and
+  contradict the per-page `og:title` Starlight already gets right. Per-page social tags belong in the
+  Head override; the `head` array stays for the genuinely constant (the reading-progress script).
+- **`og:image` is an ABSOLUTE URL on every surface** (`new URL('/og.jpg', Astro.site)` in the override,
+  written out in full on the marketing pages), because crawlers do not resolve relative paths.
+- **The card is a static asset, not generated at build time.** One site-wide identity card, checked in
+  at `public/og.jpg`. Neither `og.jpg` nor `og.png` sits under the immutable `/_astro/*` or `/fonts/*`
+  cache rules, only under `/*`, so replacing the card needs no cache-busting rename (contrast the font
+  caveat in the security-headers bullet above).
+- **No HTML comments in any `<head>`, on either surface.** A comment holding a tag-like string can be
+  matched by a scraper that regex-scans the head instead of parsing it. Notes about head markup go in
+  the component or page frontmatter, which emits nothing.
+- **Head text is BOUND as an expression, never written as a literal.** Literal HTML in an `.astro`
+  template passes through verbatim, so a raw `&` in a title stays a bare ampersand: legal HTML5, but it
+  stops a strict scraper mid-head. The landing page's title, description and URLs are frontmatter
+  constants bound as `{TITLE}` and the like, so Astro escapes them on output.
 
 ### Repository visibility and licensing
 
@@ -104,7 +139,7 @@
 
 ```
 C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Windows user profile path
-├─ astro.config.mjs                   # Starlight config: site, sidebar, customCss[layers.css, fonts.css, then the eight theme modules tokens/base/prose/chrome/components/pages/utilities/overrides, in that order], EC themes + pluginPrivCommand, reading-progress head script (no font preloads, see DECISIONS 2026-07-07), image-zoom, vite alias, components overrides (PageSidebar + Footer), markdown remarkPlugins (content-taxonomy validation guard + PasswordReveal import injection) + rehypePlugins (content image loading)
+├─ astro.config.mjs                   # Starlight config: site, sidebar, customCss[layers.css, fonts.css, then the eight theme modules tokens/base/prose/chrome/components/pages/utilities/overrides, in that order], EC themes + pluginPrivCommand, reading-progress head script (no font preloads, see DECISIONS 2026-07-07), image-zoom, vite alias, components overrides (PageSidebar + Footer + Head), markdown remarkPlugins (content-taxonomy validation guard + PasswordReveal import injection) + rehypePlugins (content image loading)
 ├─ src/
 │  ├─ content.config.ts               # docs collection (docsLoader + docsSchema) + the writeup metadata schema (§7)
 │  ├─ pages/
@@ -131,7 +166,8 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 │  │  ├─ SecretTerminal.astro         # from-scratch, zero-dependency vanilla-TS fake terminal
 │  │  └─ overrides/
 │  │     ├─ PageSidebar.astro         # additive Starlight override: renders <Default/> then <ToggleAll/> at the bottom of the right TOC
-│  │     └─ Footer.astro              # additive Starlight override: auto-appends the <Principle> coda from frontmatter and suppresses pagination on writeups that carry one
+│  │     ├─ Footer.astro              # additive Starlight override: auto-appends the <Principle> coda from frontmatter and suppresses pagination on writeups that carry one
+│  │     └─ Head.astro                # additive Starlight override: renders <Default/> then appends only the social tags Starlight omits (author, og:image + secure_url/type/width/height/alt, twitter:title/description/image), per-page values read from frontmatter (see §2 "Social and SEO metadata")
 │  ├─ lib/
 │  │  └─ ec-priv-command.mjs          # EC plugin: tags command words by category (priv/recon/net/inspect)
 │  └─ styles/                         # the theme pass, split into cascade-layer modules (see §5 "The layer contract")
@@ -154,6 +190,8 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 └─ public/
    ├─ robots.txt                      # in-repo; breadcrumb comment + Sitemap line (see §2)
    ├─ favicon.svg                     # site favicon
+   ├─ og.jpg                          # THE social card: 1200x630, RGB, no alpha, ~80 KB. Every og:image / twitter:image on the site points here (see §2)
+   ├─ og.png                          # the same card as an alpha-flattened PNG, ~98 KB. Kept in the tree; NO tag references it since og:image moved to the JPEG
    ├─ fonts/*.woff2                   # self-hosted subset fonts (Syne 600/700/800; JetBrains Mono 400/500/700 + 400/500 italic; Geist 400/600/700 + 400 italic); served at /fonts/
    ├─ icons/{htb,vulnhub,picoctf,overthewire}.svg
    └─ ethical-hacking.png             # about portrait (TODO: replace with transparent SVG). Writeup screenshots now live in src/assets (see §7); marketing images, if any, go under public/images
