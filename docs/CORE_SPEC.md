@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-08-29.
+> Last updated: 2026-08-29 (Astro 7 upgrade).
 
 ---
 
@@ -124,16 +124,100 @@
 
 ## 3. Tech Stack (pinned)
 
-- **Astro** `6.3.3`
-- **@astrojs/starlight** `0.39.2`
-- **astro-expressive-code** `0.42.0` (code blocks). Themes: `tokyo-night` (dark),
-  `one-light` (light). A custom EC plugin (`src/lib/ec-priv-command.mjs`) tags command words
-  by semantic category for coloring (see §6).
-- **@astrojs/mdx** `5.0.6`
-- **starlight-image-zoom** `0.14.2` — lightbox on content images.
+Current as of the Astro 7 upgrade, 2026-08-29. Reasoning: DECISIONS 2026-08-29 · Astro 6 to 7 and
+Starlight 0.39 to 0.41, upgraded in phases against a byte-reproducible build.
+
+**Declared in `package.json`.** The RANGE FORM is a decision, not a formatting choice; see below.
+
+| Package | Range | Resolves to | Role |
+| --- | --- | --- | --- |
+| `astro` | `^7.2.9` | 7.2.9 | framework |
+| `@astrojs/starlight` | `^0.41.10` | 0.41.10 | docs theme |
+| `starlight-image-zoom` | `^0.15.0` | 0.15.0 | lightbox on content images |
+| `sharp` | `^0.35.4` | 0.35.4 | image pipeline behind `astro:assets` |
+| `@astrojs/markdown-remark` | **`7.2.4` exact** | 7.2.4 | supplies `unified()` for `markdown.processor` |
+| `unist-util-visit` | `^5.1.0` | 5.1.0 | used directly by the custom remark plugins |
+| `acorn` | `^8.16.0` | 8.18.0 | used directly by the injector plugins |
+
+**Transitive, not declared, but load-bearing:** `@astrojs/mdx` 7.0.8, `astro-expressive-code` 0.44.1
+and `@expressive-code/core` 0.44.1 (themes `tokyo-night` dark / `one-light` light; the custom EC
+plugin `src/lib/ec-priv-command.mjs` tags command words by category, see §6), `pagefind` 1.5.2,
+`vite` 8.2.2.
+
+### Range form: one physical copy, shared with the consumer
+
+`@astrojs/markdown-remark` is pinned EXACTLY while `unist-util-visit` and `acorn` use carets. That
+looks inconsistent and is not: it is the same rule applied to two different consumer declarations.
+
+The invariant is that our code and the code that actually runs the pipeline must resolve to the SAME
+physical copy. The custom remark and rehype plugins bind to `unist-util-visit` and `acorn` directly,
+and `astro.config.mjs` imports `unified` from `@astrojs/markdown-remark`. If the root declaration
+lands on a different copy than the consumer's, the plugin binds one instance while the engine uses
+another, and the failure is SILENT: the build stays green and the output quietly loses the effect.
+
+- Consumer declares a RANGE (`@mdx-js/mdx` requires `acorn ^8.0.0`): use a CARET. Both land on the
+  hoisted copy; an exact pin would force a second copy the moment the consumer's range moved past
+  it. Measured: a clean lockfile regeneration moved `acorn` to 8.18.0 and it still resolved to one
+  copy shared by all three consumers.
+- Consumer declares an EXACT pin (`astro` requires `@astrojs/markdown-remark 7.2.4`): use an EXACT
+  pin. A caret would float above astro's copy and build the processor config from a different
+  package instance than the pipeline consumes.
+
+`@expressive-code/core` is deliberately NOT a direct dependency for the same reason: the custom EC
+plugin binds to whatever copy Expressive Code loads, and two copies would make the command colouring
+vanish with no error.
+
+### Toolchain (changed wholesale by Astro 7)
+
+| Piece | Now | Was |
+| --- | --- | --- |
+| `.astro` compiler | `@astrojs/compiler-rs` 0.4.0 (Rust, native) | `@astrojs/compiler` (Go, WASM) |
+| Bundler | `rolldown` 1.2.6 | `rollup` |
+| JS transform | Oxc (native code inside Rolldown's bindings) | esbuild |
+| CSS minifier | `lightningcss` 1.33.0 | esbuild |
+| Build tool | `vite` 8.2.2 | vite 7 |
+
+`esbuild` 0.28.2 is still present, pulled by Vite for dependency pre-bundling only. It is no longer
+the minifier or the transformer.
+
+Consequences worth knowing before reading a diff: the Rust compiler generates different scoped-class
+hashes and preserves attribute value casing, and Rolldown inlines small CSS and JS chunks instead of
+emitting separate files. Lightning CSS resolves static `color-mix()` at build time, which makes CSS
+bytes depend on the build machine, see DECISIONS 2026-08-29 · Lightning CSS evaluates `color-mix()`
+at build time, so CSS bytes vary by build machine.
+
+### Node
+
+- `.nvmrc` at the repository root holds `22`, and `package.json` declares
+  `engines.node: ">=22.12.0"`. Astro 7 requires 22.12 or newer.
+- **The Cloudflare Pages builder resolves this to 22.22.0**, confirmed at the dashboard. That value
+  is DASHBOARD-ONLY: it cannot be read from the repository, and it is not in the GitHub check-run,
+  whose `output.text` is empty and whose only build log is a dashboard link. Recording it here is
+  the only durable copy. The repo-side pin exists so the version stops being a dashboard setting
+  that can change without a commit.
+
+### Ships via Starlight, not declared here
+
+- **`@astrojs/sitemap`** is not in `package.json` and not in `astro.config.mjs`, yet it runs on every
+  build and emits `sitemap-index.xml` and `sitemap-0.xml` (45 URLs). `public/robots.txt` advertises
+  the URL and Google Search Console consumes it. It arrives as a Starlight dependency. **It must
+  still never be added manually**: declaring it would create a second copy and a second
+  configuration surface for something that already works.
+- **`@astrojs/markdown-satteri`** is in the tree as a hard dependency of astro 7.2.9 and Starlight
+  0.41.10. **Sätteri is NOT adopted and cannot be**: `starlight-image-zoom` 0.15.0 requires a
+  `unified()` markdown processor and throws outright if a Sätteri processor is selected. Seeing the
+  package in `node_modules` is not a constraint violation. `starlight-image-zoom` is therefore the
+  single dependency gating both Sätteri adoption and the eventual Astro 8 move, since the deprecated
+  top-level markdown keys it used until 0.14.2 are removed in Astro 8; it migrated onto the processor
+  in 0.15.0, which is what cleared the deprecation warning.
+
+### Upgrade path
+
 - **Node.js** + npm. Build is fully static (SSG).
-- Upgrade path: all packages are current as of 2026-05. Upgrade only from a stable
-  checkpoint via `npx @astrojs/upgrade` (never hand-bump). See DECISIONS for rationale.
+- Upgrade only from a stable checkpoint, in phases, one variable at a time, verified against a
+  byte-reproducible build. `npx @astrojs/upgrade` is the starting point but is NOT sufficient alone:
+  it needs an interactive TTY for its breaking-changes prompt, it does not touch non-Astro packages,
+  and it wrote a caret where an exact pin was required. Check its output; never hand-bump blind.
 
 ## 4. Repository Map
 
@@ -455,6 +539,15 @@ token is an open ROADMAP item, not a bug.
   "On this page" sidebar by `overrides/PageSidebar.astro` (renders `<Default/>` then the control).
 
 ### Starlight Component Overrides
+- **There are THREE, in `src/components/overrides/`:** `PageSidebar.astro` (renders the default "On
+  this page" TOC then appends `ToggleAll`), `Footer.astro` (appends the `Principle` coda from
+  frontmatter and suppresses pagination on writeups that carry one), and `Head.astro` (appends only
+  the Open Graph and Twitter Card tags Starlight omits, see §2 "Social and SEO metadata"). `Head`
+  arrived with the social-card work in 2026-08 and is the newest of the three.
+- **Every override imports from the documented `@astrojs/starlight/components/*` entrypoints and
+  none reaches into Starlight internals.** That is the constraint that keeps an override additive
+  rather than a fork: a deep import into an internal path would bind to a private module that
+  Starlight can move in a patch release, with no deprecation and no build error.
 - Starlight Component Overrides: Additive Starlight component overrides are an approved architectural pattern alongside the `src/styles/` theme modules and custom components.
 - Override Strategy: Overrides should wrap and render `<Default />` (or the upstream component) and layer behavior, styling, or markup on top rather than copying or replacing upstream implementations.
 - No Forking by Default Forking, duplicating, or fully replacing Starlight components is discouraged and should only be considered when the desired result cannot be achieved through an additive override.
@@ -737,11 +830,16 @@ Preserves reading position: anchors on the current heading and corrects scroll s
      + hashes them.
 3. Commit + push → Cloudflare deploys.
 
-### Build-time plugins (wired in `astro.config.mjs` `markdown.remarkPlugins`)
+### Build-time plugins (wired in `astro.config.mjs` `markdown.processor: unified({...})`)
 
 Four remark plugins run over the MDX source. All are zero-dependency (`unist-util-visit`, plus `acorn`
 for the injectors), and all see hand-authored markup only, never component output. Order matters in one
 place: the recon-rail transform is wired LAST.
+
+They are passed to `unified()` from `@astrojs/markdown-remark`, NOT to the top-level
+`markdown.remarkPlugins` / `markdown.rehypePlugins` keys, which Astro 6.4 deprecated and Astro 8
+removes. `gfm`, `smartypants` and `remarkRehype` are deliberately not passed: `unified()` resolves an
+unset option back to the shared top-level value and all three already sit at their defaults.
 
 - **`remark-inject-writeupmeta.mjs`** injects the `<WriteupMeta />` row and its import. Gated on the
   writeup path, so nothing outside one can be injected. Behavior detail in the MDX conventions below.
@@ -756,6 +854,14 @@ place: the recon-rail transform is wired LAST.
   you mean" suggestion. **Its allow-lists are the single source of truth**, and it is the deliberate
   alternative to `astro check`. It does not validate frontmatter: strict Zod enums in
   `content.config.ts` do that. See DECISIONS 2026-07-12 and 2026-07-20.
+
+**The guard structurally cannot see an underscore-prefixed file.** Astro silently excludes
+`_name.mdx` from a content collection, so such a file never enters the pipeline and no remark plugin
+runs over it. This is not a guard bug and cannot be fixed in the guard. It matters when TESTING the
+guard: a probe file named with a leading underscore builds green while the guard never sees it,
+which reads as a passing test of a dead guard. It produced exactly that false negative during the
+Astro 7 upgrade verification. Any probe of the guard must use a filename that does not start with an
+underscore.
 
 ### MDX conventions (applied by hand)
 - Writeups are stored as flat .mdx files under src/content/docs

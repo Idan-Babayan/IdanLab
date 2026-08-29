@@ -117,14 +117,6 @@
   `<Principle>` to frontmatter (remove the inline component + import, add `principle:`).
 - [PRODUCT] Global `/writeups` index (path 3): reuse `WriteupCard` with `showPlatform` true for a
   mixed cross-platform grid (the card was built for this).
-- [ENG] Dependabot: add an `overrides` block clearing the seven alerts that are reachable without touching
-  any pinned direct dependency (js-yaml, postcss, svgo, vite), and take the in-range Astro minor that
-  clears two more. Deliberately deferred rather than urgent: none of the 13 open alerts has a realistic
-  path in this threat model, verified against built output. The argument for acting is presentation, not
-  security, since a visitor checking the Dependabot tab will not run the threat model first. The remaining
-  four are a breaking `sharp` bump with no in-range fix and three that are the deferred Astro 7 upgrade
-  wearing a security label. See DECISIONS 2026-08-01 · Thirteen Dependabot alerts triaged and deliberately
-  deferred.
 
 ## Later (parked)
 - [CONTENT] Revisit a scripted content-cleaning pass only if manual polish proves to not scale; deliberately deferred, not abandoned.

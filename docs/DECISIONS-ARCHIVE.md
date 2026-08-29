@@ -180,6 +180,52 @@
 - **[TRUNCATED: this entry is cut off mid-sentence and the rest of it is missing. Not reconstructed.
   Superseded by 2026-07-10 · WriteupMeta revised: intentional per-axis color, restrained glow, growing pips.]**
 
+### 2026-07-05 · Spoiler-toggle open border derives from summary color via --spoiler-color (fixes a masked light-mode bug)
+- **Superseded by:** 2026-07-25 · PasswordReveal gets a BLOCK mode; the one-off `.spoiler-toggle` class is retired
+- **Decision:** `.sl-markdown-content details.spoiler-toggle` now sets a single `--spoiler-color` custom
+  property (`#ffc23d` dark, `#a86f04` light) that BOTH the `[open]` border and the summary color read
+  from, replacing two independently hardcoded values. Dark's two values were already identical
+  (`#ffc23d`/`#ffc23d`), so dark is unchanged; light's open border moves from `#ffc23d` to the deeper
+  `#a86f04` summary color, so the open border always matches the label by construction instead of by
+  coincidence. The closed border is unchanged (`rgba(245, 158, 11, 0.45)`, both themes).
+- **Bug found during verification (bigger than the ask):** live browser verification (enumerating every
+  matching CSS rule via `document.styleSheets`, not just reading source) showed the amber border was
+  ALREADY not rendering at all in light mode, in either state, before this fix, for a reason unrelated to
+  the open/summary color values: two generic, unconditional rules elsewhere in `custom.css` also set
+  `border-color` on any `.sl-markdown-content details` / `details[open]` and have higher specificity than
+  a plain `.spoiler-toggle` selector, so they silently won: `html[data-theme="..."] .sl-markdown-content
+  details { border-color: ... }` (the base per-theme card border, specificity classes=2/types=2) beat the
+  closed-state rule (classes=2/types=1) in BOTH themes, and light-only `:root[data-theme='light']
+  .sl-markdown-content details[open] { border-color: var(--tp-divider); }` (written to stop a REGULAR
+  toggle's border turning green on open, classes=4/types=1) beat the open-state rule (classes=3/types=1)
+  in light. Net effect verified before this fix: light mode showed a neutral gray border
+  (`--tp-divider`, `#c6c0b4`) in both states; dark showed gray closed / correct `#ffc23d` open (no
+  light-only `[open]` competitor exists in dark). So the "brighter gold over deep gold" mismatch described
+  in the request was never actually visible either, a different bug (the gray fallback) was masking both
+  the old value and the intended fix.
+- **Fix (scoped, user-chosen over two alternatives):** the closed- and open-state border rules are
+  prefixed with `html[data-theme]` (attribute-presence match, not tied to a value, so it still resolves
+  per-theme via the token) purely to out-specificity the two generic rules above: closed becomes
+  classes=3/types=2 (beats the base rule's classes=2/types=2 on the class tier), open becomes
+  classes=4/types=2 (ties the light `[open]` rule's classes=4, wins on the type tier, 2 vs 1). This only
+  touches `.spoiler-toggle`'s own selectors; the two shared generic rules (and every other toggle that
+  depends on them for the "no green edge on paper" behavior) are untouched. Rejected: editing the two
+  shared rules to add `:not(.spoiler-toggle)` instead, same visual result but a larger blast radius across
+  every content toggle on the site for no added benefit.
+- **Verified live** (both themes, both states, via `getComputedStyle` + a full matching-rule enumeration,
+  not just the token value): dark closed `rgba(245, 158, 11, 0.45)`, dark open `rgb(255, 194, 61)`
+  (`#ffc23d`, matches summary, unchanged from before); light closed `rgba(245, 158, 11, 0.45)` (now
+  correctly amber instead of the masked gray, a bonus fix beyond the original ask), light open
+  `rgb(168, 111, 4)` (`#a86f04`, matches summary exactly, the requested fix). A regular (non-spoiler)
+  toggle on `busqueda.mdx` was spot-checked and is unaffected: closed and open borders are still
+  identical (`--tp-divider`), so the "no green edge" behavior for ordinary toggles is untouched.
+  `npm run build` green (45 pages).
+- **Status:** Adopted + shipped (custom.css only). Archived 2026-08-29: the `.spoiler-toggle` class this
+  entry tunes was deleted on 2026-07-25 and matches nothing in the build. Its successor is
+  `.pwreveal-block`, which carries the same verified values. The archival is late because neither side of
+  the pair was marked at the time, which is the failure the supersession protocol exists to prevent: this
+  entry stayed live and still read "Verified live", and a later verification brief was written from it.
+
 ### 2026-06-20 · busquedav2: drop EC line highlights; remove marked-line CSS
 - **Superseded by:** 2026-07-04 · Decisive-line focus highlighting for Expressive Code {n} markers
 - **Decision:** Remove all `{n}` line-highlight markers from `busquedav2.mdx` and delete the custom EC

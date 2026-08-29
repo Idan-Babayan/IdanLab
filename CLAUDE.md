@@ -90,7 +90,7 @@ This is deliberately the OPPOSITE of the DECISIONS rule, which never deletes, be
 
 Full description in CORE_SPEC §5. What a session must not get wrong:
 
-- **Two surfaces.** Marketing pages are standalone `.astro` in `src/pages/`: dark-only, own `<head>`, inline token block and inline FX. Everything in `src/content/docs/` is Starlight. Picking the wrong one is the easiest mistake here.
+- **Two surfaces.** Marketing pages are standalone `.astro` in `src/pages/`: own `<head>`, inline token block and inline FX. Everything in `src/content/docs/` is Starlight. Picking the wrong one is the easiest mistake here. **Only `/` is dark-only.** `/about` has a working theme toggle and a full `html[data-theme='light']` block, so treating both as dark-only will produce a light-mode regression nobody sees on the homepage. CORE_SPEC §5 "Theme behavior" is authoritative.
 - **Route collision.** A `src/pages/` route and a Starlight doc must not both claim the same URL. Adding a marketing page means deleting any Starlight doc on that route, and the reverse.
 - **Never fork or rebuild a Starlight component.** The theme pass is CSS only and must not touch Starlight's functionality.
 - **A sidebar `autogenerate.directory` must exist** or the build errors. Create the folder with at least one writeup before enabling its entry. HTB Hard is commented out for this reason (the folder is empty); Medium is live.
@@ -126,7 +126,7 @@ Flat `.mdx` at `src/content/docs/<platform>/<difficulty>/<slug>.mdx`. Reference 
 
 - Never run `git commit` or `git push` unless I explicitly ask. Edit locally; I commit myself.
 - Only `main` and `dev`. Never create or rename branches unless I explicitly ask.
-- Never create PRs unless I explicitly ask.
+- **NEVER open a pull request, for any reason, including if asked in a task brief.** This is not a "unless I say otherwise" rule any more. A PR mints a server-managed `refs/pull/N/head` on GitHub that permanently pins the branch's entire ancestry and is not writable or removable by push. See the `main` merge rule below for the second reason.
 - Never add "Co-Authored-By: Claude" or modify commit authors.
 - **Never rewrite git history: no rebase, amend, force push, or reset, unless I explicitly request it.**
 - **`main` is reached by a COMMAND-LINE merge, never a pull request and never the GitHub web UI.** Run `git merge --no-ff dev` so the merge is an explicit two-parent commit. Never `--squash`: it would collapse the atomic commit history this project preserves on purpose. Two standing reasons, both permanent, not situational: (1) the account has "keep my email addresses private" enabled, so a web-UI merge authors with a `users.noreply.github.com` address, reintroducing a second identity into a history that was deliberately normalized to one; (2) a pull request mints a `refs/pull/N/head` that pins its entire ancestry permanently and is not removable by push, which is why a GitHub Support request is currently open. Pushing `main` still needs an explicit instruction. Reasoning: DECISIONS 2026-08-06 · Merges to `main` run from the command line, not through a pull request.
@@ -140,7 +140,7 @@ Delegated authority (2026-07-25, owner instruction): Claude Code may run read co
 
 - NO em dashes in any copy. Use commas, colons, or parentheses.
 - Don't upgrade dependencies unless I ask. Versions are pinned.
-- Marketing pages are standalone and dark-only. Writeups are Starlight, themed via the `src/styles/` modules under the layer contract (tokens, base, prose, chrome, components, pages, utilities), with `overrides.css` the only unlayered surface. Never rebuild Starlight.
+- Marketing pages are standalone. The homepage is dark-only; `/about` supports light and dark. Writeups are Starlight, themed via the `src/styles/` modules under the layer contract (tokens, base, prose, chrome, components, pages, utilities), with `overrides.css` the only unlayered surface. Never rebuild Starlight.
 - No `!important` inside a layer (it reverses layer order). Rules that must beat unlayered CSS, including our own Astro-scoped component styles, go in `overrides.css` with a comment naming what they beat.
 - No selector flattening and no unit conversions in the theme pass.
 - TypeScript in `.astro` `<script>` blocks uses explicit assertions (`as HTMLElement | null`, `!`, `?? ''`). Match that style.
