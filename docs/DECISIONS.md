@@ -6,6 +6,102 @@
 
 ---
 
+### 2026-08-29 · Astro 6 to 7 and Starlight 0.39 to 0.41, upgraded in phases against a byte-reproducible build
+- **Supersedes in part:** 2026-05-31 · Stay on current package versions (no upgrade). Only the "remain on
+  Astro 6.3.3 / Starlight 0.39.2" half dies. That entry's actual POLICY, upgrade only from a stable
+  checkpoint and never hand-bump, stands and is what this migration followed.
+- **Supersedes in part:** 2026-08-01 · Thirteen Dependabot alerts triaged and deliberately deferred. Only
+  the deferral dies: all 13 are cleared and `npm audit` is 0. That entry's threat-model analysis, and its
+  framing of the fix as presentation rather than security, stand unchanged.
+- **Decision:** the framework moves to `astro` 7.2.9 and `@astrojs/starlight` 0.41.10, carrying
+  `@astrojs/mdx` 7.0.8, `astro-expressive-code` 0.44.1, `starlight-image-zoom` 0.15.0, `sharp` 0.35.4 and
+  `vite` 8.2.2, plus three newly DIRECT dependencies: `@astrojs/markdown-remark` at `7.2.4` exact,
+  `unist-util-visit` at `^5.1.0` and `acorn` at `^8.16.0`. Current state in CORE_SPEC §3.
+- **The range forms are a decision and look inconsistent on purpose.** The invariant is ONE PHYSICAL COPY
+  SHARED WITH THE CONSUMER: the custom remark and rehype plugins bind to `unist-util-visit` and `acorn`
+  directly, and `astro.config.mjs` imports `unified` from `@astrojs/markdown-remark`. Resolve to a
+  different copy than the code running the pipeline and the plugin binds one instance while the engine
+  uses another, which fails SILENTLY on a green build. The mechanical answer therefore depends on what the
+  CONSUMER declares, and inverts: `@mdx-js/mdx` requires `acorn` by RANGE, so a caret shares the hoisted
+  copy while an exact pin would force a second one; `astro` requires `@astrojs/markdown-remark` by EXACT
+  pin, so an exact pin shares it while a caret would float above astro's copy. Measured rather than
+  argued: the Phase 5 lockfile regeneration moved `acorn` to 8.18.0 and it still resolved to one copy
+  shared by all three consumers.
+- **Why phased, in six phases rather than one upgrade:** ONE VARIABLE PER PHASE, so a regression has one
+  suspect. Phase 1 declared the two transitive packages the plugins already used. Phase 2 took Astro 6.4
+  and Starlight 0.40. Phase 3 moved the markdown pipeline onto `markdown.processor: unified({...})` and
+  pinned `compressHTML: true` ahead of Astro 7 changing its default. Phase 4 was the framework jump
+  itself. Phase 4b re-tested one result that had passed for the wrong reason. Phase 5 was tree hygiene.
+  Phase 3 turned out to be a hard PREREQUISITE rather than tidying: `starlight-image-zoom` 0.15.0 requires
+  a `unified()` processor and throws without one.
+- **Phase 0c was not planned and had to happen first.** `FlagCapture.astro` generated its LOCKED
+  cyphertext with `Math.random()` in component frontmatter, which runs at BUILD time, not in the browser.
+  The scramble was therefore baked into static HTML, identical for every visitor, and re-rolled on every
+  build. The randomness bought nothing observable: no visitor could see two different scrambles, so its
+  only effect was to make `dist/` differ between two builds of identical source. That is fatal to a
+  verification method whose whole premise is that an unexplained byte difference is a defect. Replaced
+  with a small deterministic PRNG seeded once from the flag string, decorrelated so repeated characters in
+  a flag do not produce repeated glyphs. **The build's byte-reproducibility now depends on this**, which
+  is the durable fact: reintroducing `Math.random()` there does not break the site, it breaks every
+  zero-difference assertion the harness makes, and it breaks them silently.
+- **The one unplanned change of shape:** `astro@7.2.8` narrowed `sharp` from `^0.34.0 || ^0.35.0` to
+  `^0.35.4` mid-migration, pulling the planned Phase 5 sharp bump into Phase 4. Caught in pre-flight
+  research rather than discovered in a diff, which mattered: `sharp` is an `optionalDependency` of astro
+  rather than a peer, so npm would NOT have raised ERESOLVE. It would have hoisted 0.34.5, nested astro's
+  own 0.35.x, and left `astro:assets` using the nested copy. A silent skew, not a loud failure. All 21
+  generated images are byte-identical afterwards, from a cold cache, so the bump changed nothing.
+- **Deliberately NOT done.** Sätteri is not adopted, and cannot be while `starlight-image-zoom` is used:
+  0.15.0 throws outright on a Sätteri processor. `@astrojs/markdown-satteri` is nonetheless IN the tree as
+  a hard dependency of astro and Starlight, so its presence is not a decision. The CSS minifier was not
+  pinned back with `build.cssMinify: 'esbuild'` either, which would have required declaring `esbuild` as a
+  direct devDependency to buy back a comparison method only the harness needed. Both recorded in
+  CORE_SPEC §3.
+- **One visible consequence, on wide-gamut displays only.** Lightning CSS PRESERVES authored `oklch()`
+  where the previous minifier lowered it to sRGB hex, so the four `.ec-cmd-*` command colours and
+  `.port-label` now ship as authored and render at full chroma on a P3 display, identically on sRGB. The
+  palette in 2026-06-15 · Command-highlight palette rebuilt on a principled OKLCH basis (+ bold weight)
+  therefore ships as specified for the FIRST time, and that entry is not superseded by this one.
+  **Caveat worth carrying: the WCAG AA ratios recorded there were measured on the CLAMPED sRGB values and
+  have not been re-measured on wide gamut.** The build-time-evaluation half of the same mechanism is
+  recorded separately in 2026-08-29 · Lightning CSS evaluates `color-mix()` at build time, so CSS bytes
+  vary by build machine.
+- **The verification method is the most reusable output, and is worth more than the version bump.** It
+  rests on one idea: the build is byte-reproducible, so any unexplained difference in `dist/` is a defect.
+  Everything else exists to catch what a byte comparison cannot see.
+  - **Silent-failure counters** count things in built HTML that can each reach ZERO while the build stays
+    green, because remark and rehype plugins and Astro components fail silently rather than throwing. The
+    four `ec-cmd-*` counts (9 / 9 / 13 / 74) are the sharpest: they are the only thing standing between a
+    green build and an Expressive Code plugin that has silently bound to a second `@expressive-code/core`
+    copy and stopped colouring anything. The image-zoom pair is counted as TWO numbers, plugin wrappers
+    and override roots, because the plugin and the component override fail independently and one combined
+    number would mask either.
+  - **The settled computed-style probe** records the resolved value AND the full matching-rule list per
+    target. Its predecessor sampled at a fixed 250ms after flipping the theme, landing inside the 300ms
+    transition on `/about` and reporting two colour differences that were pure measurement error, drifting
+    run to run. Replaced with two-sample stabilization: wait, then require two consecutive full samples to
+    agree on every property before recording, and report anything that never settles instead of recording
+    it. A fixed delay is not a fix; agreement between samples is.
+  - **Layer-order and per-rule-layer assertions** are what catch a cascade reorder, where every token
+    value stays identical and a different rule wins. No value comparison can see that, which is why the
+    probe records the winning-rule list and why layer membership is asserted per rule.
+  - **The direct WASM-in-worker probe** exists because a search smoke test is NOT sufficient evidence:
+    Pagefind runs WebAssembly in a Web Worker, and worker-context CSP violations do not surface on the
+    main-thread listener or in the page console, so blocked WASM can look like a clean search that
+    silently fell back. The probe drives the real production worker by hand and asserts an empty error
+    log. It only runs against a deployed origin, because `astro preview` does not serve the Cloudflare
+    `_headers` file and so does not enforce the CSP.
+- **Verified:** 46 pages at every phase; `dist/` byte-identical across Phases 3, 4b and 5 including from a
+  COLD cache twice; zero computed-style value differences and zero cascade reorders in the final phases;
+  every silent-failure counter unchanged; the effective layer order and every authored rule's layer
+  unchanged; single physical copy of `@expressive-code/core`, `unist-util-visit`, `acorn`,
+  `@astrojs/markdown-remark` and `sharp`; `npm audit` from 10 findings (6 high) to **0**. Deployed and
+  probed on the Cloudflare preview: enforced CSP, WASM instantiated in a same-origin worker, search
+  correctly ranked, zero CSP violations across five pages.
+- **Status:** Adopted and shipped on `dev` (`0b1f7dc`, `b586608`, `d07744c`, `9c92ac4`, `4d52fa3`,
+  `834de41`), reconciled with `main` in `d53513f`. Full record in
+  `../idanlab-migration-baseline/MIGRATION-COMPLETE.md`, which carries the per-phase detail and the
+  findings that did not earn a place here. Documented 2026-08-29.
+
 ### 2026-08-29 · Lightning CSS evaluates `color-mix()` at build time, so CSS bytes vary by build machine
 - **Decision:** `dist/` CSS is byte-comparable ACROSS BUILDS ON ONE MACHINE and is NOT byte-comparable
   across platforms. A local-versus-deployed CSS hash difference is expected and is not a finding. HTML,
@@ -339,6 +435,10 @@
 - **Decision:** Dependabot is enabled (both vulnerability alerts and automated security updates, both
   previously off) and its 13 open alerts (6 high, 5 moderate, 2 low) are triaged and DEFERRED. None is
   patched. Pinned versions stand.
+  - **Partly superseded by:** 2026-08-29 · Astro 6 to 7 and Starlight 0.39 to 0.41, upgraded in phases
+    against a byte-reproducible build. The DEFERRAL is over: all 13 are cleared and `npm audit` reports
+    0, without the `overrides` block this entry proposed. The threat-model analysis below, and the
+    framing of the fix as presentation rather than security, are unaffected and still hold.
 - **Zero of the 13 have a realistic path in this threat model,** and this was verified against BUILT
   OUTPUT rather than assumed. `dist/` carries no view transitions, no hydrated islands, and none of the
   alerted build tooling; source carries no spread props in any component. Every exploit requires one of: a
@@ -2888,6 +2988,10 @@ automatically; no astro.config.mjs edit is needed per writeup.
 ### 2026-05-31 · Stay on current package versions (no upgrade)
 - **Decision:** Remain on Astro 6.3.3 / Starlight 0.39.2 (both current). Upgrade only later,
   from a stable checkpoint, via `npx @astrojs/upgrade`.
+  - **Partly superseded by:** 2026-08-29 · Astro 6 to 7 and Starlight 0.39 to 0.41, upgraded in phases
+    against a byte-reproducible build. The "remain on 6.3.3 / 0.39.2" half is stale: the upgrade happened.
+    The rest of this bullet, upgrade only from a stable checkpoint and never hand-bump, is still the
+    policy and is what that migration followed.
 - **Why:** Site works; mid-polish is the wrong time to absorb major-version breaking changes.
 - **Status:** Adopted.
 
