@@ -6,6 +6,211 @@
 
 ---
 
+### 2026-08-29 · Astro 6 to 7 and Starlight 0.39 to 0.41, upgraded in phases against a byte-reproducible build
+- **Supersedes in part:** 2026-05-31 · Stay on current package versions (no upgrade). Only the "remain on
+  Astro 6.3.3 / Starlight 0.39.2" half dies. That entry's actual POLICY, upgrade only from a stable
+  checkpoint and never hand-bump, stands and is what this migration followed.
+- **Supersedes in part:** 2026-08-01 · Thirteen Dependabot alerts triaged and deliberately deferred. Only
+  the deferral dies: all 13 are cleared and `npm audit` is 0. That entry's threat-model analysis, and its
+  framing of the fix as presentation rather than security, stand unchanged.
+- **Decision:** the framework moves to `astro` 7.2.9 and `@astrojs/starlight` 0.41.10, carrying
+  `@astrojs/mdx` 7.0.8, `astro-expressive-code` 0.44.1, `starlight-image-zoom` 0.15.0, `sharp` 0.35.4 and
+  `vite` 8.2.2, plus three newly DIRECT dependencies: `@astrojs/markdown-remark` at `7.2.4` exact,
+  `unist-util-visit` at `^5.1.0` and `acorn` at `^8.16.0`. Current state in CORE_SPEC §3.
+- **The range forms are a decision and look inconsistent on purpose.** The invariant is ONE PHYSICAL COPY
+  SHARED WITH THE CONSUMER: the custom remark and rehype plugins bind to `unist-util-visit` and `acorn`
+  directly, and `astro.config.mjs` imports `unified` from `@astrojs/markdown-remark`. Resolve to a
+  different copy than the code running the pipeline and the plugin binds one instance while the engine
+  uses another, which fails SILENTLY on a green build. The mechanical answer therefore depends on what the
+  CONSUMER declares, and inverts: `@mdx-js/mdx` requires `acorn` by RANGE, so a caret shares the hoisted
+  copy while an exact pin would force a second one; `astro` requires `@astrojs/markdown-remark` by EXACT
+  pin, so an exact pin shares it while a caret would float above astro's copy. Measured rather than
+  argued: the Phase 5 lockfile regeneration moved `acorn` to 8.18.0 and it still resolved to one copy
+  shared by all three consumers.
+- **Why phased, in six phases rather than one upgrade:** ONE VARIABLE PER PHASE, so a regression has one
+  suspect. Phase 1 declared the two transitive packages the plugins already used. Phase 2 took Astro 6.4
+  and Starlight 0.40. Phase 3 moved the markdown pipeline onto `markdown.processor: unified({...})` and
+  pinned `compressHTML: true` ahead of Astro 7 changing its default. Phase 4 was the framework jump
+  itself. Phase 4b re-tested one result that had passed for the wrong reason. Phase 5 was tree hygiene.
+  Phase 3 turned out to be a hard PREREQUISITE rather than tidying: `starlight-image-zoom` 0.15.0 requires
+  a `unified()` processor and throws without one.
+- **Phase 0c was not planned and had to happen first.** `FlagCapture.astro` generated its LOCKED
+  cyphertext with `Math.random()` in component frontmatter, which runs at BUILD time, not in the browser.
+  The scramble was therefore baked into static HTML, identical for every visitor, and re-rolled on every
+  build. The randomness bought nothing observable: no visitor could see two different scrambles, so its
+  only effect was to make `dist/` differ between two builds of identical source. That is fatal to a
+  verification method whose whole premise is that an unexplained byte difference is a defect. Replaced
+  with a small deterministic PRNG seeded once from the flag string, decorrelated so repeated characters in
+  a flag do not produce repeated glyphs. **The build's byte-reproducibility now depends on this**, which
+  is the durable fact: reintroducing `Math.random()` there does not break the site, it breaks every
+  zero-difference assertion the harness makes, and it breaks them silently.
+- **The one unplanned change of shape:** `astro@7.2.8` narrowed `sharp` from `^0.34.0 || ^0.35.0` to
+  `^0.35.4` mid-migration, pulling the planned Phase 5 sharp bump into Phase 4. Caught in pre-flight
+  research rather than discovered in a diff, which mattered: `sharp` is an `optionalDependency` of astro
+  rather than a peer, so npm would NOT have raised ERESOLVE. It would have hoisted 0.34.5, nested astro's
+  own 0.35.x, and left `astro:assets` using the nested copy. A silent skew, not a loud failure. All 21
+  generated images are byte-identical afterwards, from a cold cache, so the bump changed nothing.
+- **Deliberately NOT done.** Sätteri is not adopted, and cannot be while `starlight-image-zoom` is used:
+  0.15.0 throws outright on a Sätteri processor. `@astrojs/markdown-satteri` is nonetheless IN the tree as
+  a hard dependency of astro and Starlight, so its presence is not a decision. The CSS minifier was not
+  pinned back with `build.cssMinify: 'esbuild'` either, which would have required declaring `esbuild` as a
+  direct devDependency to buy back a comparison method only the harness needed. Both recorded in
+  CORE_SPEC §3.
+- **One visible consequence, on wide-gamut displays only.** Lightning CSS PRESERVES authored `oklch()`
+  where the previous minifier lowered it to sRGB hex, so the four `.ec-cmd-*` command colours and
+  `.port-label` now ship as authored and render at full chroma on a P3 display, identically on sRGB. The
+  palette in 2026-06-15 · Command-highlight palette rebuilt on a principled OKLCH basis (+ bold weight)
+  therefore ships as specified for the FIRST time, and that entry is not superseded by this one.
+  **Caveat worth carrying: the WCAG AA ratios recorded there were measured on the CLAMPED sRGB values and
+  have not been re-measured on wide gamut.** The build-time-evaluation half of the same mechanism is
+  recorded separately in 2026-08-29 · Lightning CSS evaluates `color-mix()` at build time, so CSS bytes
+  vary by build machine.
+- **The verification method is the most reusable output, and is worth more than the version bump.** It
+  rests on one idea: the build is byte-reproducible, so any unexplained difference in `dist/` is a defect.
+  Everything else exists to catch what a byte comparison cannot see.
+  - **Silent-failure counters** count things in built HTML that can each reach ZERO while the build stays
+    green, because remark and rehype plugins and Astro components fail silently rather than throwing. The
+    four `ec-cmd-*` counts (9 / 9 / 13 / 74) are the sharpest: they are the only thing standing between a
+    green build and an Expressive Code plugin that has silently bound to a second `@expressive-code/core`
+    copy and stopped colouring anything. The image-zoom pair is counted as TWO numbers, plugin wrappers
+    and override roots, because the plugin and the component override fail independently and one combined
+    number would mask either.
+  - **The settled computed-style probe** records the resolved value AND the full matching-rule list per
+    target. Its predecessor sampled at a fixed 250ms after flipping the theme, landing inside the 300ms
+    transition on `/about` and reporting two colour differences that were pure measurement error, drifting
+    run to run. Replaced with two-sample stabilization: wait, then require two consecutive full samples to
+    agree on every property before recording, and report anything that never settles instead of recording
+    it. A fixed delay is not a fix; agreement between samples is.
+  - **Layer-order and per-rule-layer assertions** are what catch a cascade reorder, where every token
+    value stays identical and a different rule wins. No value comparison can see that, which is why the
+    probe records the winning-rule list and why layer membership is asserted per rule.
+  - **The direct WASM-in-worker probe** exists because a search smoke test is NOT sufficient evidence:
+    Pagefind runs WebAssembly in a Web Worker, and worker-context CSP violations do not surface on the
+    main-thread listener or in the page console, so blocked WASM can look like a clean search that
+    silently fell back. The probe drives the real production worker by hand and asserts an empty error
+    log. It only runs against a deployed origin, because `astro preview` does not serve the Cloudflare
+    `_headers` file and so does not enforce the CSP.
+- **Verified:** 46 pages at every phase; `dist/` byte-identical across Phases 3, 4b and 5 including from a
+  COLD cache twice; zero computed-style value differences and zero cascade reorders in the final phases;
+  every silent-failure counter unchanged; the effective layer order and every authored rule's layer
+  unchanged; single physical copy of `@expressive-code/core`, `unist-util-visit`, `acorn`,
+  `@astrojs/markdown-remark` and `sharp`; `npm audit` from 10 findings (6 high) to **0**. Deployed and
+  probed on the Cloudflare preview: enforced CSP, WASM instantiated in a same-origin worker, search
+  correctly ranked, zero CSP violations across five pages.
+- **Status:** Adopted and shipped on `dev` (`0b1f7dc`, `b586608`, `d07744c`, `9c92ac4`, `4d52fa3`,
+  `834de41`), reconciled with `main` in `d53513f`. Full record in
+  `../idanlab-migration-baseline/MIGRATION-COMPLETE.md`, which carries the per-phase detail and the
+  findings that did not earn a place here. Documented 2026-08-29.
+
+### 2026-08-29 · Lightning CSS evaluates `color-mix()` at build time, so CSS bytes vary by build machine
+- **Decision:** `dist/` CSS is byte-comparable ACROSS BUILDS ON ONE MACHINE and is NOT byte-comparable
+  across platforms. A local-versus-deployed CSS hash difference is expected and is not a finding. HTML,
+  JavaScript and generated images are unaffected and stay comparable everywhere. Recorded as a durable
+  fact about the build rather than as a bug: nothing is broken and nothing needs fixing.
+- **What changed:** before the Astro 7 upgrade the CSS minifier left `color-mix()` alone and shipped it
+  unevaluated, so the browser computed it at paint time and identical source produced identical CSS on
+  any machine. Astro 7 makes Lightning CSS the default minifier, and Lightning CSS RESOLVES a
+  `color-mix()` whose operands are all literal into an absolute colour at build time. The build machine's
+  floating-point result is therefore baked into the output, and into the content hash.
+- **The evidence, one source tree, two machines:** `common.css` is 108210 bytes on both the Windows local
+  build and the Linux Cloudflare builder, and differs at character 1376. Local
+  `--sl-color-bg-nav:oklab(13.7599% -.00308788 -.00327165/.78)`, deployed
+  `--sl-color-bg-nav:oklab(13.7599% -.00308787 -.00327167/.78)`. That is a difference in the eighth
+  significant digit of two oklab channels, and both are the resolved form of the authored
+  `color-mix(in oklab, #07090a 78%, transparent)`.
+- **Rendering impact: none.** A difference of ~1e-8 in an oklab channel is orders of magnitude below
+  8-bit quantisation, so the two builds paint the same pixels. The 66 `color-mix()` calls whose operands
+  include a `var()` cannot be resolved statically and still ship unevaluated, exactly as before.
+- **Why it matters anyway:** the whole five-phase upgrade rested on byte-identical `dist/` comparison as
+  its primary correctness assertion. That method is still sound, but its scope is now narrower than it
+  looks, and the narrowing is silent: a future check that compares a local manifest against deployed
+  output will report a CSS difference that means nothing, and will look exactly like a real regression.
+  Per-platform reproducibility was re-verified cold-to-cold after this surfaced and still holds at
+  159/159 files.
+- **The same mechanism has a second, visible consequence.** Lightning CSS also PRESERVES authored
+  `oklch()` instead of lowering it to sRGB hex, which the previous minifier did. The four `.ec-cmd-*`
+  command colours and `.port-label` now ship as the `oklch()` / `oklab()` the design authored, so on a
+  wide-gamut display they render at full authored chroma instead of sRGB-clamped, and identically on an
+  sRGB display. That makes the palette in DECISIONS 2026-06-15 · Command-highlight palette rebuilt on a
+  principled OKLCH basis (+ bold weight) ship as specified for the first time, so that entry stands and
+  is NOT superseded by this one.
+- **Rejected: pinning the minifier back with `build.cssMinify: 'esbuild'`.** It would restore both the
+  old lowering and platform-identical bytes, but it costs declaring `esbuild` as a direct devDependency
+  (today it is only transitive via Vite) and gives up Lightning CSS everywhere else, to buy back a
+  comparison method only the migration harness needed and a colour clamp the design never wanted.
+  Reconsider only if cross-platform byte-identity becomes a real requirement.
+- **Verified:** found during the Phase 4b deployed check, comparing `/hackthebox/easy/busqueda/` built
+  locally against the same page on `dev.idanlab.pages.dev`. Two other differences in that comparison were
+  run down and are NOT this one: 31 CRLF pairs, from `core.autocrlf=true` putting CRLF into checked-out
+  `.svg` sources (`linux.svg` is identical after newline normalisation, 14813 bytes local against 14723
+  deployed), and the `.svg` content hash that follows from it. Every generated image hash is identical
+  local and deployed, so `astro:assets` and sharp 0.35.4 are platform-stable.
+- **Status:** Recorded 2026-08-29. No code change and no configuration change. Written down so the next
+  local-versus-deployed CSS diff is recognised in a minute instead of costing an afternoon.
+
+### 2026-08-25 · Open Graph and Twitter Cards on both surfaces, from a static card and an additive Head override
+- **Decision:** every page emits Open Graph and Twitter Card metadata, and `og:image` points at one
+  site-wide static card, `public/og.jpg` (1200x630, RGB, no alpha). The Starlight docs get the tags
+  Starlight omits from a third additive component override, `src/components/overrides/Head.astro`. The
+  two marketing pages own their `<head>`, so they carry the full set inline with their own values plus a
+  canonical link. State recorded in CORE_SPEC §2 "Social and SEO metadata".
+- **Why an override rather than the `head` array in `astro.config.mjs`:** the config array is STATIC and
+  cannot vary per page. A `twitter:title` declared there would have pinned one constant string over every
+  writeup, contradicting the per-page `og:title` Starlight already emits correctly. The override renders
+  `<Default />` untouched and appends only what is missing (`og:image`, `twitter:image`, `twitter:title`,
+  `twitter:description`, later joined by `author` and the `og:image:*` set), reading title and description
+  from the page's own frontmatter with a site-level fallback. No default markup is reimplemented and no tag
+  is declared twice. Same additive pattern as the PageSidebar and Footer overrides, and the third instance
+  of it.
+- **Why a static card rather than a generated one:** the share surface is one identity, not per-page art,
+  so a generator would add an image-generation dependency to a build that currently has none, in order to
+  produce 46 near-identical cards. The card is drawn from the site's own self-hosted faces rather than a
+  lookalike: Syne 800 for the headline, carrying the same synthesized italic the hero uses on Curiosity,
+  JetBrains Mono for the eyebrow, subline and footer chrome, and the landing page's ink, lime, cyan and
+  magenta including the three atmospheric glows. Living in `public/` also keeps it outside `astro:assets`
+  hashing, and it falls under the `/*` header rule rather than the immutable `/_astro/*` or `/fonts/*`
+  rules, so it can be replaced in place with no cache-busting rename.
+- **Size:** a raw export was 772 KB, because smooth 24-bit gradients do not pack in PNG. Quantizing to 64
+  levels per channel is invisible on these ink-dark tones and landed at 330 KB. Coarser steps halve it
+  again but band visibly across the glows, which this design cannot afford.
+- **The debugging, in the order it happened, because most of it was aimed at the wrong layer.** LinkedIn
+  reported "no image found" for the landing page while `/about` and every Starlight page, all pointing at
+  the same URL, rendered fine. Three rounds followed, each eliminating something in the HTML: the bare `&`
+  in "CTF Writeups & Security Notes" (literal text in an `.astro` template passes through verbatim, which
+  is legal HTML5 but stops a strict scraper mid-head, and everything LinkedIn did report came from tags
+  declared before it); the HTML comments in the head, two of which held tag-like strings that a
+  regex-scanning scraper can match inside, as our own check did when it extracted a preload link from
+  within a comment; and the `name="image" property="og:image"` pair from LinkedIn's documentation, reverted
+  to the plain `property=` form that demonstrably worked on the pages that were already fine.
+- **The re-framing that ended it:** Post Inspector read a `name="author"` tag 80 seconds after it went
+  live, which proved the PARSER was healthy and reading current markup, so every round spent on tag syntax
+  was debugging a layer the evidence showed was working. LinkedIn runs two pipelines, a bot that parses the
+  HTML and a separate media service that refetches and re-encodes the image, and "no image found" is a
+  misleading label for a failure in the second. `og.png` was emitted by canvas with an alpha channel (color
+  type 6) that `sharp` reported as uniformly opaque, so it carried no information at 3.6x the file size,
+  and alpha is the usual differentiator when a re-encoder handles PNG less reliably than JPEG. The PNG was
+  flattened onto the ink background (330 KB to 98 KB, identical pixels) and `og:image` moved to a new
+  `og.jpg` (RGB, 80 KB, quality 88, 4:4:4 chroma subsampling so the colored text edges do not bleed).
+- **The escaping and comment fixes are KEPT even though neither was the fix,** because both are correct
+  independently: a bound expression cannot regress into a bare ampersand when someone edits the copy, and a
+  comment-free head gives a regex scanner nothing to trip on. They are recorded as standing rules in
+  CORE_SPEC §2 rather than as one-off repairs.
+- **CSP needed NO change.** The card is same-origin, so the enforced `img-src 'self' data:` already covers
+  it. An externally hosted og:image would need its origin added to the policy, which is a standing argument
+  for keeping the card same-origin. Noted in the CORE_SPEC security-headers bullet.
+- **Does NOT supersede 2026-07-07 · Font `<link rel=preload>` hints removed site-wide (Firefox "preloaded
+  but not used").** No preload is re-added and each of the three sources still carries its rationale
+  comment. On the two marketing pages that comment moved from an HTML comment inside `<head>` to page
+  frontmatter, so it no longer emits; the `astro.config.mjs` copy is untouched. That entry stands in full.
+- **Verified:** `npm run build` green (46 pages, exit 0). Across `dist/`, all 46 pages carry exactly one
+  `og:image`, all pointing at `https://idanlab.dev/og.jpg`, and exactly one `author`; a doc page carries
+  one each of `twitter:card`, `twitter:title`, `twitter:description` and `twitter:image`, so the override
+  duplicates nothing Starlight emits; the landing page head contains zero HTML comments.
+- **Status:** Adopted and shipped, on `dev` as `6d6df91`, `881271d`, `af8b7f8`, `b560705`, `6245a60`,
+  `844c017` (2026-08-24 and 2026-08-25). CONFIRMED: LinkedIn renders the card. The final commit bundled
+  three changes (alpha removal, format and URL) as one hypothesis about the media service, so which of the
+  three mattered is unknown, and the clean-bisect test it named is no longer needed. Documented 2026-08-29.
+
 ### 2026-08-06 · Supersession has two forms: `Supersedes:` archives, `Supersedes in part:` does not
 - **Decision:** the supersession protocol distinguishes two markers. `Supersedes: <date> · <title>` means
   WHOLESALE: the old entry is entirely replaced, gains `Superseded by: <date> · <title>`, and moves to
@@ -230,6 +435,10 @@
 - **Decision:** Dependabot is enabled (both vulnerability alerts and automated security updates, both
   previously off) and its 13 open alerts (6 high, 5 moderate, 2 low) are triaged and DEFERRED. None is
   patched. Pinned versions stand.
+  - **Partly superseded by:** 2026-08-29 · Astro 6 to 7 and Starlight 0.39 to 0.41, upgraded in phases
+    against a byte-reproducible build. The DEFERRAL is over: all 13 are cleared and `npm audit` reports
+    0, without the `overrides` block this entry proposed. The threat-model analysis below, and the
+    framing of the fix as presentation rather than security, are unaffected and still hold.
 - **Zero of the 13 have a realistic path in this threat model,** and this was verified against BUILT
   OUTPUT rather than assumed. `dist/` carries no view transitions, no hydrated islands, and none of the
   alerted build tooling; source carries no spread props in any component. Every exploit requires one of: a
@@ -671,6 +880,7 @@
 
 ### 2026-07-25 · PasswordReveal gets a BLOCK mode; the one-off `.spoiler-toggle` class is retired
 - **Supersedes:** 2026-07-11 · PasswordReveal migration complete
+- **Supersedes:** 2026-07-05 · Spoiler-toggle open border derives from summary color via --spoiler-color (fixes a masked light-mode bug)
 - **Decision:** `PasswordReveal` grows a second mode so one component covers both shapes a wargame secret
   comes in, and the `.spoiler-toggle` class it existed to work around is deleted from `custom.css`.
   **INLINE** (a `password` prop, no slot) is the original one-line password: blurs in place, copy control,
@@ -2085,47 +2295,6 @@ ever wanted later, it would require adding static.cloudflareinsights.com to scri
   self-hosting" ROADMAP item.
 - **Status:** Adopted + shipped (single static `public/_headers` plus doc edits).
 
-### 2026-07-05 · Spoiler-toggle open border derives from summary color via --spoiler-color (fixes a masked light-mode bug)
-- **Decision:** `.sl-markdown-content details.spoiler-toggle` now sets a single `--spoiler-color` custom
-  property (`#ffc23d` dark, `#a86f04` light) that BOTH the `[open]` border and the summary color read
-  from, replacing two independently hardcoded values. Dark's two values were already identical
-  (`#ffc23d`/`#ffc23d`), so dark is unchanged; light's open border moves from `#ffc23d` to the deeper
-  `#a86f04` summary color, so the open border always matches the label by construction instead of by
-  coincidence. The closed border is unchanged (`rgba(245, 158, 11, 0.45)`, both themes).
-- **Bug found during verification (bigger than the ask):** live browser verification (enumerating every
-  matching CSS rule via `document.styleSheets`, not just reading source) showed the amber border was
-  ALREADY not rendering at all in light mode, in either state, before this fix, for a reason unrelated to
-  the open/summary color values: two generic, unconditional rules elsewhere in `custom.css` also set
-  `border-color` on any `.sl-markdown-content details` / `details[open]` and have higher specificity than
-  a plain `.spoiler-toggle` selector, so they silently won: `html[data-theme="..."] .sl-markdown-content
-  details { border-color: ... }` (the base per-theme card border, specificity classes=2/types=2) beat the
-  closed-state rule (classes=2/types=1) in BOTH themes, and light-only `:root[data-theme='light']
-  .sl-markdown-content details[open] { border-color: var(--tp-divider); }` (written to stop a REGULAR
-  toggle's border turning green on open, classes=4/types=1) beat the open-state rule (classes=3/types=1)
-  in light. Net effect verified before this fix: light mode showed a neutral gray border
-  (`--tp-divider`, `#c6c0b4`) in both states; dark showed gray closed / correct `#ffc23d` open (no
-  light-only `[open]` competitor exists in dark). So the "brighter gold over deep gold" mismatch described
-  in the request was never actually visible either, a different bug (the gray fallback) was masking both
-  the old value and the intended fix.
-- **Fix (scoped, user-chosen over two alternatives):** the closed- and open-state border rules are
-  prefixed with `html[data-theme]` (attribute-presence match, not tied to a value, so it still resolves
-  per-theme via the token) purely to out-specificity the two generic rules above: closed becomes
-  classes=3/types=2 (beats the base rule's classes=2/types=2 on the class tier), open becomes
-  classes=4/types=2 (ties the light `[open]` rule's classes=4, wins on the type tier, 2 vs 1). This only
-  touches `.spoiler-toggle`'s own selectors; the two shared generic rules (and every other toggle that
-  depends on them for the "no green edge on paper" behavior) are untouched. Rejected: editing the two
-  shared rules to add `:not(.spoiler-toggle)` instead, same visual result but a larger blast radius across
-  every content toggle on the site for no added benefit.
-- **Verified live** (both themes, both states, via `getComputedStyle` + a full matching-rule enumeration,
-  not just the token value): dark closed `rgba(245, 158, 11, 0.45)`, dark open `rgb(255, 194, 61)`
-  (`#ffc23d`, matches summary, unchanged from before); light closed `rgba(245, 158, 11, 0.45)` (now
-  correctly amber instead of the masked gray, a bonus fix beyond the original ask), light open
-  `rgb(168, 111, 4)` (`#a86f04`, matches summary exactly, the requested fix). A regular (non-spoiler)
-  toggle on `busqueda.mdx` was spot-checked and is unaffected: closed and open borders are still
-  identical (`--tp-divider`), so the "no green edge" behavior for ordinary toggles is untouched.
-  `npm run build` green (45 pages).
-- **Status:** Adopted + shipped (custom.css only).
-
 ### 2026-07-05 · Remark plugin auto-injects the PasswordReveal import (no per-file import needed)
 - **Decision:** New additive build-time plugin `plugins/remark-inject-passwordreveal.mjs`, wired into
   `astro.config.mjs` via `markdown.remarkPlugins` (a new array; only `rehypePlugins` existed before). It
@@ -2819,6 +2988,10 @@ automatically; no astro.config.mjs edit is needed per writeup.
 ### 2026-05-31 · Stay on current package versions (no upgrade)
 - **Decision:** Remain on Astro 6.3.3 / Starlight 0.39.2 (both current). Upgrade only later,
   from a stable checkpoint, via `npx @astrojs/upgrade`.
+  - **Partly superseded by:** 2026-08-29 · Astro 6 to 7 and Starlight 0.39 to 0.41, upgraded in phases
+    against a byte-reproducible build. The "remain on 6.3.3 / 0.39.2" half is stale: the upgrade happened.
+    The rest of this bullet, upgrade only from a stable checkpoint and never hand-bump, is still the
+    policy and is what that migration followed.
 - **Why:** Site works; mid-polish is the wrong time to absorb major-version breaking changes.
 - **Status:** Adopted.
 

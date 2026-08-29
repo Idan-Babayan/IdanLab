@@ -1,4 +1,5 @@
 import { defineConfig } from 'astro/config';
+import { unified } from '@astrojs/markdown-remark';
 import starlight from '@astrojs/starlight';
 import starlightImageZoom from 'starlight-image-zoom';
 import path from 'path';
@@ -12,6 +13,14 @@ import remarkTransformReconRail from './plugins/remark-transform-recon-rail.mjs'
 export default defineConfig({
   site: 'https://idanlab.dev',
 
+  // Pinned to Astro 6's current default rather than left implicit, so it is provably a no-op here.
+  // Astro 7 changes the default to 'jsx', which strips whitespace BETWEEN inline elements following
+  // JSX rules. The badge rows, port-label spans, task-title spans and the wordmark are exactly the
+  // markup shape that silently loses a rendered space under that rule. Setting it now keeps
+  // whitespace handling a separate decision, made on its own merits, rather than a side effect of
+  // the framework upgrade.
+  compressHTML: true,
+
   vite: {
     resolve: {
       alias: {
@@ -20,6 +29,13 @@ export default defineConfig({
     }
   },
 
+  // Plugins go to unified() from @astrojs/markdown-remark, not to the top-level
+  // markdown.remarkPlugins / markdown.rehypePlugins keys, which Astro 6.4 deprecated and Astro 8
+  // removes. Array order is IDENTICAL to what those keys carried and is load-bearing; the rationale
+  // for each position is below. gfm, smartypants and remarkRehype are deliberately not passed here:
+  // unified() resolves an unset option back to the shared top-level value, and all three already sit
+  // at their defaults (gfm true, smartypants true, remarkRehype {}), so passing them would restate
+  // the default and invite drift.
   // Content image loading: a rehype pass sets loading/decoding on content <img> (first eager,
   // rest lazy). Covers raw /public absolute-path images that skip astro:assets. See plugins/.
   // remarkInjectPasswordReveal: a remark pass that auto-injects the PasswordReveal import into
@@ -38,8 +54,10 @@ export default defineConfig({
   // Appended LAST for the same reason as the injector: the taxonomy guard's boundary is hand-authored
   // markup, and the dl/dt/dd this emits are generated nodes it should never see.
   markdown: {
-    remarkPlugins: [remarkValidateContentTaxonomy, remarkInjectPasswordReveal, remarkInjectWriteupMeta, remarkTransformReconRail],
-    rehypePlugins: [rehypeContentImageLoading],
+    processor: unified({
+      remarkPlugins: [remarkValidateContentTaxonomy, remarkInjectPasswordReveal, remarkInjectWriteupMeta, remarkTransformReconRail],
+      rehypePlugins: [rehypeContentImageLoading],
+    }),
   },
 
   integrations: [

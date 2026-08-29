@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-08-01.
+> Last updated: 2026-08-29 (Astro 7 upgrade).
 
 ---
 
@@ -50,7 +50,9 @@
   Content-Security-Policy is ENFORCED IN PRODUCTION (live since PR #9 merged 2026-07-11; flipped from `Content-Security-Policy-Report-Only` after full
   cross-browser plus real-Safari verification): `font-src 'self'` (fonts self-hosted, no external origins),
   `style-src 'self' 'unsafe-inline'` (Starlight / Expressive Code inline styles, effectively permanent),
-  `img-src 'self' data:` (icon data URIs), `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`,
+  `img-src 'self' data:` (icon data URIs; it also covers the same-origin social card at `/og.jpg`, so
+  the Open Graph work needed NO policy change, and an externally hosted og:image would need its origin
+  added here), `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`,
   plus `frame-ancestors 'none'` and `upgrade-insecure-requests`, which were inert under Report-Only and are
   now ACTIVE (frame-ancestors backs up the enforced `X-Frame-Options: DENY`; upgrade-insecure-requests
   upgrades same-origin subresources to HTTPS). `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'`:
@@ -71,6 +73,39 @@
   mode would require allowlisting static.cloudflareinsights.com in script-src.
 - **Local dev:** `npm run dev` → `localhost:4321`.
 
+### Social and SEO metadata
+
+- **Every page carries Open Graph and Twitter Card tags,** so a link shared to LinkedIn, WhatsApp or
+  Slack renders a card. Reasoning, including the debugging that shaped it: DECISIONS 2026-08-25 · Open
+  Graph and Twitter Cards on both surfaces, from a static card and an additive Head override.
+- **Two emitters, one per surface.** Starlight already emits `og:title`, `og:type`, `og:url`,
+  `og:locale`, `og:description`, `og:site_name` and `twitter:card` per doc page. Everything it omits
+  comes from `src/components/overrides/Head.astro` (`author`, `og:image`, `og:image:secure_url`,
+  `og:image:type`, `og:image:width`, `og:image:height`, `og:image:alt`, `twitter:title`,
+  `twitter:description`, `twitter:image`), which reads title and description from the page's own
+  frontmatter and falls back to the site title and description. The marketing pages sit outside
+  Starlight and own their `<head>`, so they carry the FULL set inline with their own values plus a
+  `<link rel="canonical">`. `og:type` is `website` on the landing page and `profile` on about, which
+  also carries `profile:first_name` and `profile:last_name`. Nothing is declared twice on either
+  surface: verified in `dist/`, all 46 pages carry exactly one `og:image` and one `author`.
+- **The static `head` array in `astro.config.mjs` is the WRONG seam for per-page tags.** It cannot vary
+  per page, so a `twitter:title` declared there would pin one constant string over every writeup and
+  contradict the per-page `og:title` Starlight already gets right. Per-page social tags belong in the
+  Head override; the `head` array stays for the genuinely constant (the reading-progress script).
+- **`og:image` is an ABSOLUTE URL on every surface** (`new URL('/og.jpg', Astro.site)` in the override,
+  written out in full on the marketing pages), because crawlers do not resolve relative paths.
+- **The card is a static asset, not generated at build time.** One site-wide identity card, checked in
+  at `public/og.jpg`. Neither `og.jpg` nor `og.png` sits under the immutable `/_astro/*` or `/fonts/*`
+  cache rules, only under `/*`, so replacing the card needs no cache-busting rename (contrast the font
+  caveat in the security-headers bullet above).
+- **No HTML comments in any `<head>`, on either surface.** A comment holding a tag-like string can be
+  matched by a scraper that regex-scans the head instead of parsing it. Notes about head markup go in
+  the component or page frontmatter, which emits nothing.
+- **Head text is BOUND as an expression, never written as a literal.** Literal HTML in an `.astro`
+  template passes through verbatim, so a raw `&` in a title stays a bare ampersand: legal HTML5, but it
+  stops a strict scraper mid-head. The landing page's title, description and URLs are frontmatter
+  constants bound as `{TITLE}` and the like, so Astro escapes them on output.
+
 ### Repository visibility and licensing
 
 - **Visibility:** the repository is public and stays public. Closing it, and splitting it into a private
@@ -89,22 +124,106 @@
 
 ## 3. Tech Stack (pinned)
 
-- **Astro** `6.3.3`
-- **@astrojs/starlight** `0.39.2`
-- **astro-expressive-code** `0.42.0` (code blocks). Themes: `tokyo-night` (dark),
-  `one-light` (light). A custom EC plugin (`src/lib/ec-priv-command.mjs`) tags command words
-  by semantic category for coloring (see §6).
-- **@astrojs/mdx** `5.0.6`
-- **starlight-image-zoom** `0.14.2` — lightbox on content images.
+Current as of the Astro 7 upgrade, 2026-08-29. Reasoning: DECISIONS 2026-08-29 · Astro 6 to 7 and
+Starlight 0.39 to 0.41, upgraded in phases against a byte-reproducible build.
+
+**Declared in `package.json`.** The RANGE FORM is a decision, not a formatting choice; see below.
+
+| Package | Range | Resolves to | Role |
+| --- | --- | --- | --- |
+| `astro` | `^7.2.9` | 7.2.9 | framework |
+| `@astrojs/starlight` | `^0.41.10` | 0.41.10 | docs theme |
+| `starlight-image-zoom` | `^0.15.0` | 0.15.0 | lightbox on content images |
+| `sharp` | `^0.35.4` | 0.35.4 | image pipeline behind `astro:assets` |
+| `@astrojs/markdown-remark` | **`7.2.4` exact** | 7.2.4 | supplies `unified()` for `markdown.processor` |
+| `unist-util-visit` | `^5.1.0` | 5.1.0 | used directly by the custom remark plugins |
+| `acorn` | `^8.16.0` | 8.18.0 | used directly by the injector plugins |
+
+**Transitive, not declared, but load-bearing:** `@astrojs/mdx` 7.0.8, `astro-expressive-code` 0.44.1
+and `@expressive-code/core` 0.44.1 (themes `tokyo-night` dark / `one-light` light; the custom EC
+plugin `src/lib/ec-priv-command.mjs` tags command words by category, see §6), `pagefind` 1.5.2,
+`vite` 8.2.2.
+
+### Range form: one physical copy, shared with the consumer
+
+`@astrojs/markdown-remark` is pinned EXACTLY while `unist-util-visit` and `acorn` use carets. That
+looks inconsistent and is not: it is the same rule applied to two different consumer declarations.
+
+The invariant is that our code and the code that actually runs the pipeline must resolve to the SAME
+physical copy. The custom remark and rehype plugins bind to `unist-util-visit` and `acorn` directly,
+and `astro.config.mjs` imports `unified` from `@astrojs/markdown-remark`. If the root declaration
+lands on a different copy than the consumer's, the plugin binds one instance while the engine uses
+another, and the failure is SILENT: the build stays green and the output quietly loses the effect.
+
+- Consumer declares a RANGE (`@mdx-js/mdx` requires `acorn ^8.0.0`): use a CARET. Both land on the
+  hoisted copy; an exact pin would force a second copy the moment the consumer's range moved past
+  it. Measured: a clean lockfile regeneration moved `acorn` to 8.18.0 and it still resolved to one
+  copy shared by all three consumers.
+- Consumer declares an EXACT pin (`astro` requires `@astrojs/markdown-remark 7.2.4`): use an EXACT
+  pin. A caret would float above astro's copy and build the processor config from a different
+  package instance than the pipeline consumes.
+
+`@expressive-code/core` is deliberately NOT a direct dependency for the same reason: the custom EC
+plugin binds to whatever copy Expressive Code loads, and two copies would make the command colouring
+vanish with no error.
+
+### Toolchain (changed wholesale by Astro 7)
+
+| Piece | Now | Was |
+| --- | --- | --- |
+| `.astro` compiler | `@astrojs/compiler-rs` 0.4.0 (Rust, native) | `@astrojs/compiler` (Go, WASM) |
+| Bundler | `rolldown` 1.2.6 | `rollup` |
+| JS transform | Oxc (native code inside Rolldown's bindings) | esbuild |
+| CSS minifier | `lightningcss` 1.33.0 | esbuild |
+| Build tool | `vite` 8.2.2 | vite 7 |
+
+`esbuild` 0.28.2 is still present, pulled by Vite for dependency pre-bundling only. It is no longer
+the minifier or the transformer.
+
+Consequences worth knowing before reading a diff: the Rust compiler generates different scoped-class
+hashes and preserves attribute value casing, and Rolldown inlines small CSS and JS chunks instead of
+emitting separate files. Lightning CSS resolves static `color-mix()` at build time, which makes CSS
+bytes depend on the build machine, see DECISIONS 2026-08-29 · Lightning CSS evaluates `color-mix()`
+at build time, so CSS bytes vary by build machine.
+
+### Node
+
+- `.nvmrc` at the repository root holds `22`, and `package.json` declares
+  `engines.node: ">=22.12.0"`. Astro 7 requires 22.12 or newer.
+- **The Cloudflare Pages builder resolves this to 22.22.0**, confirmed at the dashboard. That value
+  is DASHBOARD-ONLY: it cannot be read from the repository, and it is not in the GitHub check-run,
+  whose `output.text` is empty and whose only build log is a dashboard link. Recording it here is
+  the only durable copy. The repo-side pin exists so the version stops being a dashboard setting
+  that can change without a commit.
+
+### Ships via Starlight, not declared here
+
+- **`@astrojs/sitemap`** is not in `package.json` and not in `astro.config.mjs`, yet it runs on every
+  build and emits `sitemap-index.xml` and `sitemap-0.xml` (45 URLs). `public/robots.txt` advertises
+  the URL and Google Search Console consumes it. It arrives as a Starlight dependency. **It must
+  still never be added manually**: declaring it would create a second copy and a second
+  configuration surface for something that already works.
+- **`@astrojs/markdown-satteri`** is in the tree as a hard dependency of astro 7.2.9 and Starlight
+  0.41.10. **Sätteri is NOT adopted and cannot be**: `starlight-image-zoom` 0.15.0 requires a
+  `unified()` markdown processor and throws outright if a Sätteri processor is selected. Seeing the
+  package in `node_modules` is not a constraint violation. `starlight-image-zoom` is therefore the
+  single dependency gating both Sätteri adoption and the eventual Astro 8 move, since the deprecated
+  top-level markdown keys it used until 0.14.2 are removed in Astro 8; it migrated onto the processor
+  in 0.15.0, which is what cleared the deprecation warning.
+
+### Upgrade path
+
 - **Node.js** + npm. Build is fully static (SSG).
-- Upgrade path: all packages are current as of 2026-05. Upgrade only from a stable
-  checkpoint via `npx @astrojs/upgrade` (never hand-bump). See DECISIONS for rationale.
+- Upgrade only from a stable checkpoint, in phases, one variable at a time, verified against a
+  byte-reproducible build. `npx @astrojs/upgrade` is the starting point but is NOT sufficient alone:
+  it needs an interactive TTY for its breaking-changes prompt, it does not touch non-Astro packages,
+  and it wrote a caret where an exact pin was required. Check its output; never hand-bump blind.
 
 ## 4. Repository Map
 
 ```
 C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Windows user profile path
-├─ astro.config.mjs                   # Starlight config: site, sidebar, customCss[layers.css, fonts.css, then the eight theme modules tokens/base/prose/chrome/components/pages/utilities/overrides, in that order], EC themes + pluginPrivCommand, reading-progress head script (no font preloads, see DECISIONS 2026-07-07), image-zoom, vite alias, components overrides (PageSidebar + Footer), markdown remarkPlugins (content-taxonomy validation guard + PasswordReveal import injection) + rehypePlugins (content image loading)
+├─ astro.config.mjs                   # Starlight config: site, sidebar, customCss[layers.css, fonts.css, then the eight theme modules tokens/base/prose/chrome/components/pages/utilities/overrides, in that order], EC themes + pluginPrivCommand, reading-progress head script (no font preloads, see DECISIONS 2026-07-07), image-zoom, vite alias, components overrides (PageSidebar + Footer + Head), markdown remarkPlugins (content-taxonomy validation guard + PasswordReveal import injection) + rehypePlugins (content image loading)
 ├─ src/
 │  ├─ content.config.ts               # docs collection (docsLoader + docsSchema) + the writeup metadata schema (§7)
 │  ├─ pages/
@@ -131,7 +250,8 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 │  │  ├─ SecretTerminal.astro         # from-scratch, zero-dependency vanilla-TS fake terminal
 │  │  └─ overrides/
 │  │     ├─ PageSidebar.astro         # additive Starlight override: renders <Default/> then <ToggleAll/> at the bottom of the right TOC
-│  │     └─ Footer.astro              # additive Starlight override: auto-appends the <Principle> coda from frontmatter and suppresses pagination on writeups that carry one
+│  │     ├─ Footer.astro              # additive Starlight override: auto-appends the <Principle> coda from frontmatter and suppresses pagination on writeups that carry one
+│  │     └─ Head.astro                # additive Starlight override: renders <Default/> then appends only the social tags Starlight omits (author, og:image + secure_url/type/width/height/alt, twitter:title/description/image), per-page values read from frontmatter (see §2 "Social and SEO metadata")
 │  ├─ lib/
 │  │  └─ ec-priv-command.mjs          # EC plugin: tags command words by category (priv/recon/net/inspect)
 │  └─ styles/                         # the theme pass, split into cascade-layer modules (see §5 "The layer contract")
@@ -154,6 +274,8 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 └─ public/
    ├─ robots.txt                      # in-repo; breadcrumb comment + Sitemap line (see §2)
    ├─ favicon.svg                     # site favicon
+   ├─ og.jpg                          # THE social card: 1200x630, RGB, no alpha, ~80 KB. Every og:image / twitter:image on the site points here (see §2)
+   ├─ og.png                          # the same card as an alpha-flattened PNG, ~98 KB. Kept in the tree; NO tag references it since og:image moved to the JPEG
    ├─ fonts/*.woff2                   # self-hosted subset fonts (Syne 600/700/800; JetBrains Mono 400/500/700 + 400/500 italic; Geist 400/600/700 + 400 italic); served at /fonts/
    ├─ icons/{htb,vulnhub,picoctf,overthewire}.svg
    └─ ethical-hacking.png             # about portrait (TODO: replace with transparent SVG). Writeup screenshots now live in src/assets (see §7); marketing images, if any, go under public/images
@@ -417,6 +539,15 @@ token is an open ROADMAP item, not a bug.
   "On this page" sidebar by `overrides/PageSidebar.astro` (renders `<Default/>` then the control).
 
 ### Starlight Component Overrides
+- **There are THREE, in `src/components/overrides/`:** `PageSidebar.astro` (renders the default "On
+  this page" TOC then appends `ToggleAll`), `Footer.astro` (appends the `Principle` coda from
+  frontmatter and suppresses pagination on writeups that carry one), and `Head.astro` (appends only
+  the Open Graph and Twitter Card tags Starlight omits, see §2 "Social and SEO metadata"). `Head`
+  arrived with the social-card work in 2026-08 and is the newest of the three.
+- **Every override imports from the documented `@astrojs/starlight/components/*` entrypoints and
+  none reaches into Starlight internals.** That is the constraint that keeps an override additive
+  rather than a fork: a deep import into an internal path would bind to a private module that
+  Starlight can move in a patch release, with no deprecation and no build error.
 - Starlight Component Overrides: Additive Starlight component overrides are an approved architectural pattern alongside the `src/styles/` theme modules and custom components.
 - Override Strategy: Overrides should wrap and render `<Default />` (or the upstream component) and layer behavior, styling, or markup on top rather than copying or replacing upstream implementations.
 - No Forking by Default Forking, duplicating, or fully replacing Starlight components is discouraged and should only be considered when the desired result cannot be achieved through an additive override.
@@ -699,11 +830,16 @@ Preserves reading position: anchors on the current heading and corrects scroll s
      + hashes them.
 3. Commit + push → Cloudflare deploys.
 
-### Build-time plugins (wired in `astro.config.mjs` `markdown.remarkPlugins`)
+### Build-time plugins (wired in `astro.config.mjs` `markdown.processor: unified({...})`)
 
 Four remark plugins run over the MDX source. All are zero-dependency (`unist-util-visit`, plus `acorn`
 for the injectors), and all see hand-authored markup only, never component output. Order matters in one
 place: the recon-rail transform is wired LAST.
+
+They are passed to `unified()` from `@astrojs/markdown-remark`, NOT to the top-level
+`markdown.remarkPlugins` / `markdown.rehypePlugins` keys, which Astro 6.4 deprecated and Astro 8
+removes. `gfm`, `smartypants` and `remarkRehype` are deliberately not passed: `unified()` resolves an
+unset option back to the shared top-level value and all three already sit at their defaults.
 
 - **`remark-inject-writeupmeta.mjs`** injects the `<WriteupMeta />` row and its import. Gated on the
   writeup path, so nothing outside one can be injected. Behavior detail in the MDX conventions below.
@@ -718,6 +854,14 @@ place: the recon-rail transform is wired LAST.
   you mean" suggestion. **Its allow-lists are the single source of truth**, and it is the deliberate
   alternative to `astro check`. It does not validate frontmatter: strict Zod enums in
   `content.config.ts` do that. See DECISIONS 2026-07-12 and 2026-07-20.
+
+**The guard structurally cannot see an underscore-prefixed file.** Astro silently excludes
+`_name.mdx` from a content collection, so such a file never enters the pipeline and no remark plugin
+runs over it. This is not a guard bug and cannot be fixed in the guard. It matters when TESTING the
+guard: a probe file named with a leading underscore builds green while the guard never sees it,
+which reads as a passing test of a dead guard. It produced exactly that false negative during the
+Astro 7 upgrade verification. Any probe of the guard must use a filename that does not start with an
+underscore.
 
 ### MDX conventions (applied by hand)
 - Writeups are stored as flat .mdx files under src/content/docs
