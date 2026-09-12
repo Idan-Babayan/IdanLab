@@ -136,7 +136,15 @@ function cardDescription(description: string | undefined): string | undefined {
 	return stripped.charAt(0).toUpperCase() + stripped.slice(1);
 }
 
-const all = await getCollection('docs');
+// Drafts: this is Starlight's own route filter, copied (utils/routing/index.ts). It drops a
+// `draft: true` writeup in production and keeps it in dev, so a card can never outlive the route it
+// points at. Without it the card ships to `dist/` while the page does not, and the break is
+// invisible in `npm run dev`, where the route exists and the link works. The same two lines sit in
+// SecretTerminal.astro; anything else that renders a writeup LINK needs them too.
+const all = await getCollection(
+	'docs',
+	({ data }) => import.meta.env.MODE !== 'production' || data.draft === false
+);
 
 // Everything under this platform. The platform index page's id is exactly `{platform}`
 // (no trailing segment), so `startsWith('{platform}/')` excludes it cleanly.
