@@ -877,6 +877,11 @@ DECISIONS 2026-07-10). Flag headings have no dedicated class yet, so the CSS tar
 slug ids are what the active-color ladder excludes, so flags keep gold instead of going cyan. See
 DECISIONS 2026-06-20.
 
+The unredacted value lives in exactly one place, the visually hidden `.flagcap-real`, which is both the
+screen-reader source and what the copy button reads. It carries `user-select: none` and there is no
+`data-flag` attribute, because both routes put the flag on the clipboard on a plain Ctrl+A
+(DECISIONS 2026-09-12).
+
 ### Password waypoint amber (PasswordReveal)
 
 **Two modes, one component, one amber (2026-07-25).** A wargame secret comes in two shapes and the
@@ -1505,6 +1510,25 @@ components, then a remark transform.
 a parse delimiter consumed at build time, and it is the least ambiguous way to mark where the port token
 ends. A convention that has to be learned is cheaper than markup that has to be maintained, but it is not
 free, so it is recorded here rather than treated as invisible.
+
+### Invisible to the eye is not invisible to the clipboard
+
+Two different hiding techniques ship on this site and they fail in opposite directions, so neither can
+borrow the other's rule.
+
+- **Clip-rect visually hidden** (`.flagcap-real`, `.flagcap-live`, `.sr-only`) keeps a real frame, which
+  is what lets a screen reader read it. A frame is also what makes it SELECTABLE, so it lands on the
+  clipboard on a plain Ctrl+A unless it carries `user-select: none`.
+- **`content-visibility: hidden`** (the UA's treatment of a closed `<details>` body) generates no frames
+  at all, yet the subtree stays in the tree, so a selection can still span it and serialise it.
+- **An attribute is neither.** A value in a `data-` attribute is written into the `text/html` clipboard
+  flavour whatever its element's selectability. A secret must not live in one.
+
+Test with a RICH TEXT paste target and read `text/html` from a real paste event. A textarea only ever
+exposes `text/plain`, which Blink fixed in Chrome 97, and `getSelection().toString()` was not fixed until
+144, so both report false passes. See DECISIONS 2026-09-12 · A closed toggle leaks into the clipboard two
+ways, and only one is a stylesheet's problem, and 2026-09-12 · The flag is visually hidden, not hidden:
+clip-rect text and a data attribute both reach the clipboard.
 
 ### A pinned size implies a pinned leading
 

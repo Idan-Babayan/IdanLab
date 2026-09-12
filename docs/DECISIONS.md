@@ -6,6 +6,71 @@
 
 ---
 
+### 2026-09-12 · A closed toggle leaks into the clipboard two ways, and only one is a stylesheet's problem
+- **The defect was never visible, which is why it survived three rounds of CSS.** The UA hides a closed
+  `<details>` body with `content-visibility: hidden` on `::details-content`, which the HTML spec mandates
+  and whose consequence it flags outright. The body keeps its place in the tree and generates no boxes.
+  The summary above it is `user-select: none`, so it is not a valid endpoint either, and Blink's
+  paragraph-granularity walk skips both and ends AFTER the whole toggle. Triple clicking the sentence
+  above a closed toggle therefore put the entire hidden `nmap -A` transcript inside the range.
+- **Only `text/html` leaked, and that is why the first three measurements were wrong.** Blink serialises
+  the three flavours on separate paths and fixed them at different times: `text/plain` in 97, `text/html`
+  in 138, `getSelection().toString()` in 144. A textarea harness reads `text/plain`, which has been clean
+  since long before this bug, so it reported a false pass twice. Measured on the production build,
+  Chrome 152: `text/html` was 1,355,046 bytes and carried the transcript; with the fix, 3,783 and clean.
+- **`.sl-markdown-content details:not([open])::details-content { user-select: none }`, in `@layer prose`,
+  its own declaration block.** It changes neither the range endpoint nor the client rect count nor the
+  painted highlight, all verified identical with and without it. Ctrl+F still reaches text inside a
+  closed toggle, with the control flipping to unfindable the moment `display: none` is substituted.
+- **A second, separate mechanism: the STATE TRANSITION.** Every fixed-state test missed it. With the
+  range already ending past a closed toggle, clicking the summary opens it, the selection survives the
+  click precisely because the summary is unselectable, and the body gains frames inside a range that
+  already contained it. Selection length jumps 106 to 704 and the transcript paints. The prose rule
+  cannot reach this: its `:not([open])` stops matching the instant the toggle opens.
+- **Fixed in `Toggle.astro`, not in a stylesheet.** On the opening transition only, if the reader's range
+  starts before the toggle and ends past its start, the end is clamped to just before the toggle with
+  `setEndBefore`. The clamp bails out rather than ever leaving an empty range: wiping the selection was
+  explicitly rejected, and is the reason summary `user-select: none` is still there. Listens on
+  `beforetoggle` so the body never paints even for a frame, with `toggle` as the fallback.
+- **Closing is deliberately untreated.** Measured: a live selection spanning an OPEN toggle that is then
+  closed keeps its length and its rect count. Clamping there would only truncate a large deliberate
+  selection that legitimately continued past the toggle.
+- **The cost, accepted.** A selection that deliberately continued past a toggle is truncated at the
+  toggle when the reader opens it, instead of swallowing the revealed body.
+- **Firefox 155 has neither defect.** Its walk stops at the paragraph, so the body is never in the range.
+  Both rules are inert there, and harmless. Verified with the clamp defeated, which changes nothing in
+  Gecko and restores the 704-character leak in Blink.
+- **Rejected, each refuted by measurement rather than argument.** Making the summary selectable fixes the
+  endpoint and collapses 147 rects to 2, but it moves where Blink roots the markup serialiser and the
+  copied HTML then reaches the root flag and later sections: strictly worse. Wrapping the summary label
+  in an unselectable span puts the endpoint straight back past the toggle, because Blink needs selectable
+  TEXT there, not a selectable box. `display: none` on `::details-content` stops the leak and takes
+  find-in-page with it.
+- **Chrome and Edge 97 to 130 stay exposed.** They hide the body with content-visibility but do not
+  support `::details-content`, so the rule is dropped there as an unknown selector. A real gap, not a
+  browser where the bug is absent.
+
+### 2026-09-12 · The flag is visually hidden, not hidden: clip-rect text and a data attribute both reach the clipboard
+- **A plain Ctrl+A on any writeup handed over both real flags, in both engines and both clipboard
+  flavours.** `FlagCapture` keeps the unredacted value in `.flagcap-real`, hidden with the clip-rect
+  technique so screen readers still get it past the visual scramble. Clip-rect hiding keeps a real frame,
+  and a frame is what makes text selectable. This is the exact inverse of a closed `<details>`, whose
+  body has no frames at all, which is why the two cases need different rules.
+- **Two routes, and fixing one looked like fixing both.** `user-select: none` on the hidden spans removed
+  the value from `text/plain` and from `text/html`, but the flag still appeared in `text/html` because it
+  was ALSO a `data-flag` attribute on the wrapper. No style reaches an attribute: it is serialised into
+  the markup flavour regardless of selectability. Occurrences in the copied HTML went 2, then 1, then 0.
+- **`user-select: none` on `.flagcap-real, .flagcap-live`, plus the attribute deleted.** The script now
+  reads the value from `.flagcap-real`, which has to exist for screen readers anyway, so this removes a
+  duplicate rather than adding a hiding place.
+- **Accessibility is untouched, verified rather than assumed.** With the rule live the node is still in
+  the DOM, keeps its text, is not `aria-hidden`, and computes `display: block` and `visibility: visible`.
+  `user-select` refuses selection and nothing else. The component's own copy button still delivers the
+  flag.
+- **Still open, deliberately.** The shared `.sr-only` utility leaks the same way ("Difficulty 1 of 4"
+  reaches both flavours). It is duplicated visible information rather than a spoiler, so it is recorded
+  here and not fixed in this pass.
+
 ### 2026-09-07 · Two taxonomy palettes: the landing pages re-base onto the WriteupMeta chip model
 - **Supersedes in part:** 2026-07-19 · `.machine-meta` deleted; the REST of the badge family is not dead
   (corrects the entry below). Only the bullet "`platform-*` is kept although it renders 0 times today":

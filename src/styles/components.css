@@ -986,8 +986,27 @@ html[data-theme="light"] .sl-markdown-content .cl :not(pre) > code {
   transition: opacity 0.15s ease;
 }
 
-/* The real flag, always in the DOM for screen readers + copy, visually hidden; plus the polite
-   capture announcement. */
+/* The real flag, always in the DOM for screen readers, visually hidden; plus the polite capture
+   announcement.
+
+   user-select: none is LOAD BEARING here, and it is not decoration. The clip-rect technique hides
+   this text visually while keeping a real frame, which is exactly what makes it reachable to a screen
+   reader. A frame is also what makes it SELECTABLE, so before this declaration a plain Ctrl+A then
+   copy put the unredacted flag on the clipboard, in a writeup whose entire point is that the flag is
+   earned. Measured on busqueda.mdx: both the user flag and the root flag appeared in text/plain and
+   in text/html. This is the opposite of a closed <details>, whose body is hidden by
+   content-visibility and generates no frames at all, which is why that case needs its own rule in
+   prose.css and why this one cannot borrow it.
+
+   user-select does not touch the accessibility tree: the node stays in the DOM, keeps its text, is
+   not aria-hidden, and still computes display:block and visibility:visible, all verified. Only
+   selection is refused.
+
+   This closes ONE of the two routes. The other was a `data-flag` attribute on the wrapper, which no
+   style can reach because an attribute is serialised into text/html regardless of selectability; that
+   one is closed in FlagCapture.astro, which now reads the value from this element instead. Re-test by
+   pressing Ctrl+A on a writeup, copying, and pasting into a rich text target: the flag must appear in
+   neither flavour, and the component's own copy button must still deliver it. */
 .flagcap-real,
 .flagcap-live {
   position: absolute;
@@ -999,6 +1018,8 @@ html[data-theme="light"] .sl-markdown-content .cl :not(pre) > code {
   clip: rect(0 0 0 0);
   white-space: nowrap;
   border: 0;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /* --- Captured frame depth, per theme (full gold border) --- */

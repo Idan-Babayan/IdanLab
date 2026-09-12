@@ -76,7 +76,12 @@ const isRoot = type === 'root';
 const noun = isRoot ? 'root flag' : 'user flag';
 ---
 
-<div class:list={['flagcap', isRoot ? 'flagcap-root' : 'flagcap-user']} data-flagcap data-flag={flag}>
+{/* NO data-flag attribute. It used to carry the value here, and an attribute is serialised into the
+    text/html clipboard flavour whatever its element's selectability, so a plain Ctrl+A then copy
+    handed over the unredacted flag even once .flagcap-real was made unselectable. The value lives in
+    .flagcap-real, which the script reads instead: that element has to exist anyway for screen
+    readers, so this removes a duplicate rather than adding a hiding place. */}
+<div class:list={['flagcap', isRoot ? 'flagcap-root' : 'flagcap-user']} data-flagcap>
   <button type="button" class="flagcap-btn" aria-label={`Decrypt ${noun}`}>
     <svg class="fc-ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
       <path class="fc-ico-path" d="M12 1.5a4.5 4.5 0 0 0-4.5 4.5V9H6.75A1.75 1.75 0 0 0 5 10.75v9.5A1.75 1.75 0 0 0 6.75 22h10.5A1.75 1.75 0 0 0 19 20.25v-9.5A1.75 1.75 0 0 0 17.25 9H16.5V6A4.5 4.5 0 0 0 12 1.5ZM15 9H9V6a3 3 0 0 1 6 0Z" />
@@ -131,7 +136,7 @@ const noun = isRoot ? 'root flag' : 'user flag';
     if (root.dataset.captured === 'true') return; // ceremony happens once
     root.dataset.captured = 'true';
 
-    const flag = root.dataset.flag ?? '';
+    const flag = (root.querySelector('.flagcap-real')?.textContent ?? '').trim();
     const value = root.querySelector('.flagcap-value') as HTMLElement | null;
     const stateText = root.querySelector('.fc-state-text') as HTMLElement | null;
     const live = root.querySelector('.flagcap-live') as HTMLElement | null;
@@ -174,7 +179,7 @@ const noun = isRoot ? 'root flag' : 'user flag';
     let revertId = 0;
 
     copy.addEventListener('click', () => {
-      const flag = root.dataset.flag ?? '';
+      const flag = (root.querySelector('.flagcap-real')?.textContent ?? '').trim();
       const write = navigator.clipboard?.writeText(flag);
       if (write && typeof write.catch === 'function') {
         write.catch(() => legacyCopy(flag));
