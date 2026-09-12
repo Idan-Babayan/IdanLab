@@ -107,6 +107,37 @@
   covers it UNCLIPS on focus, so it is text a keyboard reader can actually see and select. One word of
   chrome, left out of a rule about permanently hidden text.
 
+### 2026-09-12 · A writeup link is filtered by the same rule that emits its route
+- **Decision:** Every component that renders a writeup LINK passes Starlight's own draft filter to
+  `getCollection`, character for character the expression Starlight uses for routes
+  (`utils/routing/index.ts`): `({ data }) => import.meta.env.MODE !== 'production' || data.draft === false`.
+  Live in `PlatformIndex.astro` and `SecretTerminal.astro`. The two lines are COPIED at both call sites,
+  not shared from a module.
+- **Problem:** `draft: true` removes a page's ROUTE in production and keeps it in dev. Nothing removed the
+  LINKS to it. `PlatformIndex` and `SecretTerminal` each read `getCollection('docs')` unfiltered, so a
+  drafted writeup shipped a landing card and a `/secret` random-target into `dist/` aimed at a page that
+  build never emitted. Measured on a drafted Busqueda rewrite: `dist/hackthebox/index.html` carried
+  `href="/hackthebox/easy/busquedav2/"` and `dist/secret/index.html` listed the same URL, while
+  `dist/hackthebox/easy/` held only `busqueda` and `return`. That rewrite has since landed as
+  `busqueda.mdx`, so the path is gone; it is not the 2026-07-17 testbed of the same name. It is
+  invisible in `npm run dev`, which is
+  where you would look, because in dev the route exists and every link works. It surfaces only in `dist/`,
+  on the two pages least likely to be opened locally.
+- **Why mirror Starlight rather than hide drafts outright:** the invariant is that the card and the route
+  AGREE inside one build. Hiding a draft whose route dev does serve breaks that invariant from the other
+  side, and it would hide the page you are actively writing from the landing you are checking it on.
+- **Rejected:** a shared `src/lib/drafts.mjs` exporting `isRoutable`. Written, then deleted (owner call):
+  two lines of real code behind twenty-nine of comment, for two call sites eight lines apart in one
+  directory. A module buys one place to edit if Starlight ever changes the rule, which is unlikely, and
+  one place to hold the explanation, which a comment holds just as well. `src/lib/taxonomy.mjs` was never
+  an option: it is dependency-free BECAUSE Node (`plugins/`) and Vite (`src/`) both import it, and
+  `import.meta.env` is a Vite construct.
+- **Verified:** build green at 67 pages, unchanged. Production: the draft is absent from `dist/` entirely,
+  and every other link is byte-identical (hackthebox 3 cards, `/secret` 59 targets, was 60). Dev: card
+  present, route 200.
+- **Status:** Adopted. Any future component that renders a writeup link needs the same two lines, and
+  nothing enforces that but this entry.
+
 ### 2026-09-07 · Two taxonomy palettes: the landing pages re-base onto the WriteupMeta chip model
 - **Supersedes in part:** 2026-07-19 · `.machine-meta` deleted; the REST of the badge family is not dead
   (corrects the entry below). Only the bullet "`platform-*` is kept although it renders 0 times today":

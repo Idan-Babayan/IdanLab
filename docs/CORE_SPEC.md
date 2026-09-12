@@ -245,9 +245,9 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 │  │  ├─ Callout.astro                # icon-based tagged callout (recon/loot/intel/vuln/defense); .cl styles in components.css
 │  │  ├─ Principle.astro              # closing epigraph (aside.principle, prop: text): centered italic mono maxim + dinkus + PRINCIPLE label; no card/border/bg; .principle styles in components.css; HackTheBox writeups only, appended from frontmatter by overrides/MarkdownContent.astro
 │  │  ├─ WriteupCard.astro            # presentational writeup card (props only, reusable for a future /writeups index): one meta line (group glyph + word, then the facts that vary), title, description, affordance
-│  │  ├─ PlatformIndex.astro          # data + hero + a multi-select filter rail on the platform's own axis (difficulty or category, counts in the pills; axis from src/lib/taxonomy.mjs, an unknown middle directory fails the build) + WriteupCard grid; ported homepage effects
+│  │  ├─ PlatformIndex.astro          # data + hero + a multi-select filter rail on the platform's own axis (difficulty or category, counts in the pills; axis from src/lib/taxonomy.mjs, an unknown middle directory fails the build) + WriteupCard grid; ported homepage effects; drafts filtered by Starlight's own route rule, copied inline here and in SecretTerminal, so a card cannot outlive its route
 │  │  ├─ NotFound.astro               # 404 breadcrumb body (nudges to /robots.txt)
-│  │  ├─ SecretTerminal.astro         # from-scratch, zero-dependency vanilla-TS fake terminal
+│  │  ├─ SecretTerminal.astro         # from-scratch, zero-dependency vanilla-TS fake terminal; its `random` target list is built at build time from the docs collection, behind the same copied-from-Starlight draft filter PlatformIndex uses
 │  │  ├─ badges/                      # WriteupMeta.astro (the injected chip row), DifficultyPips.astro (the ONE ordinal pips glyph, shared with WriteupCard), icons.ts (icon registry + the category swatch)
 │  │  └─ overrides/
 │  │     ├─ PageSidebar.astro         # additive Starlight override: renders <Default/> then <ToggleAll/> at the bottom of the right TOC
@@ -518,8 +518,9 @@ token is an open ROADMAP item, not a bug.
   from the tab order at the moment of the final keypress and dumped focus to `<body>`; the click path is
   guarded instead, and the hover rule is keyed off `:not([aria-disabled='true'])`. Node and dot accessible
   names carry the progress state word, since the check glyph is `aria-hidden` and `aria-current` marks only
-  one node. Every node state and all chrome text measures AA in BOTH themes. Live on TWO writeups under
-  `## Summary`: Forest (6 hops) and Return (5 hops); both keep their BloodHound graph above as evidence. See
+  one node. Every node state and all chrome text measures AA in BOTH themes. Live on THREE writeups under
+  `## Summary`: Forest (6 hops), Return (5 hops) and Busqueda (5 hops); Forest and Return keep their
+  BloodHound graph above as evidence, Busqueda carries none. See
   DECISIONS 2026-07-19 (original build + native-fabric rework) and 2026-07-20 (production-polish pass +
   Return instance; edge-mask gutter; production-readiness audit)), `badges/WriteupMeta` (navigational
   Platform / Category (PicoCTF, directory-derived) / OS / Environment chip row + a trailing neutral Difficulty
@@ -997,6 +998,7 @@ Preserves reading position: anchors on the current heading and corrects scroll s
    gap between a raw Notion export and the intended finished writeup is an editorial-judgment problem
    that no text-transformation script resolves: a script can normalize syntax, but it cannot make the
    editorial calls that define the site's writeup quality. Apply the MDX conventions below by hand.
+   Read `busqueda.mdx` first and match it: it is the golden standard for HackTheBox writeups (§8).
    - Place the file at `src/content/docs/{platform}/{middle}/{slug}.mdx`. The `{middle}` dir is
      lowercase: the sidebar `autogenerate.directory` is case-sensitive (e.g. `hackthebox/easy`) and must
      match the on-disk lowercase dir; a case-only rename needs `git mv` on Windows
@@ -1370,6 +1372,13 @@ icon.
 - **NO em dashes** anywhere in site copy (use commas, colons, parentheses). Owner finds
   them "scream AI." Applies to all generated website text.
 - **Tone:** confident, curious, learning-focused. No self-deprecation.
+- **`busqueda.mdx` is the GOLDEN STANDARD for HackTheBox writeups.** Every future HTB writeup matches
+  it: section shape, evidence density, how callouts and toggles carry weight, and above all VOICE AND
+  TONE. Every line of that file is deliberate and was tuned by the owner personally, so a choice there
+  that looks odd is a choice and not an oversight: copy it rather than "improve" it. Match it before
+  inventing anything. In particular, never restyle writeup prose toward something that reads more
+  formal, more jargony or more technical than Busqueda does; a sentence that is marginally more precise
+  but stiffer to read is a regression, not a fix. Read it before writing, and diff against it after.
 - **Type-safe scripts:** all TS inside `.astro` `<script>` uses explicit assertions
   (`as NodeListOf<HTMLElement>`, `as HTMLElement | null`, `!`, `?? ''`) → zero VS Code problems.
 - **Code blocks:** every block has a language label; bash and python render identically; EC frames are
