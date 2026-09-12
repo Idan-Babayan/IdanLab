@@ -114,6 +114,51 @@ html[data-theme="light"] .sl-markdown-content details {
 }
 } /* @layer prose */
 
+/* A closed toggle leaks its body into the RICH TEXT clipboard flavour, and this is the only rule that
+   stops it. Nothing here changes the selection's shape or its paint: both are identical with and
+   without this rule, measured.
+
+   MECHANISM. The HTML spec now has the UA hide a closed <details> body with `display: block;
+   content-visibility: hidden` on the element ::details-content matches, and flags the consequence
+   itself: that choice "impacts the results of various APIs that query layout information". The body
+   keeps its place in the tree and generates no boxes. The summary above it is `user-select: none`
+   (the rule directly above this one), so it is not a valid selection endpoint either. A
+   paragraph-granularity gesture, which is a triple click or the reader's drag to grab a sentence,
+   therefore walks forward out of the paragraph, finds nothing it can stop on across the whole toggle,
+   and ends in whatever comes AFTER it. On busqueda.mdx that is a span in the next callout. Everything
+   in between, the hidden transcript included, is inside the resulting range.
+
+   WHAT LEAKS, AND WHAT DOES NOT. Blink serialises the three flavours separately and fixed them at
+   different times: text/plain in 97, text/html in 138, getSelection().toString() in 144. So on current
+   Chrome the plain text is already clean and ONLY text/html carries the body. Measured on the
+   production build, Chrome 152, triple clicking the paragraph above a closed toggle: without this rule
+   text/html is 1,355,046 bytes and contains the hidden `nmap -A` transcript; with it, 3,783 bytes and
+   clean. The range endpoint stays in the callout and the client rect count stays at 147 either way,
+   because this rule does not touch the walk, only what serialisation is allowed to take.
+
+   HOW TO RE-TEST. Paste into a RICH TEXT target. A textarea only ever exposes text/plain, which has
+   been clean since Chrome 97 and will report a false pass, and getSelection().toString() is clean from
+   144 for the same reason. Read e.clipboardData.getData('text/html') from a real paste event.
+
+   TWO THINGS THAT DO NOT WORK, so they are not retried. Making the summary selectable does give the
+   walk somewhere to stop, and it does collapse the range to 2 rects, but it moves where Blink roots
+   the markup serialiser and the copied HTML then reaches FURTHER, as far as the root flag and later
+   sections. Strictly worse. And `display: none` on this pseudo-element also stops the leak but takes
+   find-in-page with it: Ctrl+F can no longer reach text in a closed toggle, verified by the text
+   becoming unfindable the moment it is applied. user-select does not affect find at all.
+
+   SCOPE. Chrome and Edge 97 to 130 hide the body with content-visibility but do not support
+   ::details-content, so this rule is dropped there as an unknown selector and those versions stay
+   exposed. That is a real gap, not a browser where the bug is absent. Keep this as its own
+   declaration block: merged into a selector list, an engine that does not know the pseudo-element
+   would drop the whole list and take the neighbouring rule with it. */
+@layer prose {
+.sl-markdown-content details:not([open])::details-content {
+  user-select: none;
+  -webkit-user-select: none;
+}
+} /* @layer prose */
+
 @layer prose {
 .sl-markdown-content details > summary::marker,
 .sl-markdown-content details > summary::-webkit-details-marker {
