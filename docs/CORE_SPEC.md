@@ -265,7 +265,7 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 │     ├─ chrome.css                   # @layer chrome: header, sidebar, TOC, code frames, scrollbars, the three-column layout, light-mode depth
 │     ├─ components.css               # @layer components: badges, toggles, callouts, FlagCapture, PasswordReveal, Principle, WriteupMeta
 │     ├─ pages.css                    # @layer pages: whole-page treatments (splash hero, platform index, the reveal state rules, and the landing's sideways-scroll clip: html:has(.pi-index) + body:has(.pi-index), both needed, see §6)
-│     ├─ utilities.css                # @layer utilities: single-purpose helpers that must sit above the named layers, today .sr-only
+│     ├─ utilities.css                # @layer utilities: single-purpose helpers that must sit above the named layers, today .sr-only (two rules: the hiding declarations scoped to .sl-markdown-content, and an UNSCOPED user-select:none that has to reach Starlight's .sr-only too, see §8 "Invisible to the eye is not invisible to the clipboard")
 │     └─ overrides.css                # THE ONLY UNLAYERED SURFACE. The 13-rule tail, each rule carrying an evidence comment naming what it beats (see §8 "The layer law")
 ├─ plugins/
 │  ├─ rehype-content-image-loading.mjs # rehype: sets loading/decoding on content <img> (first eager, rest lazy); wired via astro.config markdown.rehypePlugins
@@ -1518,17 +1518,31 @@ borrow the other's rule.
 
 - **Clip-rect visually hidden** (`.flagcap-real`, `.flagcap-live`, `.sr-only`) keeps a real frame, which
   is what lets a screen reader read it. A frame is also what makes it SELECTABLE, so it lands on the
-  clipboard on a plain Ctrl+A unless it carries `user-select: none`.
+  clipboard on a plain Ctrl+A unless it carries `user-select: none`. All three carry it now: the flag
+  pair in `components.css`, and `.sr-only` in `utilities.css` through a rule that is deliberately
+  UNSCOPED, because three `.sr-only` definitions ship (ours, Starlight's in `style/util.css`, Expressive
+  Code's) and the defect belongs to the technique rather than to the parent. Scoping the cure to
+  `.sl-markdown-content` would have cleared the difficulty chip and left the header's "GitHub" and
+  "Select theme" leaking the same way. Layer order carries it: `utilities` is the last declared layer and
+  Starlight's rule sits in `starlight.utils`, so no `!important` and nothing in `overrides.css`.
 - **`content-visibility: hidden`** (the UA's treatment of a closed `<details>` body) generates no frames
   at all, yet the subtree stays in the tree, so a selection can still span it and serialise it.
 - **An attribute is neither.** A value in a `data-` attribute is written into the `text/html` clipboard
   flavour whatever its element's selectability. A secret must not live in one.
 
+**Still exposed, deliberately: Starlight's skip link** (`.sl-skip-link`, "Skip to content"). Measured on
+the production build, it reaches both flavours in both engines. It is the same clip-rect technique but it
+is not `.sr-only`, and unlike every node that rule covers it UNCLIPS on focus, so it is text a keyboard
+reader can actually see. One word of chrome, left alone rather than folded into a rule about permanently
+hidden text.
+
 Test with a RICH TEXT paste target and read `text/html` from a real paste event. A textarea only ever
 exposes `text/plain`, which Blink fixed in Chrome 97, and `getSelection().toString()` was not fixed until
-144, so both report false passes. See DECISIONS 2026-09-12 · A closed toggle leaks into the clipboard two
-ways, and only one is a stylesheet's problem, and 2026-09-12 · The flag is visually hidden, not hidden:
-clip-rect text and a data attribute both reach the clipboard.
+144, so both report false passes. Every measurement needs a control that MOVES (neutralise the rule
+through the CSSOM and watch the sentinel come back) and a poisoned clipboard proved to have landed, or a
+copy that silently does nothing reads as a clean pass off stale contents. See DECISIONS 2026-09-12 · A
+closed toggle leaks into the clipboard two ways, and only one is a stylesheet's problem, and 2026-09-12 ·
+The flag is visually hidden, not hidden: clip-rect text and a data attribute both reach the clipboard.
 
 ### A pinned size implies a pinned leading
 

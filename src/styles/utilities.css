@@ -15,3 +15,51 @@
   border: 0;
 }
 } /* @layer utilities */
+
+/* Nothing visually hidden may be selectable. See CORE_SPEC section 8, "Invisible to the eye is not
+   invisible to the clipboard": the clip-rect technique keeps a real frame, which is what lets a
+   screen reader read the text, and a frame is also what makes it selectable. So a plain Ctrl+A picks
+   it up. Measured on the production build, both flavours, both engines, before this rule: a writeup
+   handed over "Difficulty 1 of 4", "GitHub" and "Select theme"; a platform landing added ", 2
+   writeups". Chrome 152 and Firefox 155 both had it, unlike the closed-toggle defect, which is
+   Blink-only.
+
+   THE SELECTOR IS DELIBERATELY UNSCOPED, and that is the whole decision here. Three .sr-only
+   definitions ship: this file's (scoped to .sl-markdown-content), Starlight's in
+   style/util.css (@layer starlight.utils, so it covers the header, nav and search), and Expressive
+   Code's (no emitter on this site: nothing renders a terminal frame). The defect belongs to the
+   TECHNIQUE, not to where the node happens to sit, so scoping the cure to markdown content would
+   have fixed the difficulty chip and left the two header labels leaking the same way. Measured, not
+   assumed: unscoped clears three sentinels per writeup, scoped would have cleared one.
+
+   Layer order settles precedence, so no !important and nothing in overrides.css: utilities is the
+   last layer the statement above declares and Starlight's rule sits in starlight.utils, so this
+   plain 0,1,0 selector beats it. Nothing else declares user-select on .sr-only.
+
+   Kept as its OWN rule rather than folded into the block above, because the two have different
+   correct scopes: the hiding declarations only ever needed to cover what Starlight's rule does not,
+   while selectability has to reach every .sr-only on the page including Starlight's own.
+
+   Costs nothing, verified rather than assumed. Nobody can select what they cannot see, so refusing
+   selection removes no reader capability, and user-select does not touch the accessibility tree:
+   with the rule live these nodes are still in the DOM, still carry their text, are not aria-hidden,
+   and still compute display:block and visibility:visible. Ctrl+F still reaches them. No copy
+   affordance depends on it either: Expressive Code's clipboard fallback builds its own <pre> with an
+   inline user-select:all and never uses .sr-only, and FlagCapture reads textContent. Starlight
+   already does exactly this to its own hidden anchor text (.sl-anchor-link in style/anchor-links.css,
+   "Prevent double or triple clicks from potentially selecting the anchor link a11y text"); this
+   generalises that to the rest of the utility.
+
+   HOW TO RE-TEST. Paste into a RICH TEXT target and read text/html from a real paste event. A
+   textarea only ever exposes text/plain, and getSelection().toString() is not evidence either;
+   Blink fixed the three flavours in 97, 138 and 144 respectively.
+
+   STILL EXPOSED, deliberately: Starlight's skip link (.sl-skip-link, "Skip to content"). It is the
+   same clip-rect technique and it does reach the clipboard, but it is not .sr-only, and unlike these
+   nodes it UNCLIPS on focus, so it is text a keyboard reader can actually see and select. */
+@layer utilities {
+.sr-only {
+  user-select: none;
+  -webkit-user-select: none;
+}
+} /* @layer utilities */
