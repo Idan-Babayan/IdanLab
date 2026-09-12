@@ -245,9 +245,9 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 │  │  ├─ Callout.astro                # icon-based tagged callout (recon/loot/intel/vuln/defense); .cl styles in components.css
 │  │  ├─ Principle.astro              # closing epigraph (aside.principle, prop: text): centered italic mono maxim + dinkus + PRINCIPLE label; no card/border/bg; .principle styles in components.css; HackTheBox writeups only, appended from frontmatter by overrides/MarkdownContent.astro
 │  │  ├─ WriteupCard.astro            # presentational writeup card (props only, reusable for a future /writeups index): one meta line (group glyph + word, then the facts that vary), title, description, affordance
-│  │  ├─ PlatformIndex.astro          # data + hero + a multi-select filter rail on the platform's own axis (difficulty or category, counts in the pills; axis from src/lib/taxonomy.mjs, an unknown middle directory fails the build) + WriteupCard grid; ported homepage effects
+│  │  ├─ PlatformIndex.astro          # data + hero + a multi-select filter rail on the platform's own axis (difficulty or category, counts in the pills; axis from src/lib/taxonomy.mjs, an unknown middle directory fails the build) + WriteupCard grid; ported homepage effects; drafts filtered by Starlight's own route rule, copied inline here and in SecretTerminal, so a card cannot outlive its route
 │  │  ├─ NotFound.astro               # 404 breadcrumb body (nudges to /robots.txt)
-│  │  ├─ SecretTerminal.astro         # from-scratch, zero-dependency vanilla-TS fake terminal
+│  │  ├─ SecretTerminal.astro         # from-scratch, zero-dependency vanilla-TS fake terminal; its `random` target list is built at build time from the docs collection, behind the same copied-from-Starlight draft filter PlatformIndex uses
 │  │  ├─ badges/                      # WriteupMeta.astro (the injected chip row), DifficultyPips.astro (the ONE ordinal pips glyph, shared with WriteupCard), icons.ts (icon registry + the category swatch)
 │  │  └─ overrides/
 │  │     ├─ PageSidebar.astro         # additive Starlight override: renders <Default/> then <ToggleAll/> at the bottom of the right TOC
