@@ -107,6 +107,46 @@
   covers it UNCLIPS on focus, so it is text a keyboard reader can actually see and select. One word of
   chrome, left out of a rule about permanently hidden text.
 
+### 2026-09-12 · The AttackPath ships on every HackTheBox writeup
+- **Supersedes in part:** 2026-07-19 · AttackPath: a guided, data-driven infographic for linear
+  privilege-escalation chains. Only the clause "intended as a signature element reused across multi-hop
+  writeups": that reuse was discretionary and scoped to multi-hop chains, and it is now REQUIRED on every
+  HackTheBox writeup whatever the hop count. Everything else that entry records stands.
+- **Decision:** every HackTheBox writeup carries an `AttackPath` under `## Summary`, in the position Forest,
+  Return and Busqueda use. CORE_SPEC §8 carries the rule and the §6 inventory line was rewritten to state
+  the requirement instead of counting instances; CLAUDE.md carries the short form.
+- **Why:** it had come to read as an Active Directory device, which it never was. The first two instances
+  were Forest and Return, both AD boxes, both sitting under a BloodHound graph, and CORE_SPEC described the
+  component by listing whoever happened to use it ("Live on TWO writeups"). Busqueda is a standalone Linux
+  box with no directory graph anywhere in it, and the component carried its chain (5 nodes, `eval()`
+  injection through to relative-path hijack) with nothing changed but the data. A privilege chain is a
+  privilege chain, and the infographic is the site's signature way of telling one.
+- **The constraint travels with the rule:** LINEAR only, one spine, no branching, at least two nodes or the
+  runtime guard throws. Where a box genuinely branches, the writeup picks the spine and says so in prose.
+- **Status:** Adopted. Busqueda is the reference instance for a box with no directory graph above it.
+
+### 2026-09-12 · Busqueda is the golden standard for HackTheBox writeups
+- **Decision:** `busqueda.mdx` is the file every future HackTheBox writeup is matched against: section
+  shape, evidence density, how callouts and toggles carry weight, transcript style, and above all VOICE AND
+  TONE. A choice in that file that looks odd is a choice and not an oversight, so it is copied rather than
+  "improved". CORE_SPEC §8 carries the rule, §7 points at it from the manual-polish step where a writeup is
+  actually authored, and CLAUDE.md carries the short form in both the Writeups section and My rules.
+- **Why now:** the file earned it. A full technical and editorial audit rewrote it for accuracy, narrative
+  and structure (11 independent auditors over screenshots, commands, box facts, build and plugins,
+  component integration, project law, spec compliance, diff forensics, narrative, rendered HTML and value
+  cross-references; every finding adversarially verified by three separate lenses, which killed 18 of 73 as
+  wrong), and every surviving sentence was then owner-reviewed line by line. Nothing else in the corpus has
+  been through that.
+- **The rule the review produced, and the reason it is written down rather than assumed:** a sentence that
+  is marginally more precise but stiffer to read is a REGRESSION, not a fix. The rewrite kept trading
+  readability for technical exactness ("decremented in transit" for "minus one hop", "percent-encoded on
+  the `+` characters alone so the form decoder does not read them as spaces" for one clean clause) and
+  every one of those trades was rejected on review. The audience includes beginners on their first easy
+  box. Precision is bought back by finding a better sentence, never a denser one.
+- **Status:** Adopted. `busquedav2.mdx` was the working name during the rewrite and no longer exists; it is
+  not the 2026-07-17 testbed of the same name. Build green at 67 pages, the rewrite took over the existing
+  route rather than adding one.
+
 ### 2026-09-12 · A writeup link is filtered by the same rule that emits its route
 - **Decision:** Every component that renders a writeup LINK passes Starlight's own draft filter to
   `getCollection`, character for character the expression Starlight uses for routes
@@ -1648,6 +1688,11 @@
   progression, structural directional connectors, and a one-time gold flourish on reaching root. It is a
   storytelling infographic, not a UI control, and is intended as a signature element reused across
   multi-hop writeups. First instance: Forest, under `## Summary`. Linear only, no branching.
+  **Partly superseded by:** 2026-09-12 · The AttackPath ships on every HackTheBox writeup, specifically
+  "intended as a signature element reused across multi-hop writeups": the reuse is no longer discretionary
+  and no longer scoped to multi-hop chains, it is required on every HTB writeup whatever the hop count. The
+  data contract, the runtime guard, the scoping rationale and the token corrections below are unaffected
+  and stay in force, so this entry stays live.
 - **Data contract:** `title` plus an ordered `nodes: { kind, name, edge?, detail? }[]`. Everything (escalation,
   states, connectors, meter, dots, flourish) derives from index and position, so no chain is hardcoded. A
   runtime guard throws on fewer than 2 nodes or a node missing `kind`/`name`, matching how WriteupMeta guards
