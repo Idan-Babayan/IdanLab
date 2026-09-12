@@ -67,9 +67,45 @@
   the DOM, keeps its text, is not `aria-hidden`, and computes `display: block` and `visibility: visible`.
   `user-select` refuses selection and nothing else. The component's own copy button still delivers the
   flag.
-- **Still open, deliberately.** The shared `.sr-only` utility leaks the same way ("Difficulty 1 of 4"
-  reaches both flavours). It is duplicated visible information rather than a spoiler, so it is recorded
-  here and not fixed in this pass.
+- **Closed after all, and wider than this note first said.** The shared `.sr-only` utility did leak, and
+  not in one place: a plain Ctrl+A on a writeup handed over `Difficulty 1 of 4`, `GitHub` and `Select
+  theme`, and a platform landing added `, 2 writeups`, all of it in BOTH flavours and in Chrome 152 AND
+  Firefox 155, unlike the closed-toggle defect, which is Blink-only. One unscoped `user-select: none` on
+  `.sr-only` in `utilities.css`, its own declaration block, closes every one of them.
+- **UNSCOPED is the decision, and it is the only interesting part.** Three `.sr-only` definitions ship:
+  ours scoped to `.sl-markdown-content`, Starlight's in `style/util.css` covering the header, nav and
+  search, and Expressive Code's, which has no emitter here because nothing on this site renders a terminal
+  frame. The defect belongs to the TECHNIQUE, not to the parent, so scoping the cure would have cleared
+  the difficulty chip and left the two header labels leaking exactly the same way: one leak of three.
+  Layer order settles precedence, `utilities` being the last layer the statement declares against
+  Starlight's `starlight.utils`, so no `!important` and nothing in `overrides.css`. Kept as its own rule
+  rather than folded into the hiding block above it, because the two have different correct scopes: the
+  hiding declarations only ever needed to cover what Starlight's rule does not, while selectability has to
+  reach every `.sr-only` on the page including Starlight's own. And Starlight already does exactly this to
+  its own hidden anchor text (`.sl-anchor-link`, "Prevent double or triple clicks from potentially
+  selecting the anchor link a11y text"), which is why the per-heading `Section titled` strings never
+  leaked, and which makes this a generalisation rather than an invention.
+- **It costs nothing, verified rather than assumed.** Nobody can select what they cannot see. The
+  accessibility tree is untouched: the nodes are still in the DOM, still carry their text, are not
+  `aria-hidden`, and still compute `display: block` and `visibility: visible`, in both themes and under
+  `prefers-reduced-motion`. Ctrl+F still reaches them. The selection walk does not move (1817 client rects
+  with the rule and without, so the painted highlight is unchanged, confirmed in the browser pane), and
+  copying a line out of an OPEN toggle is byte identical in both flavours in both engines. No copy
+  affordance depends on it either: Expressive Code's clipboard fallback builds its own `<pre>` carrying an
+  inline `user-select: all` and never uses `.sr-only`, and `.flagcap` and `.sr-only` never appear on the
+  same element anywhere in the build.
+- **The measurement, and what nearly voided it.** Every run poisoned the clipboard with a unique token,
+  PROVED the token had landed, and required it to be gone afterwards. That check earned its keep: three
+  runs in a row reported a clean pass off stale clipboard contents because the copy was silently doing
+  nothing. The cause was the harness itself, an offscreen `contenteditable` paste target: an empty
+  editable anywhere in the document reroots Blink's SelectAll at THAT editable, so Ctrl+A selected the box
+  and not the page. The box has to be out of the document while the measured copy happens. Every result
+  also carries a control that MOVES, the rule neutralised through the CSSOM, and every sentinel comes
+  back.
+- **Still exposed, deliberately: `.sl-skip-link`.** "Skip to content" is the same clip-rect technique and
+  it does reach both flavours in both engines, but it is not `.sr-only`, and unlike every node this rule
+  covers it UNCLIPS on focus, so it is text a keyboard reader can actually see and select. One word of
+  chrome, left out of a rule about permanently hidden text.
 
 ### 2026-09-07 · Two taxonomy palettes: the landing pages re-base onto the WriteupMeta chip model
 - **Supersedes in part:** 2026-07-19 · `.machine-meta` deleted; the REST of the badge family is not dead
