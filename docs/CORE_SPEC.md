@@ -518,9 +518,10 @@ token is an open ROADMAP item, not a bug.
   from the tab order at the moment of the final keypress and dumped focus to `<body>`; the click path is
   guarded instead, and the hover rule is keyed off `:not([aria-disabled='true'])`. Node and dot accessible
   names carry the progress state word, since the check glyph is `aria-hidden` and `aria-current` marks only
-  one node. Every node state and all chrome text measures AA in BOTH themes. Live on THREE writeups under
-  `## Summary`: Forest (6 hops), Return (5 hops) and Busqueda (5 hops); Forest and Return keep their
-  BloodHound graph above as evidence, Busqueda carries none. See
+  one node. Every node state and all chrome text measures AA in BOTH themes. REQUIRED on every HackTheBox writeup
+  under `## Summary` (2026-09-12), no longer an Active Directory device, see §8. Live on Forest (6 hops),
+  Return (5 hops) and Busqueda (5 hops); Forest and Return keep their BloodHound graph above as evidence,
+  Busqueda carries none and is the reference for that case. See
   DECISIONS 2026-07-19 (original build + native-fabric rework) and 2026-07-20 (production-polish pass +
   Return instance; edge-mask gutter; production-readiness audit)), `badges/WriteupMeta` (navigational
   Platform / Category (PicoCTF, directory-derived) / OS / Environment chip row + a trailing neutral Difficulty
@@ -1379,6 +1380,12 @@ icon.
   inventing anything. In particular, never restyle writeup prose toward something that reads more
   formal, more jargony or more technical than Busqueda does; a sentence that is marginally more precise
   but stiffer to read is a regression, not a fix. Read it before writing, and diff against it after.
+- **Every HackTheBox writeup carries an `AttackPath`.** Required, not optional, and no longer an Active
+  Directory device: the component models any privilege chain, so it ships on every HTB writeup, placed
+  under `## Summary` in the position Forest, Return and Busqueda use. The component's own constraint
+  still binds: LINEAR chains only, one spine, no branching, at least two nodes (it throws below that).
+  Where a box genuinely branches, the writeup picks the spine and says so in prose. Busqueda is the
+  reference instance for a box with no directory graph above it.
 - **Type-safe scripts:** all TS inside `.astro` `<script>` uses explicit assertions
   (`as NodeListOf<HTMLElement>`, `as HTMLElement | null`, `!`, `?? ''`) → zero VS Code problems.
 - **Code blocks:** every block has a language label; bash and python render identically; EC frames are
