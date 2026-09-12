@@ -100,7 +100,7 @@ Full description in CORE_SPEC §5. What a session must not get wrong:
 
 ## Writeups
 
-Flat `.mdx` at `src/content/docs/<platform>/<middle>/<slug>.mdx`, where the middle directory is validated per platform (first rule below). Reference file: `busqueda.mdx`. Full conventions in CORE_SPEC §7. The rules that break the build or the page if missed:
+Flat `.mdx` at `src/content/docs/<platform>/<middle>/<slug>.mdx`, where the middle directory is validated per platform (first rule below). **`busqueda.mdx` is the GOLDEN STANDARD: read it before writing any HackTheBox writeup and match it.** Section shape, evidence density, callout and toggle use, and above all VOICE AND TONE. Every line of it is deliberate and owner-tuned, so an odd-looking choice there is a choice: copy it, do not "improve" it. Full conventions in CORE_SPEC §7 and §8. The rules that break the build or the page if missed:
 
 - **Metadata is FRONTMATTER ONLY.** Set `os`, `environment`, and `difficulty`. The `WriteupMeta` badge row is INJECTED by `plugins/remark-inject-writeupmeta.mjs`: never import it, never write the tag. `platform` is NOT a frontmatter field, it is derived from the directory, so it cannot be mistyped. Values are strict enums in `src/content.config.ts`, so casing matters. **The middle directory is validated per platform** (`src/lib/taxonomy.mjs`): a HackTheBox or VulnHub writeup sits in a tier directory (`easy`, `medium`, `hard`, `insane`) and its `difficulty` is REQUIRED and must match that directory; a PicoCTF writeup sits in one of the six category directories and carries NO `difficulty` (its category is derived from the directory, never a frontmatter field); OverTheWire carries no `difficulty` either. Each of those fails the build otherwise, and there is no `misc` fallback. `badges: false` (unquoted boolean, never `no` or `off`) opts a page out. `principle:` (the closing coda) is HackTheBox-only and optional; anywhere else the build fails.
 - **The recon findings rail is a PLAIN MARKDOWN LIST** inside `<Callout type="recon">`. No component, no import, no markup:
@@ -145,4 +145,5 @@ Delegated authority (2026-07-25, owner instruction): Claude Code may run read co
 - No selector flattening and no unit conversions in the theme pass.
 - TypeScript in `.astro` `<script>` blocks uses explicit assertions (`as HTMLElement | null`, `!`, `?? ''`). Match that style.
 - Real name is fine on the public site.
+- **The writeup voice is mine and it is finetuned.** Never trade readability for a marginally more precise sentence: stiffer, more formal, more jargony prose is a regression even when it is technically better. `busqueda.mdx` is the standard to match.
 - `docs/CORE_SPEC.md` is the source of truth.
