@@ -18,3 +18,81 @@ const { label, flag = false, class: className } = Astro.props;
     <slot />
   </div>
 </details>
+
+<script>
+  // Opening a toggle must not pull its body into a selection the reader already made.
+  //
+  // THE SEQUENCE, which only happens on a STATE CHANGE and which no fixed-state test can see.
+  // Triple click the paragraph directly above a CLOSED toggle. The summary is user-select:none, so it
+  // is not a valid stop for Blink's paragraph-granularity walk; the walk skips it, skips the closed
+  // body (which has no boxes under the UA's content-visibility:hidden) and ends AFTER the whole
+  // toggle. The body is now inside the range but paints nothing, because it has no frames. Then click
+  // the summary. The selection SURVIVES that click, precisely because the summary is unselectable, and
+  // the body gains frames inside a range that already contains it. Measured on busqueda.mdx in
+  // Chrome 152: selection length goes from 106 to 704 on the click, and the transcript paints blue.
+  // It does not settle on its own. The prose.css rule on ::details-content cannot reach this, because
+  // its :not([open]) stops matching the instant the toggle opens.
+  //
+  // THE FIX. On the opening transition only, if the reader's range starts before this toggle and ends
+  // past its start, clamp the end to just before the toggle. The paragraph they highlighted stays
+  // highlighted. Wiping the selection instead was explicitly rejected, and is the reason summary
+  // user-select:none is still there, so the clamp bails out rather than ever leaving an empty range.
+  //
+  // CLOSING is deliberately left alone. Measured: closing a toggle under a live selection changes
+  // nothing, the length stays 106 and the rect count stays 5, so there is nothing to repair. Clamping
+  // on close would only truncate a large deliberate selection that legitimately continued past the
+  // toggle.
+  //
+  // THE COST, stated plainly: a selection that started before the toggle and deliberately continued
+  // past it is truncated at the toggle when the reader opens it, instead of swallowing the revealed
+  // body. That is the trade, and the alternative is the defect.
+  //
+  // beforetoggle runs before the body is laid out, so the body never paints even for a frame; toggle
+  // is the fallback where beforetoggle is unavailable. Running both is harmless: after the first
+  // clamp the range no longer ends past the toggle, so the second call returns early.
+  const w = window as Window & { __toggleSelectionClamp?: boolean };
+  if (w.__toggleSelectionClamp !== true) {
+    w.__toggleSelectionClamp = true;
+
+    const clampBefore = (details: HTMLDetailsElement): void => {
+      const selection = window.getSelection();
+      if (selection === null || selection.rangeCount === 0 || selection.isCollapsed) return;
+
+      const range = selection.getRangeAt(0);
+      const around = document.createRange();
+      around.selectNode(details);
+
+      // Only START_TO_START is used, on both comparisons, so there is no ambiguity about which
+      // boundary of which range is being compared.
+      if (range.compareBoundaryPoints(Range.START_TO_START, around) >= 0) return;
+
+      const endPoint = document.createRange();
+      endPoint.setStart(range.endContainer, range.endOffset);
+      endPoint.collapse(true);
+      if (endPoint.compareBoundaryPoints(Range.START_TO_START, around) <= 0) return;
+
+      const clamped = range.cloneRange();
+      clamped.setEndBefore(details);
+      if (clamped.collapsed) return; // never wipe the reader's highlight
+
+      selection.removeAllRanges();
+      selection.addRange(clamped);
+    };
+
+    const onToggle = (e: Event): void => {
+      const details = e.target;
+      if (!(details instanceof HTMLDetailsElement)) return;
+      if (details.closest('.sl-markdown-content') === null) return;
+      // beforetoggle reports the state it is moving to; toggle reports the state it is already in.
+      const newState = (e as Event & { newState?: string }).newState;
+      const opening = newState === undefined ? details.open : newState === 'open';
+      if (!opening) return;
+      clampBefore(details);
+    };
+
+    // Capture phase: the toggle event does not bubble, but a capture listener on the document still
+    // sees it on the way down to the target.
+    document.addEventListener('beforetoggle', onToggle, true);
+    document.addEventListener('toggle', onToggle, true);
+  }
+</script>
