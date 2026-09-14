@@ -117,7 +117,7 @@ export default defineConfig({
       sidebar: [
         {
           label: 'About',
-          link: '/about',
+          link: '/about/',
           attrs: { class: 'sb-about' },
         },
         {
