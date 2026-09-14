@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-09-07 (taxonomy palettes: the platform landings re-based onto the WriteupMeta chip model; difficulty on its own arc).
+> Last updated: 2026-09-14 (callout emphasis is ink, not weight; Busqueda is the golden standard for HackTheBox writeups and every HTB writeup carries an AttackPath).
 
 ---
 
@@ -1136,6 +1136,17 @@ underscore.
   theme-tuned, deliberately distinct from the sharp code blocks);
   inside a colored callout it instead harmonizes with that callout's accent (reads `--acc` / `--cl-ink`,
   generic per type); see DECISIONS 2026-06-29.
+- **Bold inside a callout is INK, not weight.** `<strong>` in a `.cl` drops to weight 400 and takes
+  `--cl-emph`, the callout's own hue leaned into the body text colour, so emphasis reads as "this belongs to
+  this callout" rather than as a shout. Per theme, and the percentages deliberately differ: dark mixes
+  `--acc` 50%, light mixes the UNdeepened `--cl-ink` 55%. Dark leans a bright accent toward bright text and
+  keeps lightness and chroma; light leans toward near-black, so starting from the already-deepened
+  `--cl-code-ink` dulled it twice and measured 0.811 of body contrast against dark's 0.669. At 50/55 the two
+  modes land 0.670 and 0.660. Weight was rejected outright: Geist 700 sits ABOVE the Geist 600 toggle summary
+  and out-shouts it, and 600 merely ties it. **Emphasis earns its place only where the key term is NOT
+  already inline code**, which is why Busqueda carries exactly one (`Werkzeug / Python 3.10.6`, prose rather
+  than a code token). Bold must never START a recon rail item: the transform needs a text node first, and
+  one bad item reverts the whole list to bullets.
 - Bold inside code fences is impossible (markdown); to emphasize a code line, manually
   use expressive-code line highlighting, e.g. ` ```bash {3} `.
 
