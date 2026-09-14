@@ -164,7 +164,7 @@ And there it is: the facade drops, confirming a custom Python backend is handlin
 
 <Callout type="intel">
 
-- Apache is a reverse proxy. The real app is Werkzeug / Python 3.10.6 (a Flask app), which `nikto` caught when the banner flipped.
+- Apache is a reverse proxy. The real app is **Werkzeug / Python 3.10.6** (a Flask app), which `nikto` caught when the banner flipped.
 - The only interesting route is `/search`, which answers `405` to a `GET`.
 - A Python app that builds search redirects from user input is exactly the kind of thing that ends up calling something dangerous on that input.
 
