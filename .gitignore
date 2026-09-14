@@ -29,3 +29,7 @@ typography-playground.html
 # local-only design study, same reasoning: the HackTheBox difficulty palette study lives under public/
 # so the dev server serves it with the self-hosted fonts (2026-09-07). Never a source file.
 public/htb-difficulty-palette-study*.html
+
+# local-only audit reports (owner and assistant working notes, 2026-09-13). Not part of the site and
+# never published; the routing they carry lands as commits, the reports themselves stay on this machine.
+audit/
