@@ -2,7 +2,9 @@
 // src/pages/about.astro
 // Standalone About page — matches the homepage design system.
 // Theme toggle is synced with Starlight via the shared `starlight-theme`
-// localStorage key. Defaults to dark on every device; light is opt-in.
+// localStorage key. Defaults to dark on every device; light is opt-in: only an explicit stored
+// 'light' choice overrides, applied by the inline script at the end of <head>. (Noted here, not in
+// the head: no HTML comments in any <head>, CORE_SPEC section 2.)
 // Self-hosted fonts (@font-face + metric-matched fallbacks) shared with the Starlight docs.
 // Fonts load via @font-face in src/styles/fonts.css with metric-matched fallbacks;
 // no <link rel="preload"> on purpose. Firefox flagged the used font preloads as
@@ -37,7 +39,6 @@ import '../styles/fonts.css';
   <meta name="twitter:title" content="About | Idan.Lab" />
   <meta name="twitter:description" content="Idan Babayan: cybersecurity student, CTF player, and offensive security enthusiast documenting the journey from recon to root." />
   <meta name="twitter:image" content="https://idanlab.dev/og.jpg" />
-  <!-- Default dark on every device. Only an explicit stored 'light' choice overrides. Shares Starlight's key. -->
   <script is:inline>
     (() => {
       const stored = typeof localStorage !== 'undefined' && localStorage.getItem('starlight-theme');
