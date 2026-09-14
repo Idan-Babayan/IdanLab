@@ -129,6 +129,15 @@ body:has(.pi-index) .pagination-links { --focus-ring: var(--pf-accent); }
    only pages that ever showed it. */
 html:has(.pi-index) { overflow-x: clip; }
 body:has(.pi-index) { overflow-x: clip; }
+
+/* The splash hero glow (.hero::before, inset -10% on both sides of the hero) spills the same way,
+   and the 404 page is in neither selector above, so it scrolled sideways: 19px at 375, 13 at 320
+   and 8 at 1280, measured on the built page (audit ER-01, 2026-09-14). Same pair, same `clip`, for
+   the reasons above. Scoped on the hero itself rather than on the 404 route, so any future splash
+   hero is covered and /secret, a splash with no hero, stays out; the marketing pages carry a .hero
+   of their own but never load this module. */
+html:has(.hero) { overflow-x: clip; }
+body:has(.hero) { overflow-x: clip; }
 } /* @layer pages */
 
 /* Focus ring: a landing card rings in its GROUP's hue (owner decision 2026-09-07), the same hue as its
