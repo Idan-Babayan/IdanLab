@@ -250,7 +250,16 @@ import '../styles/fonts.css';
   .wrap { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; }
 
   /* NAV HUD */
-  .hud { position: relative; z-index: 5; display: flex; align-items: center; justify-content: space-between;
+  /* Both rows may WRAP. Under text scaling (root at 200%, so this bar's .72rem is 23.04px) the home
+     link and the nav need a 506px row and a phone gives 375, and because body clips sideways overflow
+     the theme toggle sat at x 482 to 506, unreachable by touch or pointer (audit ER-12, measured
+     2026-09-14 at 360, 375 and 412). With `wrap` on both containers the nav drops under the home link
+     and the toggle under the links, so every control stays inside the viewport. At normal size nothing
+     ever wraps: the row fits at 320 with room to spare, so the change measures as zero diff there
+     (every HUD rect and the hero's top identical at 320, 360, 375, 390, 780, 781, 1024 and 1280). The
+     bar declares no row gap on purpose: wrapped rows sit at line height, and any spacing there is a
+     design value, not this fix; the nav's own `gap` already applies to both axes. */
+  .hud { position: relative; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
     max-width: 1100px; margin: 0 auto; padding: 1rem 1.5rem; border-bottom: 1px solid var(--panel-brd);
     font-family: var(--mono); font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; }
   /* HUD controls carry a >=24px pointer target (WCAG 2.2 target-size min). Block padding
@@ -260,7 +269,7 @@ import '../styles/fonts.css';
     padding-block: 3px; margin-block: -3px; }
   .hud-home:hover { color: var(--lime); }
   .hud-sub { color: var(--muted); }
-  .hud-nav { display: flex; gap: 1.4rem; align-items: center; }
+  .hud-nav { display: flex; flex-wrap: wrap; gap: 1.4rem; align-items: center; }
   .hud-nav a { color: var(--muted); text-decoration: none; transition: color .2s;
     padding-block: 3px; margin-block: -3px; }
   .hud-nav a:hover, .hud-nav a.active { color: var(--lime); }
