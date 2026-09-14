@@ -33,3 +33,7 @@ public/htb-difficulty-palette-study*.html
 # local-only audit reports (owner and assistant working notes, 2026-09-13). Not part of the site and
 # never published; the routing they carry lands as commits, the reports themselves stay on this machine.
 audit/
+
+# local-only Claude Code command briefs (owner working process, kept off the public repo on
+# purpose, 2026-09-14). .claude/launch.json stays tracked; only the briefs are local.
+.claude/commands/
