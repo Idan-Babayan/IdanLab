@@ -287,7 +287,12 @@ import '../styles/fonts.css';
   /* HERO */
   .about-hero { position: relative; padding: 4rem 0 3rem; min-height: 56vh; display: flex; align-items: center; }
   #constellation { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; }
-  .about-hero-inner { position: relative; z-index: 2; display: flex; align-items: center; gap: 3rem; }
+  /* min-width: 0 for the same reason as .hero-inner on the homepage: this is a flex item of
+     .about-hero, so its default min-width: auto is its own min-content, which under the 780px
+     media query (column-reverse) is the headline's longest unbreakable word. At root 200% that
+     made the item 390.39px wide inside a 320px viewport and pushed the headline, the sub and the
+     eyebrow off the screen. Zero diff at root 100%, where the same min-content never binds. */
+  .about-hero-inner { position: relative; z-index: 2; display: flex; align-items: center; gap: 3rem; min-width: 0; }
   .about-hero-text { flex: 1; }
   .about-portrait { width: 200px; height: 200px; object-fit: contain; flex-shrink: 0; border-radius: 18px;
     filter: drop-shadow(0 10px 30px rgba(0,0,0,.4)); }
