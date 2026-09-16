@@ -538,8 +538,18 @@ html[data-theme="light"] .sl-markdown-content .cl {
   --findings-gutter: 0.8rem;
   --findings-rule-width: 2px;
   display: grid;
-  /* The port column measures itself. No literal, no floor, no padding of short tokens. */
-  grid-template-columns: max-content 1fr;
+  /* The port column measures itself. No literal, no floor, no padding of short tokens.
+     The description track is minmax(0, 1fr), not a bare 1fr. A bare 1fr is minmax(auto, 1fr), and
+     that auto minimum is the track's own min-content, which for an unbreakable token is the whole
+     token: Starlight gives code overflow-wrap: break-word, which breaks a word only once its box is
+     too narrow and never lowers min-content. So one long token could widen the track past its share
+     and push the grid out of the callout it sits in. Measured on Busqueda at 320, where
+     `http://searcher.htb/` is 180.8px against a 159.8px share: the rail ran 21px past its own box
+     and painted 4.2px outside the callout's border. With the minimum at 0 the track keeps its share
+     and the existing break-word wraps the token inside it. The chip track is untouched: its
+     max-content minimum is a separate instance and cannot be capped from CSS alone, because the
+     chip is a span with no break opportunity. */
+  grid-template-columns: max-content minmax(0, 1fr);
   /* Chip and description sit on one shared baseline, as they did in inline flow. Without this,
      grid's default `normal` alignment stretches the chip to the row height and tears its box open. */
   align-items: baseline;
