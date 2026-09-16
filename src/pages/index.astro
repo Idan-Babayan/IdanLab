@@ -227,8 +227,15 @@ const OG_ALT = 'Idan.Lab, a lab notebook of CTF writeups and security notes';
   }
   .eyebrow::before { content:""; width: 40px; height: 1px; background: var(--lime); display:inline-block; }
 
+  /* The floor is the smaller of the authored 2.6rem and 14.6vw, so it cannot outgrow the viewport.
+     A rem floor doubles under text scaling while the screen does not: at root 200% the floor was
+     83.2px and "Curiosity", which has no break opportunity, measured 569.17px against 320px of
+     column. 14.6vw is derived, not picked: it is the largest value at which the longest word still
+     fits 320px of column (46.72px of type, 319.61px of word, 0.39px clear). It never binds at root
+     100%, where 14.6vw is 46.72px and the 2.6rem floor of 41.6px is smaller, so normal-size
+     rendering is unchanged at every width. A word one character longer would need 12.8vw. */
   h1.headline {
-    font-family: var(--display); font-weight: 800; font-size: clamp(2.6rem, 7vw, 5.6rem);
+    font-family: var(--display); font-weight: 800; font-size: clamp(min(2.6rem, 14.6vw), 7vw, 5.6rem);
     line-height: .98; letter-spacing: -.02em; margin-bottom: 1.6rem; max-width: 16ch;
   }
   .headline .decode { color: var(--lime); }
