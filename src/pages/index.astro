@@ -211,7 +211,12 @@ const OG_ALT = 'Idan.Lab, a lab notebook of CTF writeups and security notes';
 
   .hero { position: relative; min-height: 92vh; display: flex; align-items: center; }
   #constellation { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; }
-  .hero-inner { position: relative; z-index: 2; padding: 4rem 0; }
+  /* min-width: 0 because this is a flex item of .hero, so its default min-width: auto is its own
+     min-content, and its min-content is the headline's longest unbreakable word. At root 200% that
+     word ("Curiosity") is 569.17px, so the item grew to 569.17 in a 320px viewport and carried the
+     eyebrow, the sub and the button row out of the screen with it. Zero diff at root 100%, where the
+     same min-content is 284.59 and never binds. */
+  .hero-inner { position: relative; z-index: 2; padding: 4rem 0; min-width: 0; }
 
   .eyebrow {
     font-family: var(--mono); font-size: .8rem; letter-spacing: .35em; text-transform: uppercase;
