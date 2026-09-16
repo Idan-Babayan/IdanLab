@@ -151,7 +151,10 @@ const OG_ALT = 'Idan.Lab, a lab notebook of CTF writeups and security notes';
     </a>
     <button class="btn btn-ghost" data-magnetic type="button" data-copy="contact@idanlab.dev">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="m3 6 9 6.5L21 6"/></svg>
-      <span class="btn-label">contact@idanlab.dev</span>
+      <!-- wbr, not overflow-wrap: the address is one unbreakable word, so the button could not
+           shrink below it and left the viewport under text scaling. The @ is the seam a reader
+           already parses. data-copy above is what the clipboard uses, so the break never ships. -->
+      <span class="btn-label">contact@<wbr />idanlab.dev</span>
     </button>
   </div>
 </section>
