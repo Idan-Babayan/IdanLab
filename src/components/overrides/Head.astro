@@ -4,9 +4,10 @@
 // Additive override of Starlight's Head (approved pattern, alongside PageSidebar and MarkdownContent).
 // Renders <Default /> untouched, then appends ONLY the social tags Starlight does not emit.
 //
-// Starlight 0.40 already emits, per page: og:title, og:type, og:url, og:locale, og:description,
-// og:site_name and twitter:card. Re-declaring any of those here would duplicate them, so this file
-// adds exactly the four that are missing: og:image, twitter:image, twitter:title, twitter:description.
+// Starlight (0.41.10 today, 0.40 when this was written) already emits, per page: og:title, og:type,
+// og:url, og:locale, og:description, og:site_name and twitter:card. Re-declaring any of those here
+// would duplicate them, so this file adds only the ten that are missing: author; og:image and its
+// secure_url, type, width, height and alt; twitter:image, twitter:title and twitter:description.
 //
 // twitter:title / twitter:description are taken from the page's own frontmatter so they track the
 // per-page values Starlight already puts in og:title / og:description, rather than pinning a constant

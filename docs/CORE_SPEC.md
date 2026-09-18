@@ -56,8 +56,8 @@
   plus `frame-ancestors 'none'` and `upgrade-insecure-requests`, which were inert under Report-Only and are
   now ACTIVE (frame-ancestors backs up the enforced `X-Frame-Options: DENY`; upgrade-insecure-requests
   upgrades same-origin subresources to HTTPS). `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'`:
-  `'unsafe-inline'` because the build emits 18 distinct inline scripts (Starlight's own plus our
-  marketing/writeup FX) and a hash would disable `'unsafe-inline'` and block the rest; `'wasm-unsafe-eval'`
+  `'unsafe-inline'` because the build emits 21 distinct inline scripts (Starlight's own plus our
+  marketing/writeup FX; counted by SHA-256 over every inline script body in `dist/`, 2026-09-13) and a hash would disable `'unsafe-inline'` and block the rest; `'wasm-unsafe-eval'`
   because Starlight search (Pagefind) instantiates WebAssembly in a Web Worker, which CSP blocks without it
   (see DECISIONS). No third-party script origin, so `script-src 'self'` is honest: the site loads only
   same-origin scripts (see the Web Analytics bullet below). No reporting endpoint (report-to / report-uri)
@@ -87,7 +87,7 @@
   Starlight and own their `<head>`, so they carry the FULL set inline with their own values plus a
   `<link rel="canonical">`. `og:type` is `website` on the landing page and `profile` on about, which
   also carries `profile:first_name` and `profile:last_name`. Nothing is declared twice on either
-  surface: verified in `dist/`, all 46 pages carry exactly one `og:image` and one `author`.
+  surface: verified in `dist/`, all 67 pages carry exactly one `og:image` and one `author` (46 when first verified, 67 on 2026-09-13).
 - **The static `head` array in `astro.config.mjs` is the WRONG seam for per-page tags.** It cannot vary
   per page, so a `twitter:title` declared there would pin one constant string over every writeup and
   contradict the per-page `og:title` Starlight already gets right. Per-page social tags belong in the
@@ -186,6 +186,15 @@ emitting separate files. Lightning CSS resolves static `color-mix()` at build ti
 bytes depend on the build machine, see DECISIONS 2026-08-29 · Lightning CSS evaluates `color-mix()`
 at build time, so CSS bytes vary by build machine.
 
+**The browser floor, to re-read at each Vite major (recorded 2026-09-18).** `build.target`
+is not pinned, so the lowering target is Vite's default `baseline-widely-available`, which on Vite 8.2.2
+resolves to chrome111, edge111, firefox114, safari16.4 and ios16.4. Lightning CSS emits every width
+media query in range syntax against that target (`@media (width>=50rem)`, 21 of them in `common.css`,
+Starlight's own included, and zero legacy `min-width` forms). Range syntax parses in Chrome 104, Firefox
+63 and Safari 16.4 and later, so the Chrome and Firefox targets cost nothing, but Safari and iOS before
+16.4 drop every width query and render the phone layout at every width. The floor moves silently with
+each Vite major; recorded, not pinned.
+
 ### Node
 
 - `.nvmrc` at the repository root holds `22`, and `package.json` declares
@@ -199,7 +208,7 @@ at build time, so CSS bytes vary by build machine.
 ### Ships via Starlight, not declared here
 
 - **`@astrojs/sitemap`** is not in `package.json` and not in `astro.config.mjs`, yet it runs on every
-  build and emits `sitemap-index.xml` and `sitemap-0.xml` (45 URLs). `public/robots.txt` advertises
+  build and emits `sitemap-index.xml` and `sitemap-0.xml` (66 URLs on 2026-09-13, one per deployable page except `404`). `public/robots.txt` advertises
   the URL and Google Search Console consumes it. It arrives as a Starlight dependency. **It must
   still never be added manually**: declaring it would create a second copy and a second
   configuration surface for something that already works.
@@ -225,7 +234,7 @@ at build time, so CSS bytes vary by build machine.
 C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Windows user profile path
 ├─ astro.config.mjs                   # Starlight config: site, sidebar, customCss[layers.css, fonts.css, then the eight theme modules tokens/base/prose/chrome/components/pages/utilities/overrides, in that order], EC themes + pluginPrivCommand, reading-progress head script (no font preloads, see DECISIONS 2026-07-07), image-zoom, vite alias, components overrides (PageSidebar + MarkdownContent + Head), markdown remarkPlugins (content-taxonomy validation guard + PasswordReveal import injection) + rehypePlugins (content image loading)
 ├─ src/
-│  ├─ content.config.ts               # docs collection (docsLoader + docsSchema) + the writeup metadata schema (§7)
+│  ├─ content.config.ts               # docs collection (gatedDocsLoader, a wrapper that delegates to Starlight's docsLoader and then refuses any non-index file under the four platform directories that is not .mdx, so a .md writeup fails the content sync before any page builds, 2026-09-14; + docsSchema) + the writeup metadata schema (§7)
 │  ├─ pages/
 │  │  ├─ index.astro                  # HOMEPAGE: standalone immersive page (NOT Starlight). Dark-only.
 │  │  └─ about.astro                  # ABOUT: standalone immersive page. Has dark/light toggle.
@@ -311,6 +320,13 @@ The theme pass is organised into declared cascade layers, one module per layer, 
   every layer of ours, which is what replaced the old "we are unlayered, so we win" posture.
 - **Every module repeats that statement on its first line** (all except `fonts.css`), so any bundler
   chunk order still establishes the same order. Repeats after the first occurrence are no-ops.
+  **What ships is not the statement (read from the build, 2026-09-13):** Lightning CSS collapses the repeats,
+  and the built `common.css` opens with a bare `@layer starlight;` followed by the layer blocks in
+  module order, so the effective order rides on block order (tokens, base, prose, chrome, components,
+  pages, utilities, then the `starlight.*` sublayers), which matches the statement today because every
+  layered rule lives in `common.css` in module order. The condition that would break it: a layered rule
+  authored in a component `<style>` or in any stylesheet emitted as a separate chunk, declaring a layer
+  block out of that order. Astro scoped styles are unlayered, so none does today.
 - **Layer order decides precedence, not file order and not selector weight.** Selector weight only
   orders ties WITHIN a layer. A rule does not need to out-specify a rule in an earlier layer, which is
   why the specificity armor the theme pass used to carry (stacked `html[data-theme]` prefixes and the
@@ -318,7 +334,11 @@ The theme pass is organised into declared cascade layers, one module per layer, 
 - **`overrides.css` is the only unlayered surface.** See §8 "The layer law" for what may live there.
 - **Theme behavior:** homepage is **dark-only** (identical on every device). About + all
   writeups support **light/dark**, synced via Starlight's `localStorage['starlight-theme']`
-  key + `data-theme` on `<html>`. About **defaults to dark** (light is opt-in).
+  key + `data-theme` on `<html>` after an explicit light or dark choice. About **defaults to dark**
+  (light is opt-in), and deliberately so before any choice: a reader who has never touched a toggle,
+  or who picked Auto (Starlight stores an empty string for Auto), gets dark on About and the OS scheme
+  on a writeup, because About's bootstrap falls through to dark while Starlight's falls through to
+  `prefers-color-scheme` (measured 2026-09-13; recorded as intended 2026-09-18).
 - **Content-embedded components:** platform landings, the 404, and `/secret` are Starlight docs
   that embed scoped Astro components via MDX (`PlatformIndex`, `NotFound`, `SecretTerminal`). They
   carry Starlight's `not-content` class so prose styling skips them; most of our prose rules in
@@ -389,7 +409,7 @@ is unchanged by construction rather than by exclusion. The tokens live in `token
 ### Focus ring system (keyboard accessibility)
 
 The site's keyboard focus indicator. One token drives every ring COLOR; one shared rule draws every ring.
-The token lives in `tokens.css` and the shared rule is the first of the two rules in `base.css` (the other is the viewport clip, see the §4 tree). This is an accessibility
+The token lives in `tokens.css` and the shared rule is the only rule in `base.css` (the sideways-scroll clip pairs live in `pages.css` since 2026-09-07, see the §4 tree). This is an accessibility
 feature first: it is how a keyboard
 user knows where they are, so it is never removed, only aimed. See DECISIONS 2026-07-13 (the token system)
 and 2026-07-17 (the geometry fixes).
@@ -411,8 +431,8 @@ and 2026-07-17 (the geometry fixes).
   it without `!important` and without editing the shared rule. That escape hatch is load-bearing (see the
   code-frame exception below). Never add specificity to this rule.
 - The rule sits in the `base` layer, which the order statement places above every `starlight.*` sublayer,
-  so it beats Starlight's own styles without needing selector weight. Starlight 0.39.2 ships no
-  `:focus-visible` outline of its own, so this IS the ring for every content-page control.
+  so it beats Starlight's own styles without needing selector weight. Starlight ships no
+  `:focus-visible` outline of its own (checked at 0.39.2 and again at 0.41.10), so this IS the ring for every content-page control.
 - Uniform 2px width everywhere. Contrast problems are fixed by changing the COLOR to an AA-grade token,
   never by thickening the line (see the light flag gold below).
 
@@ -483,7 +503,9 @@ token is an open ROADMAP item, not a bug.
 ### Component inventory (current)
 - Standalone: HUD/nav bar, hero, stats, platform/skill/practice cards, pipeline, contact, footer.
 - Starlight: themed headings (Syne + lime `#` marker), lead blockquote, code frames,
-  Toggle, `:::tip` admonition, metadata badges, sidebar dots.
+  Toggle, metadata badges, sidebar dots. (The `:::tip[Answer]` admonition is no longer used: zero
+  instances since `FlagCapture` and `PasswordReveal` took over, its prose-layer tint and icon rules
+  match nothing, see §7.)
 - Content-embedded (in `src/components/`): `PlatformIndex` (animated hero + a multi-select filter rail on the platform's own axis, difficulty or
   category, with the counts in the pills + writeup-card grid; reuses the homepage effects), `WriteupCard`
   (presentational: one meta line, title, description clamped to two lines, affordance; `showPlatform` prop for a future mixed
@@ -802,10 +824,15 @@ makes the box a scroll container, which on body would put every sticky descendan
 never scrolls. Scoped with `:has()`, so no writeup page is in either selector. A script can scroll a
 clipped box either way, so this is tested with a real wheel gesture and never with `scrollTo`. See
 DECISIONS 2026-09-07 · Two taxonomy palettes: the landing pages re-base onto the WriteupMeta chip model.
+A second pair, `html:has(.hero)` and `body:has(.hero)`, clips the splash hero's glow (`.hero::before`,
+inset `-10%` on both sides) the same way: the 404 page scrolled 19px at 375, 13 at 320 and 8 at 1280
+until 2026-09-14. Scoped on the hero rather than the route, so any future splash hero is
+covered; `/secret` has no `.hero` and stays out; the marketing pages carry a `.hero` of their own but
+never load this module.
 
 ### Narrow-width containment (2026-09-18)
 
-One class of defect, repaired in one pass after the responsive audit (`audit/`, local only): a hard
+One class of defect, repaired in one pass (2026-09-16 to 2026-09-18): a hard
 minimum that does not know the width of the box it sits in. Flex items whose `min-width: auto` is an
 unbreakable headline, `clamp()` floors in rem that double under text scaling while the screen does not,
 grid tracks whose automatic minimum is one long token, and one-word labels with no break opportunity.
@@ -815,15 +842,30 @@ Android font scaling; browser zoom was already clean.
 
 - **Display-type floors are the rem floor evaluated at 320px, never fitted to the word.** A `clamp()`
   floor on an unbreakable display word is written `min(<rem floor>, <rem floor × 5>vw)`: the home
-  headline `min(2.6rem, 13vw)`, the About headline `min(2.4rem, 12vw)`, both footer headings
+  headline `min(2.3rem, 11.5vw)`, the About headline `min(2.4rem, 12vw)`, both footer headings
   `min(2rem, 10vw)`. The vw term never binds at normal size at or above 320, and at 320 it stops the
-  floor growing with the text, so a word that fits at 320 at normal size fits at every text size and
-  the only check left is the one that already has to pass. Headroom is then a constant share of the
-  width wherever the floor binds (11% for "Curiosity", 32% for "connect."). A floor fitted to the word
-  (the first pass shipped 14.6vw and 14.7vw) leaves a fraction of a pixel and breaks on one character
-  of copy. Flex items around these headlines carry `min-width: 0`, because their automatic minimum was
-  the headline's longest word.
-- **The platform name is the one word-derived floor.** `.pi-name` is `clamp(min(2.2rem, 7.5vw), 5.5vw,
+  floor growing with the text, so the word is as wide under scaling as at normal size and a word that
+  fits at 320 at normal size stays inside the VIEWPORT at every text size. That guarantee is the
+  viewport, not the column: `.wrap`'s gutter is rem and doubles under scaling while the word does not,
+  so the home headline crosses into the gutter at root 200% by 27.75px at 320, 15.98 at 375, 12.83 at
+  390 and 7.7 at 414, fits the column from 480, and stays 20.25px inside the viewport at 320. Headroom
+  wherever the floor binds at normal size: 20.25px for "Curiosity" in the 272px column at 320 (7.4%,
+  under a character, accepted because the column is fixed and the copy is the owner's), 54.5px for
+  "Let's connect." (20%). A floor fitted to the word (the first pass shipped 14.6vw and 14.7vw) leaves
+  a fraction of a pixel and breaks on one character of copy. Flex items around these headlines carry
+  `min-width: 0`, because their automatic minimum was the headline's longest word.
+- **The marketing sections keep `.wrap`'s gutter (2026-09-18).** `.sec`, `.footcta` and the home
+  `.hero-inner` are `.wrap` too, and their `padding` shorthands, written after `.wrap { padding: 0
+  1.5rem }`, zeroed its side padding on source order, so every section on both pages ran edge to edge
+  below 1228px on the home page and 1148px on About: the hero, the stats panel, the platform cards and
+  the pipeline; the skill cards, the practice cards and the headed panel. They are `padding-block` now
+  and the column is 272px at 320, 1132px at the home page's desktop cap and 1052px at About's, level
+  with each page's HUD. The home headline's rem floor moved with it, from 2.6rem, which had been
+  derived against a column that was the whole viewport and does not fit 272px (284.59px of
+  "Curiosity"), to 2.3rem. See DECISIONS 2026-09-18 · The marketing pages keep `.wrap`'s gutter, and
+  the home headline floor is derived against the 272px column.
+- **Two floors were chosen against their column: the platform name and, since the gutter, the home
+  headline.** `.pi-name` is `clamp(min(2.2rem, 7.5vw), 5.5vw,
   3.6rem)`, because 2.2rem does not fit "OverTheWire" at 320 even at normal size (364.3px in a 288px
   column; it passed the viewport by 60px at 320, 20 at 360 and 5 at 375). 7.5vw is 24px at 320, 27 at
   360, 28.1 at 375, 2.2rem again from 469, and unchanged from 480 up; the name sets inside its content
@@ -832,13 +874,20 @@ Android font scaling; browser zoom was already clean.
   longest name at 320 whenever a platform is added: eleven characters fit with about one to spare.
   Measured and rejected: a fixed lower floor (fails under text scaling, moves the tablet band) and
   `<wbr>` at the camel-case seams (splits the wordmark at 320 to 390 at normal size and, because
-  kerning does not cross a text-node boundary, renders the name 3.55px wider wherever it stays on one
-  line, desktop included).
+  kerning does not cross a text-node boundary, renders the name wider wherever it stays on one line:
+  about 0.1px per px of type, 3.55px at the 35.2px floor and 5.78px at the 57.6px desktop size, where
+  plain spans cost 0.02px; measured 2026-09-18).
 - **The recon rail stacks under text scaling.** The description track is `minmax(0, 1fr)`, and the
   callout carrying a rail is a named inline-size container; below 12rem of rail width the rail is one
   column, chip above description, column rule hidden. A container query in rem fires when the rail is
   narrow relative to the text, which is what text scaling does, and never at normal size (the narrowest
-  rail is 15.7rem at 320). A percentage cap on the chip track was measured and rejected: `fit-content()`
+  rail is 15.7rem at 320; at normal size the query would need a 260px viewport). It fires at 123.07%
+  at 320 and 144.43% at 375 (bisected 2026-09-18), and the rail is contained on all three rail pages at
+  320 and 375 from 100% to 200%, 33.6px inside the panel at 200%. That is a phone claim: at desktop
+  widths under text-only scaling Starlight's rem-sized sidebar and table of contents leave roughly a
+  200px column, the query fires there too (150.5% at 800, 146.3% at 1152, 162.6% at 1280) and the
+  stacked rail still escapes the panel, by 21.4, 143.2 and 53.4px on Busqueda and 57.9px at 1280 on
+  Forest and Return at root 200%. A percentage cap on the chip track was measured and rejected: `fit-content()`
   alone cannot cap a span with no break opportunity (the automatic minimum it is floored by is the
   chip's min-content, which `break-word` never lowers), and with `overflow-wrap: anywhere` it contains
   only by breaking the chip mid-token, while its floor is the widest chip (38% already wraps one at 320
@@ -857,11 +906,15 @@ Android font scaling; browser zoom was already clean.
   text scaling, where two lines hold about 20 characters (ROADMAP).
 - **The contact address breaks at its `@`** (`<wbr>` in the label; `data-copy` still carries it whole,
   so the clipboard never sees the break), because `contact@idanlab.dev` was the button's min-content.
-- **Known and unfixed, all under text scaling and all recorded in ROADMAP:** the home hero has no side
-  gutter below 1230px (`.hero-inner`'s `padding: 4rem 0` cancels `.wrap`'s side padding), so the floors
-  above are derived against a column that is the whole viewport; the About practice cards clip the
-  platform name at 320 and 200%; the contact button leaves a 320 viewport by 13px at 200% through its
-  own padding.
+- **Known and unfixed, all at root 200% only and all recorded in ROADMAP for one text-scaling session:**
+  the About practice cards clip the platform name (OverTheWire 88.92px past a 320 viewport, HackTheBox
+  85, clipped by the card; inside from 414); the contact button leaves a 320 viewport by 13px through
+  its own padding; since the gutter, the home hero's primary button leaves a 320 viewport by 19.28px,
+  the About headed panel's `2.5rem 3rem` padding doubles to 192px of a 224px column so its text runs to
+  342.53 against 320, and the About skill grid's `minmax(280px, 1fr)` puts a 280px card in a 224px
+  column, 8px past the viewport (8px into the gutter at normal size). On HackTheBox writeups the page
+  scrolls to 349 at 320 and 200% because the AttackPath meter, a nowrap label beside a 92px bar, runs
+  28.81px past the viewport; the header's mobile table-of-contents toggle reaches 325.2.
 
 ### Light-mode identity (paper-native "risograph")
 Light is art-directed on its own terms (dark is unchanged). All rules scoped to
@@ -1071,7 +1124,9 @@ Preserves reading position: anchors on the current heading and corrects scroll s
      declares that axis per platform (2026-09-07); `PlatformIndex` groups by it and the injector validates
      it, so an unknown middle directory, a HackTheBox or VulnHub `difficulty` that disagrees with its tier
      directory, or a `difficulty` on PicoCTF or OverTheWire fails the build. There is no `misc` tier and no
-     fallback.
+     fallback. These guards run at MDX compile time and are fatal for `.mdx` only; a `.md` file in a
+     writeup path never reaches them, because the content loader refuses it first (the `.md` answer
+     under "Writeup path" below).
    - Copy + rename screenshots into `src/assets/{platform}/{difficulty}/{slug}/`, then reference them
      from the writeup by a relative Markdown path (`../../../../assets/...`) so astro:assets optimizes
      + hashes them.
@@ -1144,13 +1199,20 @@ underscore.
     (`hackthebox`, `vulnhub`, `picoctf`, `overthewire`). Hub and landing pages are authored as `index.*`
     files and are therefore exempt. A file outside a writeup path is never injected, even when it carries
     metadata frontmatter. The injector gates on this path test, which is why `platform` is derived from the
-    directory rather than declared.
+    directory rather than declared. **The `.md` answer (2026-09-14):** a `.md` file under a
+    platform directory is refused by the content loader (`gatedDocsLoader` in `content.config.ts`) during
+    content sync, before any page builds, with the message `docs loader: <path> is not an .mdx file`. It
+    has to be the loader: a remark-stage throw is fatal for `.mdx` but only logged for `.md`, which Astro's
+    glob loader renders inside a `try` and ships as an empty page on a green build. In dev the gate runs
+    at the next full sync, not on the spot.
 - **Principle coda:** `principle: "..."` on HackTheBox writeups only, optional. Renders inside the content
   as the last element, with the default Prev/Next pager beneath it. Anywhere else, or empty, the build
   fails (`plugins/remark-inject-writeupmeta.mjs`). See DECISIONS 2026-09-03.
 - Long/indented code → wrapped in `<Toggle>`; all code blocks get `frame="code"` + a
   language `title` so bash and python look identical.
-- Notion `<aside>` → `:::tip[Answer]`. Task headings → brown `.task-title`.
+- Notion `<aside>` → the flag or password component of the bullets below, never an admonition (the
+  `:::tip[Answer]` admonition it once mapped to has had zero instances since 2026-06-27). Task headings
+  → brown `.task-title`.
 - **Flags, MACHINES ONLY (HackTheBox and VulnHub):** emit the gold heading
   `### <span class="task-title">User Flag</span>` (or `Root Flag`) immediately followed by
   `<FlagCapture type="user" flag="..." />` (or `type="root"`), and add
@@ -1197,7 +1259,8 @@ underscore.
   cannot widen it past its share, and the callout that carries a rail is a named inline-size container
   (`recon-rail`): below 12rem of rail width the rail stacks to one column, chip above description,
   column rule hidden. No normal-size layout reaches 12rem (the narrowest rail is 15.7rem at 320); text
-  scaling does, from 125% at 320 and 150% at 375 (2026-09-18, see §6 "Narrow-width containment").
+  scaling does, from 123.07% at 320 and 144.43% at 375 (bisected 2026-09-18, see §6 "Narrow-width
+  containment" for the desktop-width caveat).
   Inline code (`:not(pre) > code`) → a rounded NEUTRAL chip with red
   text (identity in the glyphs, no red in the fill or border), its own object (readability-first,
   theme-tuned, deliberately distinct from the sharp code blocks);
@@ -1273,8 +1336,8 @@ than the challenge is worse than one without it. Reference file:
   `<Toggle>` so the visible fence stays short. **Subheadings:** zero is normal. One `###` inside
   `## Approach` is fine where the challenge genuinely pivots (local measurement, then the live instance),
   but only AFTER prose has followed the `##`, never immediately under it, which makes the `##` read as
-  decoration. Three further tests, all from the 2026-09-04 audit that added the second and third `###`
-  in the corpus (`stonks`, `ph4nt0m-1ntrud3r`) and rejected the other thirteen pages:
+  decoration. Three further tests (2026-09-04, when the second and third `###` in the corpus were added,
+  on `stonks` and `ph4nt0m-1ntrud3r`, and the other thirteen pages were rejected):
   - **LENGTH AND FLATNESS ARE NOT THE CRITERION, and reaching for them is the standard error.** `pie-time`
     has one of the FLATTEST Approach sections in the set and is the reference page. Measured longest
     unbroken prose runs: ph4nt0m 248, ssti1 173, hashcrack 172, stonks 170, get-ahead 148, so no
@@ -1359,7 +1422,7 @@ than the challenge is worse than one without it. Reference file:
   authored rather than executed is titled with its FILENAME (`RSA_decrypt.py`, `shell.php`), which also
   answers the question a bare `php` or `python` title leaves open, namely what to save it as.
 - **NEVER write that a flag tail is "minted per instance" without evidence for THAT challenge.** The
-  phrase sat on five pages and was wrong or unsupported on every one (audit 2026-09-06, five corrected:
+  phrase sat on five pages and was wrong or unsupported on every one (2026-09-06, five corrected:
   `webdecode`, `verify`, `ph4nt0m-1ntrud3r`, `insp3ct0r`, `even-rsa`). There is no platform default,
   because picoCTF does something different per challenge. Each entry below states what was MEASURED, not
   a mechanism inferred from it, and says how thin the sample is:

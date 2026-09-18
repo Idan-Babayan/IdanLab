@@ -38,13 +38,11 @@
      it were tuned for mono: the measure, the vertical rhythm between prose and components, and how the
      mono chrome (badges, callout labels, code frames, the Principle coda) now reads BESIDE a proportional
      face rather than matching it. This is the part that has not been done at all.
-  3. **The three-column verification folds in here** (see the three-column item in this section): it needs
-     the same real-browser session and its values interact with the prose measure.
-  4. **The unit rule is written and not applied** (`layers.css` header): rem or px for component geometry,
+  3. **The unit rule is written and not applied** (`layers.css` header): rem or px for component geometry,
      em only where scaling with the local font size is the declared intent. Applying it belongs to THIS
      retune, because converting a unit changes rendered geometry and each conversion needs its own
      before-and-after measurement. Do not sweep it.
-  5. **One recon-rail question to judge at 375px** (added 2026-07-27). The rail's chip track now carries
+  4. **One recon-rail question to judge at 375px** (added 2026-07-27). The rail's chip track now carries
      `--findings-gutter` (0.8rem) so the column rule has equal clearance on both sides, which narrowed the
      description column by 14.80px and pushed one Forest row from two lines to three on a phone. Nothing is
      broken (no horizontal overflow, continuation error still 0.00), but whether a narrow screen wants the
@@ -56,19 +54,6 @@
   is settled. Each cluster merges to `main` on its own now, so there is no longer one release holding
   everything back.
 
-- [DESIGN/ENG] Three-column layout: the REAL-BROWSER VERIFICATION PASS has not run. The layout itself
-  shipped and is live; only the visual confirmation remains. **Do it inside the Geist retune session
-  above**, because the content cap and the prose measure interact and tuning them apart wastes a pass.
-  Confirm in wide Chrome and Firefox, both themes: balanced gutters on the reading column, no ugly TOC
-  wrap at the 13rem text / 15rem container pair (nudge up if it wraps badly), the line length reads
-  comfortably, intro pages are truly full-width with the hero flush to the top and no dark band above it,
-  and the homepage and About are unchanged (they do not load the theme-pass modules). If a residual band
-  does remain above an intro hero, collapse the empty hidden-title panel
-  (`body:has(.pi-index) .content-panel:not(:has(.pi-index)){padding-block:0}`).
-  **FLAGGED, may be moot:** this item's original target was a 50rem content cap, but the Geist foundation
-  lock set `--sl-content-width` to 46rem as a derived value (DECISIONS 2026-07-27 · The release hold is
-  lifted and `dev` ships to production). The retune may supersede this verification entirely rather than
-  satisfy it. Judge that at the start of the session rather than assuming either way.
 - [CONTENT] Revisit `404.mdx`: owner made manual changes on 2026-06-28 and wants to review/refine it
   again on a later day.
 - [ENG/INFRA] Domain rebrand, remaining work only (in-repo is done): Pages custom domain, the 301 from
@@ -151,10 +136,6 @@
 - [ENG] ToggleAll on mobile: currently desktop-only (hidden below the lg breakpoint). To put it inside
   the collapsed "On this page" dropdown would need a second override (`MobileTableOfContents`); deferred
   (owner judged the bulk control a poor fit for narrow screens; individual toggles still work on mobile).
-- [DESIGN] Answer-callout (:::tip) accent color: tips currently render purple (the rocket-to-check icon
-  swap on 2026-06-27 kept the inherited tip color). Experiment with a tip accent that better matches the
-  overall theme (e.g. green/teal or a paper-harmonious hue), both themes, CSS-only via the Starlight aside
-  color tokens. Owner wants to try options later.
 - [DESIGN] Revisit the Active Directory topology glyph (low priority, no urgency). The diamond is not
   broken and ships as-is: it passes the silhouette test (its outline reads at 15px with the interior
   contributing nothing, which is exactly why it works). Parked only because Idan may want to move off it
@@ -223,18 +204,13 @@
   the gutter at small breakpoints once the 375px rail behavior is settled.
 - [DESIGN] `--ap-fade-w` as an owner-facing knob: decide whether the accent-fade
   width is exposed as a tunable CSS variable or fixed. A convention call, not a bug.
-- [DESIGN] **The homepage hero has no side gutter below 1230px.** `.hero-inner { padding: 4rem 0 }`
-  overrides `.wrap`'s 1.5rem side padding, so the eyebrow, headline, sub and buttons start at x=0 on
-  every phone and tablet (measured 2026-09-18; since the 2026-06-05 redesign; About's hero keeps its
-  24px). Decide whether the flush-left hero is intended. Restoring the gutter changes the headline's rem
-  floor, not only its vw term: 284.59px of "Curiosity" does not fit a 272px column at 320 at normal
-  size, so the 2.6rem floor moves and 13vw is re-derived from the new floor (rem × 5). CORE_SPEC §6
-  "Narrow-width containment".
 - [DESIGN] **About practice cards under text scaling.** At root 200% on a 320 screen the platform
-  name in `.practice strong` is clipped by its card: 41px past the viewport for OverTheWire, 37 for
-  HackTheBox, 1px at 360, whole from 375. The icon and the text sit side by side and the text column
-  is about 62px there, so `min-width: 0` cannot fix it; the fix is structural, the icon above the text
-  below a container width in rem, the recon rail's mechanism (measured 2026-09-18).
+  name in `.practice strong` is clipped by its card: 89px past the viewport for OverTheWire, 85 for
+  HackTheBox; 49 and 45 at 360; 34 and 30 at 375; 19 and 15 at 390; whole from 414 (measured
+  2026-09-18 after the gutter returned; before it, 41, 37, 1px at 360 and whole from 375). The card is
+  260px in a 224px column (`minmax(260px, 1fr)`), the icon and the text sit side by side and the text
+  column is about 96px there, so `min-width: 0` cannot fix it; the fix is structural, the icon above
+  the text below a container width in rem, the recon rail's mechanism.
 - [DESIGN] **Card description under text scaling.** The two-line clamp shows 13 to 26 characters at
   root 200% on a phone against 50 to 92 at normal size. Decide whether the clamp lifts under scaling
   (a container query in rem, the rail's mechanism). A phone-specific clamp at normal size was measured
@@ -242,3 +218,15 @@
 - [DESIGN] **The contact button leaves a 320 viewport by 13px at root 200%** on both marketing pages,
   after the `@` break: its 1.7rem side padding doubles while `idanlab.dev` cannot break. A padding
   that does not scale with the text, or a shorter label, is a design call.
+- [DESIGN] **Text scaling on the marketing pages, one session, root 200% only.** Three instances the
+  gutter (2026-09-18) made worse or created, all measured on isolated builds the same day and none with
+  a position taken: (1) the About practice names above; (2) the home hero's primary button leaves a 320
+  viewport by 19.28px (x 48 to 339.28; it started at x=0 before the gutter and fit); (3) the About
+  headed panel's `2.5rem 3rem` padding doubles to 192px of a 224px column, so its two paragraphs run to
+  342.53 against 320 (they ended at 294.53 before). The contact button item above is the same family.
+  Same session, the open question: the About skill grid's `minmax(280px, 1fr)` puts a 280px card in a
+  224px column at 320 and 200%, 8px past the viewport (8px into the gutter at normal size).
+  `minmax(min(280px, 100%), 1fr)` was measured and deliberately not taken: it removes the 8px and
+  changes nothing above 320 at normal size, but the narrower card makes the word problem worse,
+  "Cryptography" overflowing its card by 183px instead of 127 at 320 and 200%. The skill cards want a
+  text answer, not a track answer.

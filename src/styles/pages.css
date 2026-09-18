@@ -109,8 +109,11 @@ body:has(.pi-index) .pagination-links { --focus-ring: var(--pf-accent); }
 
 /* No sideways scroll on a landing. The hero glow (.pi-glow, inset -12% left and -10% right of the
    hero) is MEANT to spill past its box and fade out beyond the screen edge, and nothing clipped that
-   spill. Measured on the built pages: it is the ONLY element overflowing the viewport, by 71px at
-   1280 and 45px at 640, so every landing wobbled sideways under a trackpad or a thumb.
+   spill. Measured on the built pages at 1280 and 640: the only element overflowing the viewport at
+   those widths, by 71px and 45px, so every landing wobbled sideways under a trackpad or a thumb.
+   (Below 390 the platform name overflowed as well until its floor was tied to the viewport on
+   2026-09-18, and the splash hero glow below spills the same way; the pair silences both, so overflow
+   on a landing is measured, never looked for.)
    IT TAKES BOTH RULES. A rule on either box ALONE measures as doing nothing at all. Overflow
    propagates to the viewport from the ROOT, and from BODY only while the root is `visible`, and the
    box whose value propagates keeps a used value of `visible`, so it clips nothing itself. On <html>
@@ -125,14 +128,14 @@ body:has(.pi-index) .pagination-links { --focus-ring: var(--pf-accent); }
    never scrolls. `clip` leaves `overflow-y: visible` and creates no scroll container. The fixed
    sidebar and header are unaffected either way, since the viewport is their containing block.
    Scoped with :has() to pages that carry a landing, so no writeup page is in either selector. The
-   marketing pages solve the same problem on their own body rule, which is why these four were the
-   only pages that ever showed it. */
+   marketing pages solve the same problem on their own body rule, so the four landings and the splash
+   404 (the pair below) were the only pages that ever showed it. */
 html:has(.pi-index) { overflow-x: clip; }
 body:has(.pi-index) { overflow-x: clip; }
 
 /* The splash hero glow (.hero::before, inset -10% on both sides of the hero) spills the same way,
    and the 404 page is in neither selector above, so it scrolled sideways: 19px at 375, 13 at 320
-   and 8 at 1280, measured on the built page (audit ER-01, 2026-09-14). Same pair, same `clip`, for
+   and 8 at 1280, measured on the built page (2026-09-14). Same pair, same `clip`, for
    the reasons above. Scoped on the hero itself rather than on the 404 route, so any future splash
    hero is covered and /secret, a splash with no hero, stays out; the marketing pages carry a .hero
    of their own but never load this module. */
@@ -175,7 +178,7 @@ body:has(.pi-index) h1#_top {
    100vw), so no breakout fix is needed; it fills the freed width itself.
    80rem, not 100%. The landing was composed for a 1280 screen, where the pane gives 960px and the grid
    three 308px cards; at 100% a 2560 screen laid the PicoCTF catalog in seven columns and put the hero
-   logo 2100px from the platform name (audit ER-11). 80rem is the pane at 1600, so every width up to
+   logo 2100px from the platform name. 80rem is the pane at 1600, so every width up to
    1600 is byte-identical (measured on both landings at 1024 to 1600), and above it the landing holds
    four 306.8px columns, centered by Starlight's own margin-inline: auto: 336 to 1616 at 1680, 456 to
    1736 at 1920, 776 to 2056 at 2560. The token rather than a max-width on .sl-container, because

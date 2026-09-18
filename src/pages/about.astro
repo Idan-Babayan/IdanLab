@@ -255,7 +255,7 @@ import '../styles/fonts.css';
   /* NAV HUD */
   /* Both rows may WRAP. Under text scaling (root at 200%, so this bar's .72rem is 23.04px) the home
      link and the nav need a 506px row and a phone gives 375, and because body clips sideways overflow
-     the theme toggle sat at x 482 to 506, unreachable by touch or pointer (audit ER-12, measured
+     the theme toggle sat at x 482 to 506, unreachable by touch or pointer (measured
      2026-09-14 at 360, 375 and 412). With `wrap` on both containers the nav drops under the home link
      and the toggle under the links, so every control stays inside the viewport. At normal size nothing
      ever wraps: the row fits at 320 with room to spare, so the change measures as zero diff there

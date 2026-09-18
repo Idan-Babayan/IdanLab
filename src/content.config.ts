@@ -10,7 +10,7 @@ import { docsSchema } from '@astrojs/starlight/schema';
 // rendered by Astro's glob loader at content-sync time inside a try/catch that LOGS a render error and
 // stores the entry anyway (astro/dist/content/loaders/glob.js), so a remark-stage throw is fatal for
 // `.mdx`, which Vite compiles at render time, and merely logged for `.md`: the page ships with an empty
-// body on a green build (measured 2026-09-14, audit ER-14). The one seam where a throw fails the build
+// body on a green build (measured 2026-09-14). The one seam where a throw fails the build
 // before `dist/` is touched is the collection loader itself: a rejected `load()` fails the content sync.
 // So Starlight's loader is wrapped, not replaced: it runs unchanged, then the store is walked once and
 // any non-index file under the four platform directories that is not `.mdx` refuses the build by name.
