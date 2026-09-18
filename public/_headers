@@ -10,12 +10,13 @@
 # enforcement blocks nothing). There is NO reporting endpoint (report-to / report-uri) by
 # design; violations surface in browser devtools.
 #
-# script-src note (important): the production build emits 18 distinct inline scripts, not
-# one. Besides our reading-progress bar, Starlight injects its own inline scripts (theme
-# provider, mobile-menu toggle, sidebar/TOC persistence, updatePickers, Expressive Code),
-# and the marketing pages (/ and /about) plus a few writeups carry their own inline FX.
-# A hash in script-src makes browsers ignore 'unsafe-inline', so a single progress-script
-# hash would block the other 17. We therefore keep 'unsafe-inline' in script-src.
+# script-src note (important): the production build emits 21 distinct inline scripts, not
+# one (counted by SHA-256 over every inline script body in dist, 2026-09-13; it was 18 when
+# this note was written). Besides our reading-progress bar, Starlight injects its own inline
+# scripts (theme provider, mobile-menu toggle, sidebar/TOC persistence, updatePickers,
+# Expressive Code), and the marketing pages (/ and /about) plus a few writeups carry their
+# own inline FX. A hash in script-src makes browsers ignore 'unsafe-inline', so a single
+# progress-script hash would block the other 20. We therefore keep 'unsafe-inline' in script-src.
 # The stable progress-script hash is sha256-zbeMm3179IyQub695L7lMzB1ygPiSe0lSSrMfkEOwpc=
 # (recompute the full set from dist to drop unsafe-inline later; see DECISIONS.md).
 #

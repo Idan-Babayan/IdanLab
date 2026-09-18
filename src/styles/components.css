@@ -544,8 +544,9 @@ html[data-theme="light"] .sl-markdown-content .cl {
      token: Starlight gives code overflow-wrap: break-word, which breaks a word only once its box is
      too narrow and never lowers min-content. So one long token could widen the track past its share
      and push the grid out of the callout it sits in. Measured on Busqueda at 320, where
-     `http://searcher.htb/` is 180.8px against a 159.8px share: the rail ran 21px past its own box
-     and painted 4.2px outside the callout's border. With the minimum at 0 the track keeps its share
+     `http://searcher.htb/` is 181.2px against a 158.8px share: the rail ran 22.4px past its own box
+     and painted 5.58px outside the callout's panel (this comment first said 180.8, 159.8, 21 and 4.2;
+     re-measured 2026-09-18). With the minimum at 0 the track keeps its share
      and the existing break-word wraps the token inside it. The chip track keeps its max-content
      minimum on purpose. fit-content() alone cannot cap it: the automatic minimum it is floored by
      is the chip's min-content, and break-word never lowers min-content (measured byte-identical to
@@ -633,7 +634,7 @@ html[data-theme="light"] .sl-markdown-content .cl {
    Two side-by-side tracks need the widest chip plus the gutter plus the longest unbreakable run of
    description, and from about 125% root font size on a 320 phone (150% at 375) that sum no longer
    fits the callout: the description track collapsed to 0 to 27px and its text painted 54 to 177px
-   outside the callout's panel (audit ER-12, measured 2026-09-18 on Forest, Busqueda and Return).
+   outside the callout's panel (measured 2026-09-18 on Forest, Busqueda and Return).
    Removing a track's floor moves the overflow rather than removing it, and a fit-content() cap on
    the chip track works only with overflow-wrap: anywhere, which contains by breaking chips
    mid-token. So below 12rem of rail width the rail becomes one column, chip above and description
@@ -644,11 +645,14 @@ html[data-theme="light"] .sl-markdown-content .cl {
    never fires at normal size: the narrowest rail on the site is 15.7rem at 320 and the query needs
    under 12rem, a 59px margin no content can consume. A percentage cap has no such margin: its
    floor is the widest chip, and a 40% cap sits 1.6 points above binding at 320 today (38% already
-   wraps a chip on Forest and Return at normal size). Measured: fires at 320 from 125% and at 375
-   from 150%, exactly where two-column text first leaves the content box; contained on all three
-   rail pages at 320 and 375 from 100% to 200%, text 24 to 60px inside the panel, no chip ever
-   broken; zero diff at 100% on 78 of 78 full-page fingerprints (three rails and three control
-   pages, eleven widths dark, light at 375 and 1280). container-type on the callout is itself a
+   wraps a chip on Forest and Return at normal size). Measured: fires at 123.07% at 320 and 144.43%
+   at 375 (bisected 2026-09-18; this comment first said 125 and 150), before two-column text leaves
+   the content box at any scale; contained on all three rail pages at 320 and 375 from 100% to 200%,
+   text 24 to 60px inside the panel, no chip ever broken; zero diff at 100% on 78 of 78 full-page
+   fingerprints (three rails and three control pages, eleven widths dark, light at 375 and 1280).
+   A phone claim: at desktop widths under text-only scaling Starlight's rem-sized sidebars leave
+   about a 200px column, the query fires there too and the stacked rail still escapes the panel
+   (21 to 143px at 800 to 1280 at root 200%). container-type on the callout is itself a
    zero diff: a block in normal flow takes its width from its containing block, so inline-size
    containment changes nothing it paints. The container is named so that a container added
    between the callout and the rail later cannot capture the query. The 0.5rem between a

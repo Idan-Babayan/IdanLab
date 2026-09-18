@@ -119,7 +119,7 @@ Flat `.mdx` at `src/content/docs/<platform>/<middle>/<slug>.mdx`, where the midd
   `plugins/remark-transform-recon-rail.mjs` converts it at build time. **The ` : ` is a PARSE DELIMITER, consumed at build time and never rendered**; the separator the reader sees is a CSS rule, because a separator is presentation. Conversion is all or nothing per list: one unparseable item leaves the whole list as bullets, which is visibly wrong so you notice.
 - **Images live in `src/assets`**, in a mirrored tree, referenced by relative Markdown path (four `../` from a difficulty tier) so `astro:assets` optimizes and hashes them. Plain Markdown image syntax, not `<Image />`.
 - Import the toggle: `import Toggle from '@components/Toggle.astro'`. Code blocks take `frame="code"` plus a language `title`. Bold inside a fence is impossible: use line highlighting, for example ` ```bash {3} `.
-- Flag answers and spoilers go in `:::tip[Answer]` admonitions, often inside a `<Toggle>`.
+- Flags and answers use the components, never an admonition: `<FlagCapture>` on HackTheBox and VulnHub machines, `<PasswordReveal>` on OverTheWire and PicoCTF challenges (CORE_SPEC §7). The `:::tip[Answer]` admonition has had zero instances since 2026-06-27; do not reach for it.
 - Every writeup follows Recon, Foothold, Escalation, Reflection, and documents the thinking and the dead ends, not just the commands.
 
 ## Git policy
