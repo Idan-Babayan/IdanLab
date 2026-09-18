@@ -263,8 +263,8 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 │     ├─ base.css                     # @layer base: the zero-specificity defaults under everything, today the shared focus ring alone
 │     ├─ prose.css                    # @layer prose: the reading surface inside .sl-markdown-content (type, rhythm, links, quotes, the raw <details> default)
 │     ├─ chrome.css                   # @layer chrome: header, sidebar, TOC, code frames, scrollbars, the three-column layout, light-mode depth
-│     ├─ components.css               # @layer components: badges, toggles, callouts, FlagCapture, PasswordReveal, Principle, WriteupMeta
-│     ├─ pages.css                    # @layer pages: whole-page treatments (splash hero, platform index, the reveal state rules, and the landing's sideways-scroll clip: html:has(.pi-index) + body:has(.pi-index), both needed, see §6)
+│     ├─ components.css               # @layer components: badges, toggles, callouts, the recon rail (a two-column grid plus the 12rem container query that stacks it under text scaling), FlagCapture, PasswordReveal, Principle, WriteupMeta
+│     ├─ pages.css                    # @layer pages: whole-page treatments (splash hero, platform index, the reveal state rules, the landing's 80rem content cap, and the sideways-scroll clip pairs: html:has(.pi-index) + body:has(.pi-index) and html:has(.hero) + body:has(.hero), both rules of each pair needed, see §6)
 │     ├─ utilities.css                # @layer utilities: single-purpose helpers that must sit above the named layers, today .sr-only (two rules: the hiding declarations scoped to .sl-markdown-content, and an UNSCOPED user-select:none that has to reach Starlight's .sr-only too, see §8 "Invisible to the eye is not invisible to the clipboard")
 │     └─ overrides.css                # THE ONLY UNLAYERED SURFACE. The 13-rule tail, each rule carrying an evidence comment naming what it beats (see §8 "The layer law")
 ├─ plugins/
@@ -486,7 +486,7 @@ token is an open ROADMAP item, not a bug.
   Toggle, `:::tip` admonition, metadata badges, sidebar dots.
 - Content-embedded (in `src/components/`): `PlatformIndex` (animated hero + a multi-select filter rail on the platform's own axis, difficulty or
   category, with the counts in the pills + writeup-card grid; reuses the homepage effects), `WriteupCard`
-  (presentational: one meta line, title, description, affordance; `showPlatform` prop for a future mixed
+  (presentational: one meta line, title, description clamped to two lines, affordance; `showPlatform` prop for a future mixed
   grid), `badges/DifficultyPips` (the one ordinal pips glyph, shared by the card and the writeup row), `Callout` (icon-based tagged callout, used in writeup bodies),
   `NotFound` (404 body), `SecretTerminal` (vanilla-TS terminal), `AttackPath` (guided infographic for a
   LINEAR privilege-escalation chain: an ascending horizontal path whose nodes escalate toward the goal,
@@ -790,8 +790,10 @@ its own arc).
   and below 480px the visible counts leave the pills so the six-category PicoCTF rail stays two rows.
 
 **No sideways scroll on a landing (2026-09-07).** The hero glow (`.pi-glow`, inset `-12%` left and `-10%`
-right of the hero) is MEANT to spill past its box, and it is the only element on the site that overflows
-the viewport: 71px at 1280, 45px at 640. It is clipped by a PAIR of rules in `pages.css`,
+right of the hero) is MEANT to spill past its box, and at 1280 and 640 it is the only element that
+overflows the viewport: 71px and 45px. (Below 390 the platform name overflowed too, silently, until its
+floor was tied to the viewport on 2026-09-18; see "Narrow-width containment" below. The clip pair is a
+silencer, so overflow on a landing has to be measured, never looked for.) It is clipped by a PAIR of rules in `pages.css`,
 `html:has(.pi-index)` and `body:has(.pi-index)`, both `overflow-x: clip`. **Both are required and either
 one alone does nothing**, because overflow propagates to the viewport from the root, and from body only
 while the root is `visible`, and the box whose value propagates keeps a used value of `visible` and so
@@ -800,6 +802,66 @@ makes the box a scroll container, which on body would put every sticky descendan
 never scrolls. Scoped with `:has()`, so no writeup page is in either selector. A script can scroll a
 clipped box either way, so this is tested with a real wheel gesture and never with `scrollTo`. See
 DECISIONS 2026-09-07 · Two taxonomy palettes: the landing pages re-base onto the WriteupMeta chip model.
+
+### Narrow-width containment (2026-09-18)
+
+One class of defect, repaired in one pass after the responsive audit (`audit/`, local only): a hard
+minimum that does not know the width of the box it sits in. Flex items whose `min-width: auto` is an
+unbreakable headline, `clamp()` floors in rem that double under text scaling while the screen does not,
+grid tracks whose automatic minimum is one long token, and one-word labels with no break opportunity.
+Every change below was measured for zero diff at root 100% with full-page element rect fingerprints on
+isolated builds before it landed. "Root 200%" means the root font size doubled, the simulation of
+Android font scaling; browser zoom was already clean.
+
+- **Display-type floors are the rem floor evaluated at 320px, never fitted to the word.** A `clamp()`
+  floor on an unbreakable display word is written `min(<rem floor>, <rem floor × 5>vw)`: the home
+  headline `min(2.6rem, 13vw)`, the About headline `min(2.4rem, 12vw)`, both footer headings
+  `min(2rem, 10vw)`. The vw term never binds at normal size at or above 320, and at 320 it stops the
+  floor growing with the text, so a word that fits at 320 at normal size fits at every text size and
+  the only check left is the one that already has to pass. Headroom is then a constant share of the
+  width wherever the floor binds (11% for "Curiosity", 32% for "connect."). A floor fitted to the word
+  (the first pass shipped 14.6vw and 14.7vw) leaves a fraction of a pixel and breaks on one character
+  of copy. Flex items around these headlines carry `min-width: 0`, because their automatic minimum was
+  the headline's longest word.
+- **The platform name is the one word-derived floor.** `.pi-name` is `clamp(min(2.2rem, 7.5vw), 5.5vw,
+  3.6rem)`, because 2.2rem does not fit "OverTheWire" at 320 even at normal size (364.3px in a 288px
+  column; it passed the viewport by 60px at 320, 20 at 360 and 5 at 375). 7.5vw is 24px at 320, 27 at
+  360, 28.1 at 375, 2.2rem again from 469, and unchanged from 480 up; the name sets inside its content
+  box at root 200% too (8vw leaves the box by 9px there, 8.7vw is the exact fit). VulnHub and PicoCTF
+  fit at 2.2rem and shrink with the long names, so the four landings behave identically. Check the
+  longest name at 320 whenever a platform is added: eleven characters fit with about one to spare.
+  Measured and rejected: a fixed lower floor (fails under text scaling, moves the tablet band) and
+  `<wbr>` at the camel-case seams (splits the wordmark at 320 to 390 at normal size and, because
+  kerning does not cross a text-node boundary, renders the name 3.55px wider wherever it stays on one
+  line, desktop included).
+- **The recon rail stacks under text scaling.** The description track is `minmax(0, 1fr)`, and the
+  callout carrying a rail is a named inline-size container; below 12rem of rail width the rail is one
+  column, chip above description, column rule hidden. A container query in rem fires when the rail is
+  narrow relative to the text, which is what text scaling does, and never at normal size (the narrowest
+  rail is 15.7rem at 320). A percentage cap on the chip track was measured and rejected: `fit-content()`
+  alone cannot cap a span with no break opportunity (the automatic minimum it is floored by is the
+  chip's min-content, which `break-word` never lowers), and with `overflow-wrap: anywhere` it contains
+  only by breaking the chip mid-token, while its floor is the widest chip (38% already wraps one at 320
+  at normal size; 40% sits 1.6 points above binding). §7 carries the rail's authoring side.
+- **The landing is capped at 80rem.** `body:has(.pi-index)` sets `--sl-content-width: 80rem`, the pane
+  width at 1600, replacing the 100% lift. Every width to 1600 is unchanged; above it the landing holds
+  four 306.8px columns, centered by Starlight's own `margin-inline: auto`, instead of stretching to
+  seven columns at 2560 with the hero logo 2100px from the platform name. The token rather than a
+  `max-width` on `.sl-container`, because Starlight's header sizes its title column from it and the
+  search box then sits at the content column's edge, as on a writeup. Writeups keep 46rem.
+- **The writeup card's description is clamped to two lines at every width**, by design (`.wc-desc`,
+  `-webkit-line-clamp: 2`): cards in a row stay one height and the card is a teaser. Recorded with the
+  numbers (2026-09-18): descriptions run 93 to 165 characters and the clamp shows 50 to 92 of them
+  depending on card width, 65 at 375 against 59 at 1280, so a 360 phone shows as much as a desktop
+  card or more and only 320 shows four to nine fewer. No phone-specific clamp. The open question is
+  text scaling, where two lines hold about 20 characters (ROADMAP).
+- **The contact address breaks at its `@`** (`<wbr>` in the label; `data-copy` still carries it whole,
+  so the clipboard never sees the break), because `contact@idanlab.dev` was the button's min-content.
+- **Known and unfixed, all under text scaling and all recorded in ROADMAP:** the home hero has no side
+  gutter below 1230px (`.hero-inner`'s `padding: 4rem 0` cancels `.wrap`'s side padding), so the floors
+  above are derived against a column that is the whole viewport; the About practice cards clip the
+  platform name at 320 and 200%; the contact button leaves a 320 viewport by 13px at 200% through its
+  own padding.
 
 ### Light-mode identity (paper-native "risograph")
 Light is art-directed on its own terms (dark is unchanged). All rules scoped to
@@ -1131,7 +1193,12 @@ underscore.
   `--findings-gutter` (0.8rem) and `--findings-rule-width` (2px), `column-gap` reads the gutter and the
   `dt` takes `padding-right: calc(gutter + rule width)`, so the column rule sits IN a gutter with the same
   space on both sides at every token length, and still no literal about port widths exists anywhere.
-  See DECISIONS 2026-07-27. Inline code (`:not(pre) > code`) → a rounded NEUTRAL chip with red
+  See DECISIONS 2026-07-27. The description track is `minmax(0, 1fr)`, so one unbreakable token
+  cannot widen it past its share, and the callout that carries a rail is a named inline-size container
+  (`recon-rail`): below 12rem of rail width the rail stacks to one column, chip above description,
+  column rule hidden. No normal-size layout reaches 12rem (the narrowest rail is 15.7rem at 320); text
+  scaling does, from 125% at 320 and 150% at 375 (2026-09-18, see §6 "Narrow-width containment").
+  Inline code (`:not(pre) > code`) → a rounded NEUTRAL chip with red
   text (identity in the glyphs, no red in the fill or border), its own object (readability-first,
   theme-tuned, deliberately distinct from the sharp code blocks);
   inside a colored callout it instead harmonizes with that callout's accent (reads `--acc` / `--cl-ink`,
