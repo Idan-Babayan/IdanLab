@@ -129,6 +129,15 @@ body:has(.pi-index) .pagination-links { --focus-ring: var(--pf-accent); }
    only pages that ever showed it. */
 html:has(.pi-index) { overflow-x: clip; }
 body:has(.pi-index) { overflow-x: clip; }
+
+/* The splash hero glow (.hero::before, inset -10% on both sides of the hero) spills the same way,
+   and the 404 page is in neither selector above, so it scrolled sideways: 19px at 375, 13 at 320
+   and 8 at 1280, measured on the built page (audit ER-01, 2026-09-14). Same pair, same `clip`, for
+   the reasons above. Scoped on the hero itself rather than on the 404 route, so any future splash
+   hero is covered and /secret, a splash with no hero, stays out; the marketing pages carry a .hero
+   of their own but never load this module. */
+html:has(.hero) { overflow-x: clip; }
+body:has(.hero) { overflow-x: clip; }
 } /* @layer pages */
 
 /* Focus ring: a landing card rings in its GROUP's hue (owner decision 2026-09-07), the same hue as its
@@ -157,17 +166,26 @@ body:has(.pi-index) { overflow-x: clip; }
 body:has(.pi-index) h1#_top {
   display: none;
 }
-/* ── Platform intro/landing pages: full-width, immersive ──────────────────────
+/* ── Platform intro/landing pages: wide, immersive, capped at 80rem ───────────
    {platform}/index.mdx render <PlatformIndex/> (root .pi-index) with tableOfContents:false, so they
-   inherit the prose reading cap (--sl-content-width, set to 50rem for writeups by the three-column
-   block below), which boxes the fluid hero + card grid and leaves large side gaps. Lift the cap to full
-   width ONLY on pages containing the PlatformIndex root, via this :has(.pi-index) scope: writeups keep
-   their 50rem reading cap, and the standalone home/About are unaffected (they do not load this
-   stylesheet). PlatformIndex is fluid (flex/percentages, no 100vw), so no breakout fix is needed; it
-   fills the freed width itself. Theme-neutral; native :has() (already used in this codebase). This
-   supersedes the earlier 60rem widen. */
+   inherit the prose reading cap (--sl-content-width, 46rem, see tokens.css), which boxes the fluid
+   hero + card grid and leaves large side gaps. Lift the cap ONLY on pages containing the PlatformIndex
+   root, via this :has(.pi-index) scope: writeups keep their reading cap, and the standalone home/About
+   are unaffected (they do not load this stylesheet). PlatformIndex is fluid (flex/percentages, no
+   100vw), so no breakout fix is needed; it fills the freed width itself.
+   80rem, not 100%. The landing was composed for a 1280 screen, where the pane gives 960px and the grid
+   three 308px cards; at 100% a 2560 screen laid the PicoCTF catalog in seven columns and put the hero
+   logo 2100px from the platform name (audit ER-11). 80rem is the pane at 1600, so every width up to
+   1600 is byte-identical (measured on both landings at 1024 to 1600), and above it the landing holds
+   four 306.8px columns, centered by Starlight's own margin-inline: auto: 336 to 1616 at 1680, 456 to
+   1736 at 1920, 776 to 2056 at 2560. The token rather than a max-width on .sl-container, because
+   Starlight's header sizes its title column from --sl-content-width so the search box lands at the
+   content column's left edge, as it does on writeups (568 against a 608 column at 1920); on a capped
+   landing it moves from 296 to 456 at 1920, aligned with the column it belongs to.
+   Theme-neutral; native :has() (already used in this codebase). This supersedes the earlier 60rem
+   widen and the 100% lift. */
 body:has(.pi-index) {
-  --sl-content-width: 100%;
+  --sl-content-width: 80rem;
 }
 
 /* The hero panel is the SECOND ContentPanel (the first holds the hidden PageTitle; Starlight renders a

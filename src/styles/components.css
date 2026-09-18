@@ -476,6 +476,32 @@ html[data-theme="light"] .sl-markdown-content .cl :not(pre) > code {
   border-color: transparent;
 }
 
+/* --cl-emph is to BOLD PROSE what --cl-code-ink is to code, and it is deliberately a weaker value. Code
+   is a chip and wants the ink at full strength; a bold RUN of prose at that strength stops reading as
+   emphasis and starts reading as a link. So emphasis leans the per-type hue INTO the body text colour
+   rather than replacing it, and adds no weight at all: Geist 700 sat ABOVE the Geist 600 toggle summary
+   (--toggle-title-weight) and out-shouted it on the same screen, which is what started this. 600 was
+   rejected too, because it lands on exactly the toggle's weight and only levels the competition.
+   PER THEME, AND THE TWO PERCENTAGES DIFFER, because the inputs are not symmetric. Dark leans the bright
+   --acc toward bright text, which keeps lightness and chroma. Light leans toward a near-black text, so
+   starting from the already-deepened --cl-code-ink dulled it twice: measured on intel it sat at 0.811 of
+   body contrast where dark sat at 0.669, with 30% less chroma, and read as nearly invisible. Starting
+   from the UNdeepened --cl-ink at 55% lands 0.660 and chroma 0.112 against dark's 0.669 and 0.115, so the
+   two modes finally match. Contrast on the callout tint stays far above AA in both (8.2:1 and higher).
+   What one percentage CANNOT do is equalise the five hues: recon and loot are light colours, so on dark
+   they separate least (ratio 0.92 and 0.86 where intel is 0.67) and on light they separate most. That is
+   a cyan and a yellow behaving like a cyan and a yellow, and per-type tuning would cost ten values. */
+html[data-theme="dark"] .sl-markdown-content .cl {
+  --cl-emph: color-mix(in oklab, var(--acc) 50%, var(--sl-color-text));
+}
+html[data-theme="light"] .sl-markdown-content .cl {
+  --cl-emph: color-mix(in oklab, var(--cl-ink) 55%, var(--sl-color-text));
+}
+.sl-markdown-content .cl strong {
+  font-weight: 400;
+  color: var(--cl-emph);
+}
+
 
 /* ── Recon findings rail + assessment (Direction 2) ────────────────────────────
    The rail's STRUCTURE is emitted at build time by plugins/remark-transform-recon-rail.mjs, which
@@ -512,8 +538,22 @@ html[data-theme="light"] .sl-markdown-content .cl :not(pre) > code {
   --findings-gutter: 0.8rem;
   --findings-rule-width: 2px;
   display: grid;
-  /* The port column measures itself. No literal, no floor, no padding of short tokens. */
-  grid-template-columns: max-content 1fr;
+  /* The port column measures itself. No literal, no floor, no padding of short tokens.
+     The description track is minmax(0, 1fr), not a bare 1fr. A bare 1fr is minmax(auto, 1fr), and
+     that auto minimum is the track's own min-content, which for an unbreakable token is the whole
+     token: Starlight gives code overflow-wrap: break-word, which breaks a word only once its box is
+     too narrow and never lowers min-content. So one long token could widen the track past its share
+     and push the grid out of the callout it sits in. Measured on Busqueda at 320, where
+     `http://searcher.htb/` is 180.8px against a 159.8px share: the rail ran 21px past its own box
+     and painted 4.2px outside the callout's border. With the minimum at 0 the track keeps its share
+     and the existing break-word wraps the token inside it. The chip track keeps its max-content
+     minimum on purpose. fit-content() alone cannot cap it: the automatic minimum it is floored by
+     is the chip's min-content, and break-word never lowers min-content (measured byte-identical to
+     this rule at every scale). Capping it with overflow-wrap: anywhere does contain, because
+     anywhere is the one value that counts its breaks in min-content, but it contains by breaking
+     the chip mid-token (`80/tcp` as four lines at 320 at root 200%). Under text scaling the rail
+     stacks instead: see the container query below. */
+  grid-template-columns: max-content minmax(0, 1fr);
   /* Chip and description sit on one shared baseline, as they did in inline flow. Without this,
      grid's default `normal` alignment stretches the chip to the row height and tears its box open. */
   align-items: baseline;
@@ -587,6 +627,50 @@ html[data-theme="light"] .sl-markdown-content .cl :not(pre) > code {
    paragraph margin inside a grid row. */
 .sl-markdown-content .findings dd > p {
   margin: 0;
+}
+
+/* ── The rail under text scaling: stack, do not squeeze ────────────────────────
+   Two side-by-side tracks need the widest chip plus the gutter plus the longest unbreakable run of
+   description, and from about 125% root font size on a 320 phone (150% at 375) that sum no longer
+   fits the callout: the description track collapsed to 0 to 27px and its text painted 54 to 177px
+   outside the callout's panel (audit ER-12, measured 2026-09-18 on Forest, Busqueda and Return).
+   Removing a track's floor moves the overflow rather than removing it, and a fit-content() cap on
+   the chip track works only with overflow-wrap: anywhere, which contains by breaking chips
+   mid-token. So below 12rem of rail width the rail becomes one column, chip above and description
+   below, with the column rule hidden because there is no column boundary left to mark.
+   This is a CONTAINER query in rem, not a media query, and that is the whole mechanism: the
+   callout's width is fixed by the layout while rem follows the reader's text size, so the query
+   fires exactly when the rail is narrow RELATIVE TO THE TEXT, which is what text scaling does. It
+   never fires at normal size: the narrowest rail on the site is 15.7rem at 320 and the query needs
+   under 12rem, a 59px margin no content can consume. A percentage cap has no such margin: its
+   floor is the widest chip, and a 40% cap sits 1.6 points above binding at 320 today (38% already
+   wraps a chip on Forest and Return at normal size). Measured: fires at 320 from 125% and at 375
+   from 150%, exactly where two-column text first leaves the content box; contained on all three
+   rail pages at 320 and 375 from 100% to 200%, text 24 to 60px inside the panel, no chip ever
+   broken; zero diff at 100% on 78 of 78 full-page fingerprints (three rails and three control
+   pages, eleven widths dark, light at 375 and 1280). container-type on the callout is itself a
+   zero diff: a block in normal flow takes its width from its containing block, so inline-size
+   containment changes nothing it paints. The container is named so that a container added
+   between the callout and the rail later cannot capture the query. The 0.5rem between a
+   description and the next chip is the one design value here: it has to exceed the 0.26rem row
+   gap between a chip and its own description or the pairing stops reading, so about twice it. */
+.sl-markdown-content .cl-recon:has(.findings) {
+  container: recon-rail / inline-size;
+}
+@container recon-rail (inline-size < 12rem) {
+  .sl-markdown-content .findings {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  /* The dt's right padding is the gutter the column rule lives in: no column, no gutter, no rule. */
+  .sl-markdown-content .findings dt {
+    padding-right: 0;
+  }
+  .sl-markdown-content .findings dt::after {
+    display: none;
+  }
+  .sl-markdown-content .findings dd:not(:last-child) {
+    margin-bottom: 0.5rem;
+  }
 }
 
 /* ── Recon assessment ──────────────────────────────────────────────────────────

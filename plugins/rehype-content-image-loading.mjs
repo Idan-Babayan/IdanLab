@@ -32,11 +32,9 @@ export default function rehypeContentImageLoading() {
       if (isHastImg(node)) {
         setHastProp(node, "decoding", "async");
         setHastProp(node, "loading", eager ? "eager" : "lazy");
-        if (eager) setHastProp(node, "fetchpriority", "high");
       } else {
         setMdxAttr(node, "decoding", "async");
         setMdxAttr(node, "loading", eager ? "eager" : "lazy");
-        if (eager) setMdxAttr(node, "fetchpriority", "high");
       }
     };
 

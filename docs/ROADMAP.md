@@ -49,6 +49,8 @@
      description column by 14.80px and pushed one Forest row from two lines to three on a phone. Nothing is
      broken (no horizontal overflow, continuation error still 0.00), but whether a narrow screen wants the
      same gutter as a wide one is a taste call, and it is a one-token change. See DECISIONS 2026-07-27.
+     Under text scaling the question no longer arises: below 12rem of rail width the rail stacks to one
+     column (2026-09-18, CORE_SPEC §6 "Narrow-width containment"), so this is about normal size only.
 
   Record each settled value in DECISIONS as its cluster lands, and delete the dial from this item once it
   is settled. Each cluster merges to `main` on its own now, so there is no longer one release holding
@@ -221,3 +223,22 @@
   the gutter at small breakpoints once the 375px rail behavior is settled.
 - [DESIGN] `--ap-fade-w` as an owner-facing knob: decide whether the accent-fade
   width is exposed as a tunable CSS variable or fixed. A convention call, not a bug.
+- [DESIGN] **The homepage hero has no side gutter below 1230px.** `.hero-inner { padding: 4rem 0 }`
+  overrides `.wrap`'s 1.5rem side padding, so the eyebrow, headline, sub and buttons start at x=0 on
+  every phone and tablet (measured 2026-09-18; since the 2026-06-05 redesign; About's hero keeps its
+  24px). Decide whether the flush-left hero is intended. Restoring the gutter changes the headline's rem
+  floor, not only its vw term: 284.59px of "Curiosity" does not fit a 272px column at 320 at normal
+  size, so the 2.6rem floor moves and 13vw is re-derived from the new floor (rem × 5). CORE_SPEC §6
+  "Narrow-width containment".
+- [DESIGN] **About practice cards under text scaling.** At root 200% on a 320 screen the platform
+  name in `.practice strong` is clipped by its card: 41px past the viewport for OverTheWire, 37 for
+  HackTheBox, 1px at 360, whole from 375. The icon and the text sit side by side and the text column
+  is about 62px there, so `min-width: 0` cannot fix it; the fix is structural, the icon above the text
+  below a container width in rem, the recon rail's mechanism (measured 2026-09-18).
+- [DESIGN] **Card description under text scaling.** The two-line clamp shows 13 to 26 characters at
+  root 200% on a phone against 50 to 92 at normal size. Decide whether the clamp lifts under scaling
+  (a container query in rem, the rail's mechanism). A phone-specific clamp at normal size was measured
+  and rejected: a 360 phone card already shows as much as a desktop card (CORE_SPEC §6).
+- [DESIGN] **The contact button leaves a 320 viewport by 13px at root 200%** on both marketing pages,
+  after the `@` break: its 1.7rem side padding doubles while `idanlab.dev` cannot break. A padding
+  that does not scale with the text, or a shorter label, is a design call.

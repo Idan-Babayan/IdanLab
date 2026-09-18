@@ -2,7 +2,9 @@
 // src/pages/about.astro
 // Standalone About page — matches the homepage design system.
 // Theme toggle is synced with Starlight via the shared `starlight-theme`
-// localStorage key. Defaults to dark on every device; light is opt-in.
+// localStorage key. Defaults to dark on every device; light is opt-in: only an explicit stored
+// 'light' choice overrides, applied by the inline script at the end of <head>. (Noted here, not in
+// the head: no HTML comments in any <head>, CORE_SPEC section 2.)
 // Self-hosted fonts (@font-face + metric-matched fallbacks) shared with the Starlight docs.
 // Fonts load via @font-face in src/styles/fonts.css with metric-matched fallbacks;
 // no <link rel="preload"> on purpose. Firefox flagged the used font preloads as
@@ -37,7 +39,6 @@ import '../styles/fonts.css';
   <meta name="twitter:title" content="About | Idan.Lab" />
   <meta name="twitter:description" content="Idan Babayan: cybersecurity student, CTF player, and offensive security enthusiast documenting the journey from recon to root." />
   <meta name="twitter:image" content="https://idanlab.dev/og.jpg" />
-  <!-- Default dark on every device. Only an explicit stored 'light' choice overrides. Shares Starlight's key. -->
   <script is:inline>
     (() => {
       const stored = typeof localStorage !== 'undefined' && localStorage.getItem('starlight-theme');
@@ -174,7 +175,10 @@ import '../styles/fonts.css';
     </a>
     <button class="btn btn-ghost" data-magnetic type="button" data-copy="contact@idanlab.dev">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="m3 6 9 6.5L21 6"/></svg>
-      <span class="btn-label">contact@idanlab.dev</span>
+      <!-- wbr, not overflow-wrap: the address is one unbreakable word, so the button could not
+           shrink below it and left the viewport under text scaling. The @ is the seam a reader
+           already parses. data-copy above is what the clipboard uses, so the break never ships. -->
+      <span class="btn-label">contact@<wbr />idanlab.dev</span>
     </button>
   </div>
 </section>
@@ -249,7 +253,16 @@ import '../styles/fonts.css';
   .wrap { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; }
 
   /* NAV HUD */
-  .hud { position: relative; z-index: 5; display: flex; align-items: center; justify-content: space-between;
+  /* Both rows may WRAP. Under text scaling (root at 200%, so this bar's .72rem is 23.04px) the home
+     link and the nav need a 506px row and a phone gives 375, and because body clips sideways overflow
+     the theme toggle sat at x 482 to 506, unreachable by touch or pointer (audit ER-12, measured
+     2026-09-14 at 360, 375 and 412). With `wrap` on both containers the nav drops under the home link
+     and the toggle under the links, so every control stays inside the viewport. At normal size nothing
+     ever wraps: the row fits at 320 with room to spare, so the change measures as zero diff there
+     (every HUD rect and the hero's top identical at 320, 360, 375, 390, 780, 781, 1024 and 1280). The
+     bar declares no row gap on purpose: wrapped rows sit at line height, and any spacing there is a
+     design value, not this fix; the nav's own `gap` already applies to both axes. */
+  .hud { position: relative; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
     max-width: 1100px; margin: 0 auto; padding: 1rem 1.5rem; border-bottom: 1px solid var(--panel-brd);
     font-family: var(--mono); font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; }
   /* HUD controls carry a >=24px pointer target (WCAG 2.2 target-size min). Block padding
@@ -259,7 +272,7 @@ import '../styles/fonts.css';
     padding-block: 3px; margin-block: -3px; }
   .hud-home:hover { color: var(--lime); }
   .hud-sub { color: var(--muted); }
-  .hud-nav { display: flex; gap: 1.4rem; align-items: center; }
+  .hud-nav { display: flex; flex-wrap: wrap; gap: 1.4rem; align-items: center; }
   .hud-nav a { color: var(--muted); text-decoration: none; transition: color .2s;
     padding-block: 3px; margin-block: -3px; }
   .hud-nav a:hover, .hud-nav a.active { color: var(--lime); }
@@ -277,7 +290,12 @@ import '../styles/fonts.css';
   /* HERO */
   .about-hero { position: relative; padding: 4rem 0 3rem; min-height: 56vh; display: flex; align-items: center; }
   #constellation { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; }
-  .about-hero-inner { position: relative; z-index: 2; display: flex; align-items: center; gap: 3rem; }
+  /* min-width: 0 for the same reason as .hero-inner on the homepage: this is a flex item of
+     .about-hero, so its default min-width: auto is its own min-content, which under the 780px
+     media query (column-reverse) is the headline's longest unbreakable word. At root 200% that
+     made the item 390.39px wide inside a 320px viewport and pushed the headline, the sub and the
+     eyebrow off the screen. Zero diff at root 100%, where the same min-content never binds. */
+  .about-hero-inner { position: relative; z-index: 2; display: flex; align-items: center; gap: 3rem; min-width: 0; }
   .about-hero-text { flex: 1; }
   .about-portrait { width: 200px; height: 200px; object-fit: contain; flex-shrink: 0; border-radius: 18px;
     filter: drop-shadow(0 10px 30px rgba(0,0,0,.4)); }
@@ -285,7 +303,12 @@ import '../styles/fonts.css';
   .eyebrow { font-family: var(--mono); font-size: .8rem; letter-spacing: .35em; text-transform: uppercase;
     color: var(--lime); margin-bottom: 1.3rem; display: flex; align-items: center; gap: .8rem; }
   .eyebrow::before { content:""; width: 40px; height: 1px; background: var(--lime); display:inline-block; }
-  h1.headline { font-family: var(--display); font-weight: 800; font-size: clamp(2.4rem, 6vw, 4.6rem);
+  /* The floor is the smaller of the authored 2.4rem and 12vw, the rule the homepage headline uses:
+     12vw is 2.4rem evaluated at 320px, so it never binds at root 100% at or above 320 (measured
+     identical from 320 to 2560) and stops the floor growing with the text at 320. Before, at root
+     200% at 320 the 76.8px floor set "Hi, I'm Idan." 35px outside its content box on each side,
+     inside the viewport only because the text is centered. */
+  h1.headline { font-family: var(--display); font-weight: 800; font-size: clamp(min(2.4rem, 12vw), 6vw, 4.6rem);
     line-height: 1; letter-spacing: -.02em; margin-bottom: 1.5rem; }
   .headline .decode { color: var(--lime); }
   .sub { font-size: clamp(.95rem, 1.3vw, 1.08rem); color: var(--muted); max-width: 54ch; line-height: 1.75; }
@@ -353,7 +376,14 @@ import '../styles/fonts.css';
 
   /* CONTACT + FOOTER */
   .footcta { text-align: center; padding: 6rem 0 4rem; }
-  .footcta h2 { font-family: var(--display); font-weight: 800; font-size: clamp(2rem,5vw,3.2rem); letter-spacing:-.02em; margin-bottom: 1.2rem; }
+  /* Same floor problem as the hero headline, and the same rule. .footcta overrides .wrap's side
+     padding with its own `6rem 0 4rem`, so this heading has the full 320px and no gutter.
+     "connect." has no break opportunity and measured 434.95px at the 200% floor of 64px. 10vw is
+     2rem evaluated at 320px: it never binds at root 100% at or above 320 (measured identical from
+     320 up), and at 320 the word is as wide under scaling as at normal size, 206.8px, with 32% of
+     the width to spare, about two characters. The previous 14.7vw was fitted to the word and left
+     0.16px. */
+  .footcta h2 { font-family: var(--display); font-weight: 800; font-size: clamp(min(2rem, 10vw),5vw,3.2rem); letter-spacing:-.02em; margin-bottom: 1.2rem; }
   .footcta .accent { color: var(--lime); }
   .foot-sub { color: var(--muted); max-width: 46ch; margin: 0 auto 2.5rem; font-size: .95rem; line-height: 1.7; }
   .footbar { border-top: 1px solid var(--panel-brd); padding: 1.5rem 0; position: relative; z-index: 1; }
