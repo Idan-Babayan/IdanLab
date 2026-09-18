@@ -227,15 +227,24 @@ const OG_ALT = 'Idan.Lab, a lab notebook of CTF writeups and security notes';
   }
   .eyebrow::before { content:""; width: 40px; height: 1px; background: var(--lime); display:inline-block; }
 
-  /* The floor is the smaller of the authored 2.6rem and 14.6vw, so it cannot outgrow the viewport.
+  /* The floor is the smaller of the authored 2.6rem and 13vw, so it cannot outgrow the viewport.
      A rem floor doubles under text scaling while the screen does not: at root 200% the floor was
      83.2px and "Curiosity", which has no break opportunity, measured 569.17px against 320px of
-     column. 14.6vw is derived, not picked: it is the largest value at which the longest word still
-     fits 320px of column (46.72px of type, 319.61px of word, 0.39px clear). It never binds at root
-     100%, where 14.6vw is 46.72px and the 2.6rem floor of 41.6px is smaller, so normal-size
-     rendering is unchanged at every width. A word one character longer would need 12.8vw. */
+     column. 13vw is not fitted to the word: it is 2.6rem evaluated at 320px, the narrowest width
+     the site serves, which gives two properties by construction. It never binds at root 100% at or
+     above 320, so normal-size rendering is unchanged at every width (measured identical from 320 to
+     2560). And at 320 the floor stops growing with the text, so the word is exactly as wide under
+     scaling as at normal size: if it fits at 320 at normal size it fits at every text size, and
+     that is the check that already has to pass. Wherever the floor binds the headroom is a constant
+     share of the width, 11% for "Curiosity" (35.4px at 320, 41.5px at 375 at root 200%), about one
+     character. The previous 14.6vw was fitted to the word and left 0.37px, one glyph rounding in
+     another engine's shaping.
+     THE COLUMN: .hero-inner's `padding: 4rem 0` cancels .wrap's side padding, so this hero has no
+     side gutter below 1230px and its column is the whole viewport; both floors on this page are
+     derived against that. Restoring the gutter changes the rem floor itself, because 284.59px of
+     "Curiosity" does not fit a 272px column at 320 even at normal size. */
   h1.headline {
-    font-family: var(--display); font-weight: 800; font-size: clamp(min(2.6rem, 14.6vw), 7vw, 5.6rem);
+    font-family: var(--display); font-weight: 800; font-size: clamp(min(2.6rem, 13vw), 7vw, 5.6rem);
     line-height: .98; letter-spacing: -.02em; margin-bottom: 1.6rem; max-width: 16ch;
   }
   .headline .decode { color: var(--lime); }
@@ -318,12 +327,14 @@ const OG_ALT = 'Idan.Lab, a lab notebook of CTF writeups and security notes';
   .phase:nth-child(4) .pt { color: #b294d4; } /* Reflection: soft muted violet (PicoCTF purple family), calm final phase vs the vivid trio */
 
   .footcta { text-align: center; padding: 7rem 0 5rem; }
-  /* Same floor problem as the hero headline, and the same derivation. .footcta overrides .wrap's
-     side padding with its own `7rem 0 5rem`, so this heading has the full 320px and no gutter.
-     "connect." has no break opportunity and measured 434.95px at the 200% floor of 64px. 14.7vw is
-     the largest value at which it fits 320px (47.04px of type, 319.68px of word, 0.32px clear);
-     it never binds at root 100%, where the 2rem floor is smaller. */
-  .footcta h2 { font-family: var(--display); font-weight: 800; font-size: clamp(min(2rem, 14.7vw),5vw,3.4rem); letter-spacing:-.02em; margin-bottom: 1.2rem; }
+  /* Same floor problem as the hero headline, and the same rule. .footcta overrides .wrap's side
+     padding with its own `7rem 0 5rem`, so this heading has the full 320px and no gutter.
+     "connect." has no break opportunity and measured 434.95px at the 200% floor of 64px. 10vw is
+     2rem evaluated at 320px: it never binds at root 100% at or above 320 (measured identical from
+     320 up), and at 320 the word is as wide under scaling as at normal size, 206.8px, with 32% of
+     the width to spare, about two characters. The previous 14.7vw was fitted to the word and left
+     0.16px. */
+  .footcta h2 { font-family: var(--display); font-weight: 800; font-size: clamp(min(2rem, 10vw),5vw,3.4rem); letter-spacing:-.02em; margin-bottom: 1.2rem; }
   .footcta .accent { color: var(--lime); }
   .foot-sub { color: var(--muted); max-width: 46ch; margin: 0 auto 2.5rem; font-size: .95rem; line-height: 1.7; }
 
