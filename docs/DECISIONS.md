@@ -6,6 +6,131 @@
 
 ---
 
+### 2026-09-18 · A display floor is the rem floor evaluated at 320px, never fitted to the word
+- **Supersedes in part:** 2026-09-07 · Two taxonomy palettes: the landing pages re-base onto the WriteupMeta
+  chip model. Only the sentence "The glow is the only element on the site that overflows the viewport, by
+  71px at 1280 and 45px at 640" and the landings "verified ... at 1280px and 375px": below 390 the platform
+  name overflowed the viewport as well, silently behind the clip pair, by 60px at 320, 20px at 360 and 5px
+  at 375 (audit ER-02). The clip pair, the propagation property and everything else in that entry stand.
+- **Decision:** a `clamp()` floor on an unbreakable display word is `min(<rem floor>, <rem floor × 5>vw)`,
+  the rem floor evaluated at 320px, the narrowest width the site serves: the home headline
+  `min(2.6rem, 13vw)`, the About headline `min(2.4rem, 12vw)`, both footer headings `min(2rem, 10vw)`.
+  The platform name is the one word-derived floor, `.pi-name` at `clamp(min(2.2rem, 7.5vw), 5.5vw,
+  3.6rem)`, because 2.2rem does not fit "OverTheWire" at 320 even at normal size. The flex items around
+  the marketing headlines (`.hero-inner`, `.about-hero-inner`) carry `min-width: 0`, since their automatic
+  minimum was the headline's longest word, and the contact address carries a `<wbr>` at its `@`
+  (`data-copy` keeps it whole, so the clipboard never sees the break).
+- **The defect:** a rem floor doubles under text scaling while the screen does not. At root 200% at 320
+  the home headline's 2.6rem floor read 83.2px and "Curiosity", which has no break opportunity, measured
+  569px against 320px; the About hero and footer, the contact button and the platform name failed the same
+  way (audit ER-02 and ER-12). The first repair (2026-09-16) tied the two home floors to the viewport with
+  values fitted to the word, 14.6vw and 14.7vw, which left 0.37px and 0.16px at 320 and 200%: one glyph
+  rounding in another engine's shaping, and one character of copy.
+- **Why the rem floor at 320:** the vw term never binds at normal size at or above 320, so normal-size
+  rendering is unchanged by construction, and at 320 it stops the floor growing with the text, so the word
+  is exactly as wide under scaling as at normal size. A word that fits at 320 at normal size therefore fits
+  at every text size, and the only check left is the one that already has to pass. Wherever the floor
+  binds the headroom is a constant share of the width: 11% for "Curiosity" (35.4px at 320), 32% for
+  "connect." (51px). Measured: 26 of 26 full-page fingerprints identical at root 100% on both pages;
+  Chrome at DPR 1, 2 and 3 gives identical text widths, so the fitted margins were engine risk, not DPR
+  risk.
+- **Why 7.5vw for the platform name:** it yields only where it must (24px at 320, 27 at 360, 28.1 at 375,
+  2.2rem again from 469, identical fingerprints from 480 to 2560 on all four landings) and sets inside its
+  content box at root 200% too, 7.6px to spare at 320, where 8vw leaves the box by 9px and 8.7vw is the
+  exact fit. VulnHub and PicoCTF fit at 2.2rem and shrink with the long names, 35.2px to 24px at 320, so
+  the four landings behave identically; at 200% the 24px name sits below the 30.4px tagline. Both costs
+  taken knowingly. Check the longest name at 320 whenever a platform is added.
+- **Rejected, measured:** a fixed 1.7rem floor for the name (fits at normal size, 275px past the viewport
+  at 320 and 200%, and it binds up to 494 instead of 640, moving the tablet band); `<wbr>` at the
+  camel-case seams (splits the wordmark as "OverThe / Wire" at 320 to 390 at normal size, and renders the
+  name 3.55px wider wherever it stays on one line, desktop included, because kerning does not cross a
+  text-node boundary; it also needs the decode script changed); `overflow-wrap: anywhere` on the button
+  label instead of the `<wbr>` (breaks the address anywhere rather than at the seam a reader parses).
+- **Known caveat, recorded in ROADMAP:** the home hero has no side gutter below 1230px, because
+  `.hero-inner { padding: 4rem 0 }` cancels `.wrap`'s side padding, so both home floors are derived
+  against a column that is the whole viewport. Restoring the gutter changes the rem floor itself:
+  284.59px of "Curiosity" does not fit a 272px column at 320 even at normal size.
+- **Status:** Adopted; committed to `dev` as `9ae80bc`, `6a74304`, `24e3753`, `6b1495a`, `fa8b507`
+  (2026-09-16) and `0b56293`, `489410e` (2026-09-18), not pushed. Two marketing pages and one component;
+  no theme-pass module, no dependency, no content.
+
+### 2026-09-18 · The recon rail stacks under text scaling; a percentage cap on the chip track is rejected
+- **Supersedes in part:** 2026-07-27 · The rail's column rule gets a gutter, so its clearance is symmetric
+  by construction. Only the clause "No horizontal overflow" in the bullet "One consequence at 375px,
+  recorded rather than tuned away": true at 375 at normal size, false at 320 at normal size on Busqueda
+  (the rail painted 5.6px outside the callout's panel) until the description track became `minmax(0, 1fr)`,
+  and false from 150% text scaling on every rail page until this entry. The gutter, its derivation and
+  its symmetry stand.
+- **Decision:** the description track is `minmax(0, 1fr)`, not a bare `1fr`, and the callout that carries
+  a rail is a named inline-size container (`container: recon-rail / inline-size` on
+  `.cl-recon:has(.findings)`). Below 12rem of rail width the rail is one column: chip above description,
+  the dt's gutter padding and the column rule removed, 0.5rem between a description and the next chip.
+- **The defect, measured against the callout's painted panel rather than the document** (the owner's
+  reframing of audit ER-12): two side-by-side tracks need the widest chip plus the gutter plus the longest
+  unbreakable run of description, and from 125% root font size at 320 (150% at 375) that no longer fits.
+  Before, rail text escaped the panel by 54.2px at 320 and 150% and 176.6px at 200% on Forest and Return,
+  138.6px on Busqueda; the description track had collapsed to 0 to 27px.
+- **Why a container query in rem:** the callout's width is fixed by the layout while rem follows the
+  reader's text size, so the query fires exactly when the rail is narrow relative to the text, which is
+  what text scaling does, and never at normal size: the narrowest rail on the site is 15.7rem at 320, a
+  59px margin no content can consume. Measured: fires at 320 from 125% and at 375 from 150%, exactly where
+  two-column text first leaves the content box; contained on all three rail pages at 320 and 375 from
+  100% to 200% (escape −25 to −60px); no chip ever breaks; callouts 15 to 34% shorter at 200%; 84 of 84
+  full-page fingerprints identical at root 100% (three rails, three control pages, 12 widths dark, light
+  at 375 and 1280). `container-type` on a block in normal flow is itself a zero diff, because the block
+  takes its width from its containing block. A browser without container queries keeps the two-column
+  rail. The threshold is a design value, but a content-independent one.
+- **Rejected, all measured on the built tree:** `fit-content(40%)` alone on the chip track (byte-identical
+  to the two-column rail at every scale: the automatic minimum it is floored by is the chip's min-content,
+  and `break-word` never lowers min-content, so the earlier commit's sentence "cannot be capped from CSS
+  alone" was right about `fit-content()` and wrong as a general claim); `fit-content(40%)` plus
+  `overflow-wrap: anywhere` on `.findings` (the pair the 2026-09-16 audit pass measured: it contains,
+  because `anywhere` is the one value that counts its breaks in min-content, but it contains by breaking
+  chips mid-token, `80/tcp` as four lines at 320 and 200%, and its floor is the widest chip: 38% already
+  wraps a chip on Forest and Return at 320 at normal size, so 40% sits 1.6 points above binding and a
+  nine-character token such as `47001/tcp` would cross it); `overflow-wrap: anywhere` alone (the
+  description collapses to one character per line and still escapes by 29px); `minmax(0, max-content)`
+  plus `anywhere` (contains at 375 by starving the description to 0 at 320, still +0.4px).
+- **Status:** Adopted; committed to `dev` as `91fb06f` (2026-09-16, the description track) and `1e67571`
+  (2026-09-18, the container), not pushed. One theme-pass module (`src/styles/components.css`), no
+  component, plugin, config or content edits, no new dependencies.
+
+### 2026-09-18 · The landing caps at 80rem
+- **Decision:** `body:has(.pi-index) { --sl-content-width: 80rem }` replaces the 100% lift in `pages.css`.
+  Writeups keep 46rem.
+- **Why:** the landing was composed for a 1280 screen, where the pane gives 960px and three 308px cards.
+  At 100% a 1920 screen laid five columns and a 2560 screen seven, with the hero logo 2100px from the
+  platform name (audit ER-11). 80rem is the pane at 1600, so every width to 1600 is byte-identical
+  (full-page fingerprints identical on all four landings at 1024, 1152, 1280, 1440, 1536 and 1600, at
+  every phone width and at root 200%), and above it the landing holds four 306.8px columns, centered by
+  Starlight's own `margin-inline: auto` above 72rem: 336 to 1616 at 1680, 456 to 1736 at 1920, 776 to
+  2056 at 2560. HackTheBox's three cards fill three of four columns instead of three of seven.
+- **Why the token and not a `max-width` on `.sl-container`:** Starlight's header sizes its title column
+  from `--sl-content-width`, so the search box lands at the content column's left edge, as it does on a
+  writeup (568 against a 608 column at 1920). On a capped landing it moves from 296 to 456 at 1920,
+  aligned with the column it belongs to; the container form would leave it at 296 while the column moves.
+- **Rejected, measured:** 72rem (three 372px columns above 1600, wider than any card today); 90rem (binds
+  only from 1920 and gives 346px cards); 60rem (rewrites 1440, 1536 and 1600, which are not broken);
+  nothing (the seven-column catalog and the 2100px hero).
+- **Status:** Adopted; committed to `dev` as `6993f6b`, not pushed. One theme-pass module.
+
+### 2026-09-18 · The writeup card keeps its two-line description clamp at every width
+- **Decision:** `.wc-desc` stays `-webkit-line-clamp: 2` with `overflow: hidden` at every width, and there
+  is no phone-specific clamp. The clamp is recorded in CORE_SPEC §6 with its numbers, which closes audit
+  ER-10 (shedding that nobody had written down).
+- **Why:** measured on the built landings, descriptions run 93 to 165 characters and the clamp shows 50 to
+  92 of them depending on card width: 65 at 375 against 59 at 1280 on PicoCTF, 68 against 59 on
+  HackTheBox, so a 360 phone card shows as much as a desktop card or more and only 320 shows four to nine
+  fewer. The shedding is a property of the description field's length (a one-sentence abstract that also
+  serves as the SEO and Open Graph string), not of the viewport. Cards in a row stay one height and the
+  card is a teaser; the whole description is on the writeup.
+- **Rejected, measured:** three lines (at 375 still clips 17 of 21 PicoCTF cards and adds 21px to every
+  card); no clamp (cards run 220 to 306px and stop aligning in a row); a phone-specific clamp (there is no
+  phone penalty to fix). **Open, in ROADMAP:** text scaling, where two lines hold 13 to 26 characters at
+  root 200% on a phone; whether the clamp lifts under scaling is a separate decision, and the rail's
+  container-query mechanism is the candidate.
+- **Status:** Adopted; docs only, no code change.
+
 ### 2026-09-12 · A closed toggle leaks into the clipboard two ways, and only one is a stylesheet's problem
 - **The defect was never visible, which is why it survived three rounds of CSS.** The UA hides a closed
   `<details>` body with `content-visibility: hidden` on `::details-content`, which the HTML spec mandates
@@ -311,7 +436,10 @@
   negative fixtures fail the build with the intended messages (a `picoctf/misc/` directory, a HackTheBox
   `difficulty` disagreeing with its tier, a hand-authored `meta-badge` span, a `difficulty` on PicoCTF, a `category` key on a HackTheBox
   writeup, which the first cut had let through because the check sat inside the PicoCTF branch);
-  both landings in both themes at 1280px and 375px; filter clicks, `aria-pressed` and the live status;
+  both landings in both themes at 1280px and 375px (**Partly superseded by:** 2026-09-18 · A display
+  floor is the rem floor evaluated at 320px, never fitted to the word: at 375 the platform name's last
+  letter was cut by 3 to 5px behind the clip pair, which this check did not catch); filter clicks,
+  `aria-pressed` and the live status;
   OverTheWire (wargames mode), VulnHub (empty panel), Bandit rows, busqueda, forest, head-dump, verify and
   n0s4n1ty-1 rows; the homepage and About untouched; `overrides.css` still 13 rules; no dependency change;
   no `.mdx` change. Second pass the same day, on Hard and Insane fixtures: the multi-select rail exercised
@@ -340,6 +468,10 @@
   the viewport on all four landings, zero movement under a real wheel gesture at 1280 and at 640,
   `overflow-y` still `visible` on body so nothing became a scroll container, and a writeup page computing
   `visible` on both boxes because it is in neither selector.
+  **Partly superseded by:** 2026-09-18 · A display floor is the rem floor evaluated at 320px, never fitted
+  to the word. The glow was the only overflowing element at 1280 and 640; below 390 the platform name
+  overflowed the viewport too, by 60px at 320 and 5px at 375, silently behind this clip pair, until its
+  floor was tied to the viewport. The pair itself and the propagation property stand.
 - **Status:** Adopted; committed to `dev` on 2026-09-07 as fourteen commits, taxonomy registry through
   tokens, badges, the content gate, the landing rewrite, the colour decision and the badge retirement,
   with the four unrelated fixes it uncovered (the Active Directory credit, the landing stat resting at
@@ -1109,6 +1241,10 @@
   which pushed Forest's `5985/tcp` row from two lines to three and grew that callout by 30.60px. No
   horizontal overflow, and the wrapped row's continuation error stays 0.00. Whether a narrow screen wants
   the same 0.8rem gutter as a wide one is a taste call for the retune, and it is now a one-token change.
+  **Partly superseded by:** 2026-09-18 · The recon rail stacks under text scaling; a percentage cap on
+  the chip track is rejected. "No horizontal overflow" held at 375 at normal size only: at 320 at normal
+  size Busqueda's rail painted 5.6px outside the callout's panel until the description track became
+  `minmax(0, 1fr)`, and from 150% text scaling every rail page escaped the panel until the rail stacked.
 - **Line endings, measured because two prior handoffs asserted opposite things:** the index blob is LF and
   the working tree is CRLF (`core.autocrlf=true`, `text=auto`). Neither "the repo is CRLF" nor "the working
   copies are LF" is the whole statement; `git ls-files --eol` is.
