@@ -54,6 +54,12 @@ nodes.forEach((n, i) => {
   if (n.detail && !Array.isArray(n.detail)) {
     throw new Error(`AttackPath: node ${i} "detail" must be an array of { k, v } rows.`);
   }
+  // "via" belongs to the edge row. A detail row keyed "via" beside an edge printed the label twice in one
+  // panel, and on a node without an edge it wore a detail row's ink where every other panel's "via" is
+  // quiet, so the key is reserved outright. Key the row by what it holds.
+  if (n.detail?.some((r) => typeof r?.k === 'string' && r.k.trim().toLowerCase() === EDGE_LABEL)) {
+    throw new Error(`AttackPath: node ${i} has a detail row keyed "${EDGE_LABEL}", which is reserved for the edge row. Key the row by what it holds.`);
+  }
 });
 
 const lastIndex = nodes.length - 1;
