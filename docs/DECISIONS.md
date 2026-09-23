@@ -6,6 +6,60 @@
 
 ---
 
+### 2026-09-23 · The AttackPath dossier is one stacked label/value grid, `via` is reserved, and the goal step wears gold
+- **Supersedes in part:** 2026-07-20 · AttackPath production-readiness audit: 8 findings fixed (2 were real
+  WCAG AA failures). Only its two completeness claims, "everything else measured clean" in its Decision and
+  "every node state and all chrome text returns **belowAA: []**" in "Verified after the fixes": on light
+  the step count and the dossier's kind label read 4.27:1 (`#4d7c0f` on the opaque `#f2ede0` panel, so
+  that pair is the composite) and were outside that probe. The eight fixes stand.
+- **Supersedes in part:** 2026-07-19 · AttackPath: a guided, data-driven infographic for linear
+  privilege-escalation chains. Only "accent on nodes/dots/next" in its A11y bullet, for the dots: a dot's
+  focus ring now runs the green-to-gold ramp to the gold ink. Nodes and the Next control keep the accent.
+- **Decision:** a dossier panel is ONE `<dl>`, every row a label/value pair: kind and name, the `via` edge,
+  then the details. Every panel is laid out at once in the same grid cell, the inactive ones
+  `visibility: hidden` and `user-select: none` with the `hidden` attribute kept, and each panel is a
+  subgrid of the dossier's two columns under `@supports`. Labels share one tracking (0.16em), sit on their
+  values' first baselines (`align-items: baseline`) and are right-aligned to the seam, one `--ap-col-gap`
+  from their own values. `via` is reserved for the edge row: a detail row keyed `via`, in any case, fails
+  the build. The goal's panel wears the goal node's gold (kind label, name, inline code) and the step count
+  turns gold at the goal. The dots take their place on the meter bar's green-to-gold ramp from `--t`,
+  mixed in sRGB (the gradient's own space), future dots stay grey, and the bar's gradient spans the whole
+  track, so its leading edge is the current dot's colour and gold arrives only at the goal.
+- **Why:** rows read as misaligned, and the rule is that hierarchy between rows comes from colour, weight,
+  size and presence, never from position. The head, the `via` line and the details were three layout
+  systems that started one panel's values at up to three x positions, 12.3 to 27.1px apart, with the
+  offset changing at every step; the labels sat 0.65px off their values' baselines through a
+  `padding-top` nudge, at three trackings (0.16, 0.14 and 0.13em) for one size. Each panel took its own
+  height, so the dots and the Next button moved between steps, up to 27px at desktop and 44px at 375, and
+  a second click on Next could land where the button had been. Left-aligned in a shared column, a short
+  label such as `via` stood a whole column's width from its value. Return and Forest printed `VIA` twice on
+  three panels, and Forest's first panel wore a detail-styled one. The goal step mixed a green kind label,
+  green code, a green dot and a green count beside the gold node and the gold Compromised control.
+- **Rejected:** moving only the edge into the grid (the head's name kept its own x, 59.9px against a
+  48.7px column on Busqueda step 3, and the column still moved between steps); a declared `ch` width for
+  the label column (a promise to re-derive whenever the font or the tracking moves); a hidden label-list
+  strut in each panel (it held the column, but left-aligned labels still left a wide gap after `via`, and
+  the stacked subgrid shares the column without it); and for that gap, per-panel columns (the gap still
+  varies within a panel and the column moves between steps), dot leaders (busy) and labels stacked above
+  their values (every panel taller).
+- **Also:** the step count and the other panels' kind labels read `--sl-color-accent-high` on light (8.22:1),
+  the carve-out the Next control and the active node's kind label already carry. Content: Return's `via`
+  rows are now `leak` and `trigger`, Forest's `crack` and `shell`.
+- **Cost:** a short panel leaves empty space under it, since the dossier holds its tallest panel's height
+  (Return's is 182px at 320). Chrome 111 to 116, inside the build's floor, lack subgrid and keep per-panel
+  columns: rows still align and nothing moves vertically, only the seam can shift between steps. On light
+  the last dot is the decorative gold, as the bar's end is (2.00:1); the step count, the nodes and the Next
+  control carry the same state.
+- **Verified:** dev server and production build, Busqueda, Return and Forest at 1100, 375 and 320px, both
+  themes: value spread 0, every label 15.14px from its value, baseline offset 0, the Next button fixed at
+  every step, no sideways page scroll; light contrast re-read after a clean reload with the stored theme
+  (kind label and count 8.22, goal gold 5.45, goal code 6.48, dot rings 4.27 to 5.45). A temporary probe
+  page, since deleted, held all of it at 2, 3, 8 and 12 nodes with the dots running accent to gold; with
+  subgrid removed (the Chrome 111 path) every label keeps its 15.14px gap; find-in-page and select-all
+  skip inactive panels in Chrome 152, with a control that flips both; a detail key `Via` fails the build.
+  Not measured: a rich-text paste, which needs real key presses, and a screen reader.
+- **Status:** Adopted.
+
 ### 2026-09-18 · The marketing pages keep `.wrap`'s gutter, and the home headline floor is derived against the 272px column
 - **Supersedes in part:** 2026-09-18 · A display floor is the rem floor evaluated at 320px, never fitted to
   the word. Only the home headline value (`min(2.6rem, 13vw)`, now `min(2.3rem, 11.5vw)`), the 11% headroom
@@ -1687,6 +1741,10 @@
 - **Decision:** a full audit pass over the finished component, hunting for defects rather than confirming the
   known ones were gone. Eight issues found and fixed; everything else measured clean. No redesign, no new
   dependencies, component-scoped only.
+  **Partly superseded by:** 2026-09-23 · The AttackPath dossier is one stacked label/value grid, `via` is
+  reserved, and the goal step wears gold, specifically "everything else measured clean": on light the step
+  count and the dossier's kind label read 4.27:1 and were outside this pass. The eight fixes stand, so this
+  entry stays live.
 - **The two that mattered most were genuine WCAG 1.4.3 AA failures on live text:**
   1. **The `future` state's `opacity: 0.4` was failing AA on real content.** Measured effective ratios (group
      opacity composited over the panel): name **3.83:1 dark / 2.43:1 light**, kind **1.88 / 1.79**, and the
@@ -1732,6 +1790,9 @@
   chain, reduced motion still advances as a static state machine with no runner, no bloom and no stale class,
   and every earlier invariant still holds (edge gaps 6.7/6.2, endpoints clear of the mask, rise uniform,
   focus rings intact, no page overflow). `npm run build` green (46 pages).
+  **Partly superseded by:** 2026-09-23 · The AttackPath dossier is one stacked label/value grid, `via` is
+  reserved, and the goal step wears gold, specifically "all chrome text returns **belowAA: []**": the step
+  count and the dossier's kind label were not in the probe.
 - **Status:** Adopted (working tree). Component-scoped CSS + script only; no content, config, token, or
   dependency changes.
 
@@ -1956,6 +2017,9 @@
   states "Step N of M" as real text rather than a `role="progressbar"`; the dossier is an `aria-live="polite"`
   region; `done` carries a check glyph so state is never colour-only; arrow keys are bound on the component
   root so they act only while focus is inside it and never hijack page scrolling.
+  **Partly superseded by:** 2026-09-23 · The AttackPath dossier is one stacked label/value grid, `via` is
+  reserved, and the goal step wears gold, specifically "accent on nodes/dots/next" for the dots: a dot's
+  ring now runs the green-to-gold ramp to the gold ink. Nodes and the Next control keep the accent.
 - **Reduced motion:** every one of the 11 transition/animation declarations sits inside
   `@media (prefers-reduced-motion: no-preference)` (verified programmatically: zero ungated). The JS reads
   `matchMedia` at interaction time, not once at load, so a mid-session change is honoured; under reduce there

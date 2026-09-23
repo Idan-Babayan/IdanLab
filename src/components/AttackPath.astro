@@ -38,6 +38,9 @@ interface Props {
 
 const { title = 'Attack Path', nodes } = Astro.props;
 
+// The dossier's label for the edge row, the one label the component writes itself.
+const EDGE_LABEL = 'via';
+
 // Runtime guard, matching how WriteupMeta guards its props: `astro build` does not type-check .astro
 // props and this repo deliberately has no `astro check`, so the interface above is editor-only. A
 // malformed chain would otherwise ship silently as a broken or half-empty graphic.
@@ -50,6 +53,12 @@ nodes.forEach((n, i) => {
   }
   if (n.detail && !Array.isArray(n.detail)) {
     throw new Error(`AttackPath: node ${i} "detail" must be an array of { k, v } rows.`);
+  }
+  // "via" belongs to the edge row. A detail row keyed "via" beside an edge printed the label twice in one
+  // panel, and on a node without an edge it wore a detail row's ink where every other panel's "via" is
+  // quiet, so the key is reserved outright. Key the row by what it holds.
+  if (n.detail?.some((r) => typeof r?.k === 'string' && r.k.trim().toLowerCase() === EDGE_LABEL)) {
+    throw new Error(`AttackPath: node ${i} has a detail row keyed "${EDGE_LABEL}", which is reserved for the edge row. Key the row by what it holds.`);
   }
 });
 
@@ -175,26 +184,26 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
   </div>
 
   <div class="ap-dossier" data-ap-dossier aria-live="polite">
+    {/* Every panel is one list, head and edge included, so every value in it sits in the same column, and
+        all the panels share that column and one stacked cell (see the dossier rules). What tells the rows
+        apart is how they look, never where they start. */}
     {nodes.map((node, i) => (
-      <div class="ap-panel" data-ap-panel hidden={i !== 0}>
-        <p class="ap-panel-head">
-          <span class="ap-panel-kind">{node.kind}</span>
-          <span class="ap-panel-name">{node.name}</span>
-        </p>
+      <dl class:list={['ap-panel', { 'is-goal': i === lastIndex }]} data-ap-panel hidden={i !== 0}>
+        <dt class="ap-panel-kind">{node.kind}</dt>
+        <dd class="ap-panel-name">{node.name}</dd>
         {node.edge && (
-          <p class="ap-panel-edge"><span class="ap-panel-via">via</span> <span set:html={node.edge} /></p>
+          <Fragment>
+            <dt class="ap-panel-via">{EDGE_LABEL}</dt>
+            <dd class="ap-panel-edge" set:html={node.edge} />
+          </Fragment>
         )}
-        {node.detail && node.detail.length > 0 && (
-          <dl class="ap-rows">
-            {node.detail.map((row) => (
-              <Fragment>
-                <dt>{row.k}</dt>
-                <dd set:html={row.v} />
-              </Fragment>
-            ))}
-          </dl>
-        )}
-      </div>
+        {node.detail && node.detail.map((row) => (
+          <Fragment>
+            <dt>{row.k}</dt>
+            <dd set:html={row.v} />
+          </Fragment>
+        ))}
+      </dl>
     ))}
   </div>
 
@@ -208,6 +217,7 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
           data-state={i === 0 ? 'active' : 'future'}
           aria-current={i === 0 ? 'step' : undefined}
           aria-label={`Step ${i + 1}: ${node.name}`}
+          style={`--t:${t(i)}`}
         ></button>
       ))}
     </div>
@@ -480,19 +490,31 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
     color: var(--ap-accent);
     font-weight: 700;
   }
+  /* Light only, the accent-high carve-out once more: on paper the ambient accent reads 4.27:1 as this 11.2px
+     bold count (#4d7c0f on the #f2ede0 panel), under AA; bold only counts as large text from 18.66px. */
+  :global(html[data-theme='light']) .apath:not([data-done='true']) .ap-meter-text span { color: var(--sl-color-accent-high); }
+  /* At the goal the count turns gold with the rest of the end state: the Compromised control, the goal's
+     dossier panel and the last dot. A green count beside them was the odd one out. */
+  .apath[data-done='true'] .ap-meter-text span { color: var(--ap-gold-ink); }
   .ap-bar {
-    width: 92px;
+    --ap-bar-w: 92px;
+    width: var(--ap-bar-w);
     height: 3px;
     border-radius: 999px;
     background: color-mix(in oklab, var(--ap-quiet) 34%, transparent);
     overflow: hidden;
   }
+  /* The ramp is painted across the whole TRACK (sized by the same --ap-bar-w) and the fill only uncovers
+     it, so the fill's leading edge is the colour of the step it has reached: green at the start, gold only
+     at the goal, and the same colour as the current step's dot (the dots mix the same two colours by the
+     same position). Sized to the fill instead, the gradient squeezed the whole green-to-gold ramp into
+     whatever width the fill had, so the bar read gold from the second step. */
   .ap-bar i {
     display: block;
     height: 100%;
     width: 0%;
     border-radius: inherit;
-    background: linear-gradient(90deg, var(--ap-accent), var(--ap-gold));
+    background: linear-gradient(90deg, var(--ap-accent), var(--ap-gold)) 0 0 / var(--ap-bar-w) 100% no-repeat;
   }
   @media (prefers-reduced-motion: no-preference) {
     .ap-bar i { transition: width 0.45s cubic-bezier(0.4, 0.05, 0.2, 1); }
@@ -809,80 +831,126 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
   }
 
   /* ── Dossier ── */
+  /* Every panel is laid out at once, stacked in ONE cell, and only the current one is visible, so the cell
+     is as tall as the tallest panel at every step and the footer below it (the dots and the Next button)
+     never moves. While each panel took its own height the footer moved between steps, up to 27px at desktop
+     and 44px on a 375px phone, so a second click on Next could land where the button had been. The stack also lets the panels share one label column: each panel is a
+     SUBGRID of these two columns, so the label column is as wide as the widest label in the whole chain
+     and the seam between labels and values holds the same x at every step. */
   .ap-dossier {
+    --ap-col-gap: 0.85rem;             /* the label-to-value gutter, read here AND by each panel (below) */
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: var(--ap-col-gap);
     margin-top: 0.5rem;
     padding-top: 0.85rem;
     border-top: 1px solid var(--ap-line);
     min-height: 92px;
   }
-  .ap-panel-head {
-    margin: 0 0 0.4rem;
-    display: flex;
-    align-items: baseline;
-    gap: 0.55rem;
-    flex-wrap: wrap;
-  }
-  .ap-panel-kind {
-    font-family: var(--sl-font-mono);
-    font-size: 0.6rem;
-    font-weight: 500;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--ap-accent);
-  }
-  .ap-panel-name {
-    font-family: var(--sl-font-mono);
-    font-size: 0.92rem;
-    font-weight: 700;
-    color: var(--sl-color-white);
-  }
-  .ap-panel-edge {
-    margin: 0 0 0.5rem;
-    font-family: var(--sl-font-mono);
-    font-size: 0.72rem;
-    color: var(--ap-quiet);
-  }
-  .ap-panel-via {
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    font-size: 0.6rem;
-    margin-right: 0.3rem;
-  }
-  .ap-panel-edge :global(b) { color: var(--sl-color-text); font-weight: 700; }
-
-  .ap-rows {
+  /* ONE grid holds every row of a panel: the kind and name, the edge the node was reached by, and the
+     detail rows. It used to be three layout systems, a flex head, an inline "via" line and a grid, and each
+     started its values at its own x, so one panel showed its values at up to three x positions, 12 to 27px
+     apart (measured on every writeup that carries one). The rows are told apart only by how they look: the head by its
+     coloured kind label and the large bold name, the edge by its quiet ink with the verb in bold, the
+     details by body text. Hierarchy is colour, weight and size, never position.
+     align-items: baseline sets every label on its value's first baseline. That replaced a padding-top nudge
+     on the labels, which was a declared relationship and measured 0.65px off. */
+  .ap-panel {
+    --ap-row-gap: 0.24rem;
+    grid-area: 1 / 1 / 2 / -1;          /* every panel in the same cell */
+    align-self: start;                 /* a shorter panel keeps its rows packed at the top of the cell */
     margin: 0;
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 0.24rem 0.85rem;
+    display: grid;                     /* author origin, so it outranks the UA's [hidden] { display: none } */
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: baseline;
+    row-gap: var(--ap-row-gap);
+    column-gap: var(--ap-col-gap);     /* a subgrid inherits the dossier's gap, a fallback grid does not */
     font-family: var(--sl-font-mono);
     font-size: 0.735rem;
   }
-  .ap-rows dt {
+  /* Where subgrid exists (Chrome 117, Safari 16, Firefox 71) the panels share the dossier's two columns.
+     The build's browser floor reaches back to Chrome 111, which lacks it; there each panel keeps the two
+     columns above, so its rows still line up and nothing moves vertically, and only the seam can shift
+     between steps. @supports rather than a second declaration, so a minifier cannot fold the fallback away. */
+  @supports (grid-template-columns: subgrid) {
+    .ap-panel { grid-template-columns: subgrid; }
+  }
+  /* An inactive panel keeps its box, so it still sizes the cell and the label column, but it is never
+     painted, never announced (visibility: hidden takes it out of the accessibility tree, as display: none
+     did) and never copied (user-select: none keeps it out of a Ctrl+A selection, the rule this site applies
+     to text that is hidden without being removed). The hidden attribute stays in the markup, so without
+     this stylesheet the panels fall back to the browser's own display: none. */
+  .ap-panel[hidden] {
+    visibility: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  /* One label voice for the whole column, the tracking the node's own kind label uses. Labels align to the
+     SEAM, not to the panel's edge, so every label sits one gutter from its own value however long the
+     others are: left-aligned, a short label such as "via" stood the whole width of the widest label
+     ("action", "account") away from its value. */
+  .ap-panel dt {
+    text-align: right;
     text-transform: uppercase;
-    letter-spacing: 0.13em;
+    letter-spacing: 0.16em;
     font-size: 0.6rem;
     color: var(--ap-quiet);
-    padding-top: 0.16rem;
   }
-  .ap-rows dd {
+  .ap-panel dd {
     margin: 0;
     color: var(--sl-color-text);
     overflow-wrap: anywhere;
   }
+  /* The head row mirrors its node: the kind label in the node's colour and the name at the dossier's
+     largest size, and on the goal both in gold, as on the goal node itself. */
+  .ap-panel .ap-panel-kind {
+    font-weight: 500;
+    color: var(--ap-accent);
+  }
+  /* Light only, the carve-out the active node's kind label and the Next button already carry, for the same
+     reason: on paper the ambient accent reads 4.27:1 as this 9.6px label (#4d7c0f on the #f2ede0 panel,
+     which is opaque, so that pair is the composite), under AA. The text-legible accent variant clears it.
+     The dark accent is already 16.1:1 on the dark panel. :not(.is-goal) so the theme prefix cannot
+     out-specify the goal's gold below, the trap the node's own kind label already documents. */
+  :global(html[data-theme='light']) .ap-panel:not(.is-goal) .ap-panel-kind { color: var(--sl-color-accent-high); }
+  .ap-panel .ap-panel-name {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--sl-color-white);
+  }
+  .ap-panel.is-goal .ap-panel-kind,
+  .ap-panel.is-goal .ap-panel-name { color: var(--ap-gold-ink); }
+  /* The edge row reads a step quieter than the details; the verb itself is carried by the bold. */
+  .ap-panel .ap-panel-edge { color: var(--ap-quiet); }
+  .ap-panel .ap-panel-edge :global(b) { color: var(--sl-color-text); font-weight: 700; }
+  /* The head and the edge each stand a little clear of the row below (0.4rem and 0.5rem, their spacing
+     from before they joined the grid). Written as the extra over the row gap, so the totals hold if the
+     gap is ever retuned. Both cells of the row carry it, so whichever is taller still sets the space. */
+  .ap-panel .ap-panel-kind,
+  .ap-panel .ap-panel-name { margin-bottom: calc(0.4rem - var(--ap-row-gap)); }
+  .ap-panel .ap-panel-via,
+  .ap-panel .ap-panel-edge { margin-bottom: calc(0.5rem - var(--ap-row-gap)); }
   /* Inline <code> inside a dossier row: this subtree styles its own.
      The mechanism is LAYER ORDER, not `not-content`. The site's inline-code chip is authored as a bare
      `:not(pre) > code` in the prose layer with no .not-content guard, so it does reach in here; what
      keeps this rule on top is that an Astro scoped style is UNLAYERED, and unlayered author CSS beats
      any layered rule regardless of selector weight. The `not-content` class governs REACH for the
-     rules that do carry the guard, which is a separate instrument from precedence. */
-  .ap-rows dd :global(code) {
+     rules that do carry the guard, which is a separate instrument from precedence.
+     The ink leans toward --sl-color-white on purpose: that token is the page's FOREGROUND in either theme,
+     so the mix brightens the chip text on dark and deepens it on paper. */
+  .ap-panel dd :global(code) {
     font-family: var(--sl-font-mono);
     font-size: 0.92em;
     padding: 0.06em 0.34em;
     border-radius: 4px;
     background: color-mix(in oklab, var(--ap-accent) 12%, transparent);
     color: color-mix(in oklab, var(--ap-accent) 78%, var(--sl-color-white));
+  }
+  /* The goal's chips wear its gold, derived the same way: the decorative gold for the tint, the AA gold
+     ink for the text. Every other panel keeps the accent chips. */
+  .ap-panel.is-goal dd :global(code) {
+    background: color-mix(in oklab, var(--ap-gold) 12%, transparent);
+    color: color-mix(in oklab, var(--ap-gold-ink) 78%, var(--sl-color-white));
   }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -905,6 +973,14 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
   }
   .ap-dots { display: flex; align-items: center; gap: 0.7rem; }
   .ap-dot {
+    /* This dot's colour on the chain's green-to-gold ramp, the one the meter bar draws: the same two
+       colours, mixed by the dot's position (--t, 0 at the entry and 1 at the goal) in sRGB, the space a
+       gradient interpolates in by default, so a reached dot and the bar's leading edge at that step are
+       one colour. Derived from --t, so the first dot is the accent and the last is gold at any chain
+       length. The focus ring rides the same ramp toward the gold INK instead, because a ring needs 3:1
+       and the decorative gold is 2.00:1 on paper; the last dot's ring is the goal node's. */
+    --ap-dot-c: color-mix(in srgb, var(--ap-accent), var(--ap-gold) calc(var(--t, 0) * 100%));
+    --focus-ring: color-mix(in srgb, var(--ap-accent), var(--ap-gold-ink) calc(var(--t, 0) * 100%));
     position: relative;
     width: 7px;
     height: 7px;
@@ -913,7 +989,6 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
     border-radius: 50%;
     background: color-mix(in oklab, var(--ap-quiet) 45%, transparent);
     cursor: pointer;
-    --focus-ring: var(--ap-accent);
   }
   /* Layout-neutral pointer target (WCAG 2.2 SC 2.5.8), the site's own hit-area convention (the About HUD
      controls grow the target, not the layout): the visible dot and its focus ring stay the 7px border box,
@@ -931,9 +1006,11 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
     height: 24px;
     transform: translate(-50%, -50%);
   }
-  .ap-dot[data-state='done'] { background: color-mix(in oklab, var(--ap-accent) 60%, transparent); }
+  /* A future dot stays the quiet grey, as the bar's unfilled track does; a reached dot takes its own place
+     on the ramp, softer once passed and full on the current step. */
+  .ap-dot[data-state='done'] { background: color-mix(in oklab, var(--ap-dot-c) 60%, transparent); }
   .ap-dot[data-state='active'] {
-    background: var(--ap-accent);
+    background: var(--ap-dot-c);
     transform: scale(1.5);
   }
   @media (prefers-reduced-motion: no-preference) {

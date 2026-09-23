@@ -540,7 +540,23 @@ token is an open ROADMAP item, not a bug.
   from the tab order at the moment of the final keypress and dumped focus to `<body>`; the click path is
   guarded instead, and the hover rule is keyed off `:not([aria-disabled='true'])`. Node and dot accessible
   names carry the progress state word, since the check glyph is `aria-hidden` and `aria-current` marks only
-  one node. Every node state and all chrome text measures AA in BOTH themes. REQUIRED on every HackTheBox writeup
+  one node. **The dossier is ONE label/value grid per panel, every panel stacked in one cell (2026-09-23):**
+  the kind and name, the `via` edge and every detail row are pairs in one `<dl>`, told apart only by colour,
+  weight and size, never by position. Labels share one tracking (0.16em), sit on their values' first
+  baselines (`align-items: baseline`) and are RIGHT-aligned to the seam, so each stands one gutter
+  (`--ap-col-gap`) from its own value however long the others are. Every panel is laid out at once in the
+  same grid cell, the inactive ones `visibility: hidden` plus `user-select: none` (the `hidden` attribute
+  stays, so without the stylesheet they fall back to `display: none`): the dossier is as tall as its tallest
+  panel, so the dots and the Next button never move between steps, and each panel is a subgrid of the
+  dossier's two columns (under `@supports`), so the seam holds one x across the chain. Chrome 111 to 116,
+  inside the build's floor, have no subgrid and keep per-panel columns: rows still align and nothing moves
+  vertically, only the seam can shift between steps. **`via` is reserved for the edge row:** a detail row
+  keyed `via` (any case) fails the build. The goal's panel wears the goal node's gold (kind label, name,
+  inline code) and the step count turns gold at the goal; on light the count and the other kind labels
+  read `--sl-color-accent-high`, the carve-out the active node and the Next button already use (the accent
+  read 4.27:1 on the panel). The dots take their place on the meter's green-to-gold ramp from their `--t`
+  (mixed in sRGB, the gradient's own space), future dots stay grey, and the bar's gradient spans the whole
+  track, so its leading edge is the current dot's colour and gold arrives only at the goal. Every node state and all chrome text measures AA in BOTH themes. REQUIRED on every HackTheBox writeup
   under `## Summary` (2026-09-12), no longer an Active Directory device, see §8. Live on Forest (6 hops),
   Return (5 hops) and Busqueda (5 hops); Forest and Return keep their BloodHound graph above as evidence,
   Busqueda carries none and is the reference for that case. See
