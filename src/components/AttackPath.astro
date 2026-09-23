@@ -217,6 +217,7 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
           data-state={i === 0 ? 'active' : 'future'}
           aria-current={i === 0 ? 'step' : undefined}
           aria-label={`Step ${i + 1}: ${node.name}`}
+          style={`--t:${t(i)}`}
         ></button>
       ))}
     </div>
@@ -496,18 +497,24 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
      dossier panel and the last dot. A green count beside them was the odd one out. */
   .apath[data-done='true'] .ap-meter-text span { color: var(--ap-gold-ink); }
   .ap-bar {
-    width: 92px;
+    --ap-bar-w: 92px;
+    width: var(--ap-bar-w);
     height: 3px;
     border-radius: 999px;
     background: color-mix(in oklab, var(--ap-quiet) 34%, transparent);
     overflow: hidden;
   }
+  /* The ramp is painted across the whole TRACK (sized by the same --ap-bar-w) and the fill only uncovers
+     it, so the fill's leading edge is the colour of the step it has reached: green at the start, gold only
+     at the goal, and the same colour as the current step's dot (the dots mix the same two colours by the
+     same position). Sized to the fill instead, the gradient squeezed the whole green-to-gold ramp into
+     whatever width the fill had, so the bar read gold from the second step. */
   .ap-bar i {
     display: block;
     height: 100%;
     width: 0%;
     border-radius: inherit;
-    background: linear-gradient(90deg, var(--ap-accent), var(--ap-gold));
+    background: linear-gradient(90deg, var(--ap-accent), var(--ap-gold)) 0 0 / var(--ap-bar-w) 100% no-repeat;
   }
   @media (prefers-reduced-motion: no-preference) {
     .ap-bar i { transition: width 0.45s cubic-bezier(0.4, 0.05, 0.2, 1); }
@@ -966,6 +973,14 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
   }
   .ap-dots { display: flex; align-items: center; gap: 0.7rem; }
   .ap-dot {
+    /* This dot's colour on the chain's green-to-gold ramp, the one the meter bar draws: the same two
+       colours, mixed by the dot's position (--t, 0 at the entry and 1 at the goal) in sRGB, the space a
+       gradient interpolates in by default, so a reached dot and the bar's leading edge at that step are
+       one colour. Derived from --t, so the first dot is the accent and the last is gold at any chain
+       length. The focus ring rides the same ramp toward the gold INK instead, because a ring needs 3:1
+       and the decorative gold is 2.00:1 on paper; the last dot's ring is the goal node's. */
+    --ap-dot-c: color-mix(in srgb, var(--ap-accent), var(--ap-gold) calc(var(--t, 0) * 100%));
+    --focus-ring: color-mix(in srgb, var(--ap-accent), var(--ap-gold-ink) calc(var(--t, 0) * 100%));
     position: relative;
     width: 7px;
     height: 7px;
@@ -974,7 +989,6 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
     border-radius: 50%;
     background: color-mix(in oklab, var(--ap-quiet) 45%, transparent);
     cursor: pointer;
-    --focus-ring: var(--ap-accent);
   }
   /* Layout-neutral pointer target (WCAG 2.2 SC 2.5.8), the site's own hit-area convention (the About HUD
      controls grow the target, not the layout): the visible dot and its focus ring stay the 7px border box,
@@ -992,9 +1006,11 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
     height: 24px;
     transform: translate(-50%, -50%);
   }
-  .ap-dot[data-state='done'] { background: color-mix(in oklab, var(--ap-accent) 60%, transparent); }
+  /* A future dot stays the quiet grey, as the bar's unfilled track does; a reached dot takes its own place
+     on the ramp, softer once passed and full on the current step. */
+  .ap-dot[data-state='done'] { background: color-mix(in oklab, var(--ap-dot-c) 60%, transparent); }
   .ap-dot[data-state='active'] {
-    background: var(--ap-accent);
+    background: var(--ap-dot-c);
     transform: scale(1.5);
   }
   @media (prefers-reduced-motion: no-preference) {
