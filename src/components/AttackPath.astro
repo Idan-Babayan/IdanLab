@@ -188,7 +188,7 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
         all the panels share that column and one stacked cell (see the dossier rules). What tells the rows
         apart is how they look, never where they start. */}
     {nodes.map((node, i) => (
-      <dl class="ap-panel" data-ap-panel hidden={i !== 0}>
+      <dl class:list={['ap-panel', { 'is-goal': i === lastIndex }]} data-ap-panel hidden={i !== 0}>
         <dt class="ap-panel-kind">{node.kind}</dt>
         <dd class="ap-panel-name">{node.name}</dd>
         {node.edge && (
@@ -489,6 +489,12 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
     color: var(--ap-accent);
     font-weight: 700;
   }
+  /* Light only, the accent-high carve-out once more: on paper the ambient accent reads 4.27:1 as this 11.2px
+     bold count (#4d7c0f on the #f2ede0 panel), under AA; bold only counts as large text from 18.66px. */
+  :global(html[data-theme='light']) .apath:not([data-done='true']) .ap-meter-text span { color: var(--sl-color-accent-high); }
+  /* At the goal the count turns gold with the rest of the end state: the Compromised control, the goal's
+     dossier panel and the last dot. A green count beside them was the odd one out. */
+  .apath[data-done='true'] .ap-meter-text span { color: var(--ap-gold-ink); }
   .ap-bar {
     width: 92px;
     height: 3px;
@@ -888,16 +894,25 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
     color: var(--sl-color-text);
     overflow-wrap: anywhere;
   }
-  /* The head row: the node's kind label, echoed in accent, and its name at the dossier's largest size. */
+  /* The head row mirrors its node: the kind label in the node's colour and the name at the dossier's
+     largest size, and on the goal both in gold, as on the goal node itself. */
   .ap-panel .ap-panel-kind {
     font-weight: 500;
     color: var(--ap-accent);
   }
+  /* Light only, the carve-out the active node's kind label and the Next button already carry, for the same
+     reason: on paper the ambient accent reads 4.27:1 as this 9.6px label (#4d7c0f on the #f2ede0 panel,
+     which is opaque, so that pair is the composite), under AA. The text-legible accent variant clears it.
+     The dark accent is already 16.1:1 on the dark panel. :not(.is-goal) so the theme prefix cannot
+     out-specify the goal's gold below, the trap the node's own kind label already documents. */
+  :global(html[data-theme='light']) .ap-panel:not(.is-goal) .ap-panel-kind { color: var(--sl-color-accent-high); }
   .ap-panel .ap-panel-name {
     font-size: 0.92rem;
     font-weight: 700;
     color: var(--sl-color-white);
   }
+  .ap-panel.is-goal .ap-panel-kind,
+  .ap-panel.is-goal .ap-panel-name { color: var(--ap-gold-ink); }
   /* The edge row reads a step quieter than the details; the verb itself is carried by the bold. */
   .ap-panel .ap-panel-edge { color: var(--ap-quiet); }
   .ap-panel .ap-panel-edge :global(b) { color: var(--sl-color-text); font-weight: 700; }
@@ -913,7 +928,9 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
      `:not(pre) > code` in the prose layer with no .not-content guard, so it does reach in here; what
      keeps this rule on top is that an Astro scoped style is UNLAYERED, and unlayered author CSS beats
      any layered rule regardless of selector weight. The `not-content` class governs REACH for the
-     rules that do carry the guard, which is a separate instrument from precedence. */
+     rules that do carry the guard, which is a separate instrument from precedence.
+     The ink leans toward --sl-color-white on purpose: that token is the page's FOREGROUND in either theme,
+     so the mix brightens the chip text on dark and deepens it on paper. */
   .ap-panel dd :global(code) {
     font-family: var(--sl-font-mono);
     font-size: 0.92em;
@@ -921,6 +938,12 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
     border-radius: 4px;
     background: color-mix(in oklab, var(--ap-accent) 12%, transparent);
     color: color-mix(in oklab, var(--ap-accent) 78%, var(--sl-color-white));
+  }
+  /* The goal's chips wear its gold, derived the same way: the decorative gold for the tint, the AA gold
+     ink for the text. Every other panel keeps the accent chips. */
+  .ap-panel.is-goal dd :global(code) {
+    background: color-mix(in oklab, var(--ap-gold) 12%, transparent);
+    color: color-mix(in oklab, var(--ap-gold-ink) 78%, var(--sl-color-white));
   }
 
   @media (prefers-reduced-motion: no-preference) {
