@@ -378,10 +378,10 @@ The whole path in one breath: an unauthenticated printer panel on port 80 lets m
   title="Attack Path · return.local"
   nodes={[
     { kind: 'Web', name: 'Printer Panel', detail: [ { k: 'port', v: '<code>80/tcp</code> IIS, unauthenticated' }, { k: 'holds', v: 'an editable directory login for <code>svc-printer</code>' } ] },
-    { kind: 'User', name: 'svc-printer', edge: '<b>LDAP pass-back</b>', detail: [ { k: 'via', v: 'cleartext simple bind caught on <code>sudo nc -lvnp 389</code>' }, { k: 'shell', v: '<code>evil-winrm</code> on 5985, user.txt' } ] },
+    { kind: 'User', name: 'svc-printer', edge: '<b>LDAP pass-back</b>', detail: [ { k: 'leak', v: 'cleartext simple bind caught on <code>sudo nc -lvnp 389</code>' }, { k: 'shell', v: '<code>evil-winrm</code> on 5985, user.txt' } ] },
     { kind: 'Group', name: 'Server Operators', edge: 'is <b>member of</b>', detail: [ { k: 'note', v: 'builtin group, can reconfigure services on a DC' } ] },
     { kind: 'Service', name: 'vss (LocalSystem)', edge: 'can <b>reconfigure</b>', detail: [ { k: 'right', v: 'rewrite the <code>vss</code> binary path' }, { k: 'action', v: '<code>sc.exe config vss binpath=…</code>' } ] },
-    { kind: 'Root', name: 'SYSTEM', edge: 'on <b>service start</b>', detail: [ { k: 'via', v: '<code>sc.exe start vss</code> runs the payload' }, { k: 'flag', v: 'root.txt' } ] },
+    { kind: 'Root', name: 'SYSTEM', edge: 'on <b>service start</b>', detail: [ { k: 'trigger', v: '<code>sc.exe start vss</code> runs the payload' }, { k: 'flag', v: 'root.txt' } ] },
   ]}
 />
 
