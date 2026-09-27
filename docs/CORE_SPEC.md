@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-09-14 (callout emphasis is ink, not weight; Busqueda is the golden standard for HackTheBox writeups and every HTB writeup carries an AttackPath).
+> Last updated: 2026-09-28 (callouts: five voices, intel and vuln off the platform hues, and light mode gets its own border and label per type).
 
 ---
 
@@ -272,7 +272,7 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 │     ├─ base.css                     # @layer base: the zero-specificity defaults under everything, today the shared focus ring alone
 │     ├─ prose.css                    # @layer prose: the reading surface inside .sl-markdown-content (type, rhythm, links, quotes, the raw <details> default)
 │     ├─ chrome.css                   # @layer chrome: header, sidebar, TOC, code frames, scrollbars, the three-column layout, light-mode depth
-│     ├─ components.css               # @layer components: badges, toggles, callouts, the recon rail (a two-column grid plus the 12rem container query that stacks it under text scaling), FlagCapture, PasswordReveal, Principle, WriteupMeta
+│     ├─ components.css               # @layer components: badges, toggles, callouts, the recon rail (a two-column grid plus the 12rem container query that stacks it when the callout is narrow, which page zoom on a phone does), FlagCapture, PasswordReveal, Principle, WriteupMeta
 │     ├─ pages.css                    # @layer pages: whole-page treatments (splash hero, platform index, the reveal state rules, the landing's 80rem content cap, and the sideways-scroll clip pairs: html:has(.pi-index) + body:has(.pi-index) and html:has(.hero) + body:has(.hero), both rules of each pair needed, see §6)
 │     ├─ utilities.css                # @layer utilities: single-purpose helpers that must sit above the named layers, today .sr-only (two rules: the hiding declarations scoped to .sl-markdown-content, and an UNSCOPED user-select:none that has to reach Starlight's .sr-only too, see §8 "Invisible to the eye is not invisible to the clipboard")
 │     └─ overrides.css                # THE ONLY UNLAYERED SURFACE. The 13-rule tail, each rule carrying an evidence comment naming what it beats (see §8 "The layer law")
@@ -846,30 +846,42 @@ until 2026-09-14. Scoped on the hero rather than the route, so any future splash
 covered; `/secret` has no `.hero` and stays out; the marketing pages carry a `.hero` of their own but
 never load this module.
 
-### Narrow-width containment (2026-09-18)
+### Narrow-width containment (2026-09-18, mechanism corrected 2026-09-19)
 
 One class of defect, repaired in one pass (2026-09-16 to 2026-09-18): a hard
 minimum that does not know the width of the box it sits in. Flex items whose `min-width: auto` is an
-unbreakable headline, `clamp()` floors in rem that double under text scaling while the screen does not,
+unbreakable headline, `clamp()` floors in rem that hold their pixel size while the viewport narrows,
 grid tracks whose automatic minimum is one long token, and one-word labels with no break opportunity.
-Every change below was measured for zero diff at root 100% with full-page element rect fingerprints on
-isolated builds before it landed. "Root 200%" means the root font size doubled, the simulation of
-Android font scaling; browser zoom was already clean.
+Every change below was measured for zero diff at 100% with full-page element rect fingerprints on
+isolated builds before it landed. **The mechanism first recorded here was wrong.** The repairs were
+derived from a simulation that doubled the root font size on an unchanged viewport, a state Chrome for
+Android cannot produce (see "What Android does with text" below): Chrome ignores the OS font size for
+web content, and its own enlargement is a page zoom that narrows the CSS viewport while rem stays 16px.
+Every repair still does real work under that mechanism: a vw floor yields, `min-width: 0` lets a flex
+item collapse, and the rail's container query fires and stacks, all because the viewport narrows and
+never because text scales. Numbers that came only from the simulation are retired rather than restated;
+what is kept was measured at 100% or on the device (2026-09-19, Chrome 149 on the Android 17 emulator,
+360, 411 and 1280 CSS px, dark throughout and light on both phones).
 
 - **Display-type floors are the rem floor evaluated at 320px, never fitted to the word.** A `clamp()`
   floor on an unbreakable display word is written `min(<rem floor>, <rem floor × 5>vw)`: the home
   headline `min(2.3rem, 11.5vw)`, the About headline `min(2.4rem, 12vw)`, both footer headings
-  `min(2rem, 10vw)`. The vw term never binds at normal size at or above 320, and at 320 it stops the
-  floor growing with the text, so the word is as wide under scaling as at normal size and a word that
-  fits at 320 at normal size stays inside the VIEWPORT at every text size. That guarantee is the
-  viewport, not the column: `.wrap`'s gutter is rem and doubles under scaling while the word does not,
-  so the home headline crosses into the gutter at root 200% by 27.75px at 320, 15.98 at 375, 12.83 at
-  390 and 7.7 at 414, fits the column from 480, and stays 20.25px inside the viewport at 320. Headroom
-  wherever the floor binds at normal size: 20.25px for "Curiosity" in the 272px column at 320 (7.4%,
-  under a character, accepted because the column is fixed and the copy is the owner's), 54.5px for
-  "Let's connect." (20%). A floor fitted to the word (the first pass shipped 14.6vw and 14.7vw) leaves
-  a fraction of a pixel and breaks on one character of copy. Flex items around these headlines carry
-  `min-width: 0`, because their automatic minimum was the headline's longest word.
+  `min(2rem, 10vw)`. The vw term never binds at or above 320, so normal-size rendering is unchanged by
+  construction, and below 320, which page zoom reaches from 125 percent on a 360 phone, it lets the
+  floor yield with the viewport instead of holding a pixel size the screen no longer has, so a word
+  that fits at 320 stays inside the VIEWPORT at every narrower width. That guarantee is the viewport,
+  not the column: `.wrap`'s gutter is 24px whatever the viewport, so a zoomed phone's headline crosses
+  into the gutter while staying on screen. Measured on the device: the home headline sits inside the
+  viewport at every zoom measured on all three profiles, down to a 119px viewport; the About headline
+  does too except at 119px, where its centred line passes both edges (4.8px right, 3.9px left). The two
+  footer headings, read from the full overflow inventory, keep their boxes inside the viewport on every
+  run; their text overflows the box only at 137 and 119 (4px and 9px).
+  Headroom wherever the floor binds at normal size: 20.25px for "Curiosity" in the 272px column at 320
+  (7.4%, under a character, accepted because the column is fixed and the copy is the owner's), 54.5px
+  for "Let's connect." (20%). A floor fitted to the word (the first pass shipped 14.6vw and 14.7vw)
+  leaves a fraction of a pixel and breaks on one character of copy. Flex items around these headlines
+  carry `min-width: 0`, because their automatic minimum was the headline's longest word and a flex
+  item must be allowed to shrink with its container.
 - **The marketing sections keep `.wrap`'s gutter (2026-09-18).** `.sec`, `.footcta` and the home
   `.hero-inner` are `.wrap` too, and their `padding` shorthands, written after `.wrap { padding: 0
   1.5rem }`, zeroed its side padding on source order, so every section on both pages ran edge to edge
@@ -884,30 +896,38 @@ Android font scaling; browser zoom was already clean.
   headline.** `.pi-name` is `clamp(min(2.2rem, 7.5vw), 5.5vw,
   3.6rem)`, because 2.2rem does not fit "OverTheWire" at 320 even at normal size (364.3px in a 288px
   column; it passed the viewport by 60px at 320, 20 at 360 and 5 at 375). 7.5vw is 24px at 320, 27 at
-  360, 28.1 at 375, 2.2rem again from 469, and unchanged from 480 up; the name sets inside its content
-  box at root 200% too (8vw leaves the box by 9px there, 8.7vw is the exact fit). VulnHub and PicoCTF
+  360, 28.1 at 375, 2.2rem again from 469, and unchanged from 480 up; under page zoom the name text
+  stays inside the viewport at every width measured, down to 137px, while its box is cut by the
+  landing's clip from 271px and the cards below it from 288px (device, 2026-09-19; the re-filed item at
+  the end of this block). VulnHub and PicoCTF
   fit at 2.2rem and shrink with the long names, so the four landings behave identically. Check the
   longest name at 320 whenever a platform is added: eleven characters fit with about one to spare.
-  Measured and rejected: a fixed lower floor (fails under text scaling, moves the tablet band) and
+  Measured and rejected: a fixed lower floor (it binds to 494 instead of 640 and moves the tablet band) and
   `<wbr>` at the camel-case seams (splits the wordmark at 320 to 390 at normal size and, because
   kerning does not cross a text-node boundary, renders the name wider wherever it stays on one line:
   about 0.1px per px of type, 3.55px at the 35.2px floor and 5.78px at the 57.6px desktop size, where
   plain spans cost 0.02px; measured 2026-09-18).
-- **The recon rail stacks under text scaling.** The description track is `minmax(0, 1fr)`, and the
-  callout carrying a rail is a named inline-size container; below 12rem of rail width the rail is one
-  column, chip above description, column rule hidden. A container query in rem fires when the rail is
-  narrow relative to the text, which is what text scaling does, and never at normal size (the narrowest
-  rail is 15.7rem at 320; at normal size the query would need a 260px viewport). It fires at 123.07%
-  at 320 and 144.43% at 375 (bisected 2026-09-18), and the rail is contained on all three rail pages at
-  320 and 375 from 100% to 200%, 33.6px inside the panel at 200%. That is a phone claim: at desktop
-  widths under text-only scaling Starlight's rem-sized sidebar and table of contents leave roughly a
-  200px column, the query fires there too (150.5% at 800, 146.3% at 1152, 162.6% at 1280) and the
-  stacked rail still escapes the panel, by 21.4, 143.2 and 53.4px on Busqueda and 57.9px at 1280 on
-  Forest and Return at root 200%. A percentage cap on the chip track was measured and rejected: `fit-content()`
-  alone cannot cap a span with no break opportunity (the automatic minimum it is floored by is the
-  chip's min-content, which `break-word` never lowers), and with `overflow-wrap: anywhere` it contains
-  only by breaking the chip mid-token, while its floor is the widest chip (38% already wraps one at 320
-  at normal size; 40% sits 1.6 points above binding). §7 carries the rail's authoring side.
+- **The recon rail stacks when its callout is narrow relative to the text.** The description track is
+  `minmax(0, 1fr)`, and the callout carrying a rail is a named inline-size container; below 12rem of
+  rail width the rail is one column, chip above description, column rule hidden. The threshold is
+  text-relative by design, and that is still sound: a container query in rem fires when the rail is
+  narrow relative to the text, which no normal-size layout reaches (the narrowest rail is 15.7rem at
+  320; the query needs a viewport of about 260px) and page zoom on a phone does. Measured on the
+  device (2026-09-19): on a 360 phone the rail is two-column at 133 percent zoom (202px) and stacked at
+  150 (171px), so it fires between the two; on a 411 phone it is stacked at 200 (a 137px rail); it never fires
+  under the OS font setting, because Chrome ignores that setting for web content. Busqueda and Forest
+  are contained at every width measured down to 160 (text past the panel 0 at 360, 320, 288, 240, 205,
+  180 and 160; Return, the third rail page, was not measured); below that the stacked rail's longest
+  unbreakable run no longer fits, and its text passes the panel by 3 to 5px at 137 (the 411 phone at 300
+  percent) and 20 to 23px at 119 (the 360 phone at 300). The desktop-width caveat first recorded here, text-only scaling at 800 to 1280 leaving a
+  200px column beside Starlight's sidebar, described a state no browser tested produces and is retired:
+  on the 1280 tablet the table of contents leaves by 854 and the sidebar by 640 (rem breakpoints), and
+  the rail is two-column and contained at 854, 640 and 426px. A percentage cap
+  on the chip track was measured and rejected: `fit-content()` alone cannot cap a span with no break
+  opportunity (the automatic minimum it is floored by is the chip's min-content, which `break-word`
+  never lowers), and with `overflow-wrap: anywhere` it contains only by breaking the chip mid-token,
+  while its floor is the widest chip (38% already wraps one at 320 at normal size; 40% sits 1.6 points
+  above binding). §7 carries the rail's authoring side.
 - **The landing is capped at 80rem.** `body:has(.pi-index)` sets `--sl-content-width: 80rem`, the pane
   width at 1600, replacing the 100% lift. Every width to 1600 is unchanged; above it the landing holds
   four 306.8px columns, centered by Starlight's own `margin-inline: auto`, instead of stretching to
@@ -918,19 +938,96 @@ Android font scaling; browser zoom was already clean.
   `-webkit-line-clamp: 2`): cards in a row stay one height and the card is a teaser. Recorded with the
   numbers (2026-09-18): descriptions run 93 to 165 characters and the clamp shows 50 to 92 of them
   depending on card width, 65 at 375 against 59 at 1280, so a 360 phone shows as much as a desktop
-  card or more and only 320 shows four to nine fewer. No phone-specific clamp. The open question is
-  text scaling, where two lines hold about 20 characters (ROADMAP).
+  card or more and only 320 shows four to nine fewer. No phone-specific clamp. Under page zoom the
+  description narrows from 278px at 360 to 230px at 288 and holds there, because the card stops at its
+  280px minimum and the landing's clip cuts the rest; that is the 320px floor, not a clamp question, and
+  the text-scaling item is retired (DECISIONS 2026-09-19 · The text-scaling backlog is retired: thirteen simulated findings,
+  four re-filed by width).
 - **The contact address breaks at its `@`** (`<wbr>` in the label; `data-copy` still carries it whole,
   so the clipboard never sees the break), because `contact@idanlab.dev` was the button's min-content.
-- **Known and unfixed, all at root 200% only and all recorded in ROADMAP for one text-scaling session:**
-  the About practice cards clip the platform name (OverTheWire 88.92px past a 320 viewport, HackTheBox
-  85, clipped by the card; inside from 414); the contact button leaves a 320 viewport by 13px through
-  its own padding; since the gutter, the home hero's primary button leaves a 320 viewport by 19.28px,
-  the About headed panel's `2.5rem 3rem` padding doubles to 192px of a 224px column so its text runs to
-  342.53 against 320, and the About skill grid's `minmax(280px, 1fr)` puts a 280px card in a 224px
-  column, 8px past the viewport (8px into the gutter at normal size). On HackTheBox writeups the page
-  scrolls to 349 at 320 and 200% because the AttackPath meter, a nowrap label beside a 92px bar, runs
-  28.81px past the viewport; the header's mobile table-of-contents toggle reaches 325.2.
+- **Below the 320px floor, measured on the device under Chrome page zoom (2026-09-19; CSS px on a 360
+  phone unless said) and recorded in ROADMAP.** Three behaviours, and the difference between them is
+  the point.
+  **Silent cuts, where the reader cannot pan to what is lost.** The landings' writeup cards, cut by the
+  `body:has(.pi-index)` clip pair: 8px at 288 (125 percent), 25 at 271, 56 at 240, 91 at 205 and 116 at
+  180; the platform-name box by 5 at 271, 36 at 240, 71 at 205 and 96 at 180, while the name text still
+  fits. About's skill cards and home's platform cards, cut by the marketing pages'
+  `body { overflow-x: hidden }`: with `html` visible it propagates to the viewport, which clips and
+  offers no scroll. About loses 16px at 288, 33 at 271, 64 at 240, 99 at 205 and 124 at 180 (the 280px
+  `minmax(280px, 1fr)` skill cards; the practice cards follow from 271); home loses 3px at 271, 34 at
+  240, 69 at 205 and 94 at 180. The `/secret` terminal's title bar, cut by the terminal's own
+  `overflow-x: hidden`: its contents overflow the bar by 8px at 288, 26 at 271, 56 at 240, 91 at 205
+  and 116 at 180, the ONLINE badge going first and the title text from 205 (25.5px of it hidden, 51 at
+  180). The header wordmark: from 205 its box shrinks below its text (`min-width: 0` allows it) and the
+  span's `overflow: hidden` with `text-overflow: clip` cuts the glyphs, with no ellipsis, 18px at 205
+  and 44 at 180 on the Bandit pages and the landings (about 3px on the HackTheBox writeups, whose header
+  widens with their scroll width; none on `/secret` above 160).
+  **Real sideways scroll, on the Starlight pages, whose `body` is `visible`.** The AttackPath meter, a
+  nowrap label beside a 92px bar, sets the writeup's scroll width to 220px, so writeups scroll by 15px
+  at 205 and 40 at 180. The mobile table-of-contents toggle spans the header and stretches to that
+  width, 15.8px past the viewport at 205 and 40.6 at 180; on the Bandit pages, which have no meter, it
+  stays within 1px until the page itself scrolls at 119 (26px).
+  **Degradation without overflow.** The inline PasswordReveal value column shrinks from 142px at 360 to
+  71px at 288 (four lines), 23px at 240 (two glyphs per line) and 0 from 205 (one glyph per line, 788px
+  tall), because its 55px label and 84px Reveal button are fixed.
+  Nothing the simulation predicted for the About practice card names, the hero and contact buttons, the
+  headed panel, the platform card names, the pipeline titles or the skill card words reproduced as
+  written: no text is clipped by its own card; at 180px the hero button, the headed panel and the
+  pipeline titles stay inside the viewport (they pass it only at 119), the contact button overhangs by
+  about 1px, and the practice, platform and skill cards are cut whole by the body clip above. Only the
+  landings' clip is inside scope (DECISIONS 2026-09-19 · The supported floor is a 320px viewport, and the
+  landings' clip is the one exception). About and home were found to cut the same way after that
+  exception was drawn; whether they join it is open in ROADMAP. The terminal bar and the wordmark are
+  cuts of decoration, a status badge and a logo that stays recognisable, and stay out.
+
+### What Android does with text (2026-09-19)
+
+Measured on the Android 17 emulator (API 37 Google Play image), Chrome 149.0.7827.5, on phones of
+360x640 and 411x915 CSS px and a 1280x800 tablet, against an isolated build of `e0ed5d6`, on nine
+routes, dark on every run and light on both phones (the theme changes only the 1px code-frame border
+on writeups). Recorded so nobody re-derives it.
+
+- **Chrome ignores the OS font size for web content.** Android's Font size slider has seven notches
+  (0.85, 1.0, 1.15, 1.3, 1.5, 1.8, 2.0) and the OS applies them to its own apps, but at 2.0 every route
+  measured renders exactly as at 1.0: root `16px`, 256 of 256 rects identical in a full census of
+  the 360 phone in both themes, identical probe and page readings on the 411 phone and the tablet, and
+  a Chrome profile created fresh while the OS was already at 2.0 behaves the same. Nothing in
+  `chrome://flags` ties web content to the OS font size.
+- **Chrome's own enlargement is a page zoom, a viewport divisor.** Settings > Accessibility > Default
+  zoom offers 100, 110, 125, 133, 150, 175, 200, 250 and 300 percent (on the tablet the app menu also
+  carries a per-site Zoom row). The layout viewport becomes width divided by zoom, rem stays 16px, media
+  queries and container queries follow the shrunken viewport, and two devices at the same resulting
+  width lay out the same horizontally (at 205px: identical scroll widths on all nine routes, every edge
+  within 0.3px), though a line can wrap differently at the other pixel density. On a 360 phone, all
+  measured: 327px at 110, 288 at 125, 271 at
+  133, 240 at 150, 205 at 175, 180 at 200, 119 at 300. The same divisor gives 374, 329, 309, 274, 235,
+  205 and 137 on a 411 phone (205 and 137 measured) and 1164, 1024, 962, 854, 731, 640 and 426 on a
+  1280 tablet (854, 640 and 426 measured).
+- **Both raised is zoom alone.** The whole 360-phone zoom ladder was run with the OS at 2.0 and matches
+  width divided by zoom with rem at 16px; the 411 phone at 200 percent with the OS at 1.0 lays out like
+  the 360 phone at 175 with the OS at 2.0 (both 205px); and with the OS at 2.0 the Default zoom screen
+  still reads 100 percent.
+- **Font boosting is off**, because every page declares `width=device-width, initial-scale=1`; verified
+  by probe (the same document without the meta lays out at 980 CSS px instead).
+- **The device's own largest display size is a real 320px viewport.** The Display size slider has one
+  step up on the 360 phone (density 320 to 360), giving 320x465 CSS px at DPR 2.25, and there nothing
+  misbehaves at zoom 100: every route 320/320 in both themes, every element inside the viewport and
+  every measured element inside its own box, the rail two-column at 252px. (The About skill cards sit
+  8px into their column's gutter at 320, as they always have: a 280px card in a 272px column.)
+- **Supported floor.** The site is supported to a 320px viewport, verified at 100 percent in both
+  themes; page zoom beyond roughly 110 percent on a 360 phone (125 on a 411) puts the viewport below 320
+  and is out of scope, with one named exception, the landings' silent clip (DECISIONS 2026-09-19 · The
+  supported floor is a 320px viewport, and the landings' clip is the one exception). About and home
+  were found to cut silently the same way after that exception was drawn (their `body` is
+  `overflow-x: hidden`), and whether they join it is open in ROADMAP. On a 1280 tablet even 300 percent
+  keeps 426px and nothing breaks at any level measured.
+- **Known unknowns.** Samsung Internet and Firefox for Android were not tested. Firefox's text size
+  setting scales text without scaling the viewport (its known behaviour, not measured here), so on that
+  engine the retired findings would be real again; nothing here says how this site behaves there.
+- **Harness lesson.** Phone enlargement is modelled as a narrower viewport (device width divided by
+  zoom), which the existing measurement harness can already set, never as a raised root font size. The
+  root-200% simulation is retired (DECISIONS 2026-09-19 · Android text enlargement is Chrome page zoom,
+  not a root font scale).
 
 ### Light-mode identity (paper-native "risograph")
 Light is art-directed on its own terms (dark is unchanged). All rules scoped to
@@ -996,9 +1093,26 @@ are tinted by the difficulty arc or the category ring as the cards' bars, border
 
 ### Tagged callouts (icon-based, `Callout.astro` + `.cl*` in `components.css`)
 Five semantic writeup callouts, each a 3px accent left border + faint tint + a header (icon + UPPERCASE
-label), theme-aware (vivid border, light-mode ink swap on icon/label): recon (cyan, magnifier), loot
-(amber, padlock), intel (violet, information), vuln (red, warning), defense (green, an inline shield SVG
-since Starlight has no shield). Icons via Starlight's `<Icon>`. Authored as `<Callout type="...">` in MDX.
+label): recon (cyan `#41efff`, magnifier), loot (gold `#ffc23d`, padlock), intel (lavender `#ceaafd`,
+information), vuln (magenta `#ff4d9d`, warning), defense (green `#22c55e`, an inline shield SVG since
+Starlight has no shield). Icons via Starlight's `<Icon>`. Authored as `<Callout type="...">` in MDX.
+- **Five voices (2026-09-28).** A callout wears a colour the page already owns only when it means the
+  same thing there, never a platform's identity. Recon takes the site's cyan secondary (h3, links, port
+  chips; the About sidebar dot inherits it too), loot the flag gold (credentials are loot), vuln the magenta
+  sudo wears in code blocks (`.ec-cmd-priv`: privilege, the dangerous path). Intel is the one new hue, a pale
+  UV lavender told apart from PicoCTF's purple by lightness and chroma (0.14 OKLab). Until 2026-09-28 intel
+  wore PicoCTF's `#d96bff` and vuln VulnHub's `#ff5c5c`, byte-identical to their sidebar dots and badge
+  chips. Known nearness, taken knowingly: intel sits 0.046 from the medium tier violet and 0.049 from the
+  Cryptography chip violet (every slot farther from both is near white), and vuln 0.067 from the hard
+  tier magenta, which no page ships yet. Defense keeps its own green.
+- **Light mode has its own border and label per type.** The tint is `--acc` at 11% over paper; the border
+  reads `--cl-bar` and the icon + label `--cl-ink`, both the dark hue held and lightness dropped. The dark
+  literal on paper `#ece9e0` read 1.15 to 2.49:1 as a border; `--cl-bar` reads 3.20 to 3.23:1 there. The
+  label ink reads 4.80 to 5.06:1 on its own tint (model B, measured on the build 2026-09-28; model C floor
+  on a grain dot 4.38 to 4.63, computed). Recon's ink is `--tp-cyan-ink` and loot's `--flag-gold-val`, the
+  same meaning on the same paper. Dark is unchanged apart from the two re-keyed hues. The recon rail's
+  column rule reads the same border value (`var(--cl-bar, var(--acc))`), so the rule and the callout's
+  left edge are one colour in both themes; it read `--cl-code-ink` before, a near-black line on paper.
 
 ### Flag loot gold (User Flag / Root Flag)
 One gold signal across the flag's states via the `--flag-gold` token (`#ffc23d` dark / `#C6A243` light):
@@ -1274,9 +1388,9 @@ underscore.
   See DECISIONS 2026-07-27. The description track is `minmax(0, 1fr)`, so one unbreakable token
   cannot widen it past its share, and the callout that carries a rail is a named inline-size container
   (`recon-rail`): below 12rem of rail width the rail stacks to one column, chip above description,
-  column rule hidden. No normal-size layout reaches 12rem (the narrowest rail is 15.7rem at 320); text
-  scaling does, from 123.07% at 320 and 144.43% at 375 (bisected 2026-09-18, see §6 "Narrow-width
-  containment" for the desktop-width caveat).
+  column rule hidden. No normal-size layout reaches 12rem (the narrowest rail is 15.7rem at 320); Chrome
+  page zoom on a phone does, between 133 and 150 percent on a 360 phone (measured on the device
+  2026-09-19; see §6 "Narrow-width containment" and "What Android does with text").
   Inline code (`:not(pre) > code`) → a rounded NEUTRAL chip with red
   text (identity in the glyphs, no red in the fill or border), its own object (readability-first,
   theme-tuned, deliberately distinct from the sharp code blocks);
@@ -1791,3 +1905,8 @@ whole records.
 - Dimming the platform hero wash for contrast: rejected, no alpha reaches AA. See DECISIONS 2026-07-31 · The platform ink family, and the wash that was causing the failure it hid.
 - A Principle coda on Bandit, or on any page outside hackthebox/: rejected. See DECISIONS 2026-09-03 · The Principle coda keeps the pager, and `principle:` is HackTheBox-only with a build guard.
 - Suppressing the Prev/Next pager beneath the Principle coda ("the silence"): rejected. See DECISIONS 2026-09-03 · The Principle coda keeps the pager, and `principle:` is HackTheBox-only with a build guard.
+- Simulating Android text scaling as a doubled root font size on an unchanged viewport: rejected, Chrome for Android has no such state (it ignores the OS font size for web content and its zoom narrows the viewport). Model phone enlargement as a narrower viewport. See DECISIONS 2026-09-19 · Android text enlargement is Chrome page zoom, not a root font scale.
+- A layout for viewports below 320px (Chrome page zoom past about 110 percent on a 360 phone, 125 on a 411): out of scope, not attempted, with the landings' silent clip the one exception kept in ROADMAP (About and home, which cut the same way, are an open question there). See DECISIONS 2026-09-19 · The supported floor is a 320px viewport, and the landings' clip is the one exception.
+- Grey callouts with only vuln coloured: rejected, the reading column loses its voice and the warning red would still be VulnHub's. See DECISIONS 2026-09-28 · Callouts speak in five voices, and light mode gets its own border and label.
+- A new hue for every callout type: rejected, what the wheel has left lands in the code-frame command colours (teal 0.034 from `curl`, brass 0.050 from `nmap`) and every warning red sits within 0.08 of VulnHub's. See DECISIONS 2026-09-28 · Callouts speak in five voices, and light mode gets its own border and label.
+- Intel sharing recon's cyan: rejected, the two sit together in nearly every writeup and read as one box. See DECISIONS 2026-09-28 · Callouts speak in five voices, and light mode gets its own border and label.

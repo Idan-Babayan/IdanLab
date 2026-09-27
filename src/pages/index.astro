@@ -152,8 +152,10 @@ const OG_ALT = 'Idan.Lab, a lab notebook of CTF writeups and security notes';
     <button class="btn btn-ghost" data-magnetic type="button" data-copy="contact@idanlab.dev">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="m3 6 9 6.5L21 6"/></svg>
       <!-- wbr, not overflow-wrap: the address is one unbreakable word, so the button could not
-           shrink below it and left the viewport under text scaling. The @ is the seam a reader
-           already parses. data-copy above is what the clipboard uses, so the break never ships. -->
+           shrink below it (it left the viewport in the root-200% simulation that motivated this; on
+           the device under Chrome page zoom the button stays inside a 360 phone's viewport to 175%
+           zoom, a 205px viewport, and leaves it by 1.2px at 200% zoom, measured 2026-09-19). The @ is the seam a reader already
+           parses. data-copy above is what the clipboard uses, so the break never ships. -->
       <span class="btn-label">contact@<wbr />idanlab.dev</span>
     </button>
   </div>
@@ -215,10 +217,12 @@ const OG_ALT = 'Idan.Lab, a lab notebook of CTF writeups and security notes';
   .hero { position: relative; min-height: 92vh; display: flex; align-items: center; }
   #constellation { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; }
   /* min-width: 0 because this is a flex item of .hero, so its default min-width: auto is its own
-     min-content, and its min-content is the headline's longest unbreakable word. At root 200% that
-     word ("Curiosity") is 569.17px, so the item grew to 569.17 in a 320px viewport and carried the
-     eyebrow, the sub and the button row out of the screen with it. Zero diff at root 100%, where the
-     same min-content is 284.59 and never binds.
+     min-content, and its min-content is the headline's longest unbreakable word. In the root-200%
+     simulation that motivated this the word grew with the text and carried the eyebrow, the sub and
+     the button row off the screen. A phone does not scale text that way (Chrome for Android ignores
+     the OS font size; measured on the device 2026-09-19), it narrows the viewport under page zoom
+     instead, and a flex item still has to be allowed to shrink with its container.
+     Zero diff at 100%, where the same min-content is 251.75px at 320 and never binds.
      padding-block, not the padding shorthand: this element is also .wrap, and a `padding: 4rem 0`
      written after .wrap zeroed its 1.5rem side gutter, so the hero ran edge to edge below 1228px
      (measured 2026-09-18). The gutter now comes from .wrap alone, as on the About hero. */
@@ -231,11 +235,13 @@ const OG_ALT = 'Idan.Lab, a lab notebook of CTF writeups and security notes';
   .eyebrow::before { content:""; width: 40px; height: 1px; background: var(--lime); display:inline-block; }
 
   /* The floor is the smaller of the authored 2.3rem and 11.5vw, so it cannot outgrow the viewport.
-     A rem floor doubles under text scaling while the screen does not: at root 200% a 2.6rem floor
-     read 83.2px and "Curiosity", which has no break opportunity, measured 569.17px against 320px.
+     A rem floor holds its pixel size while a phone's viewport narrows under Chrome page zoom (the
+     way a phone actually enlarges text: Chrome for Android ignores the OS font size, and its zoom
+     divides the viewport, 288px at 125% on a 360 phone, 180 at 200%; measured on the device
+     2026-09-19), and "Curiosity" has no break opportunity, so a fixed floor would outgrow the screen.
      11.5vw is not fitted to the word: it is 2.3rem evaluated at 320px, the narrowest width the
-     site serves. It never binds at root 100% at or above 320, and at 320 it stops the floor
-     growing with the text, so the word is exactly as wide under scaling as at normal size.
+     site serves. It never binds at or above 320, and below 320 it lets the floor yield with the
+     viewport instead of holding a size the screen no longer has.
      THE COLUMN is 272px at 320: .wrap's 1.5rem gutter on each side, kept by the padding-block on
      .hero-inner above. The earlier 2.6rem floor was derived against a column that was the whole
      viewport and does not fit this one (284.59px of "Curiosity" in 272px). At 2.3rem the word is
@@ -245,11 +251,11 @@ const OG_ALT = 'Idan.Lab, a lab notebook of CTF writeups and security notes';
      a platform name's size (35.2px) from 320 to 502, so it was not taken. The floor binds to 525px
      and 7vw carries it to 41.6px at 594, where the old floor stopped binding, so no width above
      594 moves.
-     The gutter is rem, so under text scaling the column shrinks while the word does not: at root
-     200% the word crosses into the gutter by 27.75px at 320, 15.98 at 375, 12.83 at 390 and 7.7 at
-     414, fits from 480, and stays inside the viewport by 20.25px at 320. That is what the rem-at-320
-     rule still guarantees: the viewport, not the column. Measured on isolated builds 2026-09-18:
-     against a 2.2rem floor only 320 to 480 differ at normal size; 640 and up are identical. */
+     The gutter stays 24px while a zoomed viewport shrinks, so below 320 the word crosses into the
+     gutter while staying on screen: on the device this headline sits inside the viewport at every
+     zoom on all three profiles measured, down to a 119px viewport (2026-09-19). That is what the rem-at-320 rule
+     guarantees: the viewport, not the column. Measured on isolated builds 2026-09-18: against a
+     2.2rem floor only 320 to 480 differ at normal size; 640 and up are identical. */
   h1.headline {
     font-family: var(--display); font-weight: 800; font-size: clamp(min(2.3rem, 11.5vw), 7vw, 5.6rem);
     line-height: .98; letter-spacing: -.02em; margin-bottom: 1.6rem; max-width: 16ch;
@@ -339,11 +345,13 @@ const OG_ALT = 'Idan.Lab, a lab notebook of CTF writeups and security notes';
   /* padding-block for the same reason as .sec: the old `7rem 0 5rem` shorthand zeroed .wrap's gutter. */
   .footcta { text-align: center; padding-block: 7rem 5rem; }
   /* Same floor problem as the hero headline, and the same rule. This heading is centered in
-     .wrap's column, 272px at 320. "connect." has no break opportunity and measured 434.95px at the
-     200% floor of 64px. 10vw is 2rem evaluated at 320px: it never binds at root 100% at or above
-     320, and at 320 the word is as wide under scaling as at normal size, 206.8px; the whole line,
-     "Let's connect.", is 217.5px, 54.5px clear of the column at normal size. The previous 14.7vw was
-     fitted to the word and left 0.16px. */
+     .wrap's column, 272px at 320. "connect." has no break opportunity, so a fixed 2rem floor would
+     hold 32px while a zoomed phone's viewport shrinks under it. 10vw is 2rem evaluated at 320px: it
+     never binds at or above 320, and below 320 it lets the heading yield with the viewport. At 320
+     the word is 206.8px and the whole line, "Let's connect.", 217.5px, 54.5px clear of the column at
+     normal size. On the device its box stays inside the viewport at every zoom measured, its text
+     overflowing the box only at 137 and 119px (4 and 9px; 2026-09-19). The previous 14.7vw was fitted to the
+     word and left 0.16px. */
   .footcta h2 { font-family: var(--display); font-weight: 800; font-size: clamp(min(2rem, 10vw),5vw,3.4rem); letter-spacing:-.02em; margin-bottom: 1.2rem; }
   .footcta .accent { color: var(--lime); }
   .foot-sub { color: var(--muted); max-width: 46ch; margin: 0 auto 2.5rem; font-size: .95rem; line-height: 1.7; }

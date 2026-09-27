@@ -410,17 +410,19 @@ const countLabel = (n: number): string => (n === 1 ? 'writeup' : 'writeups');
 	   viewport by 60px, a 360 one by 20px and a 375 one by 5px, silently, because the landing clips
 	   sideways overflow. A vw floor yields only where it must: 7.5vw is 24px at 320
 	   (name 248px, 39.6px inside its content box), 27px at 360, 28.1px at 375, and 2.2rem again from
-	   469 up, so every width from 469 is unchanged (measured identical at 469 to 2560). Under text
-	   scaling vw is immune, so the name also sets inside its box at root 200% at every width (7.6px
-	   to spare at 320, where 8vw would leave the box by 9px and 8.7vw is the exact fit). Measured
-	   and rejected: a fixed 1.7rem floor (275px past the viewport at 320 at root 200%, and it moves
-	   the tablet band), and <wbr> at the camel-case seams (it splits the wordmark at 320 to 390 at
+	   469 up, so every width from 469 is unchanged (measured identical at 469 to 2560). A vw floor
+	   also yields under Chrome page zoom, which is how a phone actually enlarges text (Chrome for
+	   Android ignores the OS font size; measured on the device 2026-09-19): the name text stays
+	   inside the viewport at every width measured, down to 137px, while its box is cut by the
+	   landing's clip from 271px and the writeup cards below it from 288px (CORE_SPEC §6). Measured and
+	   rejected: a fixed 1.7rem floor (it binds to 494 instead of 640 and moves the tablet band), and
+	   <wbr> at the camel-case seams (it splits the wordmark at 320 to 390 at
 	   normal size and renders the name wider wherever it stays on one line, about 0.1px per px of
 	   type, 3.55px at the 35.2px floor and 5.78px at 57.6px on a desktop, because kerning across the
 	   seams is lost; plain spans cost 0.02px). The cost, taken knowingly: VulnHub and PicoCTF fit
-	   at 2.2rem and shrink along with the long names, 35.2px to 24px at 320, and at root 200% the
-	   24px name sits below the 30.4px tagline. Check the longest name at 320 whenever a platform is
-	   added: the floor fits an 11-character name with about one character to spare. */
+	   at 2.2rem and shrink along with the long names, 35.2px to 24px at 320. Check the longest name
+	   at 320 whenever a platform is added: the floor fits an 11-character name with about one
+	   character to spare. */
 	.pi-name {
 		font-family: var(--tp-display);
 		font-weight: 800;

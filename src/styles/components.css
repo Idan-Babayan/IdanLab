@@ -392,12 +392,12 @@ html[data-theme="dark"] .port-label {
 
 /* ── Tagged callouts (.cl + Callout.astro) ─────────────────────────────────────
    A reusable callout: a 3px accent left border, a faint accent-tinted background, and a header row
-   of icon + UPPERCASE label in the accent color. Each type sets --acc. Light mode keeps the colored
-   border, lifts the tint so it reads on paper, and swaps the icon + label to a darker ink for
-   legibility. Body text uses the normal content color. Scoped to .sl-markdown-content. */
+   of icon + UPPERCASE label in the accent color. Each type sets --acc. Light mode lifts the tint so
+   it reads on paper and swaps the border (--cl-bar) and the icon + label (--cl-ink) to deeper values
+   of the same hue. Body text uses the normal content color. Scoped to .sl-markdown-content. */
 @layer components {
 .sl-markdown-content .cl {
-  border-left: 3px solid var(--acc);
+  border-left: 3px solid var(--cl-bar, var(--acc));
   background: color-mix(in oklab, var(--acc) 8%, transparent);
   border-radius: 0 9px 9px 0;
   padding: 0.7rem 1.05rem;
@@ -423,27 +423,42 @@ html[data-theme="dark"] .port-label {
 }
 .sl-markdown-content .cl > :last-child { margin-bottom: 0; }
 
-/* Per-type accent (border + icon + label), dark mode. */
+/* Per-type accent (border + icon + label), dark mode. Five voices, and a callout may wear a colour the
+   page already owns only when it means the same thing there, never a platform's identity:
+   - recon: the site's cyan secondary (h3, links, port chips). The About sidebar dot inherits it too.
+   - loot: the flag gold. A box of credentials is loot, the same meaning as the flag.
+   - intel: a pale UV lavender (oklch 0.80 0.12 304), told apart from PicoCTF's purple #d96bff, which it
+     wore until 2026-09-28, by lightness and chroma: 0.14 OKLab from it. It sits 0.046 from the medium
+     tier violet and 0.049 from the Cryptography chip violet; every slot farther from both is near white.
+   - vuln: the magenta sudo wears in code blocks (.ec-cmd-priv in overrides.css), the same meaning
+     (privilege, the dangerous path), off VulnHub's red #ff5c5c, which it wore until 2026-09-28: 0.10.
+   - defense: its own green. */
 .sl-markdown-content .cl-recon   { --acc: #41efff; }
 .sl-markdown-content .cl-loot    { --acc: #ffc23d; }
-.sl-markdown-content .cl-intel   { --acc: #d96bff; }
+.sl-markdown-content .cl-intel   { --acc: #ceaafd; }
 .sl-markdown-content .cl-defense { --acc: #22c55e; }
-.sl-markdown-content .cl-vuln    { --acc: #ff5c5c; }
+.sl-markdown-content .cl-vuln    { --acc: #ff4d9d; }
 
-/* Light mode: colored border kept, tint lifted a touch so it reads on the warm paper, and the icon
-   + label color switched to a darker ink so they clear contrast on a light surface. */
+/* Light mode: tint lifted a touch so it reads on the warm paper, then two deeper values per type, each
+   the dark hue held and lightness dropped. The BORDER could not keep the dark literal: on paper #ece9e0
+   those read 1.15 to 2.49:1, under the 3:1 a boundary needs. --cl-bar clears it, 3.20 to 3.23:1 on
+   paper. The icon + label ink clears 4.5:1 on its OWN tint, the composite it sits on (--acc at 11% over
+   paper, model B): recon 5.07, intel 4.81, vuln 4.82, loot 5.06, defense 4.82. On a grain dot (model C,
+   computed) the floor is 4.38 to 4.63. Two inks rhyme with a token on purpose: recon's is
+   --tp-cyan-ink and loot's is --flag-gold-val, each the same meaning on the same paper. */
 html[data-theme="light"] .sl-markdown-content .cl {
   background: color-mix(in oklab, var(--acc) 11%, transparent);
 }
-html[data-theme="light"] .sl-markdown-content .cl-recon   { --cl-ink: #096577; }
-html[data-theme="light"] .sl-markdown-content .cl-loot    { --cl-ink: #946a00; }
-html[data-theme="light"] .sl-markdown-content .cl-intel   { --cl-ink: #7a27b3; }
-html[data-theme="light"] .sl-markdown-content .cl-defense { --cl-ink: #15803d; }
-html[data-theme="light"] .sl-markdown-content .cl-vuln    { --cl-ink: #c92a2a; }
+html[data-theme="light"] .sl-markdown-content .cl-recon   { --cl-bar: #008f9a; --cl-ink: #08697a; }
+html[data-theme="light"] .sl-markdown-content .cl-loot    { --cl-bar: #a67900; --cl-ink: #7a5a12; }
+html[data-theme="light"] .sl-markdown-content .cl-intel   { --cl-bar: #9174b5; --cl-ink: #715593; }
+html[data-theme="light"] .sl-markdown-content .cl-defense { --cl-bar: #009542; --cl-ink: #006e47; }
+html[data-theme="light"] .sl-markdown-content .cl-vuln    { --cl-bar: #ea368b; --cl-ink: #b70066; }
 
 /* Inline code INSIDE a colored callout harmonizes with that callout's accent instead of fighting it.
    The standalone red chip (red text + warm-red fill) clashes inside a colored callout, worst in a vuln
-   callout in DARK (two saturated reds). Generic across every type: this reads the callout's own --acc
+   callout in DARK (two saturated reds while vuln was red, until 2026-09-28; it is magenta now, and still
+   clashes). Generic across every type: this reads the callout's own --acc
    (and the light --cl-ink) tokens, so recon / loot / intel / defense / vuln each adapt automatically
    with no per-type rule. The fill becomes a soft SAME-accent tint (quiet emphasis that reads as part of
    the callout), the standalone hairline is dropped (transparent), and the text takes the accent: the
@@ -455,7 +470,8 @@ html[data-theme="light"] .sl-markdown-content .cl-vuln    { --cl-ink: #c92a2a; }
 /* --cl-code-ink NAMES the value the rule above describes: "the ink a callout gives to a code-ish
    object inside it". It had two consumers coming (inline code, and the findings rail's column rule)
    and was not a token, only an expression restated per theme, so a second consumer would have had to
-   restate the derivation and the two would drift. Declared on .cl, so it resolves against the SAME
+   restate the derivation and the two would drift. The column rule left it on 2026-09-28 for the
+   border colour (see .findings dt::after); inline code is its one consumer. Declared on .cl, so it resolves against the SAME
    element's per-type --acc / --cl-ink and inherits to anything inside the callout. Per theme, because
    the derivation genuinely differs: dark takes the bright accent directly, light deepens the per-type
    ink 80% toward black for AA at body size (see the note above). */
@@ -484,13 +500,15 @@ html[data-theme="light"] .sl-markdown-content .cl :not(pre) > code {
    rejected too, because it lands on exactly the toggle's weight and only levels the competition.
    PER THEME, AND THE TWO PERCENTAGES DIFFER, because the inputs are not symmetric. Dark leans the bright
    --acc toward bright text, which keeps lightness and chroma. Light leans toward a near-black text, so
-   starting from the already-deepened --cl-code-ink dulled it twice: measured on intel it sat at 0.811 of
-   body contrast where dark sat at 0.669, with 30% less chroma, and read as nearly invisible. Starting
-   from the UNdeepened --cl-ink at 55% lands 0.660 and chroma 0.112 against dark's 0.669 and 0.115, so the
-   two modes finally match. Contrast on the callout tint stays far above AA in both (8.2:1 and higher).
-   What one percentage CANNOT do is equalise the five hues: recon and loot are light colours, so on dark
-   they separate least (ratio 0.92 and 0.86 where intel is 0.67) and on light they separate most. That is
-   a cyan and a yellow behaving like a cyan and a yellow, and per-type tuning would cost ten values. */
+   starting from the already-deepened --cl-code-ink dulled it twice: measured on intel (the violet it wore
+   on 2026-09-14) it sat at 0.811 of body contrast where dark sat at 0.669, with 30% less chroma, and read
+   as nearly invisible. Starting from the UNdeepened --cl-ink at 55% lands 0.660 and chroma 0.112 against
+   dark's 0.669 and 0.115, so the two modes finally match. Contrast on the callout tint stays far above AA
+   in both (8.0:1 and higher, vuln on paper the lowest; recomputed 2026-09-28 for the five voices).
+   What one percentage CANNOT do is equalise the five hues: recon, loot and the lavender intel are light
+   colours, so on dark they separate least (ratio 0.92, 0.86 and 0.79, where vuln is 0.64) and on light
+   they separate most. That is a light colour behaving like a light colour, and per-type tuning would cost
+   ten values. */
 html[data-theme="dark"] .sl-markdown-content .cl {
   --cl-emph: color-mix(in oklab, var(--acc) 50%, var(--sl-color-text));
 }
@@ -552,8 +570,9 @@ html[data-theme="light"] .sl-markdown-content .cl {
      is the chip's min-content, and break-word never lowers min-content (measured byte-identical to
      this rule at every scale). Capping it with overflow-wrap: anywhere does contain, because
      anywhere is the one value that counts its breaks in min-content, but it contains by breaking
-     the chip mid-token (`80/tcp` as four lines at 320 at root 200%). Under text scaling the rail
-     stacks instead: see the container query below. */
+     the chip mid-token (`80/tcp` as four lines in the root-200% simulation that first motivated
+     this). When the callout is narrower than 12rem the rail stacks instead: see the container query
+     below. */
   grid-template-columns: max-content minmax(0, 1fr);
   /* Chip and description sit on one shared baseline, as they did in inline flow. Without this,
      grid's default `normal` alignment stretches the chip to the row height and tears its box open. */
@@ -601,8 +620,11 @@ html[data-theme="light"] .sl-markdown-content .cl {
    SHORTER than the row, so consecutive rules never meet and each row stays visually separate. It is
    anchored to the chip's centre via the dt's own box, which baseline alignment keeps on the chip, so on
    a wrapped row it stays beside the first line instead of stretching down the description.
-   The colour is the callout's own code ink, so the rule belongs to the callout it sits in and adapts
-   per type and per theme with no rule of its own.
+   The colour is the callout's own border colour (--cl-bar on paper, --acc on dark), so the rule and
+   the callout's left edge are one colour in both themes and it adapts per type with no rule of its
+   own. It read --cl-code-ink until 2026-09-28: the same value on dark, but on paper that is the label
+   ink pushed 20% toward black, a near-black line beside a teal border. On the recon tint over paper
+   #008f9a reads 3.11:1 (model B), a separator, so no text bar applies.
    `right: 0` resolves against the dt's PADDING box, so the dt's right padding carries the rule out to
    the track's new right edge rather than squeezing it inward: that padding IS the gutter it sits in. */
 .sl-markdown-content .findings dt::after {
@@ -613,7 +635,7 @@ html[data-theme="light"] .sl-markdown-content .cl {
   margin-top: -0.8em;
   width: var(--findings-rule-width);
   height: 1.6em;
-  background: var(--cl-code-ink);
+  background: var(--cl-bar, var(--acc));
 }
 
 /* Starlight ships dd { margin-top: 4px; padding-left: 16px } and dl { margin-top: 16px } (measured).
@@ -630,34 +652,40 @@ html[data-theme="light"] .sl-markdown-content .cl {
   margin: 0;
 }
 
-/* ── The rail under text scaling: stack, do not squeeze ────────────────────────
+/* ── The rail in a narrow callout: stack, do not squeeze ──────────────────────
    Two side-by-side tracks need the widest chip plus the gutter plus the longest unbreakable run of
-   description, and from about 125% root font size on a 320 phone (150% at 375) that sum no longer
-   fits the callout: the description track collapsed to 0 to 27px and its text painted 54 to 177px
-   outside the callout's panel (measured 2026-09-18 on Forest, Busqueda and Return).
+   description, and when the callout gets narrow that sum no longer fits: the description track
+   collapses and its text paints outside the callout's panel. This rule was first written against a
+   simulation that doubled the root font size on an unchanged viewport; Chrome for Android does not
+   do that (it ignores the OS font size for web content, measured on the device 2026-09-19), and the
+   way a phone reader actually narrows the callout is Chrome page zoom, which divides the viewport
+   while rem stays 16px. The repair is the same under both.
    Removing a track's floor moves the overflow rather than removing it, and a fit-content() cap on
    the chip track works only with overflow-wrap: anywhere, which contains by breaking chips
    mid-token. So below 12rem of rail width the rail becomes one column, chip above and description
    below, with the column rule hidden because there is no column boundary left to mark.
-   This is a CONTAINER query in rem, not a media query, and that is the whole mechanism: the
-   callout's width is fixed by the layout while rem follows the reader's text size, so the query
-   fires exactly when the rail is narrow RELATIVE TO THE TEXT, which is what text scaling does. It
-   never fires at normal size: the narrowest rail on the site is 15.7rem at 320 and the query needs
-   under 12rem, a 59px margin no content can consume. A percentage cap has no such margin: its
-   floor is the widest chip, and a 40% cap sits 1.6 points above binding at 320 today (38% already
-   wraps a chip on Forest and Return at normal size). Measured: fires at 123.07% at 320 and 144.43%
-   at 375 (bisected 2026-09-18; this comment first said 125 and 150), before two-column text leaves
-   the content box at any scale; contained on all three rail pages at 320 and 375 from 100% to 200%,
-   text 24 to 60px inside the panel, no chip ever broken; zero diff at 100% on 78 of 78 full-page
-   fingerprints (three rails and three control pages, eleven widths dark, light at 375 and 1280).
-   A phone claim: at desktop widths under text-only scaling Starlight's rem-sized sidebars leave
-   about a 200px column, the query fires there too and the stacked rail still escapes the panel
-   (21 to 143px at 800 to 1280 at root 200%). container-type on the callout is itself a
-   zero diff: a block in normal flow takes its width from its containing block, so inline-size
-   containment changes nothing it paints. The container is named so that a container added
-   between the callout and the rail later cannot capture the query. The 0.5rem between a
-   description and the next chip is the one design value here: it has to exceed the 0.26rem row
-   gap between a chip and its own description or the pairing stops reading, so about twice it. */
+   This is a CONTAINER query in rem, not a media query: it fires when the rail is narrow RELATIVE TO
+   THE TEXT, which is the condition that breaks the two-column form, whatever narrowed it. It never
+   fires at normal size: the narrowest rail on the site is 15.7rem at 320 and the query needs under
+   12rem, a 59px margin no content can consume. A percentage cap has no such margin: its floor is
+   the widest chip, and a 40% cap sits 1.6 points above binding at 320 today (38% already wraps a
+   chip on Forest and Return at normal size). Measured on the device (2026-09-19): on a 360 phone
+   the rail is two-column at 133% zoom (202px) and stacked at 150% (171px), so it fires between the
+   two, at a viewport of about 260px; on a 411 phone it is stacked at 200% (a 137px rail).
+   Busqueda and Forest are contained at every width measured down to 160px (text past the panel 0,
+   no chip ever broken; Return was not measured); below that the longest unbreakable run no longer
+   fits, and the text passes the panel by 3 to 5px at 137px and 20 to 23px at 119px. Zero diff at
+   100% on 78 of 78 full-page fingerprints (three rails and three control pages, eleven widths dark,
+   light at 375 and 1280). The desktop-width caveat this comment once carried (text-only scaling at
+   800 to 1280 leaving a 200px column) was a simulation state no browser tested produces: on a 1280
+   tablet under zoom the table of contents leaves by 854px and the sidebar by 640px, and the rail
+   stays two-column and contained at 854, 640 and 426px.
+   container-type on the callout is itself a zero diff: a block in normal flow takes its width from
+   its containing block, so inline-size containment changes nothing it paints. The container is
+   named so that a container added between the callout and the rail later cannot capture the query.
+   The 0.5rem between a description and the next chip is the one design value here: it has to
+   exceed the 0.26rem row gap between a chip and its own description or the pairing stops reading,
+   so about twice it. */
 .sl-markdown-content .cl-recon:has(.findings) {
   container: recon-rail / inline-size;
 }

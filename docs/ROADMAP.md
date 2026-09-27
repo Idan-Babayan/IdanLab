@@ -47,8 +47,8 @@
      description column by 14.80px and pushed one Forest row from two lines to three on a phone. Nothing is
      broken (no horizontal overflow, continuation error still 0.00), but whether a narrow screen wants the
      same gutter as a wide one is a taste call, and it is a one-token change. See DECISIONS 2026-07-27.
-     Under text scaling the question no longer arises: below 12rem of rail width the rail stacks to one
-     column (2026-09-18, CORE_SPEC §6 "Narrow-width containment"), so this is about normal size only.
+     Below a viewport of about 260px (Chrome page zoom from 150 percent on a 360 phone) the rail stacks to
+     one column (CORE_SPEC §6 "Narrow-width containment"), so this is about normal size only.
 
   Record each settled value in DECISIONS as its cluster lands, and delete the dial from this item once it
   is settled. Each cluster merges to `main` on its own now, so there is no longer one release holding
@@ -204,29 +204,33 @@
   the gutter at small breakpoints once the 375px rail behavior is settled.
 - [DESIGN] `--ap-fade-w` as an owner-facing knob: decide whether the accent-fade
   width is exposed as a tunable CSS variable or fixed. A convention call, not a bug.
-- [DESIGN] **About practice cards under text scaling.** At root 200% on a 320 screen the platform
-  name in `.practice strong` is clipped by its card: 89px past the viewport for OverTheWire, 85 for
-  HackTheBox; 49 and 45 at 360; 34 and 30 at 375; 19 and 15 at 390; whole from 414 (measured
-  2026-09-18 after the gutter returned; before it, 41, 37, 1px at 360 and whole from 375). The card is
-  260px in a 224px column (`minmax(260px, 1fr)`), the icon and the text sit side by side and the text
-  column is about 96px there, so `min-width: 0` cannot fix it; the fix is structural, the icon above
-  the text below a container width in rem, the recon rail's mechanism.
-- [DESIGN] **Card description under text scaling.** The two-line clamp shows 13 to 26 characters at
-  root 200% on a phone against 50 to 92 at normal size. Decide whether the clamp lifts under scaling
-  (a container query in rem, the rail's mechanism). A phone-specific clamp at normal size was measured
-  and rejected: a 360 phone card already shows as much as a desktop card (CORE_SPEC §6).
-- [DESIGN] **The contact button leaves a 320 viewport by 13px at root 200%** on both marketing pages,
-  after the `@` break: its 1.7rem side padding doubles while `idanlab.dev` cannot break. A padding
-  that does not scale with the text, or a shorter label, is a design call.
-- [DESIGN] **Text scaling on the marketing pages, one session, root 200% only.** Three instances the
-  gutter (2026-09-18) made worse or created, all measured on isolated builds the same day and none with
-  a position taken: (1) the About practice names above; (2) the home hero's primary button leaves a 320
-  viewport by 19.28px (x 48 to 339.28; it started at x=0 before the gutter and fit); (3) the About
-  headed panel's `2.5rem 3rem` padding doubles to 192px of a 224px column, so its two paragraphs run to
-  342.53 against 320 (they ended at 294.53 before). The contact button item above is the same family.
-  Same session, the open question: the About skill grid's `minmax(280px, 1fr)` puts a 280px card in a
-  224px column at 320 and 200%, 8px past the viewport (8px into the gutter at normal size).
-  `minmax(min(280px, 100%), 1fr)` was measured and deliberately not taken: it removes the 8px and
-  changes nothing above 320 at normal size, but the narrower card makes the word problem worse,
-  "Cryptography" overflowing its card by 183px instead of 127 at 320 and 200%. The skill cards want a
-  text answer, not a track answer.
+- [DESIGN] **The landings cut their cards under Chrome page zoom, with no way to scroll.**
+  `body:has(.pi-index) { overflow-x: clip }`, the sideways-scroll fix, turns zoom overflow into lost
+  content: on a 360 phone the writeup cards are cut by 8px at 125 percent (a 288px viewport), 25 at 133,
+  56 at 150, 91 at 175 and 116 at 200, the platform-name box by 5 at 133, 36 at 150, 71 at 175 and 96
+  at 200 while the name text still fits, and nothing scrolls (measured on the device 2026-09-19, both
+  phones agree at equal widths). This is the
+  one below-320 failure inside scope, because silent truncation is a different category from scrolling
+  (DECISIONS 2026-09-19 · The supported floor is a 320px viewport, and the landings' clip is the one
+  exception). Fix shape: move the clip off `body` onto whatever wraps the glow, or let the card grid go
+  below its 280px minimum first; either needs the 320, 375 and 1280 measurement the clip pair got.
+  **Open, owner to decide: do About and home join this exception?** They cut silently too, found after
+  the exception was drawn. The marketing pages' `body { overflow-x: hidden }`, with `html` visible,
+  propagates to the viewport, which clips and offers no scroll: About's skill cards lose 16px at 125
+  percent (288px), 33 at 133, 64 at 150 and 124 at 200, and the practice cards follow from 133; home's
+  platform cards lose 3px at 133 (271px), 34 at 150 and 94 at 200. By the exception's own reasoning
+  they belong with the landings; the device record called them "scrolls" until the recorded `overflow-x`
+  values were read (2026-09-23).
+- [DESIGN] **Below the 320px floor, recorded so nobody rediscovers them, out of scope by the same
+  decision:** the inline PasswordReveal value column starves once its 55px label and 84px Reveal button
+  have taken the row, 71px (four lines) at 288, 23px (two glyphs per line) at 240, 0px (one glyph per
+  line, 788px tall) from 205; the AttackPath meter, a nowrap label beside a 92px bar, sets the writeup's
+  scroll width to 220px, so writeups really scroll sideways (their `body` is `visible`) by 15px at 205
+  and 40 at 180; the mobile table-of-contents toggle spans the header and stretches to that width, 15.8px
+  past at 205 and 40.6 at 180, while on the Bandit pages, which have no meter, it stays within 1px until
+  the page itself scrolls at 119; from 205 the header wordmark's glyphs are cut by its span's
+  `overflow: hidden` with no ellipsis (18px at 205 and 44 at 180 on the Bandit pages and the landings,
+  about 3px on the HackTheBox writeups); the `/secret` terminal's title bar is cut by the terminal's own
+  `overflow-x: hidden` from 288 (its contents overflow the bar by 8px there and 116 at 180; the title
+  text is hidden by 25.5px at 205 and 51 at 180). If the floor decision is ever revisited, these, the
+  landings and About and home above are what a 240 to 288px layout has to answer for.
