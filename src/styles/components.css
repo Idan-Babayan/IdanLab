@@ -470,7 +470,8 @@ html[data-theme="light"] .sl-markdown-content .cl-vuln    { --cl-bar: #ea368b; -
 /* --cl-code-ink NAMES the value the rule above describes: "the ink a callout gives to a code-ish
    object inside it". It had two consumers coming (inline code, and the findings rail's column rule)
    and was not a token, only an expression restated per theme, so a second consumer would have had to
-   restate the derivation and the two would drift. Declared on .cl, so it resolves against the SAME
+   restate the derivation and the two would drift. The column rule left it on 2026-09-28 for the
+   border colour (see .findings dt::after); inline code is its one consumer. Declared on .cl, so it resolves against the SAME
    element's per-type --acc / --cl-ink and inherits to anything inside the callout. Per theme, because
    the derivation genuinely differs: dark takes the bright accent directly, light deepens the per-type
    ink 80% toward black for AA at body size (see the note above). */
@@ -619,8 +620,11 @@ html[data-theme="light"] .sl-markdown-content .cl {
    SHORTER than the row, so consecutive rules never meet and each row stays visually separate. It is
    anchored to the chip's centre via the dt's own box, which baseline alignment keeps on the chip, so on
    a wrapped row it stays beside the first line instead of stretching down the description.
-   The colour is the callout's own code ink, so the rule belongs to the callout it sits in and adapts
-   per type and per theme with no rule of its own.
+   The colour is the callout's own border colour (--cl-bar on paper, --acc on dark), so the rule and
+   the callout's left edge are one colour in both themes and it adapts per type with no rule of its
+   own. It read --cl-code-ink until 2026-09-28: the same value on dark, but on paper that is the label
+   ink pushed 20% toward black, a near-black line beside a teal border. On the recon tint over paper
+   #008f9a reads 3.11:1 (model B), a separator, so no text bar applies.
    `right: 0` resolves against the dt's PADDING box, so the dt's right padding carries the rule out to
    the track's new right edge rather than squeezing it inward: that padding IS the gutter it sits in. */
 .sl-markdown-content .findings dt::after {
@@ -631,7 +635,7 @@ html[data-theme="light"] .sl-markdown-content .cl {
   margin-top: -0.8em;
   width: var(--findings-rule-width);
   height: 1.6em;
-  background: var(--cl-code-ink);
+  background: var(--cl-bar, var(--acc));
 }
 
 /* Starlight ships dd { margin-top: 4px; padding-left: 16px } and dl { margin-top: 16px } (measured).
