@@ -6,6 +6,50 @@
 
 ---
 
+### 2026-09-28 · Callouts speak in five voices, and light mode gets its own border and label
+- **Supersedes in part:** 2026-06-20 · Icon-based tagged callouts (Callout.astro). Only "intel (violet" and
+  "vuln (red" in its Decision, and "vivid border" for light mode: intel and vuln move off the platform hues,
+  and on paper the border reads its own value. The component, the five types, the icons and the dark accents
+  of recon, loot and defense stand.
+- **Supersedes in part:** 2026-07-27 · The recon rail, in three attempts: grid on the list, two components,
+  then a remark transform. Only "One ink, two consumers", for the rule: the column rule now reads the
+  callout's border value, not `--cl-code-ink`. Inline code still reads `--cl-code-ink`; the rest stands.
+- **Decision:** a callout wears a colour the page already owns only when it means the same thing there, never
+  a platform's identity. Recon keeps the site cyan `#41efff` (h3, links and port chips wear it, and the About
+  sidebar dot inherits it) and loot the flag gold `#ffc23d` (credentials are loot). Intel moves from
+  PicoCTF's `#d96bff` to a pale UV lavender, `#ceaafd` (oklch 0.80 0.12 304), told apart from PicoCTF by
+  lightness and chroma (0.14 OKLab). Vuln moves from VulnHub's `#ff5c5c` to `#ff4d9d`, the magenta sudo
+  wears in code blocks (`.ec-cmd-priv`: privilege, the dangerous path), 0.10 from VulnHub. Defense keeps
+  `#22c55e`. Light mode gets a per-type border, `--cl-bar` (recon `#008f9a`, loot `#a67900`, intel
+  `#9174b5`, defense `#009542`, vuln `#ea368b`), and re-solved label inks, `--cl-ink` (`#08697a`,
+  `#7a5a12`, `#715593`, `#006e47`, `#b70066`), each the dark hue held and lightness dropped; recon's ink is
+  `--tp-cyan-ink` and loot's `--flag-gold-val`, the same meaning on the same paper. The recon rail's column
+  rule reads the border value, `var(--cl-bar, var(--acc))`, instead of `--cl-code-ink`.
+- **Why:** intel and vuln were byte-identical to the PicoCTF and VulnHub sidebar dots and badge chips, so on
+  a desktop writeup, and beside the platform chip on those platforms' own writeups, a box's colour made a
+  platform claim it does not mean. Recon's and loot's matches mean the same thing, so they stay. On paper
+  the border was the dark literal, 1.15 to 2.49:1 on `#ece9e0`, under the 3:1 a boundary needs, and three
+  labels missed AA on their own tint (loot 3.87, defense 3.82, vuln 4.04, model B). The column rule was
+  the light label ink pushed 20% toward black, a near-black line beside a teal border.
+- **Rejected:** grey boxes with only vuln coloured (the reading column loses its voice and reads dull, and
+  the warning red would still be VulnHub's); a new hue for every type (what the wheel has left is teal,
+  brass, pink and a red within 0.08 of VulnHub's, and the teal sits 0.034 from `curl` and `nc` in code
+  frames and the brass 0.050 from `nmap`, tighter than any pair the site accepts); intel sharing recon's
+  cyan (the two sit together in nearly every writeup, and two cyan boxes in a row read as one).
+- **Known nearness, taken knowingly:** intel sits 0.046 OKLab from the medium tier violet (the difficulty
+  pips) and 0.049 from the Cryptography chip violet, and every slot farther from both is near white. Vuln
+  sits 0.067 from the hard tier magenta, which no page ships yet. The tightest pair the site accepts
+  elsewhere is 0.069 (the insane tier against the Linux chip).
+- **Open:** OverTheWire's amber is the flag gold's literal on dark, so a loot box still matches the
+  OverTheWire dot. Whether OverTheWire moves is a separate decision, and `--otw-amber` also colours
+  PasswordReveal.
+- **Verified:** production build, green at 67 pages, Busqueda at 1280 in both themes on the preview server:
+  light borders 3.20 to 3.23:1 on paper, labels 4.80 to 5.06:1 on their own tint (model B), code chips in a
+  callout 4.93:1 and up in both themes, dark labels 6.06:1 and up on their tints; bold 8.0:1 and up and the
+  model C floor on a grain dot, 4.38 to 4.63, are computed. The light column rule is `#008f9a`, 3.11:1 on
+  the recon tint.
+- **Status:** Adopted.
+
 ### 2026-09-23 · The AttackPath dossier is one stacked label/value grid, `via` is reserved, and the goal step wears gold
 - **Supersedes in part:** 2026-07-20 · AttackPath production-readiness audit: 8 findings fixed (2 were real
   WCAG AA failures). Only its two completeness claims, "everything else measured clean" in its Decision and
@@ -1675,6 +1719,9 @@
   role, is declared per theme on `.cl` so it resolves against the same element's per-type `--acc` /
   `--cl-ink`, and both consumers read it. Inline code in every callout type keeps its exact computed colour
   in both themes, zero diff, and the rule's colour equals it by construction.
+  **Partly superseded by:** 2026-09-28 · Callouts speak in five voices, and light mode gets its own border
+  and label. The rule no longer reads `--cl-code-ink`: it reads the callout's border value, because on paper
+  the code ink was a near-black line beside a teal border. Inline code remains its one consumer.
 - **Verified:** `npm run build` green at 46 pages at every gate. Chip paint asserted byte-identical across
   sixteen properties on every chip in both themes. Description first-glyph x spread stays 0.00 and the
   375px wrapped-continuation error stays 0.00, both inherited invariants. No motion, no `!important`, no
@@ -3800,6 +3847,9 @@ automatically; no astro.config.mjs edit is needed per writeup.
   (violet, information), vuln (red, warning), defense (green, inline shield SVG since Starlight has none).
   Icons via Starlight's `<Icon>`; colors/border/tint in `custom.css` (`.cl*`), theme-aware (vivid border +
   faint tint, light-mode ink swap for icon/label). Replaced an earlier bracket-tag version.
+  **Partly superseded by:** 2026-09-28 · Callouts speak in five voices, and light mode gets its own border
+  and label. Intel's violet and vuln's red are stale (intel is a lavender, vuln the sudo magenta), and so is
+  the vivid border on light (paper reads its own per-type border). The rest of this entry stays in force.
 - **Why:** semantic, scannable writeup callouts (recon/loot/intel/vuln/defense) without forking Starlight
   admonitions. Applied to `busquedav2.mdx` (the design testbed).
 - **Status:** Adopted.

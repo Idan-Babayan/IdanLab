@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-09-14 (callout emphasis is ink, not weight; Busqueda is the golden standard for HackTheBox writeups and every HTB writeup carries an AttackPath).
+> Last updated: 2026-09-28 (callouts: five voices, intel and vuln off the platform hues, and light mode gets its own border and label per type).
 
 ---
 
@@ -1093,9 +1093,26 @@ are tinted by the difficulty arc or the category ring as the cards' bars, border
 
 ### Tagged callouts (icon-based, `Callout.astro` + `.cl*` in `components.css`)
 Five semantic writeup callouts, each a 3px accent left border + faint tint + a header (icon + UPPERCASE
-label), theme-aware (vivid border, light-mode ink swap on icon/label): recon (cyan, magnifier), loot
-(amber, padlock), intel (violet, information), vuln (red, warning), defense (green, an inline shield SVG
-since Starlight has no shield). Icons via Starlight's `<Icon>`. Authored as `<Callout type="...">` in MDX.
+label): recon (cyan `#41efff`, magnifier), loot (gold `#ffc23d`, padlock), intel (lavender `#ceaafd`,
+information), vuln (magenta `#ff4d9d`, warning), defense (green `#22c55e`, an inline shield SVG since
+Starlight has no shield). Icons via Starlight's `<Icon>`. Authored as `<Callout type="...">` in MDX.
+- **Five voices (2026-09-28).** A callout wears a colour the page already owns only when it means the
+  same thing there, never a platform's identity. Recon takes the site's cyan secondary (h3, links, port
+  chips; the About sidebar dot inherits it too), loot the flag gold (credentials are loot), vuln the magenta
+  sudo wears in code blocks (`.ec-cmd-priv`: privilege, the dangerous path). Intel is the one new hue, a pale
+  UV lavender told apart from PicoCTF's purple by lightness and chroma (0.14 OKLab). Until 2026-09-28 intel
+  wore PicoCTF's `#d96bff` and vuln VulnHub's `#ff5c5c`, byte-identical to their sidebar dots and badge
+  chips. Known nearness, taken knowingly: intel sits 0.046 from the medium tier violet and 0.049 from the
+  Cryptography chip violet (every slot farther from both is near white), and vuln 0.067 from the hard
+  tier magenta, which no page ships yet. Defense keeps its own green.
+- **Light mode has its own border and label per type.** The tint is `--acc` at 11% over paper; the border
+  reads `--cl-bar` and the icon + label `--cl-ink`, both the dark hue held and lightness dropped. The dark
+  literal on paper `#ece9e0` read 1.15 to 2.49:1 as a border; `--cl-bar` reads 3.20 to 3.23:1 there. The
+  label ink reads 4.80 to 5.06:1 on its own tint (model B, measured on the build 2026-09-28; model C floor
+  on a grain dot 4.38 to 4.63, computed). Recon's ink is `--tp-cyan-ink` and loot's `--flag-gold-val`, the
+  same meaning on the same paper. Dark is unchanged apart from the two re-keyed hues. The recon rail's
+  column rule reads the same border value (`var(--cl-bar, var(--acc))`), so the rule and the callout's
+  left edge are one colour in both themes; it read `--cl-code-ink` before, a near-black line on paper.
 
 ### Flag loot gold (User Flag / Root Flag)
 One gold signal across the flag's states via the `--flag-gold` token (`#ffc23d` dark / `#C6A243` light):
@@ -1890,3 +1907,6 @@ whole records.
 - Suppressing the Prev/Next pager beneath the Principle coda ("the silence"): rejected. See DECISIONS 2026-09-03 · The Principle coda keeps the pager, and `principle:` is HackTheBox-only with a build guard.
 - Simulating Android text scaling as a doubled root font size on an unchanged viewport: rejected, Chrome for Android has no such state (it ignores the OS font size for web content and its zoom narrows the viewport). Model phone enlargement as a narrower viewport. See DECISIONS 2026-09-19 · Android text enlargement is Chrome page zoom, not a root font scale.
 - A layout for viewports below 320px (Chrome page zoom past about 110 percent on a 360 phone, 125 on a 411): out of scope, not attempted, with the landings' silent clip the one exception kept in ROADMAP (About and home, which cut the same way, are an open question there). See DECISIONS 2026-09-19 · The supported floor is a 320px viewport, and the landings' clip is the one exception.
+- Grey callouts with only vuln coloured: rejected, the reading column loses its voice and the warning red would still be VulnHub's. See DECISIONS 2026-09-28 · Callouts speak in five voices, and light mode gets its own border and label.
+- A new hue for every callout type: rejected, what the wheel has left lands in the code-frame command colours (teal 0.034 from `curl`, brass 0.050 from `nmap`) and every warning red sits within 0.08 of VulnHub's. See DECISIONS 2026-09-28 · Callouts speak in five voices, and light mode gets its own border and label.
+- Intel sharing recon's cyan: rejected, the two sit together in nearly every writeup and read as one box. See DECISIONS 2026-09-28 · Callouts speak in five voices, and light mode gets its own border and label.
