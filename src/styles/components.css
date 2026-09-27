@@ -392,12 +392,12 @@ html[data-theme="dark"] .port-label {
 
 /* ── Tagged callouts (.cl + Callout.astro) ─────────────────────────────────────
    A reusable callout: a 3px accent left border, a faint accent-tinted background, and a header row
-   of icon + UPPERCASE label in the accent color. Each type sets --acc. Light mode keeps the colored
-   border, lifts the tint so it reads on paper, and swaps the icon + label to a darker ink for
-   legibility. Body text uses the normal content color. Scoped to .sl-markdown-content. */
+   of icon + UPPERCASE label in the accent color. Each type sets --acc. Light mode lifts the tint so
+   it reads on paper and swaps the border (--cl-bar) and the icon + label (--cl-ink) to deeper values
+   of the same hue. Body text uses the normal content color. Scoped to .sl-markdown-content. */
 @layer components {
 .sl-markdown-content .cl {
-  border-left: 3px solid var(--acc);
+  border-left: 3px solid var(--cl-bar, var(--acc));
   background: color-mix(in oklab, var(--acc) 8%, transparent);
   border-radius: 0 9px 9px 0;
   padding: 0.7rem 1.05rem;
@@ -423,27 +423,42 @@ html[data-theme="dark"] .port-label {
 }
 .sl-markdown-content .cl > :last-child { margin-bottom: 0; }
 
-/* Per-type accent (border + icon + label), dark mode. */
+/* Per-type accent (border + icon + label), dark mode. Five voices, and a callout may wear a colour the
+   page already owns only when it means the same thing there, never a platform's identity:
+   - recon: the site's cyan secondary (h3, links, port chips). The About sidebar dot inherits it too.
+   - loot: the flag gold. A box of credentials is loot, the same meaning as the flag.
+   - intel: a pale UV lavender (oklch 0.80 0.12 304), told apart from PicoCTF's purple #d96bff, which it
+     wore until 2026-09-28, by lightness and chroma: 0.14 OKLab from it. It sits 0.046 from the medium
+     tier violet and 0.049 from the Cryptography chip violet; every slot farther from both is near white.
+   - vuln: the magenta sudo wears in code blocks (.ec-cmd-priv in overrides.css), the same meaning
+     (privilege, the dangerous path), off VulnHub's red #ff5c5c, which it wore until 2026-09-28: 0.10.
+   - defense: its own green. */
 .sl-markdown-content .cl-recon   { --acc: #41efff; }
 .sl-markdown-content .cl-loot    { --acc: #ffc23d; }
-.sl-markdown-content .cl-intel   { --acc: #d96bff; }
+.sl-markdown-content .cl-intel   { --acc: #ceaafd; }
 .sl-markdown-content .cl-defense { --acc: #22c55e; }
-.sl-markdown-content .cl-vuln    { --acc: #ff5c5c; }
+.sl-markdown-content .cl-vuln    { --acc: #ff4d9d; }
 
-/* Light mode: colored border kept, tint lifted a touch so it reads on the warm paper, and the icon
-   + label color switched to a darker ink so they clear contrast on a light surface. */
+/* Light mode: tint lifted a touch so it reads on the warm paper, then two deeper values per type, each
+   the dark hue held and lightness dropped. The BORDER could not keep the dark literal: on paper #ece9e0
+   those read 1.15 to 2.49:1, under the 3:1 a boundary needs. --cl-bar clears it, 3.20 to 3.23:1 on
+   paper. The icon + label ink clears 4.5:1 on its OWN tint, the composite it sits on (--acc at 11% over
+   paper, model B): recon 5.07, intel 4.81, vuln 4.82, loot 5.06, defense 4.82. On a grain dot (model C,
+   computed) the floor is 4.38 to 4.63. Two inks rhyme with a token on purpose: recon's is
+   --tp-cyan-ink and loot's is --flag-gold-val, each the same meaning on the same paper. */
 html[data-theme="light"] .sl-markdown-content .cl {
   background: color-mix(in oklab, var(--acc) 11%, transparent);
 }
-html[data-theme="light"] .sl-markdown-content .cl-recon   { --cl-ink: #096577; }
-html[data-theme="light"] .sl-markdown-content .cl-loot    { --cl-ink: #946a00; }
-html[data-theme="light"] .sl-markdown-content .cl-intel   { --cl-ink: #7a27b3; }
-html[data-theme="light"] .sl-markdown-content .cl-defense { --cl-ink: #15803d; }
-html[data-theme="light"] .sl-markdown-content .cl-vuln    { --cl-ink: #c92a2a; }
+html[data-theme="light"] .sl-markdown-content .cl-recon   { --cl-bar: #008f9a; --cl-ink: #08697a; }
+html[data-theme="light"] .sl-markdown-content .cl-loot    { --cl-bar: #a67900; --cl-ink: #7a5a12; }
+html[data-theme="light"] .sl-markdown-content .cl-intel   { --cl-bar: #9174b5; --cl-ink: #715593; }
+html[data-theme="light"] .sl-markdown-content .cl-defense { --cl-bar: #009542; --cl-ink: #006e47; }
+html[data-theme="light"] .sl-markdown-content .cl-vuln    { --cl-bar: #ea368b; --cl-ink: #b70066; }
 
 /* Inline code INSIDE a colored callout harmonizes with that callout's accent instead of fighting it.
    The standalone red chip (red text + warm-red fill) clashes inside a colored callout, worst in a vuln
-   callout in DARK (two saturated reds). Generic across every type: this reads the callout's own --acc
+   callout in DARK (two saturated reds while vuln was red, until 2026-09-28; it is magenta now, and still
+   clashes). Generic across every type: this reads the callout's own --acc
    (and the light --cl-ink) tokens, so recon / loot / intel / defense / vuln each adapt automatically
    with no per-type rule. The fill becomes a soft SAME-accent tint (quiet emphasis that reads as part of
    the callout), the standalone hairline is dropped (transparent), and the text takes the accent: the
@@ -484,13 +499,15 @@ html[data-theme="light"] .sl-markdown-content .cl :not(pre) > code {
    rejected too, because it lands on exactly the toggle's weight and only levels the competition.
    PER THEME, AND THE TWO PERCENTAGES DIFFER, because the inputs are not symmetric. Dark leans the bright
    --acc toward bright text, which keeps lightness and chroma. Light leans toward a near-black text, so
-   starting from the already-deepened --cl-code-ink dulled it twice: measured on intel it sat at 0.811 of
-   body contrast where dark sat at 0.669, with 30% less chroma, and read as nearly invisible. Starting
-   from the UNdeepened --cl-ink at 55% lands 0.660 and chroma 0.112 against dark's 0.669 and 0.115, so the
-   two modes finally match. Contrast on the callout tint stays far above AA in both (8.2:1 and higher).
-   What one percentage CANNOT do is equalise the five hues: recon and loot are light colours, so on dark
-   they separate least (ratio 0.92 and 0.86 where intel is 0.67) and on light they separate most. That is
-   a cyan and a yellow behaving like a cyan and a yellow, and per-type tuning would cost ten values. */
+   starting from the already-deepened --cl-code-ink dulled it twice: measured on intel (the violet it wore
+   on 2026-09-14) it sat at 0.811 of body contrast where dark sat at 0.669, with 30% less chroma, and read
+   as nearly invisible. Starting from the UNdeepened --cl-ink at 55% lands 0.660 and chroma 0.112 against
+   dark's 0.669 and 0.115, so the two modes finally match. Contrast on the callout tint stays far above AA
+   in both (8.0:1 and higher, vuln on paper the lowest; recomputed 2026-09-28 for the five voices).
+   What one percentage CANNOT do is equalise the five hues: recon, loot and the lavender intel are light
+   colours, so on dark they separate least (ratio 0.92, 0.86 and 0.79, where vuln is 0.64) and on light
+   they separate most. That is a light colour behaving like a light colour, and per-type tuning would cost
+   ten values. */
 html[data-theme="dark"] .sl-markdown-content .cl {
   --cl-emph: color-mix(in oklab, var(--acc) 50%, var(--sl-color-text));
 }
