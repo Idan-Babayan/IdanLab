@@ -97,6 +97,7 @@ Full description in CORE_SPEC §5. What a session must not get wrong:
 - **Directory casing must match exactly.** Difficulty folders are lowercase. Starlight matches case-sensitively, so pointing at `hackthebox/Easy` silently drops writeups in `hackthebox/easy/`: the page still builds and stays URL-reachable, it just never appears in the sidebar. Windows hides this, a Linux/Cloudflare build does not, and a case-only rename needs `git mv` (`core.ignorecase=true`).
 - **`@components` alias:** the FUNCTIONAL one is the Vite alias in `astro.config.mjs`. The `tsconfig.json` `paths` entry only satisfies the editor and does not affect the build.
 - **The marketing token block is duplicated** in `index.astro` and `about.astro`. Keep them in sync if you edit one.
+- **Phone text enlargement is Chrome page zoom, a narrower viewport.** Chrome for Android ignores the OS font size for web content (measured on the device 2026-09-19), so model enlargement as a viewport of width divided by zoom, never as a raised root font size. The supported floor is a 320px viewport; below it is out of scope except the landings' silent clip (whether About and home, which clip the same way, join it is open in ROADMAP). CORE_SPEC §6 "What Android does with text" is authoritative.
 
 ## Writeups
 
