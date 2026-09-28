@@ -502,7 +502,8 @@ token is an open ROADMAP item, not a bug.
 
 ### Component inventory (current)
 - Standalone: HUD/nav bar, hero, stats, platform/skill/practice cards, pipeline, contact, footer.
-- Starlight: themed headings (Syne + lime `#` marker), lead blockquote, code frames,
+- Starlight: themed headings (Syne + lime `#` marker, silent to screen readers, §8 "Decoration says
+  nothing to a screen reader"), lead blockquote, code frames,
   Toggle, metadata badges, sidebar dots. (The `:::tip[Answer]` admonition is no longer used: zero
   instances since `FlagCapture` and `PasswordReveal` took over, its prose-layer tint and icon rules
   match nothing, see §7.)
@@ -1833,6 +1834,23 @@ through the CSSOM and watch the sentinel come back) and a poisoned clipboard pro
 copy that silently does nothing reads as a clean pass off stale contents. See DECISIONS 2026-09-12 · A
 closed toggle leaks into the clipboard two ways, and only one is a stylesheet's problem, and 2026-09-12 ·
 The flag is visually hidden, not hidden: clip-rect text and a data attribute both reach the clipboard.
+
+### Decoration says nothing to a screen reader
+
+Generated content is part of an element's accessible name, so a decorative glyph drawn with `content`
+is read aloud with the text it decorates. Until 2026-09-28 every h2 was announced as "# Recon" and every
+toggle as "▶ Host reachability ping". A decorative `content` carries empty alternative text, and the
+plain declaration goes FIRST as the fallback:
+
+```css
+content: "# ";
+content: "# " / "";
+```
+
+A browser that cannot parse the alt form drops that whole declaration, and the build targets browsers
+that predate it (§3, Safari 16.4 and Firefox 114), so without the fallback they would lose the glyph
+instead of keeping it. Lightning CSS keeps both declarations in the build (checked 2026-09-28). The
+heading `#` and the toggle `▶` in `prose.css` follow this; the look is unchanged, pixel for pixel.
 
 ### A pinned size implies a pinned leading
 
