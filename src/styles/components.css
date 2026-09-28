@@ -120,7 +120,7 @@ html[data-theme="dark"] .task-title {
 .writeup-meta .pf-htb  { --wm-c: #b6ff3c; --wm-glow: #9fef00; }
 .writeup-meta .pf-vh   { --wm-c: #ff5c5c; }
 .writeup-meta .pf-pico { --wm-c: #d96bff; }
-.writeup-meta .pf-otw  { --wm-c: #ffc23d; }
+.writeup-meta .pf-otw  { --wm-c: #f2e300; }
 /* Light values solved in OKLCH to clear WCAG AA (4.5:1) for the 12px/600 label on its own composited
    chip fill, targeting ~4.8 for antialiasing margin. Method: hold hue, drop lightness, hold chroma
    where sRGB allows and clamp to the gamut boundary where it does not (dark saturated hues cannot keep
@@ -131,20 +131,23 @@ html[data-theme="dark"] .task-title {
 :root[data-theme="light"] .writeup-meta .pf-htb  { --wm-c: #3a6100; } /* 3.41 -> 4.80, chroma 88% */
 :root[data-theme="light"] .writeup-meta .pf-vh   { --wm-c: #aa0013; } /* 3.35 -> 4.80, chroma 96% */
 :root[data-theme="light"] .writeup-meta .pf-pico { --wm-c: #7a29b1; } /* 3.94 -> 4.85, chroma 100% */
-:root[data-theme="light"] .writeup-meta .pf-otw  { --wm-c: #794e00; } /* 2.97 -> 4.80, chroma 79% (amber browns when darkened) */
+:root[data-theme="light"] .writeup-meta .pf-otw  { --wm-c: #5f5800; } /* 3.47 -> 4.84 on its own fill over paper (B), chroma 84% (yellow turns olive when darkened) */
 
 /* OS: the OS's own identity color. */
 .writeup-meta .wm-os-linux   { --wm-c: #ffa95d; }   /* Tux amber, H60 (his own beak/feet are #FFA63F H65.6 / #E68C3F H57.9) */
 .writeup-meta .wm-os-windows { --wm-c: #4ca3ff; }   /* Windows blue */
 /* Linux is re-hued to H60 in BOTH themes (was dark #f0b429 H82.5 / light #794e00 H73, the latter
-   identical to OverTheWire), moving it into Tux's own amber family (#FFA63F H65.6 / #E68C3F H57.9) and
-   away from OTW's gold. OTW is untouched; the two chips sit adjacent on a Bandit row, so they must read
-   distinct. Dark separates on TWO axes (hue + lightness: OTW L0.85 vs Linux L0.80, plus ~60% more
-   chroma) and already reads distinct at dEOK 0.073. Light had matched lightness, so hue alone carried
-   it at low chroma and it read as one colour (dEOK 0.022). So light DROPS lightness to L0.40 to add the
-   second axis: dEOK 0.065, near dark's, without exceeding it. AA is a floor not a target here; darker
-   only raises contrast (4.85 -> 6.13). Gamut-map chroma (palette-pass method). Dark holds its lightness. */
-:root[data-theme="light"] .writeup-meta .wm-os-linux   { --wm-c: #6b3900; } /* H60, L0.40; 6.13, sep 0.065 vs OTW */
+   identical to the OverTheWire chip of the time), moving it into Tux's own amber family (#FFA63F
+   H65.6 / #E68C3F H57.9). The two chips sit adjacent on every Bandit row, so they must read distinct.
+   The values were set on 2026-07-17 against OverTheWire's amber: dark separated on TWO axes (hue +
+   lightness: amber L0.85 vs Linux L0.80, plus ~60% more chroma than light) at dEOK 0.073, while light
+   had matched lightness, so hue alone carried it at low chroma and it read as one colour (dEOK 0.022).
+   So light DROPS lightness to L0.40 to add the second axis (dEOK 0.065 then, near dark's, without
+   exceeding it). AA is a floor not a target here; darker only raises contrast (4.85 -> 6.13).
+   Gamut-map chroma (palette-pass method). Dark holds its lightness. Since OverTheWire moved to Canary
+   yellow (H104.7) on 2026-09-28 the pair separates by dEOK 0.163 dark and 0.089 light; the Linux
+   values did not change. */
+:root[data-theme="light"] .writeup-meta .wm-os-linux   { --wm-c: #6b3900; } /* H60, L0.40; 6.13, sep 0.089 vs the OverTheWire chip */
 :root[data-theme="light"] .writeup-meta .wm-os-windows { --wm-c: #0053af; } /* 3.85 -> 4.80, chroma 92% */
 
 /* Environment: the feel of the environment. AD enterprise indigo (distinct from Windows blue);
@@ -155,8 +158,8 @@ html[data-theme="dark"] .task-title {
 :root[data-theme="light"] .writeup-meta .wm-env-active-directory { --wm-c: #3b4fa8; } /* 4.85 already AA, unchanged */
 /* Progressive: the wargame ladder (OverTheWire Bandit, Natas...). Teal-leaning "progress/ascent" green,
    pulled toward teal so it stays distinct from HackTheBox's lime brand green and carries a terminal tint
-   that fits the shell-based wargames. OverTheWire's platform color is amber, so this chip effectively
-   never sits beside the HTB green chip anyway. */
+   that fits the shell-based wargames. It renders on OverTheWire rows only, beside the Canary platform
+   chip (dEOK 0.207 dark, 0.095 light), so it effectively never sits beside the HTB green chip anyway. */
 .writeup-meta .wm-env-progressive { --wm-c: #3fd9a8; }
 :root[data-theme="light"] .writeup-meta .wm-env-progressive { --wm-c: #006345; } /* 3.00 -> 4.80, chroma 81% */
 
@@ -741,7 +744,7 @@ html[data-theme="light"] .sl-markdown-content .cl {
    ToggleAll's bulk expand exactly as the old spoiler toggle did, and its summary face and weight come
    from the regular-toggle rule near the top of this file (Geist 600), so the label matches every other
    toggle title rather than carrying a bespoke weight.
-   Amber reads the SHARED --otw-amber / --otw-amber-ink / --pw-amber-rgb tokens, the same ones the inline
+   Amber reads the SHARED --pw-amber / --pw-amber-ink / --pw-amber-rgb tokens, the same ones the inline
    row uses, so the identity has exactly one source: change the token and both modes move together. That
    consolidation is the reason the old class was folded in here. The summary LABEL is body-size text, so
    it reads the ink; the open border is non-text, so it reads the accent.
@@ -755,23 +758,23 @@ html[data-theme="light"] .sl-markdown-content .cl {
   border-color: rgba(var(--pw-amber-rgb), 0.45);
 }
 .sl-markdown-content details.pwreveal-block[open] {
-  border-color: var(--otw-amber);
+  border-color: var(--pw-amber);
 }
 .sl-markdown-content details.pwreveal-block > summary {
-  color: var(--otw-amber-ink);
+  color: var(--pw-amber-ink);
 }
 .sl-markdown-content details.pwreveal-block > summary::before {
   transition: none;
 }
 
 
-/* ── PasswordReveal: wargame waypoint (OverTheWire amber, not gold flag) ───────
-   A wargame password is a waypoint, not a trophy: amber (the OverTheWire / spoiler identity), never
+/* ── PasswordReveal: wargame waypoint (its own amber, not gold flag) ───────────
+   A wargame password is a waypoint, not a trophy: amber (the waypoint and spoiler identity), never
    the gold flag tokens, and NO decode scramble (reserved for FlagCapture, so the flag vs password
    distinction reads). The row is a passive amber card: only .pw-action is interactive. The label and
    value are NON-selectable (copy is the only way to take the value, like FlagCapture), and the value
    is spoiler-blurred until Reveal is clicked (never on hover). Amber comes from the shared identity
-   tokens --otw-amber (accent, #ffc23d dark / #a86f04 light), --otw-amber-ink (the AA text ink, #ffc23d
+   tokens --pw-amber (accent, #ffc23d dark / #a86f04 light), --pw-amber-ink (the AA text ink, #ffc23d
    dark / #7c5000 light) and --pw-amber-rgb (the #f59e0b wash base), which BLOCK mode reads too, so the
    two modes cannot drift apart. The button LABEL is body-size text and reads the ink; its border and
    focus ring are non-text and read the accent. Both themes; light is stronger and more golden. The tokens hold literal values and are declared on the bare :root fallback, so nothing
@@ -849,7 +852,7 @@ html[data-theme="light"] .sl-markdown-content .cl {
   font-family: var(--sl-font-mono);
   font-size: 0.72rem;
   font-weight: 600;
-  color: var(--otw-amber-ink);
+  color: var(--pw-amber-ink);
   background: transparent;
   border: 1px solid rgba(var(--pw-amber-rgb), 0.45);
   border-radius: 6px;
@@ -857,7 +860,7 @@ html[data-theme="light"] .sl-markdown-content .cl {
   cursor: pointer;
 }
 :root[data-theme="light"] .sl-markdown-content .pwreveal .pw-action {
-  /* Only the border differs on paper; the text color comes from the theme-aware --otw-amber-ink token. */
+  /* Only the border differs on paper; the text color comes from the theme-aware --pw-amber-ink token. */
   border-color: rgba(var(--pw-amber-rgb), 0.6);
 }
 @media (prefers-reduced-motion: no-preference) {
@@ -873,7 +876,7 @@ html[data-theme="light"] .sl-markdown-content .cl {
 /* Focus ring routed through the token. A ring is non-text, so it reads the ACCENT rather than the ink:
    it is the control's identity, and it already clears the 3:1 a non-text indicator needs. The shared
    :where(...button...):focus-visible rule draws it, outline following the button's 6px radius. */
-.sl-markdown-content .pwreveal .pw-action { --focus-ring: var(--otw-amber); }
+.sl-markdown-content .pwreveal .pw-action { --focus-ring: var(--pw-amber); }
 .sl-markdown-content .pwreveal .pw-action-ico { width: 15px; height: 15px; flex: none; }
 } /* @layer components */
 @layer components {
