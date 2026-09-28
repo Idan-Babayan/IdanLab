@@ -85,6 +85,8 @@ Service Info: Host: searcher.htb; OS: Linux; CPE: cpe:/o:linux:linux_kernel
 
 </Toggle>
 
+Two ports, and one of them is SSH with no credential to offer it. The web server is the whole attack surface.
+
 <Callout type="recon">
 
 - 22/tcp : OpenSSH 8.9p1 (Ubuntu)
@@ -112,7 +114,7 @@ First, map the hostname in `/etc/hosts`:
 With the name resolving, `searcher.htb` loads. The idea is simple: pick one of a long list of engines, type a query, and the site hands back the search URL for it.
 
 ![Searcher web application: an engine dropdown above a search field, with a Search button and an Auto redirect checkbox](../../../../assets/hackthebox/easy/busqueda/busqueda-1.png)
-*The application: a search box that forwards your query to a chosen engine. Worth asking how it builds that redirect.*
+*The application: a search box that forwards a query to a chosen engine. Worth asking how it builds that redirect.*
 
 I fingerprint the stack three ways: `feroxbuster` for hidden routes, `nikto` for misconfigurations, and `whatweb` for the technology behind the polish.
 
@@ -193,7 +195,7 @@ That version number is the lead. Searchor 2.4.0 has a well-documented arbitrary 
 
 <Callout type="vuln">
 
-Searchor builds its result by calling Python's `eval()` on a string assembled from the query, so a query that closes the expression early can append `__import__('os').system(...)` and run anything. The `query` field is the way in. `engine` goes into the same string, but the app only accepts names Searchor already knows, so `query` is the half that arrives unguarded.
+Searchor builds its result by calling Python's `eval()` on a string assembled from the query, so a query that closes the expression early can append `__import__('os').system(...)` and run anything. The `query` field is the way in. `engine` goes into the same string, but the app only accepts names Searchor already knows, so it is the query that arrives unguarded.
 
 </Callout>
 
@@ -319,11 +321,11 @@ As `cody`, I see exactly one repository, `Searcher_site`, which is the code I al
 
 <Callout type="loot">
 
-- `cody` : `jh1usoih2bkjaspwe92` (Gitea remote, reused by `svc`)
+- `cody` : `jh1usoih2bkjaspwe92` (Gitea remote, worth trying elsewhere)
 
 </Callout>
 
-That reuse is worth testing before anything else. The foothold shell has no TTY, so `sudo` has nowhere to prompt for a password. SSH gives me the real terminal, and cody's password is svc's too.
+Elsewhere starts with the account I already have. The foothold shell has no TTY, so `sudo` has nowhere to prompt for a password. SSH gives me the real terminal, and cody's password is svc's too.
 
 <Toggle label="Reusing the password <code>ssh</code>">
 
@@ -489,10 +491,10 @@ The whole path in one breath: Searchor 2.4.0 evaluates whatever I type into the 
   title="Attack Path · searcher.htb"
   nodes={[
     { kind: 'Web', name: 'Searcher', detail: [ { k: 'port', v: '<code>80/tcp</code> Apache fronting a Flask app' }, { k: 'flaw', v: 'Searchor 2.4.0 passes the query to <code>eval()</code>' } ] },
-    { kind: 'User', name: 'svc', edge: '<b>eval()</b> injection', detail: [ { k: 'shell', v: 'reverse shell landing in <code>/var/www/app</code>' }, { k: 'flag', v: 'user.txt in <code>/home/svc</code>' } ] },
+    { kind: 'User', name: 'svc', edge: '<b>eval()</b> injection', detail: [ { k: 'shell', v: 'reverse shell landing in <code>/var/www/app</code>' }, { k: 'flag', v: '<code>user.txt</code> in <code>/home/svc</code>' } ] },
     { kind: 'Account', name: 'cody (Gitea)', edge: 'leaks <b>.git/config</b>', detail: [ { k: 'reuse', v: 'the same password logs <code>svc</code> in over SSH' }, { k: 'sees', v: 'only <code>cody/Searcher_site</code>, never <code>scripts</code>' } ] },
     { kind: 'Account', name: 'administrator', edge: 'reuses the <b>DB password</b>', detail: [ { k: 'source', v: 'svc runs <code>docker-inspect</code> as root' }, { k: 'opens', v: 'the private <code>administrator/scripts</code> repo' } ] },
-    { kind: 'Root', name: 'root', edge: '<b>relative-path hijack</b>', detail: [ { k: 'flaw', v: '<code>full-checkup</code> runs <code>./full-checkup.sh</code>' }, { k: 'flag', v: 'root.txt' } ] },
+    { kind: 'Root', name: 'root', edge: '<b>relative-path hijack</b>', detail: [ { k: 'flaw', v: '<code>full-checkup</code> runs <code>./full-checkup.sh</code>' }, { k: 'flag', v: '<code>root.txt</code>' } ] },
   ]}
 />
 
@@ -502,7 +504,7 @@ The whole path in one breath: Searchor 2.4.0 evaluates whatever I type into the 
 
 Three lessons, one per stage of the chain:
 
-1. **`eval()` on user input is the original sin.** Searchor's command injection existed because it evaluated a string built from the query. A blocklist would not have saved it: the fix is to never let untrusted text reach an evaluator.
+1. **eval() on user input is the original sin.** Searchor's command injection existed because it evaluated a string built from the query. A blocklist would not have saved it: the fix is to never let untrusted text reach an evaluator.
 2. **Credential reuse turns a single leak into a cascade.** The password found in `.git/config` also worked for `svc` over SSH, and the Gitea database password also worked for `administrator`. A single secret that travels between accounts collapses every boundary it touches.
 3. **A relative path under sudo is a straightforward privilege escalation.** `system-checkup.py` called `./full-checkup.sh` instead of an absolute path, and `secure_path` does not cover paths a script constructs for itself. Privileged programs should call helpers by absolute path and pin their working directory.
 
