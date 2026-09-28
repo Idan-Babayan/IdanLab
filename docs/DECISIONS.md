@@ -44,9 +44,10 @@
   `--otw-amber` / `--otw-amber-ink` become `--pw-amber` / `--pw-amber-ink` (`#ffc23d` and `#ffc23d` dark,
   `#a86f04` and `#7c5000` light), and `--pw-amber-rgb` is unchanged. The waypoint and the trophy
   (PasswordReveal in both modes; FlagCapture, the flag headings and TOC entries, the loot callout) keep
-  their values byte-identical in both themes, because they share one idea, the secret the reader finds,
-  and it was the platform that borrowed their colour (owner call). About's OSINT & Recon skill card shared
-  the OverTheWire practice card's class, so it moves to Canary with it (owner call).
+  their values byte-identical in both themes, because they share one idea and one goal, a secret or reward
+  the reader captures, and it was the platform that borrowed their colour (owner call). About's OSINT &
+  Recon skill card shared the OverTheWire practice card's class, so it moves to Canary with it (owner
+  call).
 - **Why:** on dark the platform was byte-identical to the flag gold, so the OverTheWire dot, chip and
   landing read as loot, and a loot callout matched the OverTheWire dot (left open by 2026-09-28 · Callouts
   speak in five voices, and light mode gets its own border and label). OverTheWire has no brand colour of
@@ -54,9 +55,9 @@
   H104.7: 0.091 from the gold and 0.094 from HackTheBox's lime on dark. The Linux chip beside it on every
   Bandit row separates better too, 0.073 to 0.163 on dark and 0.065 to 0.089 on light.
 - **Rejected:** Mustard `#f3c500` (0.032 from the gold, the same collision); Citrine `#dfdd00` (leans green,
-  0.092 from HackTheBox's lime); orange `#fb7e22` (rejected on fit; it would also sit 0.095 from both
-  VulnHub's red and the Linux chip); moving the waypoint or the trophy with the platform (they are one idea
-  and keep it).
+  0.092 from HackTheBox's lime); orange `#fb7e22` (tested and rejected; it would also sit 0.095 from both
+  VulnHub's red and the Linux chip); moving the waypoint or the trophy with the platform (they share one
+  idea and one goal, a secret or reward the reader captures, and keep their colour).
 - **Accepted trade-offs:** in light, the chip and ink sit 0.027 and 0.036 from nmap's light code colour, a
   code token, which matters far less for a platform chip. The light sidebar dot reads 1.15:1 on the rail
   (model A), with HackTheBox's lime already at 1.04; the dots stay one literal in both themes by design.

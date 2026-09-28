@@ -1979,5 +1979,5 @@ whole records.
 - Intel sharing recon's cyan: rejected, the two sit together in nearly every writeup and read as one box. See DECISIONS 2026-09-28 · Callouts speak in five voices, and light mode gets its own border and label.
 - A warmer or darker yellow for OverTheWire, Mustard `#f3c500` among them: rejected, every one lands 0.02 to 0.06 from the flag gold, the collision the move exists to end. See DECISIONS 2026-09-28 · OverTheWire moves to Canary yellow, and the amber stays with PasswordReveal.
 - Citrine `#dfdd00` for OverTheWire: rejected, it leans green, toward HackTheBox's lime. See DECISIONS 2026-09-28 · OverTheWire moves to Canary yellow, and the amber stays with PasswordReveal.
-- Orange `#fb7e22` for OverTheWire: rejected on fit. See DECISIONS 2026-09-28 · OverTheWire moves to Canary yellow, and the amber stays with PasswordReveal.
-- Moving PasswordReveal's amber or the flag gold along with OverTheWire: rejected, the waypoint and the trophy are one idea and keep their values. See DECISIONS 2026-09-28 · OverTheWire moves to Canary yellow, and the amber stays with PasswordReveal.
+- Orange `#fb7e22` for OverTheWire: tested and rejected. See DECISIONS 2026-09-28 · OverTheWire moves to Canary yellow, and the amber stays with PasswordReveal.
+- Moving PasswordReveal's amber or the flag gold along with OverTheWire: rejected, the waypoint and the trophy share one idea and one goal, a secret or reward the reader captures, and keep their values. See DECISIONS 2026-09-28 · OverTheWire moves to Canary yellow, and the amber stays with PasswordReveal.
