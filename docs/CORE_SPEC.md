@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-09-28 (callouts: five voices, intel and vuln off the platform hues, and light mode gets its own border and label per type).
+> Last updated: 2026-09-28 (callouts: five voices, intel and vuln off the platform hues, and light mode gets its own border and label per type; decorative markers are silent to screen readers; focus rings on the flag buttons and the image zoom control).
 
 ---
 
@@ -443,7 +443,7 @@ ring echoes what the element is rather than inventing an identity. Everything el
 | --- | --- |
 | `WriteupCard` (`.wc-card`) | `--tx` (its GROUP's hue, the same as its bar, hover border, glare, pips and rail pill; 2026-09-07; `--pf-accent` is the fallback for a slug with no `.tx-*` rule) |
 | The 4 platform sidebar groups | positional `nth-child`, theme-aware (HTB lime, VulnHub red, PicoCTF purple, OTW amber) |
-| `FlagCapture` / `PasswordReveal` | gold `color-mix(--fc-id)` / amber `var(--otw-amber)` (`#ffc23d` dark, `#a86f04` light). A ring is non-text, so it reads the accent, not the ink |
+| `FlagCapture` / `PasswordReveal` | gold: dark `color-mix(--fc-id)` at 65% (decrypt) and 60% (copy), light `var(--fc-val)` at full strength (2026-09-28, the carve-out below) / amber `var(--otw-amber)` (`#ffc23d` dark, `#a86f04` light). A ring is non-text, so it reads the accent, not the ink |
 | `ToggleAll` | `--pf-accent-2` cyan (its own hover identity; set in the component's scoped style) |
 | TOC entries | the hue of the heading they point to: flags `--flag-gold-val`, h3 cyan, h2/h4+ lime |
 | In-prose links | `--tp-cyan` / `--tp-cyan-ink` |
@@ -455,7 +455,12 @@ ring echoes what the element is rather than inventing an identity. Everything el
 **Light flag gold is the one contrast carve-out.** The decorative `--flag-gold` (`#C6A243`) rings at only
 2.00:1 on paper, under the 3:1 a non-text indicator needs, so the flag ring reads the AA-grade
 `--flag-gold-val` instead (dark is byte-identical `#ffc23d` at 12.39:1; light becomes the deeper antique
-`#7a5a12` at 5.24:1). Identity kept, ratio fixed, width untouched.
+`#7a5a12` at 5.24:1). Identity kept, ratio fixed, width untouched. The FlagCapture decrypt and copy rings
+take the same carve-out on light since 2026-09-28, reading `--fc-val` at full strength (user `#7a5a12`,
+root `#6b4e0e`): their 65% and 60% gold mixes had read 1.53 and 1.47:1 against paper, now 4.98, 5.97 and
+4.87:1 (Busqueda at DPR 2, painted pixels with the grain on, model C). Dark keeps the softened mixes, which
+read 5.42, 5.99 and 4.54:1 against the page. See DECISIONS 2026-09-28 · Focus rings the reader can see on
+the flag buttons and the image zoom control.
 
 **Geometry: the ring is drawn on the focused element, with two deliberate exceptions.**
 
@@ -475,6 +480,19 @@ ring echoes what the element is rather than inventing an identity. Everything el
    had its top edge painted over. The ring is therefore moved to `figure.frame` via
    `:has(> pre:focus-visible)`, which spans header plus pre exactly. **Use `:has()`, never `:focus-within`**
    (that fires on pointer clicks too).
+
+**One backing, not a third exception: the image-zoom control (2026-09-28).** `starlight-image-zoom` clips
+its zoom button to 1px until it takes keyboard focus, then shows a 44px chip over the screenshot's
+top-left corner. The shared ring, 2px outside that chip, is the only ring on the site that lands on author
+content: 1.20:1 against a white capture in dark, 1.02 to 2.73:1 against the terminal captures on paper. The
+ring itself is untouched; while the chip is focused it gains a collar in the page colour,
+`box-shadow: 0 0 0 6px var(--sl-color-bg)` in `components.css`, sized to the 2px offset plus the 2px ring
+plus 2px, so the ring sits on page on both sides as everywhere else: 15.69 to 15.90:1 in dark and 3.94 to
+4.00:1 on paper on all seven Busqueda captures (DPR 2, painted pixels, model C). The chip always showed, so
+focus was never lost, only the ring. **If the shared ring's width or offset ever changes, the 6px changes
+with it.** A negative offset (the ring inside the chip) was rejected: it gives this one ring its own
+geometry, and on paper the olive ring over the chip's translucent paper fill on a dark capture computes to
+2.77:1 (model B, computed, not measured), so it would also need a deeper colour.
 
 **Known behavior, not a bug:** clicking a wide code block DOES show the ring. Chromium matches
 `:focus-visible` on a keyboard-scrollable region even for pointer focus, because arrow keys scroll it.

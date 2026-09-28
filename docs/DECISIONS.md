@@ -6,6 +6,39 @@
 
 ---
 
+### 2026-09-28 · Focus rings the reader can see on the flag buttons and the image zoom control
+- **Supersedes in part:** 2026-07-13 · Site-wide focus-ring token (--focus-ring) on content pages: one
+  color, identity where it exists, lime default. Only the FlagCapture rings on light (the preserved
+  `color-mix(--fc-id 65%/60%)`) and, for those two rings, the Verified bullet's "Every identity ring is
+  legible against its background in both themes": on paper they read 1.53:1 (decrypt) and 1.47:1 (copy).
+  The token, the shared rule and every other ring stand.
+- **Decision:** on light, the FlagCapture decrypt and copy buttons ring in `--fc-val` at full strength (user
+  `#7a5a12`, root `#6b4e0e`), the carve-out the TOC flag ring already takes; dark keeps its softened mixes.
+  The image-zoom control keeps the shared ring exactly and gains a collar behind it while focused,
+  `box-shadow: 0 0 0 6px var(--sl-color-bg)` (the 2px offset plus the 2px ring plus 2px), so the ring sits
+  on page colour on both sides, as it does everywhere else.
+- **Why:** a keyboard reader landing on the flag's Decrypt button on paper saw almost nothing change: the 65%
+  mix lets the paper through, and the decorative gold is only 2.00:1 on paper even solid. The zoom control
+  is the one control whose ring lands on author content: the plugin clips the button to 1px until it takes
+  focus, then shows a 44px chip over the screenshot's corner, and the shared ring 2px outside it sits on
+  the capture's own pixels, 1.20:1 against a white capture in dark and 1.02 to 2.73:1 against the terminal
+  captures on paper. The chip itself always shows, so focus was never lost, only the ring.
+- **Rejected:** the flag identity at full strength on light (`--fc-id`, still 2.00:1 on paper); for the zoom
+  control, a negative outline offset that draws the ring inside the chip (this one ring would take its own
+  geometry, and on paper the olive ring over the chip's translucent fill on a dark capture computes to
+  2.77:1, model B, so it would need a deeper colour too); thickening either ring (the system fixes a ring
+  by its colour, never its width).
+- **Cost:** in dark, a white capture shows a black collar around the focused zoom chip, only while it has
+  keyboard focus. The collar's 6px is coupled to the shared ring's width and offset.
+- **Verified:** production builds before and after, Busqueda at 1280 and DPR 2, both themes, each control
+  focused with `focusVisible`, the ring sampled at its four axis points against the pixels either side of
+  it (painted pixels with the grain on, model C). Zoom control, all seven captures: dark 1.20 to 10.87:1
+  before, 15.69 to 15.90:1 after; light 1.02 to 4.80:1 before, 3.94 to 4.00:1 after. Light flag rings
+  against the page: decrypt 1.53 to 4.98:1 (user) and 1.80 to 5.97:1 (root), copy 1.47 to 4.87:1; the user
+  ring against the flag row's own gold border just inside it reads 2.91:1. Dark flag rings unchanged at
+  5.42, 5.99 and 4.54:1. Build green at 67 pages.
+- **Status:** Adopted.
+
 ### 2026-09-28 · Callouts speak in five voices, and light mode gets its own border and label
 - **Supersedes in part:** 2026-06-20 · Icon-based tagged callouts (Callout.astro). Only "intel (violet" and
   "vuln (red" in its Decision, and "vivid border" for light mode: intel and vuln move off the platform hues,
@@ -2847,6 +2880,10 @@
   + `outline: none` (no ring on mouse click). Code blocks have no `tabindex`, so they are untouched. Every
   identity ring is legible against its background in both themes (bright on the near-black rail, darkened
   values on paper); none needed strengthening. `npm run build` green (45 pages).
+  **Partly superseded by:** 2026-09-28 · Focus rings the reader can see on the flag buttons and the image
+  zoom control. Stale for the two FlagCapture rings on light only: their 65% and 60% gold mixes read 1.53
+  and 1.47:1 against paper, and they now ring `--fc-val` at full strength. The rest of this entry stays in
+  force.
 - **CORRECTED 2026-07-17 ("code blocks have no `tabindex`"):** FALSE. EC core's "Scrollable block tabindex"
   JS module adds `tabindex="0"` + `role="region"` to any `<pre>` that overflows, so wide code blocks DO
   match the shared rule and were ringed all along. It went unnoticed because the module runs on a
