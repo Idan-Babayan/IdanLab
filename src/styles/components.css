@@ -954,6 +954,14 @@ html[data-theme="light"] .sl-markdown-content .cl {
 /* Focus ring routed through the token (gold identity, preserving the 65% mix); drawn by the shared
    :where(...button...):focus-visible rule, outline following the button's inherited radius. */
 .sl-markdown-content .flagcap-btn { --focus-ring: color-mix(in oklab, var(--fc-id) 65%, transparent); }
+/* Light rings the AA value gold at full strength instead. On paper the 65% mix lets the paper through,
+   and the decorative gold is faint on paper even solid (2.00:1, see the TOC flag ring in chrome.css):
+   the ring read 1.53:1 against the page beside it (measured 2026-09-28 on Busqueda at DPR 2, painted
+   pixels with the grain on, model C), so a keyboard reader landing on the one control that hides a
+   spoiler saw nothing change. --fc-val is the gold the flag VALUE already wears (user #7a5a12, root
+   #6b4e0e), the TOC flag ring's answer: 4.98:1 (user) and 5.97:1 (root) against the page, same method.
+   Dark keeps its softened mix: there it reads 5.42:1 against the page, a quieter ring that works. */
+:root[data-theme='light'] .sl-markdown-content .flagcap-btn { --focus-ring: var(--fc-val); }
 /* Captured: the prize sits there inert (copy is the live control); reserve right space for the copy icon. */
 .flagcap.is-captured .flagcap-btn {
   cursor: default;
@@ -1047,6 +1055,8 @@ html[data-theme="light"] .sl-markdown-content .cl {
 }
 /* Focus ring routed through the token (gold identity, preserving the 60% mix); drawn by the shared rule. */
 .sl-markdown-content .flagcap-copy { --focus-ring: color-mix(in oklab, var(--fc-id) 60%, transparent); }
+/* Light: the value gold at full strength, for the reason given at the decrypt button's ring above. */
+:root[data-theme='light'] .sl-markdown-content .flagcap-copy { --focus-ring: var(--fc-val); }
 .flagcap-copy[hidden] {
   display: none;
 }
@@ -1187,5 +1197,25 @@ html[data-theme="light"] .sl-markdown-content .cl {
   0% { text-shadow: none; }
   35% { text-shadow: 0 0 12px var(--fc-glow-text); }
   100% { text-shadow: none; }
+}
+} /* @layer components */
+
+/* ── Image zoom control (starlight-image-zoom) ─────────────────────────────────
+   The plugin clips its zoom button to 1px until it takes keyboard focus, then shows it as a 44px chip
+   20px in from the screenshot's top-left corner. The shared ring (base.css: 2px, 2px offset) is drawn
+   OUTSIDE that chip, so unlike every other ring on the site it lands on author content the CSS cannot
+   know: on Busqueda's white captures the lime ring read 1.20:1 against the pixels either side of it, and
+   on paper the olive ring read 1.02 to 2.73:1 on the dark terminal captures (measured 2026-09-28 at
+   DPR 2, painted pixels with the grain on, model C). With the collar it reads 15.69 to 15.90:1 on dark
+   and 3.94 to 4.00:1 on paper on all seven captures, the same as against the page anywhere else.
+   The chip itself stays visible, a dark disc on white and a pale one on a terminal, so focus was never
+   lost, only the ring.
+   The collar gives the ring back its usual surroundings: a box-shadow in the page colour, spread to the
+   offset plus the ring width plus 2px (2 + 2 + 2), so the ring sits on page on both sides, as it does
+   everywhere else. The ring's own width, offset and colour stay the shared rule's; the collar exists only
+   while the chip is focused, which is the only time the chip exists at all. */
+@layer components {
+.sl-markdown-content .starlight-image-zoom-control:focus-visible {
+  box-shadow: 0 0 0 6px var(--sl-color-bg);
 }
 } /* @layer components */
