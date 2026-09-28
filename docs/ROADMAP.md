@@ -194,9 +194,6 @@
 - [ENG] Command-highlighting residual risk: an OUTPUT line whose first word is exactly a listed command
   (e.g. `ls: cannot access`) can be mis-tagged. Rare; documented in `ec-priv-command.mjs` (EC 0.42
   exposes no token scopes, so strings/comments cannot be skipped by scope).
-- [DESIGN/A11Y] OverTheWire `.pi-name` fails contrast at 3.41:1 (needs 4.5:1 for
-  normal text, 3:1 for large). Platform landing name color. Real accessibility
-  defect, not cosmetic. Decide a compliant color that holds the platform identity.
 - [DESIGN] Right rail mobile layout at 375px: unresolved how the TOC rail behaves
   at the narrow breakpoint. Needs a real-device or 375px-viewport decision, paired
   with the narrow-screen gutter call below.

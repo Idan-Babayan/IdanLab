@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-09-28 (callouts: five voices, intel and vuln off the platform hues, and light mode gets its own border and label per type; decorative markers are silent to screen readers; focus rings on the flag buttons and the image zoom control).
+> Last updated: 2026-09-29 (OverTheWire's platform colour moves from amber to Canary yellow, and the amber stays with PasswordReveal as `--pw-amber` / `--pw-amber-ink`).
 
 ---
 
@@ -248,7 +248,7 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 │  ├─ components/
 │  │  ├─ Toggle.astro                 # <details class="toggle"> wrapper; flag prop adds .toggle-flag; renders MDX (incl. code) in slot
 │  │  ├─ FlagCapture.astro            # "Decrypt to Capture" gold flag control (props: type user|root, flag); replaces the heading-plus-duplicate flag Toggle
-│  │  ├─ PasswordReveal.astro         # amber wargame secret waypoint, TWO modes derived from the slot: INLINE (prop: password) blur-to-reveal then copy-in-place, BLOCK (slot content + prop: label) collapses a multi-line secret as a <details class="toggle pwreveal-block">, no copy button. Both wear one amber (--otw-amber accent / --otw-amber-ink AA text ink / --pw-amber-rgb wash base). Deliberately distinct from FlagCapture (no gold, no decode animation); replaced the retired .spoiler-toggle class; no per-file import needed, see plugins/remark-inject-passwordreveal.mjs
+│  │  ├─ PasswordReveal.astro         # amber wargame secret waypoint, TWO modes derived from the slot: INLINE (prop: password) blur-to-reveal then copy-in-place, BLOCK (slot content + prop: label) collapses a multi-line secret as a <details class="toggle pwreveal-block">, no copy button. Both wear one amber (--pw-amber accent / --pw-amber-ink AA text ink / --pw-amber-rgb wash base). Deliberately distinct from FlagCapture (no gold, no decode animation); replaced the retired .spoiler-toggle class; no per-file import needed, see plugins/remark-inject-passwordreveal.mjs
 │  │  ├─ ToggleAll.astro              # Expand/Collapse-all control (vanilla TS, scroll-anchored); injected via PageSidebar override
 │  │  ├─ AttackPath.astro             # guided infographic for a LINEAR priv-esc chain (ascending escalating path, SVG connectors, Next-step progression, one-time gold flourish); data-driven from a nodes[] prop, scoped styles, not-content. See DECISIONS 2026-07-19
 │  │  ├─ Callout.astro                # icon-based tagged callout (recon/loot/intel/vuln/defense); .cl styles in components.css
@@ -268,7 +268,7 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 │  └─ styles/                         # the theme pass, split into cascade-layer modules (see §5 "The layer contract")
 │     ├─ layers.css                   # the order statement `@layer starlight, tokens, base, prose, chrome, components, pages, utilities;` plus the cascade contract and the unit rule. First customCss entry
 │     ├─ fonts.css                    # self-hosted @font-face (subset WOFF2: Syne, JetBrains Mono, Geist) + metric-matched fallbacks for each; loaded via customCss and imported by the marketing pages. The one module with no layer statement
-│     ├─ tokens.css                   # @layer tokens: every custom property (surfaces, accents, flag gold, OverTheWire amber pair, the prose/chrome type scale). Also owns the prose/chrome type token block (see §6)
+│     ├─ tokens.css                   # @layer tokens: every custom property (surfaces, accents, flag gold, the PasswordReveal amber pair, the prose/chrome type scale). Also owns the prose/chrome type token block (see §6)
 │     ├─ base.css                     # @layer base: the zero-specificity defaults under everything, today the shared focus ring alone
 │     ├─ prose.css                    # @layer prose: the reading surface inside .sl-markdown-content (type, rhythm, links, quotes, the raw <details> default)
 │     ├─ chrome.css                   # @layer chrome: header, sidebar, TOC, code frames, scrollbars, the three-column layout, light-mode depth
@@ -442,8 +442,8 @@ ring echoes what the element is rather than inventing an identity. Everything el
 | Element | `--focus-ring` |
 | --- | --- |
 | `WriteupCard` (`.wc-card`) | `--tx` (its GROUP's hue, the same as its bar, hover border, glare, pips and rail pill; 2026-09-07; `--pf-accent` is the fallback for a slug with no `.tx-*` rule) |
-| The 4 platform sidebar groups | positional `nth-child`, theme-aware (HTB lime, VulnHub red, PicoCTF purple, OTW amber) |
-| `FlagCapture` / `PasswordReveal` | gold: dark `color-mix(--fc-id)` at 65% (decrypt) and 60% (copy), light `var(--fc-val)` at full strength (2026-09-28, the carve-out below) / amber `var(--otw-amber)` (`#ffc23d` dark, `#a86f04` light). A ring is non-text, so it reads the accent, not the ink |
+| The 4 platform sidebar groups | positional `nth-child`, theme-aware literals (HTB lime, VulnHub red, PicoCTF purple, OTW Canary yellow `#f2e300` dark / `#797100` light, which reads 4.34:1 against the declared light rail, model A, and 4.15:1 on its painted pixels) |
+| `FlagCapture` / `PasswordReveal` | gold: dark `color-mix(--fc-id)` at 65% (decrypt) and 60% (copy), light `var(--fc-val)` at full strength (2026-09-28, the carve-out below) / amber `var(--pw-amber)` (`#ffc23d` dark, `#a86f04` light). A ring is non-text, so it reads the accent, not the ink |
 | `ToggleAll` | `--pf-accent-2` cyan (its own hover identity; set in the component's scoped style) |
 | TOC entries | the hue of the heading they point to: flags `--flag-gold-val`, h3 cyan, h2/h4+ lime |
 | In-prose links | `--tp-cyan` / `--tp-cyan-ink` |
@@ -650,8 +650,17 @@ token is an open ROADMAP item, not a bug.
 - User Approval Required: Introducing a new Starlight component override is a structural architectural change and should be proposed and approved by the user before implementation.
 
 ### Platform palette (canonical, unified 2026-06-01)
-One palette everywhere: HTB **lime**, VulnHub **red**, PicoCTF **purple**, OTW **amber** (used by
-homepage cards, sidebar dots, about-page accents, and writeup badges). The old badge set (blue /
+One palette everywhere: HTB **lime**, VulnHub **red**, PicoCTF **purple**, OTW **Canary yellow** (used
+by homepage cards, sidebar dots, about-page accents, and writeup badges). OverTheWire was **amber**
+(`#ffc23d`) until 2026-09-28, byte-identical to the flag gold, so the platform read as loot. It moved to
+Canary `#f2e300` (OKLCH H104.7, cool enough to sit dEOK 0.091 from the gold and 0.094 from HackTheBox's
+lime on dark), with light values solved by the badge-pass method, hue held: accent `#797100`, ink
+`#615b00`, chip `#5f5800`. Every OverTheWire value is a literal like the other three platforms'; the
+amber stayed with PasswordReveal (see "Password waypoint amber" below). The sidebar dot is `#f2e300` in
+both themes, like every dot, and reads 1.15:1 on the light rail (model A; HackTheBox's lime reads
+1.04), a known trade-off of one literal per dot. The About page's OSINT & Recon skill card shares the
+OverTheWire practice card's class, so it wears Canary too. See DECISIONS 2026-09-28 · OverTheWire moves
+to Canary yellow, and the amber stays with PasswordReveal. The old badge set (blue /
 cyan / violet / orange) is retired, and so is the legacy `.meta-badge` family it lived in (2026-09-07):
 the landing cards render through the WriteupMeta chip model and the taxonomy palettes (below), which
 contain no green, so the Easy-versus-lime collision that a leading glow dot on the `.platform-*` badges
@@ -659,19 +668,22 @@ once patched no longer exists and the dot is gone with the badge. (See DECISIONS
 
 ### Platform ink family (`--pf-ink`, 2026-07-31)
 
-Each platform carries an ACCENT and an INK, the same split the OverTheWire amber established. The
-accent is the identity and is never retinted: it feeds display type that legitimately clears the 3:1
+Each platform carries an ACCENT and an INK, the same split the amber established on 2026-07-26 (it was
+OverTheWire's colour then, and is PasswordReveal's alone since 2026-09-28). The accent is the identity and is never retinted: it feeds display type that legitimately clears the 3:1
 large-text bar, plus roughly eighteen non-text uses. The ink is the text variant, read only by
 body-size type that must clear 4.5:1. Both live in `pages.css` beside each other.
 
 - **Dark declares the ink once**, `--pf-ink: var(--pf-accent)` over the four `.pf-*` classes. Dark has
   no failure anywhere (floor 5.68:1), so ink is accent there, and four repeated hexes would be a fork.
 - **Light values, solved in OKLCH holding hue and dropping lightness:** HackTheBox `#3b6400`, VulnHub
-  `#b60115`, PicoCTF `#7f30b7`, and OverTheWire `var(--otw-amber-ink)` (`#7c5000`, unchanged, and a
-  reference rather than a repeat because that family is a declared shared identity).
-- **The band is 5.75 to 5.76:1**, set by where OverTheWire's existing ink already sat once the hero
-  wash moved, so the other three came up to meet amber and amber did not move. OKLCH lightness spread
-  0.035, and all four land lighter than the `--wm-c` chip already shipping in the same hue.
+  `#b60115`, PicoCTF `#7f30b7`, and OverTheWire `#615b00` (Canary, chroma clamped at the gamut edge like
+  HackTheBox's). All four are literals. Until 2026-09-28 OverTheWire's ink read the amber's text token
+  (`#7c5000`), a declared shared identity with PasswordReveal that ended when the platform left amber.
+- **The band is 5.75 to 5.76:1 on bare paper (model A)**, set on 2026-07-31 by where OverTheWire's amber
+  ink already sat once the hero wash moved, so the other three came up to meet it. The Canary ink was
+  solved into the same band: 5.76 on bare paper, 5.62 to 5.70 on the eyebrow's real backdrop (model B,
+  measured 2026-09-28). OKLCH lightness spread 0.035, and all four land lighter than the `--wm-c` chip
+  already shipping in the same hue.
 - **Consumers:** `.pi-eyebrow`, inside `PlatformIndex.astro`'s scoped style via a local `--accent-ink`
   alias, and `WriteupCard`'s `.wc-platform` word on the future mixed grid. The ALL filter pill stopped
   reading the ink on 2026-09-07: it is a neutral control now (Starlight's gray-2), not a platform-coloured
@@ -690,46 +702,50 @@ its monochrome icon (via `currentColor`), border (38%), fill (`color-mix(--wm-c 
 i.e. 15% identity over 85% surface), glow, and focus ring. There is deliberately NO separate text/ink
 token (unlike `--flag-gold` / `--flag-gold-val`): everything `--wm-c` paints wants to move together.
 - **Per-value hues:** platform = the canonical `--pf-accent` (HTB lime, VulnHub red, PicoCTF purple, OTW
-  amber); OS/Env = identity colours (Windows blue, AD indigo, Standalone slate, Progressive teal, Linux
+  Canary yellow); OS/Env = identity colours (Windows blue, AD indigo, Standalone slate, Progressive teal, Linux
   a Tux amber). Dark values live on unprefixed selectors, light under `:root[data-theme='light']`.
 - **Light labels are solved to WCAG AA, not eyeballed.** Each 12px/600 label must clear 4.5:1 on its own
   composited fill (over paper `#ece9e0`, no card); the light values are solved in OKLCH by holding hue,
   dropping lightness to ~4.8:1 (antialiasing margin), and holding chroma where sRGB allows / clamping to
   the gamut boundary where it does not. Hue is NEVER shifted to reach AA and chroma is never dropped as a
   shortcut (the §6 "chroma not contrast" lesson in reverse). Dark already passed everywhere and is
-  untouched. **Amber is the structural worst case:** its sRGB gamut collapses as it darkens, so amber
-  keeps only ~79% of its chroma at AA vs 88 to 100% for other hues; that loss is the price of AA itself,
+  untouched. **Yellow and amber are the structural worst cases:** their sRGB gamut collapses as they
+  darken, so the OverTheWire chip keeps 84% of its chroma at AA (Canary `#5f5800`; the amber it replaced
+  on 2026-09-28 kept 79%) vs 88 to 100% for the other platform hues; that loss is the price of AA itself,
   not a solver limit. See DECISIONS 2026-07-17.
 - **`--wm-glow`** is set only where it earns its keep: the DARK `pf-htb --wm-glow` (`#9fef00`) holds HTB's
   true brand green while the label carries palette lime. No light `--wm-glow` exists (the light glows read
   `--wm-c` directly, so one would never render).
-- **Linux vs OverTheWire (two ambers, adjacent on a Bandit row):** the Linux OS chip is re-hued to OKLCH
-  H60 in BOTH themes (Tux's own beak/feet family, `#FFA63F` H65.6 / `#E68C3F` H57.9) so it never shares
-  OTW's gold. Because light separates on fewer axes than dark, the Linux light value is also DEEPENED to
-  L0.40: dark already separated on hue AND lightness, but light had matched lightness, so hue alone at low
-  chroma did not read. Deepening restores the second axis (separation dEOK 0.065 light / 0.073 dark). The
-  finding: an amber slot CAN hold two identities on paper, but only separating on lightness as well as hue.
-- **The `#a86f04` fork, now six-way (was seven):** OTW, Linux, `.platform-overthewire`, `.pf-overthewire`,
-  the sidebar focus ring, the spoiler toggle and PasswordReveal independently used the same light amber. They
-  are semantically unrelated ambers that coincided on a hex, NOT a shared token, so they stay forked (the
-  2026-07-17 pass moved the two badge ambers off it). Two of those users have since MERGED, legitimately:
-  the spoiler toggle became PasswordReveal's block mode and both now read one shared token (2026-07-25),
-  which is a real shared identity rather than a coincidence, so it is one entry.
-  **Resolved for the OverTheWire family 2026-07-26:** that shared token became the
-  `--otw-amber` / `--otw-amber-ink` pair, and the sidebar focus ring was routed onto the accent, so the
-  PasswordReveal row, its block mode, the platform-index eyebrow and the rail ring are now ONE identity
-  with a text variant. **CORRECTED 2026-07-31:** those figures were measured against bare paper for a
-  surface that carries the hero wash, so they were never true of the elements they named. On the real
-  composite the eyebrow read 4.79:1, not 5.76, and `.pi-name` read 3.05:1, not 3.50. `.pf-overthewire`'s
-  display-size type (`.pi-name`, `.pi-num`) still keeps the accent deliberately at the 3:1 large-text
-  bar, and after the wash move reads 3.41 and 3.50. `.platform-overthewire` remains moot (it styles
-  nothing since `.machine-meta` retired), and the Linux badge amber stays forked, correctly: it is a
-  different identity that merely shares a hex.
+- **Linux vs OverTheWire (adjacent on every Bandit row):** the Linux OS chip is re-hued to OKLCH H60 in
+  BOTH themes (Tux's own beak/feet family, `#FFA63F` H65.6 / `#E68C3F` H57.9), and its light value is
+  also DEEPENED to L0.40. Both were set on 2026-07-17, when OverTheWire was still amber and the pair was
+  two ambers: dark already separated on hue AND lightness, but light had matched lightness, so hue alone
+  at low chroma did not read, and deepening restored the second axis (dEOK 0.065 light / 0.073 dark
+  then). The finding: an amber slot CAN hold two identities on paper, but only separating on lightness
+  as well as hue. Since OverTheWire moved to Canary (2026-09-28) the pair separates by 0.163 dark and
+  0.089 light with the Linux values unchanged, and the Progressive chip on the same row sits 0.207 dark
+  and 0.095 light from the Canary chip.
+- **The `#a86f04` fork is closed (2026-09-28).** Seven users once shared the light amber `#a86f04` by
+  coincidence of hex rather than through a token: OTW, Linux, `.platform-overthewire`, `.pf-overthewire`,
+  the sidebar focus ring, the spoiler toggle and PasswordReveal. The 2026-07-17 pass moved the two badge
+  ambers off it. The spoiler toggle became PasswordReveal's block mode (2026-07-25), and PasswordReveal,
+  the platform-index eyebrow and the rail ring became one `--otw-amber` / `--otw-amber-ink` pair
+  (2026-07-26), each a real shared identity rather than a coincidence. `.platform-overthewire` was
+  deleted with the legacy badge family (2026-09-07). On 2026-09-28 the OverTheWire platform moved to
+  Canary literals and the pair, renamed `--pw-amber` / `--pw-amber-ink`, stayed with PasswordReveal, so
+  `#a86f04` now has one home: the light `--pw-amber`.
+  **CORRECTED 2026-07-31:** the 2026-07-26 figures were measured against bare paper for a surface that
+  carries the hero wash, so they were never true of the elements they named. On the real composite the
+  eyebrow read 4.79:1, not 5.76, and `.pi-name` read 3.05:1, not 3.50.
   **RESOLVED 2026-07-31 (Cluster F), and it was four platforms rather than two:** measured against the
   true composite, every platform-index eyebrow failed on paper, HackTheBox 3.36, VulnHub 3.05, PicoCTF
   3.59 and OverTheWire 4.79 (the last passing only after the wash moved). PicoCTF had been recorded
   three times as passing at 4.86. All four now read a per-platform `--pf-ink` at 5.75 to 5.76. See the
-  "Platform ink family" block below and DECISIONS 2026-07-31.
+  "Platform ink family" block above and DECISIONS 2026-07-31.
+  **OverTheWire's display type** (`.pi-name`, `.pi-num`) keeps the accent deliberately, at the 3:1
+  large-text bar. The amber read 3.41 and 3.50 there after the wash move; the Canary accent reads 3.92
+  to 4.11 and 4.05 to 4.11 on the hero composite (model B, measured 2026-09-28), with per-pixel floors
+  of 3.56 and 3.67 under a grain dot (model C).
 
 ### Taxonomy palettes: a four-step difficulty arc and a six-hue category ring (2026-09-07)
 
@@ -752,8 +768,8 @@ its own arc).
   `--tier-insane` `#ff8d65` / `#973100` (orange): four hues on one short arc of the wheel (240, 300,
   345, 40) with temperature and saturation rising with the rating, the sunset-gradient reading that
   carries a progression without a single-hue ramp and without the traffic light's green, yellow or red
-  seats (the yellow seat is taken on this site in both themes: gold on dark, the gold value ink and the
-  Linux chip on light). The CATEGORY RING, `--tx-blue` `#6ec4ff` / `#045077`, `--tx-teal` `#54d5ab` /
+  seats (the yellow seat is taken on this site in both themes: OverTheWire's Canary since 2026-09-28,
+  gold on dark, the gold value ink and the Linux chip on light). The CATEGORY RING, `--tx-blue` `#6ec4ff` / `#045077`, `--tx-teal` `#54d5ab` /
   `#02553f`, `--tx-orange` `#e57f4f` / `#8c3d12`, `--tx-rose` `#fa96c3` / `#88375f`, `--tx-coral`
   `#fe8b83` / `#832323`, `--tx-violet` `#adb3ff` / `#4c4d99`, read by PicoCTF's categories only.
   Ring dark values sit at OKLCH L 0.79 (orange 0.70 and coral 0.76, a lightness axis against the Linux
@@ -773,17 +789,19 @@ its own arc).
 - **Neither palette contains a reserved hue:** no lime (HackTheBox, the site accent), no cyan (the
   secondary), no purple (PicoCTF; the arc's violet is h300, 0.109 dark and 0.086 light from the PicoCTF
   sidebar dot, the only purple a HackTheBox page shows), no red (VulnHub; the arc's orange is 0.097
-  dark and 0.119 light from its dot), and no gold or amber at all, because gold is the flag-loot signal
-  and amber the OverTheWire identity. Every hue sits at least dEOK 0.065 (the Linux/OverTheWire floor)
-  from every chip and accent it can meet on a page; the arc's tightest seats are Insane against the
+  dark and 0.119 light from its dot), no yellow (OverTheWire's Canary since 2026-09-28; every hue in
+  both palettes sits at least 0.207 from its sidebar dot), and no gold or amber at all, because gold is
+  the flag-loot signal and amber the PasswordReveal waypoint. Every hue sits at least dEOK 0.065 (the
+  Linux/OverTheWire floor when the palettes shipped) from every chip and accent it can meet on a page; the arc's tightest seats are Insane against the
   Linux chip (0.069 dark, 0.090 light), Easy against Standalone (0.071 light) and Medium against the
   Active Directory chip (0.077 light, 0.092 dark), and its adjacent steps sit 0.133 to 0.158 apart on
   dark and 0.123 to 0.147 on light. Four kinships are recorded and deliberately unfixed because the pairs
-  never share a page: ring teal against the Progressive chip (0.016 dark; Progressive renders on
+  share no page today: ring teal against the Progressive chip (0.016 dark; Progressive renders on
   OverTheWire rows only), ring violet against the Active Directory chip (0.033; AD renders on HackTheBox
-  rows only, ring violet on PicoCTF), ring orange against the light OverTheWire ink (0.057; ring orange
-  is Reverse Engineering, which has no writeup), and the arc's orange against the ring's (0.061; Insane
-  on machine pages, Reverse Engineering on PicoCTF).
+  rows only, ring violet on PicoCTF), ring orange against the waypoint amber's light ink
+  (`--pw-amber-ink`, 0.057; ring orange is Reverse Engineering, which has no writeup yet, and a PicoCTF
+  flag is a PasswordReveal, so the first one will put the pair on one page), and the arc's orange
+  against the ring's (0.061; Insane on machine pages, Reverse Engineering on PicoCTF).
 - **Two vocabularies, ten classes in `components.css`** (`.tx-easy` `--tier-easy`, `.tx-medium`
   `--tier-medium`, `.tx-hard` `--tier-hard`, `.tx-insane` `--tier-insane`; `.tx-general-skills` teal,
   `.tx-cryptography` violet, `.tx-web-exploitation` blue, `.tx-forensics` coral, `.tx-reverse-engineering`
@@ -1167,21 +1185,30 @@ it holds are truncated for publication (see the private-key truncation rule), so
 over a broken key. This replaced the one-off `.spoiler-toggle` class, which existed only because the inline
 component could not hold a block secret; that class is retired and appears nowhere in `src/`.
 
-**The amber has one source, split into an accent and an ink (2026-07-26):** `--otw-amber` (the identity;
-non-text only: borders, focus rings, bars, and display-size type. `#ffc23d` dark / `#a86f04` light),
-`--otw-amber-ink` (the AA text ink for body-size text: `#ffc23d` dark, unchanged, / `#7c5000` light) and
-`--pw-amber-rgb` (the `#f59e0b` wash base, consumed as `rgba(var(--pw-amber-rgb), alpha)` for tints and
-hairlines). The pair supersedes the single `--pw-amber`, which could not serve both jobs on paper: it
-failed AA as body text on every surface it landed on (3.21:1 on the PasswordReveal row, 3.64:1 on the
+**The amber has one source, split into an accent and an ink (2026-07-26):** `--pw-amber` (the identity;
+non-text only: borders and focus rings. `#ffc23d` dark / `#a86f04` light), `--pw-amber-ink` (the AA text
+ink for body-size text: `#ffc23d` dark, unchanged, / `#7c5000` light) and `--pw-amber-rgb` (the
+`#f59e0b` wash base, consumed as `rgba(var(--pw-amber-rgb), alpha)` for tints and hairlines). Before
+2026-07-26 the family was one value, also named `--pw-amber`, which could not serve both jobs on paper:
+it failed AA as body text on every surface it landed on (3.21:1 on the PasswordReveal row, 3.64:1 on the
 toggle card, 3.50:1 on bare paper, and 3.05:1 on the platform-index hero, which carries the wash and
 which the 2026-07-26 pass did not composite) while being exactly right as a border and ring. Both modes
-read them, so they cannot drift apart. Since 2026-07-31 `--pf-ink` for OverTheWire READS
-`--otw-amber-ink` rather than repeating its hex, so the platform ink and the wargame waypoint amber stay
-one identity by construction. Declared on the bare `:root` fallback as well, per this file's convention, so an absent `data-theme`
+read the pair, so they cannot drift apart. Declared on the bare `:root` fallback as well, per this file's convention, so an absent `data-theme`
 can never leave the var undefined and invalidate every `rgba()` reading it. Custom properties are safe here:
 the failure that once made this block literal-only was `color-mix()` indirection, not the properties
 themselves. `.pwreveal-block`'s two border rules keep the `html[data-theme]` prefix inherited from the
 retired class, and still need it (see the specificity note in the CSS).
+
+**The waypoint is not the platform (2026-09-28).** Until 2026-09-28 the pair was named `--otw-amber` /
+`--otw-amber-ink` and also carried OverTheWire's platform identity: the rail ring read the accent and
+the landing's `--pf-ink` read the ink, while the dot, the chip, the landing accent and the marketing
+cards repeated the same `#ffc23d` as literals, which made the platform byte-identical to the flag gold
+on dark. OverTheWire moved to Canary yellow literals (see "Platform palette" above) and the amber stayed
+here with its exact values, so PasswordReveal is the pair's only reader, on OverTheWire and PicoCTF pages
+alike. On a Bandit page the platform and the waypoint now sit dEOK 0.091 apart on dark; on paper the
+two accents sit 0.081 apart and the platform chip's label 0.056 from the button ink, where the old chip
+had been 0.008 from it. See DECISIONS 2026-09-28 · OverTheWire moves to Canary yellow, and the amber
+stays with PasswordReveal.
 
 The inline mode, unchanged, in detail:
 
@@ -1200,11 +1227,12 @@ label, and the value are all `user-select: none` (copying is the only way to tak
 FlagCapture's captured-value pattern), and the container/value both get `cursor: default` with no `:hover`
 change to filter/cursor/color. The row itself IS a passive amber card (not a neutral hairline frame):
 `--pw-amber-rgb` washes/borders (dark 0.08 fill / 0.4 border, light 0.14 fill / 0.55
-border, stronger and more golden), matching the site's canonical OverTheWire system, the same values the
-retired spoiler class used. The button text/icon is the OTW ink `--otw-amber-ink` (`#ffc23d` dark /
-`#7c5000` light), with a `--pw-amber-rgb` border/hover wash; its focus ring reads the accent `--otw-amber`.
+border, stronger and more golden), the same values the retired spoiler class used. The button text/icon
+reads the ink `--pw-amber-ink` (`#ffc23d` dark / `#7c5000` light), with a `--pw-amber-rgb` border/hover
+wash; its focus ring reads the accent `--pw-amber`.
 The ink was solved against the button's HOVER surface, not its resting one, because hover paints its own
-amber wash under the label and is therefore the worst case (4.78:1 hovered, 5.28:1 at rest). Every value behind those two tokens is a literal hex/rgba
+amber wash under the label and is therefore the worst case (4.78:1 hovered, 5.28:1 at rest). Dark, where
+ink is accent, reads 8.41:1 hovered and 11.06:1 at rest (model B, measured 2026-09-29). Every value behind those two tokens is a literal hex/rgba
 (no `color-mix()` custom-property indirection, after an intermediate token-based pass rendered as a
 neutral/near-black box in practice), deliberately NOT `--flag-gold`. The only motion is the blur-to-clear
 filter transition, gated behind `prefers-reduced-motion: no-preference`; the value's `:hover` rule
@@ -1931,8 +1959,8 @@ whole records.
 - `astro check`, and the `@astrojs/check` plus `typescript` dependencies it needs: rejected. See DECISIONS 2026-07-12 · Build-time content-taxonomy guard (remark plugin) as the ruled-out astro check alternative.
 - Deleting the `platform-*` badge rules WHILE `WriteupCard` still emitted them: rejected (2026-07-19), and the rejection stands as a rule about live emitters. Its premise ended 2026-09-07 when the card moved to the taxonomy vocabulary, and the whole legacy badge family was then deleted with `dist` measured at zero tokens first. See DECISIONS 2026-07-19 · `.machine-meta` deleted; the REST of the badge family is not dead (corrects the entry below), and DECISIONS 2026-09-07 · Two taxonomy palettes: the landing pages re-base onto the WriteupMeta chip model.
 - A `misc` fallback tier in `PlatformIndex` for an unknown middle directory: rejected, the build fails naming the allowed directories. See DECISIONS 2026-09-07 · Two taxonomy palettes: the landing pages re-base onto the WriteupMeta chip model.
-- Gold or amber as a difficulty or category hue: rejected, gold is the flag-loot signal and amber the OverTheWire identity. See DECISIONS 2026-09-07 · Two taxonomy palettes: the landing pages re-base onto the WriteupMeta chip model.
-- One shared ring for difficulty and the categories: rejected on the owner's review the same day (2026-09-07). A rating wore a category's hue, and four hues spread around the wheel read as labels rather than as a scale; difficulty now reads its own four-step arc (`--tier-*`, sky, violet, magenta, orange, cold to hot) and the ring is PicoCTF-only. Single-hue ramps, a yellow or amber seat (the flag gold and the Linux chip own it in both themes) and HackTheBox's own green, yellow, red, purple scale were measured and rejected on the way. See DECISIONS 2026-09-07 · Two taxonomy palettes: the landing pages re-base onto the WriteupMeta chip model.
+- Gold or amber as a difficulty or category hue: rejected, gold is the flag-loot signal and amber the PasswordReveal waypoint (the OverTheWire identity until 2026-09-28). See DECISIONS 2026-09-07 · Two taxonomy palettes: the landing pages re-base onto the WriteupMeta chip model.
+- One shared ring for difficulty and the categories: rejected on the owner's review the same day (2026-09-07). A rating wore a category's hue, and four hues spread around the wheel read as labels rather than as a scale; difficulty now reads its own four-step arc (`--tier-*`, sky, violet, magenta, orange, cold to hot) and the ring is PicoCTF-only. Single-hue ramps, a yellow or amber seat (the flag gold, the Linux chip and, since 2026-09-28, OverTheWire's Canary own it in both themes) and HackTheBox's own green, yellow, red, purple scale were measured and rejected on the way. See DECISIONS 2026-09-07 · Two taxonomy palettes: the landing pages re-base onto the WriteupMeta chip model.
 - The platform accent as the landing card's lead colour (bar, hover border, glare, focus ring): replaced on the owner's review (2026-09-07) by the card's group hue, after a measured study of both rules on both platforms; the platform keeps the hero, the name, the stat, the glow, the wargame card and the footer pagination ring. A bar-only half measure was measured and rejected: the card snapped from its group to the platform on hover. See DECISIONS 2026-09-07 · Two taxonomy palettes: the landing pages re-base onto the WriteupMeta chip model.
 - Platform colour on the ALL filter pill: rejected, ALL is a neutral control. See DECISIONS 2026-09-07 · Two taxonomy palettes: the landing pages re-base onto the WriteupMeta chip model.
 - `html { overflow-x: hidden }` (or `clip`) ALONE to stop the landing's sideways scroll: shipped once and measured to do nothing at all, because the root's value propagates to the viewport and the root then clips nothing itself. A rule on `body` alone fails identically while the root is `visible`. It takes the pair, and `clip` rather than `hidden` so body never becomes a scroll container. §6 "No sideways scroll on a landing" carries the readings. Do not re-try the single rule.
@@ -1949,3 +1977,7 @@ whole records.
 - Grey callouts with only vuln coloured: rejected, the reading column loses its voice and the warning red would still be VulnHub's. See DECISIONS 2026-09-28 · Callouts speak in five voices, and light mode gets its own border and label.
 - A new hue for every callout type: rejected, what the wheel has left lands in the code-frame command colours (teal 0.034 from `curl`, brass 0.050 from `nmap`) and every warning red sits within 0.08 of VulnHub's. See DECISIONS 2026-09-28 · Callouts speak in five voices, and light mode gets its own border and label.
 - Intel sharing recon's cyan: rejected, the two sit together in nearly every writeup and read as one box. See DECISIONS 2026-09-28 · Callouts speak in five voices, and light mode gets its own border and label.
+- A warmer or darker yellow for OverTheWire, Mustard `#f3c500` among them: rejected, every one lands 0.02 to 0.06 from the flag gold, the collision the move exists to end. See DECISIONS 2026-09-28 · OverTheWire moves to Canary yellow, and the amber stays with PasswordReveal.
+- Citrine `#dfdd00` for OverTheWire: rejected, it leans green, toward HackTheBox's lime. See DECISIONS 2026-09-28 · OverTheWire moves to Canary yellow, and the amber stays with PasswordReveal.
+- Orange `#fb7e22` for OverTheWire: rejected on fit. See DECISIONS 2026-09-28 · OverTheWire moves to Canary yellow, and the amber stays with PasswordReveal.
+- Moving PasswordReveal's amber or the flag gold along with OverTheWire: rejected, the waypoint and the trophy are one idea and keep their values. See DECISIONS 2026-09-28 · OverTheWire moves to Canary yellow, and the amber stays with PasswordReveal.
