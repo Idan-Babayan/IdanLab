@@ -165,8 +165,15 @@ html[data-theme="light"] .sl-markdown-content details {
   display: none;
 }
 
+/* The triangle is decoration: the summary is already a disclosure control and says so. Generated
+   content is part of an element's accessible name, so without the empty alternative text after the
+   slash every toggle was announced as "▶ Host reachability ping" (measured 2026-09-28). The plain
+   declaration first is the fallback, not a leftover: a browser that cannot parse the alt form drops
+   that whole declaration, and the build targets Safari 16.4 and Firefox 114 (CORE_SPEC section 3),
+   which predate it, so without the fallback they would lose the triangle instead of keeping it. */
 .sl-markdown-content details > summary::before {
   content: "▶ ";
+  content: "▶ " / "";
   font-size: 0.65em;
   opacity: 0.5;
   display: inline-block;
@@ -324,10 +331,14 @@ html[data-theme="light"] .starlight-aside--tip {
 .sl-markdown-content h2 { font-weight: 700; }
 } /* @layer prose */
 
-/* Decorative lime # before section headings (purely visual cue) */
+/* Decorative lime # before section headings (purely visual cue). Purely visual now in fact too: the
+   empty alternative text after the slash keeps it out of the heading's accessible name, which read
+   "# Recon" on every h2 (measured 2026-09-28). The plain declaration first is the fallback for the
+   build's older targets, as on the toggle triangle above. */
 @layer prose {
 .sl-markdown-content h2::before {
   content: "# ";
+  content: "# " / "";
   color: var(--sl-color-accent);
   font-family: var(--sl-font-mono);
   font-weight: 700;

@@ -60,15 +60,15 @@ html[data-theme="dark"] {
    hues on one short arc of the wheel (240, 300, 345, 40) with temperature rising in one direction, the
    sunset-gradient reading (blue, purple, pink, orange) that reads as cold to hot without a single-hue
    ramp and without the traffic light's green, yellow or red seats (the yellow seat is taken on this
-   site in both themes: gold on dark, the gold value ink and the Linux chip on light). Saturation climbs
-   with the rating too, so Insane is the loudest step, and the pips carry the order for anyone who
-   cannot read hue. Dark values sit at OKLCH L 0.82 down to 0.72 with chroma 0.10 up to 0.18; light
-   values are solved by the badge-pass method below, except Easy, which keeps the ring's blue seat (the
-   one already solved against the light cyan ink). Adjacent steps sit dEOK 0.133 to 0.158 apart on dark
-   and 0.123 to 0.147 on light; every step sits at least 0.069 from every chip and accent it can meet on
-   a HackTheBox page (the tightest: Insane against the Linux chip on dark, 0.069; Easy against the
-   Standalone chip on light, 0.071; Medium against the Active Directory chip on light, 0.077) and at
-   least 0.086 from the sidebar dots.
+   site in both themes: OverTheWire's Canary since 2026-09-28, gold on dark, the gold value ink and
+   the Linux chip on light). Saturation climbs with the rating too, so Insane is the loudest step, and
+   the pips carry the order for anyone who cannot read hue. Dark values sit at OKLCH L 0.82 down to
+   0.72 with chroma 0.10 up to 0.18; light values are solved by the badge-pass method below, except
+   Easy, which keeps the ring's blue seat (the one already solved against the light cyan ink). Adjacent
+   steps sit dEOK 0.133 to 0.158 apart on dark and 0.123 to 0.147 on light; every step sits at least
+   0.069 from every chip and accent it can meet on a HackTheBox page (the tightest: Insane against the
+   Linux chip on dark, 0.069; Easy against the Standalone chip on light, 0.071; Medium against the
+   Active Directory chip on light, 0.077) and at least 0.086 from the sidebar dots.
 
    THE CATEGORY RING (--tx-*, PicoCTF, NOMINAL): blue, teal, orange, rose, coral, violet, unchanged from
    the first cut. The six categories read all six; nothing else reads them now. The value classes that
@@ -79,10 +79,12 @@ html[data-theme="dark"] {
    as the platform again, which is the collision the 2026-06-01 glow dot was patching), no cyan (the
    universal secondary), no purple (PicoCTF; the arc's violet is h300, 0.109 dark and 0.086 light from
    the PicoCTF sidebar dot, the only purple a HackTheBox page shows), no red (VulnHub; the arc's orange
-   is 0.097 dark and 0.119 light from its dot), and no gold or amber at all: gold is the flag-loot
-   signal (--flag-gold) and amber is the OverTheWire identity, and neither may name a rating or a
-   category. The Linux chip's Tux amber (h60) is the warm neighbour, which is why both oranges sit at
-   h40 to h45 with their own lightness, and why coral, the warm category, is at h25.
+   is 0.097 dark and 0.119 light from its dot), no yellow (OverTheWire's Canary since 2026-09-28; every
+   hue in both palettes sits at least 0.207 from its sidebar dot), and no gold or amber at all: gold is
+   the flag-loot signal (--flag-gold) and amber the PasswordReveal waypoint (OverTheWire's platform
+   colour until 2026-09-28), and neither may name a rating or a category. The Linux chip's Tux amber
+   (h60) is the warm neighbour, which is why both oranges sit at h40 to h45 with their own lightness,
+   and why coral, the warm category, is at h25.
 
    RING dark values sit at OKLCH L 0.79 (orange 0.70, coral 0.76 for the lightness axis above) and
    chroma 0.11 to 0.14, about half a platform accent's, so a category reads as a label on a purple page
@@ -95,11 +97,12 @@ html[data-theme="dark"] {
    and teal are deepened past the solver (L 0.41 and 0.40) to add a lightness axis against the light
    cyan ink and the light lime ink respectively, the Linux/OverTheWire precedent.
 
-   Recorded kinships, deliberately unfixed because the pairs never share a page: ring teal against the
+   Recorded kinships, deliberately unfixed because the pairs share no page today: ring teal against the
    Progressive chip (dEOK 0.016 dark; Progressive renders on OverTheWire rows only), ring violet against
    the Active Directory chip (0.033; AD renders on HackTheBox rows only, ring violet on PicoCTF), ring
-   orange against the light OverTheWire ink (0.057; ring orange is Reverse Engineering, which has no
-   writeup, and never meets the amber), and the arc's orange against the ring's (0.061; Insane on
+   orange against the waypoint amber's light ink (--pw-amber-ink, 0.057; ring orange is Reverse
+   Engineering, which has no writeup yet, and a PicoCTF flag is a PasswordReveal, so the first one will
+   put the pair on one page), and the arc's orange against the ring's (0.061; Insane on
    machine pages, Reverse Engineering on PicoCTF). Measured on the writeup row's category chip (a 15%
    fill, not the pill's 12%): ring violet reads 4.90 on its fill with a 4.48 per-pixel floor under a
    dot, coral 6.00 and 5.48, the same regime as every July chip on that row (4.37 to 4.48 under a dot).
@@ -262,38 +265,33 @@ html[data-theme="dark"] {
   --flag-gold-root: #ffcf63;
   --flag-gold-val: #ffc23d;
   --flag-gold-val-root: #ffcf63;
-  /* OverTheWire amber: ONE identity, split into an ACCENT and an INK, because a single value cannot
-     serve both jobs on paper. This supersedes --pw-amber, which was that single value and which every
-     consumer below now reads through this pair.
-       --otw-amber      the identity. Non-text uses only: borders, focus rings, bars, and DISPLAY-size
-                        type (the platform-index name and count-up, which sit at the 3:1 large-text bar
-                        and keep the identity amber deliberately).
-       --otw-amber-ink  the AA text ink, for body-size text. Light is solved in OKLCH by the badge-pass
-                        method (hold the hue, drop the lightness, gamut-map the chroma, never shift the
-                        hue): oklch(0.470 0.101 73.35) = #7c5000, hue held at 72.87 against the
-                        identity's 73.35 and 82% of its chroma retained, which matches the recorded
-                        finding that amber's sRGB gamut collapses as it darkens and it keeps only about
-                        four fifths of its chroma at AA. Measured by canvas readback on the real
-                        elements against their own composited surfaces, WORST CASE FIRST: the
-                        PasswordReveal button while HOVERED 4.78:1 (hover paints its own amber wash
-                        under the label, so it, not the resting row, is the surface to solve against),
-                        the same button at rest 5.28:1, the block-mode summary on the toggle card
-                        5.98:1. CORRECTED 2026-07-31: the fourth figure recorded here, "the
-                        platform-index eyebrow on paper 5.76:1", was measured against BARE PAPER for an
-                        element that sits on the hero wash. On the real composite it read 4.79:1, and
-                        it reaches 5.76 only since the wash was pooled off the type. The value of this
-                        token did not change; only the claim about it was wrong. Every ratio in this
-                        file now names its surface (see the composite rule in CORE_SPEC section 8).
-                        Dark needs no ink: #ffc23d already clears AA everywhere (11.4 to 12.4:1), so
-                        ink and accent are the SAME value there and dark output is byte-identical.
-                        Since 2026-07-31 --pf-ink for OverTheWire READS this token, so the platform ink
-                        and the wargame waypoint amber cannot drift apart.
+  /* PasswordReveal waypoint amber: ONE identity, split into an ACCENT and an INK, because a single value
+     cannot serve both jobs on paper. Both modes of the component (the inline row and the block toggle)
+     read the pair, so they cannot drift apart. Before 2026-07-26 the family was one value, also named
+     --pw-amber, which failed AA as body text; the name now belongs to the accent.
+       --pw-amber      the identity. Non-text uses only: borders and focus rings.
+       --pw-amber-ink  the AA text ink, for body-size text. Light is solved in OKLCH by the badge-pass
+                       method (hold the hue, drop the lightness, gamut-map the chroma, never shift the
+                       hue): oklch(0.470 0.101 73.35) = #7c5000, hue held at 72.87 against the
+                       identity's 73.35 and 82% of its chroma retained, which matches the recorded
+                       finding that amber's sRGB gamut collapses as it darkens and it keeps only about
+                       four fifths of its chroma at AA. Measured by canvas readback on the real
+                       elements against their own composited surfaces, WORST CASE FIRST: the
+                       PasswordReveal button while HOVERED 4.78:1 (hover paints its own amber wash
+                       under the label, so it, not the resting row, is the surface to solve against),
+                       the same button at rest 5.28:1, the block-mode summary on the toggle card
+                       5.98:1. Dark needs no ink: #ffc23d clears AA on every surface it lands on,
+                       lowest on the same hovered button (8.41:1; 11.06 at rest, 11.75 on the block
+                       summary; model B, measured 2026-09-29), so ink and accent are the SAME value
+                       there and dark output is byte-identical.
+     Until 2026-09-28 this pair was --otw-amber / --otw-amber-ink and also carried the OverTheWire
+     platform identity; the platform moved to Canary yellow and the waypoint kept these exact values.
      --pw-amber-rgb stays the wash base, consumed as rgba(var(--pw-amber-rgb), alpha) for tints and
      hairlines; it is a channel triplet, not a colour, so the accent/ink split does not apply to it.
      All three are declared on the bare :root fallback as well, per this file's convention, so an absent
      data-theme can never leave the var undefined and invalidate every rgba() that reads it. */
-  --otw-amber: #ffc23d;
-  --otw-amber-ink: #ffc23d;
+  --pw-amber: #ffc23d;
+  --pw-amber-ink: #ffc23d;
   --pw-amber-rgb: 245, 158, 11;
   --sl-color-bg: #07090a;
   --sl-color-bg-nav: color-mix(in oklab, #07090a 78%, transparent);
@@ -315,13 +313,13 @@ html[data-theme="dark"] {
   --flag-gold-root: #B8862B;
   --flag-gold-val: #7a5a12;
   --flag-gold-val-root: #6b4e0e;
-  /* OverTheWire amber, light. The accent keeps the established identity; only the INK moves, and only
-     because #a86f04 fails AA as body-size text on every surface it lands on (measured 3.21:1 on the
-     PasswordReveal row, 3.64:1 on the toggle card, 3.50:1 on paper). The accent is unchanged, so every
-     border, ring and bar renders exactly as before. The wash base (--pw-amber-rgb) is the same #f59e0b
-     family in both themes, so it is declared once, on dark. */
-  --otw-amber: #a86f04;
-  --otw-amber-ink: #7c5000;
+  /* PasswordReveal waypoint amber, light. The accent keeps the established identity; only the INK
+     moves, and only because #a86f04 fails AA as body-size text on every surface it lands on (measured
+     3.21:1 on the PasswordReveal row, 3.64:1 on the toggle card, 3.50:1 on paper). The accent is
+     unchanged, so every border, ring and bar renders exactly as before. The wash base (--pw-amber-rgb)
+     is the same #f59e0b family in both themes, so it is declared once, on dark. */
+  --pw-amber: #a86f04;
+  --pw-amber-ink: #7c5000;
   --sl-color-bg: #ece9e0;
   --sl-color-bg-nav: color-mix(in oklab, #ece9e0 80%, transparent);
   --sl-color-bg-sidebar: #f1eee5;

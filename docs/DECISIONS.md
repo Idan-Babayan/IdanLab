@@ -6,6 +6,113 @@
 
 ---
 
+### 2026-09-28 · OverTheWire moves to Canary yellow, and the amber stays with PasswordReveal
+- **Supersedes in part:** 2026-09-28 · Callouts speak in five voices, and light mode gets its own border
+  and label. Only its Open bullet, which this entry resolves.
+- **Supersedes in part:** 2026-09-07 · Two taxonomy palettes: the landing pages re-base onto the
+  WriteupMeta chip model. Only "amber the OverTheWire identity" among the reasons amber is excluded, and
+  the name "the light OverTheWire ink" in its recorded kinships. The exclusion and the 0.057 kinship stand.
+- **Supersedes in part:** 2026-07-31 · The platform ink family, and the wash that was causing the failure
+  it hid. Only OverTheWire's ink reading `var(--otw-amber-ink)` in "What shipped", and the `.pi-name`
+  sentence it left to an owner call in "Known and deliberately unfixed".
+- **Supersedes in part:** 2026-07-26 · OverTheWire amber splits into an identity accent and an AA text
+  ink. Only the token names and their platform scope, in its Decision, its display-type bullet and its
+  "Also routed" bullet. The split, the values, the solve and the hover worst case stand.
+- **Supersedes in part:** 2026-07-17 · Linux OS badge separated from OverTheWire (H60 re-hue + L0.40
+  deepen). Only the separation figures in "Verified live"; the Linux values stand.
+- **Supersedes in part:** 2026-07-17 · Badge light-mode label palette solved to WCAG AA in OKLCH. Only
+  OverTheWire's chip in "Amber is the structural worst case", and the fork that "Deliberately NOT touched"
+  keeps. The method and every other value stand.
+- **Supersedes in part:** 2026-07-13 · Site-wide focus-ring token (--focus-ring) on content pages: one
+  color, identity where it exists, lime default. Only "OTW amber" among the sidebar group rings.
+- **Supersedes in part:** 2026-07-13 · Marketing-page keyboard focus rings (:focus-visible), matching the
+  component-ring pattern. Only "OTW amber" among the card rings.
+- **Supersedes in part:** 2026-07-10 · WriteupMeta revised: intentional per-axis color, restrained glow,
+  growing pips. Only OverTheWire's chip hexes in "Palette drift RESOLVED".
+- **Supersedes in part:** 2026-07-05 · PasswordReveal: a dedicated amber component for wargame passwords
+  (not a FlagCapture reuse). Only the amber as OverTheWire's colour, "the site's canonical OverTheWire
+  system" and "the OTW accent".
+- **Supersedes in part:** 2026-06-01 · Canonical platform palette: lime / red / purple / amber. Only the
+  amber: OverTheWire is Canary yellow. The one palette and the other three hues stand.
+- **Supersedes in part:** 2026-05-31 · Sidebar markers: CSS colored dots, not emojis. Only "OTW amber".
+- **Decision:** OverTheWire's platform colour moves from amber to Canary yellow, `#f2e300` (oklch 0.899
+  0.191 104.75), for the sidebar dot (one literal in both themes, glow `rgba(242,227,0,.55)`), the dark
+  accent and chip, the homepage card and the About cards. Light values are solved by the recorded method,
+  hue held within 0.53 degrees: accent `#797100` (the landing, the rail ring, the About cards), ink
+  `#615b00` (the landing eyebrow) and chip `#5f5800`. Every OverTheWire value is a literal now, like the
+  other three platforms'. The amber pair keeps its exact values and is renamed for its one reader:
+  `--otw-amber` / `--otw-amber-ink` become `--pw-amber` / `--pw-amber-ink` (`#ffc23d` and `#ffc23d` dark,
+  `#a86f04` and `#7c5000` light), and `--pw-amber-rgb` is unchanged. The waypoint and the trophy
+  (PasswordReveal in both modes; FlagCapture, the flag headings and TOC entries, the loot callout) keep
+  their values byte-identical in both themes, because they share one idea and one goal, a secret or reward
+  the reader captures, and it was the platform that borrowed their colour (owner call). About's OSINT &
+  Recon skill card shared the OverTheWire practice card's class, so it moves to Canary with it (owner
+  call).
+- **Why:** on dark the platform was byte-identical to the flag gold, so the OverTheWire dot, chip and
+  landing read as loot, and a loot callout matched the OverTheWire dot (left open by 2026-09-28 · Callouts
+  speak in five voices, and light mode gets its own border and label). OverTheWire has no brand colour of
+  its own to keep. Any warm or darker yellow lands 0.02 to 0.06 from the gold, so Canary leans cool,
+  H104.7: 0.091 from the gold and 0.094 from HackTheBox's lime on dark. The Linux chip beside it on every
+  Bandit row separates better too, 0.073 to 0.163 on dark and 0.065 to 0.089 on light.
+- **Rejected:** Mustard `#f3c500` (0.032 from the gold, the same collision); Citrine `#dfdd00` (leans green,
+  0.092 from HackTheBox's lime); orange `#fb7e22` (tested and rejected; it would also sit 0.095 from both
+  VulnHub's red and the Linux chip); moving the waypoint or the trophy with the platform (they share one
+  idea and one goal, a secret or reward the reader captures, and keep their colour).
+- **Accepted trade-offs:** in light, the chip and ink sit 0.027 and 0.036 from nmap's light code colour, a
+  code token, which matters far less for a platform chip. The light sidebar dot reads 1.15:1 on the rail
+  (model A), with HackTheBox's lime already at 1.04; the dots stay one literal in both themes by design.
+  On a light Bandit page the chip label sits 0.056 from the PasswordReveal button ink, where the old amber
+  chip sat 0.008 from it. The dark chip reads 10.27 to 10.67:1 under the header's top glow (model B; 11.02
+  on bare ink).
+- **Verified:** production build, green at 67 pages; both themes at 1280 and DPR 2, canvas readback on the
+  real elements. Light: the chip label 4.84 on its own fill over paper (model B, lowest pixel 4.73; model C
+  floor 4.31); the eyebrow 5.62 to 5.70 (B; 5.76 on bare paper, A); `.pi-name` 3.92 to 4.11 and `.pi-num`
+  4.05 to 4.11 against their 3:1 large-text bar (B; floors 3.56 and 3.67, C); the rail ring 4.15 on its
+  painted pixels (4.34 against the declared rail, A), the wargame card ring 3.72 to 3.90, the About
+  practice ring 3.82 to 3.86. Dark: 10.27 and up everywhere. The waypoint and trophy baseline, 66 computed
+  values across both themes, is byte-identical; no declaration or read of `--otw-amber*` remains, no
+  platform consumer reads a `--pw-amber*` token, the delta has no motion declaration, and neither share
+  image (`og.png`, `og.jpg`) shows the old amber. PasswordReveal re-measured on 2026-09-29 (model B): light
+  4.78 hovered, 5.26 at rest, 5.93 on the block summary; dark 8.41 hovered, 11.06 at rest, 11.75 on the
+  block summary. The dark range the tokens comment had carried, 11.4 to 12.4:1, missed the hovered button
+  and is corrected.
+- **ROADMAP:** the OverTheWire `.pi-name` contrast item is resolved and deleted.
+- **Status:** Adopted; committed to `dev` on 2026-09-29 as two local commits (the change with its comment
+  sync, then CORE_SPEC, ROADMAP and this entry), not pushed.
+
+### 2026-09-28 · Focus rings the reader can see on the flag buttons and the image zoom control
+- **Supersedes in part:** 2026-07-13 · Site-wide focus-ring token (--focus-ring) on content pages: one
+  color, identity where it exists, lime default. Only the FlagCapture rings on light (the preserved
+  `color-mix(--fc-id 65%/60%)`) and, for those two rings, the Verified bullet's "Every identity ring is
+  legible against its background in both themes": on paper they read 1.53:1 (decrypt) and 1.47:1 (copy).
+  The token, the shared rule and every other ring stand.
+- **Decision:** on light, the FlagCapture decrypt and copy buttons ring in `--fc-val` at full strength (user
+  `#7a5a12`, root `#6b4e0e`), the carve-out the TOC flag ring already takes; dark keeps its softened mixes.
+  The image-zoom control keeps the shared ring exactly and gains a collar behind it while focused,
+  `box-shadow: 0 0 0 6px var(--sl-color-bg)` (the 2px offset plus the 2px ring plus 2px), so the ring sits
+  on page colour on both sides, as it does everywhere else.
+- **Why:** a keyboard reader landing on the flag's Decrypt button on paper saw almost nothing change: the 65%
+  mix lets the paper through, and the decorative gold is only 2.00:1 on paper even solid. The zoom control
+  is the one control whose ring lands on author content: the plugin clips the button to 1px until it takes
+  focus, then shows a 44px chip over the screenshot's corner, and the shared ring 2px outside it sits on
+  the capture's own pixels, 1.20:1 against a white capture in dark and 1.02 to 2.73:1 against the terminal
+  captures on paper. The chip itself always shows, so focus was never lost, only the ring.
+- **Rejected:** the flag identity at full strength on light (`--fc-id`, still 2.00:1 on paper); for the zoom
+  control, a negative outline offset that draws the ring inside the chip (this one ring would take its own
+  geometry, and on paper the olive ring over the chip's translucent fill on a dark capture computes to
+  2.77:1, model B, so it would need a deeper colour too); thickening either ring (the system fixes a ring
+  by its colour, never its width).
+- **Cost:** in dark, a white capture shows a black collar around the focused zoom chip, only while it has
+  keyboard focus. The collar's 6px is coupled to the shared ring's width and offset.
+- **Verified:** production builds before and after, Busqueda at 1280 and DPR 2, both themes, each control
+  focused with `focusVisible`, the ring sampled at its four axis points against the pixels either side of
+  it (painted pixels with the grain on, model C). Zoom control, all seven captures: dark 1.20 to 10.87:1
+  before, 15.69 to 15.90:1 after; light 1.02 to 4.80:1 before, 3.94 to 4.00:1 after. Light flag rings
+  against the page: decrypt 1.53 to 4.98:1 (user) and 1.80 to 5.97:1 (root), copy 1.47 to 4.87:1; the user
+  ring against the flag row's own gold border just inside it reads 2.91:1. Dark flag rings unchanged at
+  5.42, 5.99 and 4.54:1. Build green at 67 pages.
+- **Status:** Adopted.
+
 ### 2026-09-28 · Callouts speak in five voices, and light mode gets its own border and label
 - **Supersedes in part:** 2026-06-20 · Icon-based tagged callouts (Callout.astro). Only "intel (violet" and
   "vuln (red" in its Decision, and "vivid border" for light mode: intel and vuln move off the platform hues,
@@ -43,6 +150,9 @@
 - **Open:** OverTheWire's amber is the flag gold's literal on dark, so a loot box still matches the
   OverTheWire dot. Whether OverTheWire moves is a separate decision, and `--otw-amber` also colours
   PasswordReveal.
+  **Partly superseded by:** 2026-09-28 · OverTheWire moves to Canary yellow, and the amber stays with
+  PasswordReveal. Resolved: OverTheWire is Canary yellow, so a loot box no longer matches its dot, and the
+  amber, renamed `--pw-amber`, colours PasswordReveal alone.
 - **Verified:** production build, green at 67 pages, Busqueda at 1280 in both themes on the preview server:
   light borders 3.20 to 3.23:1 on paper, labels 4.80 to 5.06:1 on their own tint (model B), code chips in a
   callout 4.93:1 and up in both themes, dark labels 6.06:1 and up on their tints; bold 8.0:1 and up and the
@@ -789,6 +899,10 @@
   both had been proposed for Medium or Cryptography), Easy moved off the cyan family, orange given a
   lightness axis against the Linux chip, unfilled pips made visible, the card's accessible name built from
   its meta, and the registry made a dependency-free `.mjs` because the injector runs in Node outside Vite.
+  **Partly superseded by:** 2026-09-28 · OverTheWire moves to Canary yellow, and the amber stays with
+  PasswordReveal. Stale only in naming amber the OverTheWire identity: amber is the PasswordReveal
+  waypoint's alone since then, and OverTheWire's Canary sits 0.207 or more from every hue in both
+  palettes. The exclusion stands.
 - **The palette, solved and measured:** dark values sit at OKLCH L 0.79 (orange 0.70, coral 0.76) at about
   half a platform accent's chroma; light values hold the hue, drop lightness and clamp chroma so a
   12px/600 label clears 5.1:1 on a 12% same-hue fill over paper, keeping the per-pixel floor under the
@@ -823,6 +937,9 @@
   never met; the ARC's orange is Insane, and it renders on machine pages, which carry FlagCapture gold and
   not the PasswordReveal amber). Ring orange is the weakest slot and is re-judged on the real rail the day
   Reverse Engineering lands.
+  **Partly superseded by:** 2026-09-28 · OverTheWire moves to Canary yellow, and the amber stays with
+  PasswordReveal. "The light OverTheWire ink" is the PasswordReveal waypoint's ink alone since then, the
+  same `#7c5000`, so the 0.057 kinship stands under that name.
 - **Properties to know (measurement):** `color-mix(in oklab, X p%, transparent)` composites as X at alpha
   p in sRGB gamma space; compositing in linear light understates a dark 12% fill's contrast by about
   half, which is what made a first pass disagree with this project's recorded figures. In a hidden
@@ -1526,6 +1643,9 @@
 - **What shipped:** wash geometry (light only), `--pf-ink` (`#3b6400` / `#b60115` / `#7f30b7` /
   `var(--otw-amber-ink)`, with dark declared once as `var(--pf-accent)`), the eyebrow and the "All"
   filter label reading it via a local `--accent-ink`, and the active pill fill 22% to 16% on light.
+  **Partly superseded by:** 2026-09-28 · OverTheWire moves to Canary yellow, and the amber stays with
+  PasswordReveal. OverTheWire's ink is the literal `#615b00` since then, Canary solved into the same band
+  (5.76 on bare paper), no longer `var(--otw-amber-ink)`.
 - **Known and deliberately unfixed.** OverTheWire's `.pi-name` reads **3.41 against a 3:1 bar**, up from
   3.05 and from a per-pixel failure at 2.93, but still thin. It is display type, so no ink reaches it;
   the only remedy is retinting the OverTheWire light accent, which drags `.pi-num`, the empty panel, the
@@ -1533,6 +1653,9 @@
   floor is 4.31 active and 4.52 at rest, because it is the one consumer stacking a translucent fill on a
   textured surface; model B, the authority, reads 4.74 and 4.97. And the four DIFFICULTY pills fail on
   light (2.26 to 3.43), which this cluster measured and left alone as badge-consolidation work.
+  **Partly superseded by:** 2026-09-28 · OverTheWire moves to Canary yellow, and the amber stays with
+  PasswordReveal. Only the `.pi-name` sentence: the owner call was made, the light accent is Canary
+  `#797100`, and `.pi-name` reads 3.92 to 4.11 on the hero composite (model B, floor 3.56).
 - **Verified per commit at exactly-these-diffs.** The shipped component CSS differs from pre-cluster in
   five declarations and nothing else, with **zero motion declarations in the delta** and both
   `prefers-reduced-motion` blocks intact. Rendered: 1 changed cell of 11,634 for the wash, 9 for the ink
@@ -1797,6 +1920,9 @@
   `--otw-amber-ink` (the AA text ink for body-size text: `#ffc23d` dark, byte-identical, / `#7c5000` light,
   new). Every consumer was rewired: text to the ink, borders and washes to the accent. This is the only
   intentional pixel change in the whole refactor workstream.
+  **Partly superseded by:** 2026-09-28 · OverTheWire moves to Canary yellow, and the amber stays with
+  PasswordReveal. The pair is named `--pw-amber` / `--pw-amber-ink` since then, with the same values, and
+  PasswordReveal is its only reader: the OverTheWire platform moved to Canary literals. The split stands.
 - **Why a pair rather than a darker single value:** one value could not serve both jobs on paper. Measured
   by canvas readback on the real elements, `#a86f04` failed AA as body text on every surface it landed on
   (3.21:1 on the PasswordReveal row, 3.64:1 on the toggle card, 3.50:1 on paper) while being exactly right
@@ -1819,6 +1945,9 @@
   the hero's real composite `.pi-name` read **3.05**, a 0.05 margin, and **2.93 on the per-pixel floor,
   which is a failure**. `.pi-num` genuinely was 3.50, because the wash did not reach it. The split
   itself stands and the accent still is not retinted; only the number was wrong.
+  **Partly superseded by:** 2026-09-28 · OverTheWire moves to Canary yellow, and the amber stays with
+  PasswordReveal. The display type still keeps the platform accent, which is Canary `#797100` on light
+  since then: `.pi-name` 3.92 to 4.11 and `.pi-num` 4.05 to 4.11 on the hero composite (model B).
 - **A 14th tail rule, and why it was the honest option.** `.pi-eyebrow`'s colour is declared by
   `PlatformIndex.astro`'s own scoped style, so the theme pass cannot reach it from a layer. Verified in the
   browser rather than assumed: a layered rule at (0,4,0) did not move it, an unlayered rule did, because an
@@ -1831,6 +1960,9 @@
   literal. The HackTheBox, VulnHub and PicoCTF ring literals stay forked: there is no root token for the
   red or the purple, and HackTheBox's hex merely COINCIDES with `--sl-color-accent`. Routing it there would
   encode a coincidence as a coupling, which is the mistake the seven-way `#a86f04` fork already taught.
+  **Partly superseded by:** 2026-09-28 · OverTheWire moves to Canary yellow, and the amber stays with
+  PasswordReveal. The OverTheWire ring is a literal since then, `#f2e300` dark / `#797100` light, like the
+  other three; the coincidence-as-coupling rule stands.
 - **Verified:** dark output byte-identical (zero changed cells). Light changed exactly 17 cells of 7,536,
   one value transition (`#a86f04` to `#7c5000`), collapsing to THREE elements: the PasswordReveal button,
   the block-mode summary (matched by two manifest entries and proven the same node), and the OverTheWire
@@ -2513,6 +2645,9 @@
 - **Verified live (canvas readback, both themes):** Linux light 6.10, dark 8.30; OTW unchanged 4.80 / 9.56;
   separation light 0.065, dark 0.073; both chips read distinct at real chip size. `npm run build` green (46
   pages). custom.css only, no new deps.
+  **Partly superseded by:** 2026-09-28 · OverTheWire moves to Canary yellow, and the amber stays with
+  PasswordReveal. The OverTheWire side of the pair moved, so the chips separate by 0.089 light and 0.163
+  dark since then; the Linux values are unchanged.
 - **Status:** Adopted; committed as `3de625a` to `dev` (not pushed). **CORRECTED 2026-07-17 (push):** rebased to `d7b1550` and pushed when the busquedav2 testbed commit was dropped; shipped to main via PR #16 (see 2026-07-17 · busquedav2 testbed dropped before push; badge commits rebased + pushed; merged to main (PR #16), now in DECISIONS-ARCHIVE).
 
 ### 2026-07-17 · Badge light-mode label palette solved to WCAG AA in OKLCH
@@ -2535,6 +2670,9 @@
   saturated dark amber does not exist, it browns), so OTW/Linux keep only ~79% chroma at AA, versus 88 to
   100% for the reds/greens/blues/violets. Physics, not a solver limit. The ~21% loss is the price of AA (4.5)
   itself; the ~4.8 margin costs only ~3 more chroma points.
+  **Partly superseded by:** 2026-09-28 · OverTheWire moves to Canary yellow, and the amber stays with
+  PasswordReveal. OverTheWire's chip is Canary since then, `#5f5800` at 84% of its accent's chroma; the
+  finding about amber stands.
 - **Light `--wm-glow` deleted, not synced:** the light box-shadows read `--wm-c` directly, so a light
   `--wm-glow` never rendered. The DARK `pf-htb --wm-glow` (`#9fef00`) stays because the dark glow DOES read
   it (it holds HTB's true brand green while the label carries palette lime), a distinction that only reads on
@@ -2549,6 +2687,9 @@
   stays FORKED. Those are semantically unrelated ambers that coincided on a hex, never a shared token;
   consolidating would have dragged the spoiler toggle and PasswordReveal along. The five NON-badge ambers are
   not yet checked for light AA (see ROADMAP).
+  **Partly superseded by:** 2026-09-28 · OverTheWire moves to Canary yellow, and the amber stays with
+  PasswordReveal. The fork is closed: every other user moved off `#a86f04`, merged into PasswordReveal or
+  was deleted, and the hex survives only as the light `--pw-amber`.
 - **Verified live (canvas, both themes):** every light label 4.80 to 4.90, every dark 5.66 to 12.01; backdrop
   `#ece9e0`, no card; every dark value byte-identical (confirmed by diff). `npm run build` green (46 pages).
 - **Status:** Adopted; committed as `4325533` to `dev` (not pushed). **CORRECTED 2026-07-17 (push):** rebased to `1fcf53e` and pushed when the busquedav2 testbed commit was dropped; shipped to main via PR #16 (see 2026-07-17 · busquedav2 testbed dropped before push; badge commits rebased + pushed; merged to main (PR #16), now in DECISIONS-ARCHIVE). custom.css only.
@@ -2847,6 +2988,13 @@
   + `outline: none` (no ring on mouse click). Code blocks have no `tabindex`, so they are untouched. Every
   identity ring is legible against its background in both themes (bright on the near-black rail, darkened
   values on paper); none needed strengthening. `npm run build` green (45 pages).
+  **Partly superseded by:** 2026-09-28 · Focus rings the reader can see on the flag buttons and the image
+  zoom control. Stale for the two FlagCapture rings on light only: their 65% and 60% gold mixes read 1.53
+  and 1.47:1 against paper, and they now ring `--fc-val` at full strength. The rest of this entry stays in
+  force.
+  **Partly superseded by:** 2026-09-28 · OverTheWire moves to Canary yellow, and the amber stays with
+  PasswordReveal. The OverTheWire group rings Canary since then, `#f2e300` dark / `#797100` light;
+  PasswordReveal still rings amber.
 - **CORRECTED 2026-07-17 ("code blocks have no `tabindex`"):** FALSE. EC core's "Scrollable block tabindex"
   JS module adds `tabindex="0"` + `role="region"` to any `<pre>` that overflows, so wide code blocks DO
   match the shared rule and were ringed all along. It went unnoticed because the module runs on a
@@ -2873,6 +3021,9 @@
   amber), echoing their hover border and mirroring how the component rings use each component's identity
   color (FlagCapture `--fc-id`). Every other control (buttons, HUD links, theme toggle) uses the uniform
   lime ring. (Owner chose this over a single uniform lime everywhere.)
+  **Partly superseded by:** 2026-09-28 · OverTheWire moves to Canary yellow, and the amber stays with
+  PasswordReveal. OverTheWire's card and practice link ring Canary since then (`#f2e300`, and `#797100`
+  on the About page's light theme); the mechanism stands.
 - **Premise checked before building:** confirmed the marketing pages defined no focus styles at all (no
   `:focus`/`:focus-visible`/`outline`, and no `outline:none` suppression, so they fell back to the generic
   browser default ring), and that the only `:focus-visible` rules in `custom.css` are the three component
@@ -3173,6 +3324,8 @@ data URI rather than hashing.
   canonical `--pf-accent` hexes verbatim (HTB `#b6ff3c`/`#4d7c0f`, VulnHub `#ff5c5c`/`#d12f2f`, PicoCTF
   `#d96bff`/`#8b3dc4`, OTW `#ffc23d`/`#a86f04`); they match the sidebar/site tokens, no drift. HTB alone
   carries a `--wm-glow` (`#9fef00` dark / `#4d7c0f` light) so its halo is true brand green.
+  **Partly superseded by:** 2026-09-28 · OverTheWire moves to Canary yellow, and the amber stays with
+  PasswordReveal. OverTheWire's chip is Canary since then, `#f2e300` dark / `#5f5800` light.
 - **OS + Environment are intentional identity colors** (dark / light): Linux `#f0b429`/`#a86f04` (Tux
   amber), Windows `#4ca3ff`/`#0a63c9`; Environment Standalone `#8fa3b8`/`#5a6b7d` (solitary slate),
   Active Directory `#7c9cff`/`#3b4fa8` (enterprise indigo, kept distinct from the Windows-blue chip it
@@ -3452,6 +3605,9 @@ ever wanted later, it would require adding static.cloudflareinsights.com to scri
   indirection) specifically so nothing can fail to resolve. Deliberately NOT `--flag-gold` (`#ffc23d`
   dark / `#C6A243` light happens to share the dark hex with OTW's accent, but the container/wash colors
   and the light accent differ, so the two never read as the same gold-flag treatment).
+  **Partly superseded by:** 2026-09-28 · OverTheWire moves to Canary yellow, and the amber stays with
+  PasswordReveal. The amber is PasswordReveal's own since then, no longer OverTheWire's colour, which is
+  Canary yellow.
 - **Two bugs caught over this component's revisions (engineering notes):** (1) an intermediate pass moved
   the amber off the container onto custom-property tokens (`--pw-amber-bg` etc. via `color-mix()`) and
   ended up rendering as a neutral/near-black box in practice; reverted in favor of the literal `rgba()`
@@ -4029,6 +4185,9 @@ automatically; no astro.config.mjs edit is needed per writeup.
   OverTheWire amber. Rewrote the writeup `.platform-*` badges in `custom.css` to match
   (light: `#4d7c0f` / `#d12f2f` / `#8b3dc4` / `#a86f04`; dark: `#b6ff3c` / `#ff5c5c` /
   `#d96bff` / `#ffc23d`). Retired the old blue / cyan / violet / orange badge set.
+  **Partly superseded by:** 2026-09-28 · OverTheWire moves to Canary yellow, and the amber stays with
+  PasswordReveal. OverTheWire is Canary yellow since then, `#f2e300`, with `#797100` on light; the one
+  palette and the other three hues stand.
 - **Why:** One palette everywhere; the badges were the lone holdout. The homepage palette is
   the brand, so the badges move to it rather than the reverse.
 - **Side effect handled:** HTB lime now collides with `difficulty-easy` green. Every
@@ -4064,6 +4223,8 @@ automatically; no astro.config.mjs edit is needed per writeup.
 - **Decision:** Replace sidebar emoji labels with CSS-injected colored circles targeting
   Starlight's `.top-level` / `.group-label` (About cyan, HTB lime, VulnHub red, Pico purple,
   OTW amber). Real platform-logo SVGs kept as a commented alternative.
+  **Partly superseded by:** 2026-09-28 · OverTheWire moves to Canary yellow, and the amber stays with
+  PasswordReveal. The OverTheWire dot is Canary `#f2e300` since then.
 - **Why:** Emojis looked amateur and render inconsistently per OS. Dots match the site's
   existing dot motif and are uniform. True SVG logos need a Sidebar component override (deferred).
 - **Status:** Adopted.

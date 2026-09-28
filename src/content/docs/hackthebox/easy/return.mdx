@@ -112,7 +112,7 @@ I kick off `autorecon` in the background to blanket the host, but it turns up no
 The home page is decoration. The Settings tab is where a printer stops being a printer.
 
 ![The panel's settings.php page: Server Address printer.return.local, Server Port 389, Username svc-printer, and a masked password field above an Update button](../../../../assets/hackthebox/easy/return/return-2.png)
-*The Settings page (`settings.php`) holds the printer's directory login as four editable fields: printer.return.local, port 389, the username svc-printer, and a password. The password comes back as a fixed mask of seven asterisks, shorter than the real secret turns out to be. The field is not leaking the credential. It is advertising that one is stored.*
+*The Settings page holds the printer's directory login as four editable fields: printer.return.local, port 389, the username svc-printer, and a password. The password comes back as a fixed mask of seven asterisks, shorter than the real secret turns out to be. The field is not leaking the credential. It is advertising that one is stored.*
 
 <Callout type="intel">
 
@@ -130,11 +130,13 @@ The home page is decoration. The Settings tab is where a printer stops being a p
 
 ### Catching the Pass-Back
 
-The idea is a classic LDAP pass-back. The printer authenticates to whatever address sits in that field, so I swap the address for my own and see what arrives. If it uses an LDAP simple bind, the password crosses the wire in the clear, and I need nothing but a listener.
+The idea is a classic LDAP pass-back. The printer authenticates to whatever address sits in that field, so I swap the address for my own and see what arrives.
+
+If it uses an LDAP simple bind, the password crosses the wire in the clear, and I need nothing but a listener.
 
 Order matters here. The listener goes up first, because pressing Update is what sends the printer looking for its directory server: reverse the two and it knocks on a closed port while I am still typing.
 
-Keeping the port at 389 costs me a `sudo`, since Linux reserves everything below 1024. A high port and an unprivileged listener would work just as well, but 389 keeps the traffic looking like the LDAP it claims to be.
+Keeping the port at 389 costs me a `sudo`, since Linux reserves everything below 1024. A high port and an unprivileged listener would work just as well, but port 389 keeps the traffic looking like the LDAP it claims to be.
 
 ![The same Settings form before saving, with Server Address changed to 10.10.14.87 and the port, username and password left as they were](../../../../assets/hackthebox/easy/return/return-3.png)
 *The only field I touch is Server Address, now 10.10.14.87. The port stays at 389 and the username and stored password stay exactly as they were, so the printer repeats what it did before, just to my machine. Pressing Update is what fires it.*
@@ -152,11 +154,13 @@ connect to [10.10.14.87] from (UNKNOWN) [10.129.19.227] 50371
 
 </Toggle>
 
-That is not line noise. Only four framing bytes are printable, `0` and `*` opening a BER sequence and the backtick and `%` marking a bind request. The rest are control bytes, including the `0x0c` that drops the password onto its own line. This is the simple kind, which sends the name and the password as plain strings, so `return\svc-printer` and twelve characters of password arrive exactly as the printer sent them. Seven asterisks in the settings form, twelve characters on the wire.
+That is not line noise. Only four framing bytes are printable, `0` and `*` opening a BER sequence and the backtick and `%` marking a bind request. The rest are control bytes, including the `0x0c` that drops the password onto its own line.
+
+The bind is the simple kind, which sends the name and the password as plain strings, so `return\svc-printer` and twelve characters of password arrive exactly as the printer sent them. Seven asterisks in the settings form, twelve characters on the wire.
 
 <Callout type="vuln">
 
-The printer performs an LDAP simple bind against the server address in its Settings page, and it sends the service account's password in cleartext. Repoint that address, listen on 389, and the password lands in my terminal. No exploit code, just a trust boundary in the wrong place.
+The printer performs an LDAP simple bind against the server address in its Settings page, and it sends the service account's password in cleartext. Repoint that address, listen on port 389, and the password lands in my terminal. No exploit code, just a trust boundary in the wrong place.
 
 </Callout>
 
@@ -188,7 +192,9 @@ WINRM       10.129.19.227   5985   PRINTER          [+] return.local\svc-printer
 
 </Toggle>
 
-Both lines come back `[+]`, so the password is real and good for more than the printer that leaked it. The WinRM line is the one with a shell behind it: netexec only raises `Pwn3d!` on 5985 when the account can actually open a session there. On a domain controller, that is not a right a print account should have.
+Both lines come back `[+]`, so the password is real and good for more than the printer that leaked it. 
+
+The WinRM line is the one with a shell behind it: netexec only raises `Pwn3d!` on port 5985 when the account can actually open a session there. On a domain controller, that is not a right a print account should have.
 
 The LDAP line is the one I nearly walked past. On the `ldap` module that marker is a nested group check against five privileged groups: Domain Admins, Enterprise Admins, Administrators, Server Operators, and Backup Operators. One of them matched `svc-printer`, and netexec will not say which.
 
@@ -275,19 +281,23 @@ INFO: Compressing output into 20260330122425_bloodhound.zip
 ![BloodHound graph showing svc-printer as a member of Print Operators, Remote Management Users, Domain Users, and Server Operators, with both operator groups flagged high value](../../../../assets/hackthebox/easy/return/return-4.png)
 *Four group memberships for a print account, and two of them are operator groups on a domain controller. BloodHound flags both as high value.*
 
-The graph closes both questions I left open. `svc-printer` sits in Remote Management Users, the group that exists to open the 5985 endpoint.
+The graph closes both questions I left open. `svc-printer` sits in Remote Management Users, the group that exists to open the endpoint on port 5985.
 
-Most of that privilege list belongs to the other two. Loading drivers is a Print Operators default on a domain controller. Backup, restore, setting the system time, and shutting the machine down locally or remotely are all Server Operators defaults, which is six of the ten lines accounted for by one group.
+Most of that privilege list belongs to the other two. Loading drivers is a Print Operators default on a domain controller.
 
-The remainder is housekeeping. The working set right comes with plain Users, bypass traverse checking is granted to Everyone, and adding workstations to the domain is a default for any authenticated account. Not one right on that list was handed to `svc-printer`. Every one of them walked in through a group.
+Backup, restore, setting the system time, and shutting the machine down locally or remotely are all Server Operators defaults, which is six of the ten lines accounted for by one group.
+
+The remainder is housekeeping. The working set right comes with plain Users, bypass traverse checking is granted to Everyone, and adding workstations to the domain is a default for any authenticated account.
+
+Not one right on that list was handed to `svc-printer`. Every one of them walked in through a group.
 
 The way Server Operators reaches services is worth being precise about. There is no privilege called start-a-service. Those powers live in the individual service's own security descriptor, and on a domain controller the default descriptor on many services hands this group start, stop, and change-config together.
 
-Change-config is the one that matters, because it covers the binary a service runs and the account it runs under. A service that already runs as LocalSystem and that this group can reconfigure is not really a service any more. It is a SYSTEM-level code path I control.
+Change-config is the one that matters, because it covers the binary a service runs and the account it runs under. A service that already runs as `LocalSystem` and that this group can reconfigure is not really a service any more. It is a SYSTEM-level code path I control.
 
 ### Service Binary Hijack to SYSTEM
 
-The plan follows from that one fact: build a reverse shell, repoint a LocalSystem service at it, and start the service. First, the payload and the listener on Kali.
+The plan follows from that one fact: build a reverse shell, repoint a `LocalSystem` service at it, and start the service. First, the payload and the listener on Kali.
 
 <Toggle label="Payload and listener <code>msfvenom</code>">
 
@@ -310,7 +320,7 @@ Saved as: reverse.exe
 
 </Toggle>
 
-With the listener waiting, I upload the payload and query `vss` (Volume Shadow Copy). I want a service that runs as LocalSystem and that a domain controller does not need in order to keep serving the domain, and shadow copies fit both.
+With the listener waiting, I upload the payload and query `vss` (Volume Shadow Copy). I want a service that runs as `LocalSystem` and that a domain controller does not need in order to keep serving the domain, and shadow copies fit both.
 
 <Toggle label="Uploading and repointing the service binary <code>sc.exe</code>">
 
@@ -341,11 +351,13 @@ SERVICE_NAME: vss
 
 </Toggle>
 
-`BINARY_PATH_NAME` is the field I rewrite, and `SERVICE_START_NAME` is the reason rewriting it is worth anything: whatever sits at that path runs as LocalSystem. All three calls use `sc.exe` and not `sc`, because Windows PowerShell, which is what the WinRM endpoint drops me into, keeps `sc` as an alias for `Set-Content`. The bare name would quietly write a file instead of talking to the service manager.
+`BINARY_PATH_NAME` is the field I rewrite, and `SERVICE_START_NAME` is the reason rewriting it is worth anything: whatever sits at that path runs as `LocalSystem`.
+
+All three calls use `sc.exe` and not `sc`, because Windows PowerShell, which is what the WinRM endpoint drops me into, keeps `sc` as an alias for `Set-Content`. The bare name would quietly write a file instead of talking to the service manager.
 
 `sc.exe start` then hangs, which looks like failure and is not. A raw reverse shell never speaks the service control protocol, so it never reports itself running, the manager waits out its thirty second start timeout, and the call dies with error 1053.
 
-That verdict lands on the handshake, not on the process. Windows starts my binary as LocalSystem the moment the request arrives.
+That verdict lands on the handshake, not on the process. Windows starts my binary as `LocalSystem` the moment the request arrives.
 
 The listener catches the callback long before the service manager finishes giving up, and the shell that lands is not svc-printer.
 
@@ -372,16 +384,16 @@ C:\Users\Administrator\Desktop> type root.txt
 
 ## Summary
 
-The whole path in one breath: an unauthenticated printer panel on port 80 lets me rewrite where the printer sends its directory login. I point it at my own listener on 389, and it answers with an LDAP simple bind, password in cleartext, handing over `svc-printer`. Remote Management Users is why that credential opens an Evil-WinRM session and the user flag. Server Operators is why it does not stop there: on a domain controller that group can rewrite a service's binary path, so I aim the LocalSystem `vss` service at a reverse shell. Starting it runs my binary as SYSTEM, and the root flag follows.
+The whole path in one breath: an unauthenticated printer panel on port 80 lets me rewrite where the printer sends its directory login. I point it at my own listener on port 389, and it answers with an LDAP simple bind, password in cleartext, handing over `svc-printer`. Remote Management Users is why that credential opens an Evil-WinRM session and the user flag. Server Operators is why it does not stop there: on a domain controller that group can rewrite a service's binary path, so I aim the `LocalSystem` service `vss` at a reverse shell. Starting it runs my binary as SYSTEM, and the root flag follows.
 
 <AttackPath
   title="Attack Path · return.local"
   nodes={[
     { kind: 'Web', name: 'Printer Panel', detail: [ { k: 'port', v: '<code>80/tcp</code> IIS, unauthenticated' }, { k: 'holds', v: 'an editable directory login for <code>svc-printer</code>' } ] },
-    { kind: 'User', name: 'svc-printer', edge: '<b>LDAP pass-back</b>', detail: [ { k: 'leak', v: 'cleartext simple bind caught on <code>sudo nc -lvnp 389</code>' }, { k: 'shell', v: '<code>evil-winrm</code> on 5985, user.txt' } ] },
+    { kind: 'User', name: 'svc-printer', edge: '<b>LDAP pass-back</b>', detail: [ { k: 'leak', v: 'cleartext simple bind caught on <code>sudo nc -lvnp 389</code>' }, { k: 'shell', v: '<code>evil-winrm</code> on port 5985, <code>user.txt</code>' } ] },
     { kind: 'Group', name: 'Server Operators', edge: 'is <b>member of</b>', detail: [ { k: 'note', v: 'builtin group, can reconfigure services on a DC' } ] },
     { kind: 'Service', name: 'vss (LocalSystem)', edge: 'can <b>reconfigure</b>', detail: [ { k: 'right', v: 'rewrite the <code>vss</code> binary path' }, { k: 'action', v: '<code>sc.exe config vss binpath=…</code>' } ] },
-    { kind: 'Root', name: 'SYSTEM', edge: 'on <b>service start</b>', detail: [ { k: 'trigger', v: '<code>sc.exe start vss</code> runs the payload' }, { k: 'flag', v: 'root.txt' } ] },
+    { kind: 'Root', name: 'SYSTEM', edge: 'on <b>service start</b>', detail: [ { k: 'trigger', v: '<code>sc.exe start vss</code> runs the payload' }, { k: 'flag', v: '<code>root.txt</code>' } ] },
   ]}
 />
 
@@ -392,11 +404,11 @@ The whole path in one breath: an unauthenticated printer panel on port 80 lets m
 Three lessons, one per stage of the chain:
 
 1. **Outbound authentication is still a credential exposure.** The pass-back worked because a device was pointed at an address an unauthenticated visitor could edit, over a bind type that sends the secret in the clear. Nobody attacked the printer. I only changed where it was already willing to log in.
-2. **Service accounts are rarely as harmless as they look.** `svc-printer` read like a throwaway print identity, yet it sat in two operator groups and inherited backup, restore, and driver-loading rights. Each grant fits the group it comes from. The mistake is that the account behind a printer panel's directory login was given the group memberships of someone who administers a domain controller.
-3. **Service reconfiguration rights are administrative rights.** Being able to rewrite a LocalSystem service's binary path is, in practice, the ability to run code as SYSTEM. Groups like Server Operators grant that quietly, which is exactly why they belong to administrators only.
+2. **Service accounts are rarely as harmless as they look.** `svc-printer` read like a throwaway print identity, yet it sat in two operator groups and inherited backup, restore, and driver-loading rights. Every grant suits the group it came from. Putting a printer's login in those groups is the mistake.
+3. **Service reconfiguration rights are administrative rights.** Being able to rewrite a `LocalSystem` service's binary path is, in practice, the ability to run code as SYSTEM. Groups like Server Operators grant that quietly, which is exactly why they belong to administrators only.
 
 <Callout type="defense">
 
-Give the printer a low-privilege, read-only directory account, so a captured secret opens nothing. Then require LDAPS with the client validating the server certificate, which shuts out both a plain listener on 389 and a self-signed one on 636. Separately, remove `svc-printer` from Server Operators and grant only the specific service control the print role actually needs. Either half breaks the chain on its own.
+Give the printer a low-privilege, read-only directory account, so a captured secret opens nothing. Then require LDAPS with the client validating the server certificate, which shuts out both a plain listener on port 389 and a self-signed one on port 636. Separately, remove `svc-printer` from Server Operators and grant only the service control the print role needs. Either half breaks the chain on its own.
 
 </Callout>
