@@ -1815,7 +1815,10 @@ borrow the other's rule.
 - **`content-visibility: hidden`** (the UA's treatment of a closed `<details>` body) generates no frames
   at all, yet the subtree stays in the tree, so a selection can still span it and serialise it.
 - **An attribute is neither.** A value in a `data-` attribute is written into the `text/html` clipboard
-  flavour whatever its element's selectability. A secret must not live in one.
+  flavour whatever its element's selectability. A secret must not live in one. FlagCapture dropped
+  `data-flag` on 2026-09-12 and PasswordReveal `data-password` on 2026-09-28 (a plain Ctrl+A then copy
+  had handed over the unrevealed value on 53 pages); each script reads the value from the element screen
+  readers already use (`.flagcap-real`, `.pw-value`).
 
 **Still exposed, deliberately: Starlight's skip link** (`.sl-skip-link`, "Skip to content"). Measured on
 the production build, it reaches both flavours in both engines. It is the same clip-rect technique but it
