@@ -13,6 +13,7 @@
 // Gated on `toc` so it only appears where the table-of-contents panel itself renders.
 import Default from '@astrojs/starlight/components/PageSidebar.astro';
 import ToggleAll from '@components/ToggleAll.astro';
+import TocTracking from '@components/TocTracking.astro';
 ---
 
 <Default><slot /></Default>
@@ -23,3 +24,4 @@ import ToggleAll from '@components/ToggleAll.astro';
     </div>
   )
 }
+<TocTracking />

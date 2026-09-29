@@ -1,0 +1,174 @@
+---
+// src/components/TocTracking.astro
+//
+// Keeps the "On this page" TOC truthful where Starlight's own tracking cannot. Script only, rendered by
+// overrides/PageSidebar.astro on every page and at every width. Why: Starlight marks an entry when its
+// heading enters a 53px band 32px under the header (plus the mobile TOC bar), so a heading too near the
+// end of the page never lights, and a click on it lands where another entry is marked
+// (withastro/starlight#1954, closed as not planned).
+//
+// What, after CSS Overflow Module Level 5 (Editor's Draft, 4 August 2026). Section 3.1.8, "Calculating
+// the Active Scroll Marker": when an entry cannot be reached, the entries due in the final stretch of
+// scroll are spread across it in order, so each gets a turn and the last is current at the bottom;
+// pages where every entry lights are untouched. Section 2.1, "current scroll target": an entry reached
+// by a click, back or forward, or a deep link stays current until the reader scrolls away from it.
+//
+// Internal surface, Starlight 0.41.10, the one exception to CORE_SPEC's "no override reaches into
+// Starlight internals", reached at runtime only: the TypeScript-protected `current` setter of
+// <starlight-toc> (components-internals/TableOfContents/starlight-toc.ts, lines 16 to 21), which
+// <mobile-starlight-toc> overrides to update `.display-current` (components/MobileTableOfContents.astro),
+// and the band geometry of getRootMargin() (starlight-toc.ts, lines 114 to 124), mirrored below. Every
+// write goes through the original setter, so each TOC keeps exactly one current entry. Delete this
+// component if Starlight ships its own end-of-page handling, and re-check the hook and the constants on
+// every Starlight upgrade: in dev a lost hook logs a [TocTracking] warning, and the TOC behaves as stock.
+---
+
+<script>
+  /** The one tunable: the end zone spans this fraction of a screen of scroll (section 3.1.8). */
+  const END_ZONE_FRACTION = 1 / 8;
+  /** Mirrored from Starlight's getRootMargin(): the band starts 32px under the header, 53px deep. */
+  const BAND_OFFSET = 32;
+  const BAND_DEPTH = 53;
+  /** A scroll this far from where a navigation landed ends its intent. */
+  const RELEASE_DISTANCE = 2;
+  const TOC_TAGS = ['starlight-toc', 'mobile-starlight-toc'] as const;
+  const HOOKED_PROPERTY = 'current';
+  const SOURCE = 'components-internals/TableOfContents/starlight-toc.ts in @astrojs/starlight';
+
+  type Setter = (this: HTMLElement, link: HTMLAnchorElement) => void;
+  interface Entry { link: HTMLAnchorElement; id: string; heading: HTMLElement | null }
+  interface Tracked { el: HTMLElement; set: Setter; entries: Entry[]; proposal: HTMLAnchorElement | null }
+  interface Intent { id: string; landing: number | null }
+
+  const tracked: Tracked[] = [];
+  let intent: Intent | null = null;
+  let queued = false;
+
+  function warn(message: string): void {
+    if (import.meta.env.DEV) console.warn(`[TocTracking] ${message}`);
+  }
+
+  function idFromHash(hash: string): string | null {
+    try { return hash.length > 1 ? decodeURIComponent(hash.slice(1)) : null; } catch { return null; }
+  }
+
+  /** The original setter, most-derived first, so the mobile label override still runs. */
+  function findSetter(el: HTMLElement): Setter | null {
+    for (let p = Object.getPrototypeOf(el) as object | null; p; p = Object.getPrototypeOf(p) as object | null) {
+      const setter = Object.getOwnPropertyDescriptor(p, HOOKED_PROPERTY)?.set;
+      if (setter) return setter as Setter;
+    }
+    return null;
+  }
+
+  /** Where Starlight marks a heading for this TOC: the foot of its band. */
+  function triggerOffset(el: HTMLElement): number {
+    const header = document.querySelector('header')?.getBoundingClientRect().height || 0;
+    const summary = el.querySelector('summary')?.getBoundingClientRect().height || 0;
+    return header + summary + BAND_OFFSET + BAND_DEPTH;
+  }
+
+  /** Section 3.1.8, end of page only: spread the entries due in the final stretch across it. */
+  function endZoneLink(t: Tracked): HTMLAnchorElement | null {
+    const vh = window.innerHeight;
+    const range = document.documentElement.scrollHeight - vh;
+    if (range <= 0) return null;
+    const y = window.scrollY;
+    const pos = y >= range - 1 ? range : y;
+    const trigger = triggerOffset(t.el);
+    const due = t.entries.flatMap(({ link, heading }) => (heading && heading.getClientRects().length > 0
+      ? [{ link, at: heading.getBoundingClientRect().top + y - trigger }] : []));
+    const maxAt = Math.max(...due.map((d) => d.at));
+    const depth = Math.min(vh * END_ZONE_FRACTION, range / 2);
+    const start = range - depth;
+    if (!(maxAt > range - 1) || pos <= start || maxAt <= start) return null;
+    let current: HTMLAnchorElement | null = null;
+    for (const { link, at } of due) {
+      if ((at > start ? start + ((at - start) / (maxAt - start)) * depth : at) <= pos) current = link;
+    }
+    return current;
+  }
+
+  /** Intent first, then the end zone, then Starlight's own latest proposal, untouched. */
+  function resolve(t: Tracked): void {
+    const target = intent;
+    const intended = target ? t.entries.find((e) => e.id === target.id)?.link : undefined;
+    const link = intended ?? endZoneLink(t) ?? t.proposal;
+    if (link) t.set.call(t.el, link);
+  }
+
+  function resolveAll(): void {
+    tracked.forEach(resolve);
+  }
+
+  function scheduleResolve(): void {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(() => { queued = false; resolveAll(); });
+  }
+
+  /** Section 2.1: the entry stays current until a scroll moves RELEASE_DISTANCE off its landing. */
+  function navigateTo(id: string | null, afterLoad = false): void {
+    if (!id || !tracked.some((t) => t.entries.some((e) => e.id === id))) return;
+    const next: Intent = { id, landing: null };
+    intent = next;
+    resolveAll();
+    const land = (): void => { if (intent === next) next.landing = window.scrollY; };
+    const record = (): void => { requestAnimationFrame(() => requestAnimationFrame(land)); };
+    if (afterLoad && document.readyState !== 'complete') window.addEventListener('load', record, { once: true });
+    else record();
+  }
+
+  function onClick(event: MouseEvent): void {
+    const { button, metaKey, ctrlKey, shiftKey, altKey, defaultPrevented } = event;
+    if (button !== 0 || metaKey || ctrlKey || shiftKey || altKey || defaultPrevented) return;
+    const link = event.target instanceof Element ? event.target.closest('a[href]') : null;
+    if (!(link instanceof HTMLAnchorElement) || !link.hash) return;
+    if (link.origin === location.origin && link.pathname === location.pathname) navigateTo(idFromHash(link.hash));
+  }
+
+  function onScroll(): void {
+    const landing = intent?.landing ?? null;
+    if (landing !== null && Math.abs(window.scrollY - landing) > RELEASE_DISTANCE) intent = null;
+    scheduleResolve();
+  }
+
+  /** From here on Starlight's writes land in `proposal`, and only resolution reaches the DOM. */
+  function hook(el: HTMLElement): void {
+    const set = findSetter(el);
+    if (!set) {
+      warn(`<${el.localName}> has no "${HOOKED_PROPERTY}" setter to hook; check ${SOURCE}.`);
+      return;
+    }
+    const entries = Array.from(el.querySelectorAll<HTMLAnchorElement>('a')).flatMap((link) => {
+      const id = idFromHash(link.hash);
+      return id ? [{ link, id, heading: document.getElementById(id) }] : [];
+    });
+    const t: Tracked = { el, set, entries, proposal: el.querySelector<HTMLAnchorElement>('a[aria-current="true"]') };
+    Object.defineProperty(el, HOOKED_PROPERTY, {
+      configurable: true,
+      set(link: HTMLAnchorElement) { t.proposal = link; resolve(t); },
+    });
+    tracked.push(t);
+  }
+
+  async function init(): Promise<void> {
+    const tags = TOC_TAGS.filter((tag) => document.querySelector(tag));
+    if (tags.length === 0 && document.documentElement.hasAttribute('data-has-toc')) {
+      warn(`the page has a table of contents but no <starlight-toc> or <mobile-starlight-toc>; check ${SOURCE}.`);
+    }
+    for (const tag of tags) await customElements.whenDefined(tag);
+    for (const tag of tags) document.querySelectorAll<HTMLElement>(tag).forEach(hook);
+    if (tracked.length === 0) return;
+    document.addEventListener('click', onClick, { capture: true });
+    window.addEventListener('hashchange', () => navigateTo(idFromHash(location.hash)));
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', scheduleResolve);
+    const content = document.querySelector('.sl-markdown-content');
+    if (content) new ResizeObserver(resolveAll).observe(content);
+    navigateTo(idFromHash(location.hash), true);
+    resolveAll();
+  }
+
+  void init();
+</script>
