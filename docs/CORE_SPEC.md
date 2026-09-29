@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-09-29 (OverTheWire's platform colour moves from amber to Canary yellow, and the amber stays with PasswordReveal as `--pw-amber` / `--pw-amber-ink`).
+> Last updated: 2026-09-29 (the "On this page" TOC gives every entry a turn: `TocTracking` adds an end zone, a short-section takeover and a click hold, written through Starlight's own setter).
 
 ---
 
@@ -250,6 +250,7 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 │  │  ├─ FlagCapture.astro            # "Decrypt to Capture" gold flag control (props: type user|root, flag); replaces the heading-plus-duplicate flag Toggle
 │  │  ├─ PasswordReveal.astro         # amber wargame secret waypoint, TWO modes derived from the slot: INLINE (prop: password) blur-to-reveal then copy-in-place, BLOCK (slot content + prop: label) collapses a multi-line secret as a <details class="toggle pwreveal-block">, no copy button. Both wear one amber (--pw-amber accent / --pw-amber-ink AA text ink / --pw-amber-rgb wash base). Deliberately distinct from FlagCapture (no gold, no decode animation); replaced the retired .spoiler-toggle class; no per-file import needed, see plugins/remark-inject-passwordreveal.mjs
 │  │  ├─ ToggleAll.astro              # Expand/Collapse-all control (vanilla TS, scroll-anchored); injected via PageSidebar override
+│  │  ├─ TocTracking.astro            # script only, no markup: which "On this page" entry is current (end zone, short-section takeover, click hold), written through Starlight's own setter; rendered by the PageSidebar override at every width, see §5 "Starlight Component Overrides"
 │  │  ├─ AttackPath.astro             # guided infographic for a LINEAR priv-esc chain (ascending escalating path, SVG connectors, Next-step progression, one-time gold flourish); data-driven from a nodes[] prop, scoped styles, not-content. See DECISIONS 2026-07-19
 │  │  ├─ Callout.astro                # icon-based tagged callout (recon/loot/intel/vuln/defense); .cl styles in components.css
 │  │  ├─ Principle.astro              # closing epigraph (aside.principle, prop: text): centered italic mono maxim + dinkus + PRINCIPLE label; no card/border/bg; .principle styles in components.css; HackTheBox writeups only, appended from frontmatter by overrides/MarkdownContent.astro
@@ -259,7 +260,7 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 │  │  ├─ SecretTerminal.astro         # from-scratch, zero-dependency vanilla-TS fake terminal; its `random` target list is built at build time from the docs collection, behind the same copied-from-Starlight draft filter PlatformIndex uses
 │  │  ├─ badges/                      # WriteupMeta.astro (the injected chip row), DifficultyPips.astro (the ONE ordinal pips glyph, shared with WriteupCard), icons.ts (icon registry + the category swatch)
 │  │  └─ overrides/
-│  │     ├─ PageSidebar.astro         # additive Starlight override: renders <Default/> then <ToggleAll/> at the bottom of the right TOC
+│  │     ├─ PageSidebar.astro         # additive Starlight override: renders <Default/> then <ToggleAll/> at the bottom of the right TOC, then the script-only <TocTracking/> at every width
 │  │     ├─ MarkdownContent.astro     # additive Starlight override: renders <Default/> with the <Principle> coda appended inside the content wrapper on HackTheBox writeups that set principle:; the default Footer and its pager follow unchanged
 │  │     └─ Head.astro                # additive Starlight override: renders <Default/> then appends only the social tags Starlight omits (author, og:image + secure_url/type/width/height/alt, twitter:title/description/image), per-page values read from frontmatter (see §2 "Social and SEO metadata")
 │  ├─ lib/
@@ -608,23 +609,33 @@ token is an open ROADMAP item, not a bug.
   See DECISIONS 2026-07-20 (injection + validation consolidation), 2026-07-19 (optional difficulty + the
   34-page Bandit migration), 2026-07-17 (the three badge entries plus the testbed-drop entry) and 2026-07-10.
 - Chrome (Starlight override): `ToggleAll` (Expand/Collapse-all control) auto-injected into the right
-  "On this page" sidebar by `overrides/PageSidebar.astro` (renders `<Default/>` then the control).
+  "On this page" sidebar by `overrides/PageSidebar.astro` (renders `<Default/>` then the control), which
+  also renders the script-only `TocTracking` at every width (see "Starlight Component Overrides" below).
 
 ### Starlight Component Overrides
 - **There are THREE, in `src/components/overrides/`:** `PageSidebar.astro` (renders the default "On
-  this page" TOC then appends `ToggleAll`), `MarkdownContent.astro` (renders the default content
-  wrapper with the `Principle` coda appended inside it on HackTheBox writeups that set `principle:`;
-  the default Footer and its Prev/Next pager follow unchanged), and `Head.astro` (appends only the
-  Open Graph and Twitter Card tags Starlight omits, see §2 "Social and SEO metadata").
+  this page" TOC then appends `ToggleAll` and the script-only `TocTracking`), `MarkdownContent.astro`
+  (renders the default content wrapper with the `Principle` coda appended inside it on HackTheBox
+  writeups that set `principle:`; the default Footer and its Prev/Next pager follow unchanged), and
+  `Head.astro` (appends only the Open Graph and Twitter Card tags Starlight omits, see §2 "Social and SEO
+  metadata").
   `MarkdownContent` replaced a `Footer` override on 2026-09-03 (that seam suppressed the pager beneath
   the coda, see DECISIONS 2026-09-03) and is the newest of the three.
 - **Every override imports from the documented `@astrojs/starlight/components/*` entrypoints and
   none reaches into Starlight internals.** That is the constraint that keeps an override additive
   rather than a fork: a deep import into an internal path would bind to a private module that
   Starlight can move in a patch release, with no deprecation and no build error.
-  **ONE documented exception:** `MarkdownContent.astro` imports its `Default` from
+  **ONE documented import exception:** `MarkdownContent.astro` imports its `Default` from
   `starlight-image-zoom/overrides/MarkdownContent.astro`. That is a plugin's PUBLISHED `overrides/`
   path, not a Starlight internal, and the rule below is why it has to be.
+- **One runtime exception, which imports nothing:** `TocTracking.astro` hooks the TypeScript-protected
+  `current` setter of `<starlight-toc>` and `<mobile-starlight-toc>` and mirrors the band of
+  `getRootMargin()` (32px under the header, 53px deep) to decide which "On this page" entry is current:
+  Starlight's own choice, except at the end of the page, for a section shorter than half a screen, and
+  after a click, a deep link or back and forward. Every write still goes through Starlight's setter, so
+  each TOC keeps one current entry and the mobile label follows. Re-check the setter and the band on every
+  Starlight upgrade: a lost hook leaves the TOC stock and logs a `[TocTracking]` warning in dev. See
+  DECISIONS 2026-09-29 · The "On this page" TOC gives every entry a turn, and a clicked entry stays current.
 - **A user override SILENCES a plugin's override of the same component, and nothing warns.** A Starlight
   plugin claims a component in its `config:setup` hook, and a well-behaved one yields to the site:
   `starlight-image-zoom` runs `if (!config.components?.MarkdownContent)` before assigning its own. So
@@ -1981,3 +1992,5 @@ whole records.
 - Citrine `#dfdd00` for OverTheWire: rejected, it leans green, toward HackTheBox's lime. See DECISIONS 2026-09-28 · OverTheWire moves to Canary yellow, and the amber stays with PasswordReveal.
 - Orange `#fb7e22` for OverTheWire: tested and rejected. See DECISIONS 2026-09-28 · OverTheWire moves to Canary yellow, and the amber stays with PasswordReveal.
 - Moving PasswordReveal's amber or the flag gold along with OverTheWire: rejected, the waypoint and the trophy share one idea and one goal, a secret or reward the reader captures, and keep their values. See DECISIONS 2026-09-28 · OverTheWire moves to Canary yellow, and the amber stays with PasswordReveal.
+- The spec's takeover rule for every "On this page" heading, so each switches at mid-screen after a long section: rejected, it switches exactly where a click lands, so a just-clicked entry flips to the one above on a 10px upward scroll, and it changes the feel of every page; the takeover stays for sections shorter than half a screen. See DECISIONS 2026-09-29 · The "On this page" TOC gives every entry a turn, and a clicked entry stays current.
+- Per-device or per-browser tuning of which "On this page" entry is current: rejected, the rules are fractions of the screen and scale with it (owner call). See DECISIONS 2026-09-29 · The "On this page" TOC gives every entry a turn, and a clicked entry stays current.

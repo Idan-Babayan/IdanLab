@@ -6,6 +6,95 @@
 
 ---
 
+### 2026-09-29 · The "On this page" TOC gives every entry a turn, and a clicked entry stays current
+- **Context, not a supersession:** 2026-06-20 · ToggleAll control: sidebar placement, scroll anchoring,
+  native-anchor fix. Its `PageSidebar` override now also renders `<TocTracking />`, after the ToggleAll
+  wrapper and outside it, so it runs at every width. Nothing in that entry is retired: the override still
+  renders `<Default />` then `<ToggleAll />`, and ToggleAll never reads the TOC. The colour ladder of
+  2026-06-29 · TOC active entry recolors to its heading level (cyan h3, gray h4+) is untouched too: it
+  styles whichever entry is current, and this entry only changes which one that is.
+- **Decision:** `src/components/TocTracking.astro`, a script-only component the `PageSidebar` override
+  renders on every page at every width, decides which "On this page" entry is current, after CSS Overflow
+  Module Level 5 (Editor's Draft, 4 August 2026). Starlight's own choice stands, untouched, except in three
+  cases:
+  1. **The end of the page** (section 3.1.8, "Calculating the Active Scroll Marker"). When some heading can
+     never scroll up to Starlight's marking point, the entries due in the final eighth of a screen of scroll
+     (capped at half the scroll range) are spread across it in order, so each gets a turn and the last is
+     current at the bottom.
+  2. **Short sections** (the same section's takeover rule, applied to short sections only). A section
+     shorter than half a screen becomes current once its heading is within half a screen of where a click
+     on its entry lands it, provided the heading before it landed more than half a screen of scroll ago.
+  3. **Navigation** (section 2.1, "current scroll target"). An entry reached by a click in either TOC, a
+     heading's own anchor link, a deep link, or back and forward stays current until the reader scrolls
+     more than 2px from where the page landed. A reload or a history visit restores the old position
+     rather than following the fragment, so it does not count; returning to the address without a
+     fragment ends the hold.
+
+  Rule 3 wins outright. Otherwise the later entry, in TOC order, of rule 2 and of rule 1 (or, outside the
+  end zone, Starlight's choice) is current.
+- **How:** every write goes through Starlight's own TypeScript-protected `current` setter
+  (`components-internals/TableOfContents/starlight-toc.ts`, lines 16 to 21), found per element along the
+  prototype chain so `<mobile-starlight-toc>`'s override still updates the bar's label, and shadowed on the
+  element by an accessor that turns Starlight's writes into proposals. Rule 1 mirrors the band of
+  `getRootMargin()` (lines 114 to 124: the header, the mobile bar, 32px, 53px); rule 2 reads the page's own
+  `scroll-padding-top` and each heading's `scroll-margin-top`, so "where a click lands" is the browser's own
+  landing. Only a change is written: the component resolves on every scrolled frame, and Starlight's mobile
+  setter rewrites its label on every call. No import from Starlight, no CSS, no scrolling, no storage. If
+  the setter disappears, nothing is hooked and the TOC is stock; dev logs one `[TocTracking]` warning per
+  TOC. It is the one runtime exception to CORE_SPEC's rule that no override reaches into Starlight
+  internals.
+- **Why:** Starlight marks an entry when its heading enters a 53px band 32px under the header (plus the
+  mobile bar). A heading too near the end of the page never gets there: at 1280x800, 46 of the 59 pages with
+  a TOC had an entry that never lit, and a click on such an entry landed where another was marked
+  (withastro/starlight#1954, closed as not planned; 0.41.10 unchanged). A short section is current only
+  while it sits at the top of the screen: Busqueda's User Flag and Root Flag were current for about 177px
+  of scroll each on desktop, under two notches of a mouse wheel, and about 237px on a phone.
+- **Rejected:**
+  - The takeover rule for every heading, as the spec writes it, with every position taken at the landing
+    line. Built and swept at five sizes, it matched the spec at every step, but it switches exactly where a
+    click lands: in 20 of 93 click tests a 10px upward scroll flipped the entry just clicked to the one
+    above. It also pinned the last entry on four phone pages to the very bottom, and it changes the feel of
+    every page, since every heading after a long section switches at mid-screen.
+  - Chrome's native marker choice (`scroll-target-group`, read through `:target-current`; matched step for
+    step by a model on all 59 pages at 1280x800). It runs the same redistribution and takeover but switches
+    halfway between close headings, so after a click on an entry the page cannot scroll to, a small upward
+    scroll shows the entry below it.
+  - Per-device or per-browser offsets (owner call): every rule here is a fraction of the screen and scales
+    with it.
+- **Accepted trade-offs:**
+  - A long section above a short one hands over early: its last half screen of scroll now belongs to the
+    short section.
+  - A short section right after another short section keeps its stock turn: Forest's User Flag follows "A
+    Shell as svc-alfresco" (344px on desktop), and the rule never takes one short section's turn to give it
+    to the next.
+  - On a page where the end zone engages, the last entry is current only at the very bottom.
+  - Starlight's markup carries no current entry until its idle-time start, about 40 to 100ms after load on
+    Busqueda; left as stock.
+- **Verified:** production builds of stock, of the first stage with its review fixes, and of this state,
+  green at 67 pages, swept headless at 10px steps and at 2px through the last 150px, down and back up. On
+  all 59 pages with a TOC at 1280x800 (23,264 steps) and 375x667 (34,166 steps), and on ten pages at
+  375x812, 768x1024 and 1920x1080, the entry marked at every step equals the later of the first stage's
+  entry and the short-section candidate; on every page that can scroll (one cannot, below), every entry
+  lights, once and in order, and the last is current at the bottom; each TOC has exactly one current entry
+  and the mobile label matches, except the hidden desktop list at the very top of the page at phone and
+  tablet widths, which Starlight leaves unmarked there as stock. The rule moves 4,445 desktop steps on 27
+  pages and 1,505 phone steps on 28. Entries current for under 200px of scroll fall from 83 to 58 on desktop
+  and from 31 to 22 on a phone. Busqueda's User Flag and Root Flag go from about 180 to 520px of scroll on
+  desktop and from 240 to 510 on a phone; Return's from 170 to 430 and 510; Forest's Root Flag from 170 to
+  510, its User Flag unchanged. Before any of this, 46 pages at 1280x800 had an entry that never lit; none
+  has now. Every measured switch point matches the model computed from the heading positions (207 of 207 at
+  each of the two full sizes). Navigation, 144 cases on Bandit 7-8, Bandit 0-1 and Busqueda at three sizes
+  (clicks in either TOC, heading anchors, deep links, back and forward, a re-click of the hash already in
+  the URL): identical to the first stage, including what shows after a 10px upward scroll. Opening and
+  closing the final toggle on Bandit 12-13 re-resolves in the first frame; ToggleAll's anchor drift is 0px
+  both ways; the console is clean; the current entry keeps the ladder's colour in both themes. The mobile
+  label is written 22 times in a Busqueda scroll, once per change (stock 188, and 3,080 before the review
+  fix); a reload marks where the page is. With the hook pointed at a missing property, production is silent
+  and identical to stock, and dev logs one warning per TOC. At 768x1024 and 1920x1080 Bandit 0-1 fits on one
+  screen and cannot scroll, so its second entry lights only on a click, as in stock and in the spec.
+- **Status:** Adopted; committed to `dev` on 2026-09-29 in three commits: the end zone and the click hold
+  (`b3f62f8`), the short-section rule with the review fixes (`efedee4`), then CORE_SPEC and this entry.
+
 ### 2026-09-28 · OverTheWire moves to Canary yellow, and the amber stays with PasswordReveal
 - **Supersedes in part:** 2026-09-28 · Callouts speak in five voices, and light mode gets its own border
   and label. Only its Open bullet, which this entry resolves.
