@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-09-29 (the "On this page" TOC gives every entry a turn: `TocTracking` adds an end zone, a short-section takeover and a click hold, written through Starlight's own setter).
+> Last updated: 2026-09-30 (each platform's sidebar entry for its landing, and Bandit's for its hub, names what it holds: Machines, VMs, Challenges, Wargames, Levels; VulnHub's group is built by hand like the other three, its tiers commented until its first writeup).
 
 ---
 
@@ -350,6 +350,19 @@ The theme pass is organised into declared cascade layers, one module per layer, 
 - **Hiding a page from nav:** the sidebar is hand-curated in `astro.config.mjs`, so a new doc is
   hidden by simply not listing it (e.g. `/secret`); add `pagefind:false` + a noindex `head` meta
   to keep it out of search.
+- **Sidebar shape:** every platform group is a manual structure in `astro.config.mjs`, never an
+  autogenerate over the whole platform directory, which labels the tier groups with their raw lowercase
+  directory names and lists the landing a second time under the group's own name. Each group opens on
+  its landing page, and Bandit's group on its hub (`sidebar.label` in that page's frontmatter), under
+  a label naming what it holds in the page's own words: HackTheBox **Machines**, VulnHub **VMs**,
+  PicoCTF **Challenges**, OverTheWire **Wargames**, Bandit **Levels**. Never the platform's own name,
+  which the group heading directly above already shows. The five stay distinct because each is also the
+  pager's link text wherever Prev/Next reaches a landing, with no heading above it. A tier or category
+  group stays commented until its directory holds a writeup, because a missing `autogenerate.directory`
+  fails the build: today HackTheBox Hard, PicoCTF Reverse Engineering and all three VulnHub tiers (there
+  are no VulnHub writeups yet). A writeup in a commented tier still builds and shows on its landing, but
+  never in the sidebar. See DECISIONS 2026-09-30 · Each sidebar group opens on what it holds, and
+  VulnHub's is built by hand.
 
 ## 6. Design System — "Decrypted"
 
@@ -1370,9 +1383,10 @@ underscore.
   with a relative Markdown path (../../../../assets/...) so they are optimized and
   hashed by astro:assets. Plain Markdown image syntax is used, not <Image />. Flat
   files allow Starlight sidebar autogenerate to render clean single entries with no
-  phantom groups and no per-writeup config; new writeups require no astro.config.mjs
-  change. Icons remain in public/icons; marketing images remain in public/images.
-  Absolute /public image paths are not used for writeup content images.
+  phantom groups and no per-writeup config; a new writeup in a live tier requires no
+  astro.config.mjs change (the first one in a commented tier uncomments its group, §5
+  "Sidebar shape"). Icons remain in public/icons; marketing images remain in
+  public/images. Absolute /public image paths are not used for writeup content images.
 - Frontmatter `title`/`description` + `import Toggle from '@components/Toggle.astro'`.
 - **Metadata is FRONTMATTER ONLY.** Declare `environment`, plus `os` (where the challenge genuinely has a
   target operating system) and `difficulty` (where the content has a rating: REQUIRED on HackTheBox and
@@ -1994,3 +2008,4 @@ whole records.
 - Moving PasswordReveal's amber or the flag gold along with OverTheWire: rejected, the waypoint and the trophy share one idea and one goal, a secret or reward the reader captures, and keep their values. See DECISIONS 2026-09-28 · OverTheWire moves to Canary yellow, and the amber stays with PasswordReveal.
 - The spec's takeover rule for every "On this page" heading, so each switches at mid-screen after a long section: rejected, it switches exactly where a click lands, so a just-clicked entry flips to the one above on a 10px upward scroll, and it changes the feel of every page; the takeover stays for sections shorter than half a screen. See DECISIONS 2026-09-29 · The "On this page" TOC gives every entry a turn, and a clicked entry stays current.
 - Per-device or per-browser tuning of which "On this page" entry is current: rejected, the rules are fractions of the screen and scale with it (owner call). See DECISIONS 2026-09-29 · The "On this page" TOC gives every entry a turn, and a clicked entry stays current.
+- Labelling a platform landing's sidebar entry Overview, README or with the platform's own name: rejected, the group heading directly above already names the platform, and each label is also the pager's link text, so the five stay distinct and name what the page holds. See DECISIONS 2026-09-30 · Each sidebar group opens on what it holds, and VulnHub's is built by hand.

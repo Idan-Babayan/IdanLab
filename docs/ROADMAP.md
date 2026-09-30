@@ -97,8 +97,11 @@
   have no Starlight `markdown.css` under them, so the orphaned-margin geometry bug fixed on content toggles
   (DECISIONS 2026-07-17) does not apply there.
 - [CONTENT] Mass-import ~50 existing writeups via the pipeline (HTB / VulnHub / PicoCTF / OTW), each as a
-  flat `.mdx` with images under the parallel `src/assets` tree (DECISIONS 2026-06-30). Once HTB
-  Medium/Hard folders have content, uncomment those (lowercase) sidebar groups in `astro.config.mjs`.
+  flat `.mdx` with images under the parallel `src/assets` tree (DECISIONS 2026-06-30). Once the HTB
+  Hard folder has content, uncomment its (lowercase) sidebar group in `astro.config.mjs`. VulnHub's
+  Easy, Medium and Hard groups are written there too, all commented because there are no VulnHub
+  writeups yet: uncomment each with its tier's first writeup, which otherwise builds and shows on the
+  VulnHub landing but never reaches the sidebar.
   For PicoCTF all six per-category sidebar groups are already written in `astro.config.mjs`; uncomment
   each when its directory gets its first writeup (an `autogenerate.directory` that does not exist fails
   the build). Five are live as of 2026-09-04 (General Skills, Cryptography, Web Exploitation, Forensics,

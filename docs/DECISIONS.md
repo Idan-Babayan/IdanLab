@@ -6,6 +6,34 @@
 
 ---
 
+### 2026-09-30 · Each sidebar group opens on what it holds, and VulnHub's is built by hand
+- **Decision:** the sidebar entry for each platform landing names what the platform holds, in the page's own
+  words: HackTheBox **Machines**, VulnHub **VMs**, PicoCTF **Challenges**, OverTheWire **Wargames**, and
+  Bandit's hub **Levels**. They read Overview on four pages, and VulnHub on VulnHub's, directly under a group
+  also called VulnHub. VulnHub's group moves from an autogenerate over the whole `vulnhub` directory to the
+  manual structure HackTheBox and PicoCTF use: the landing link, then Easy, Medium and Hard, each commented
+  until its first writeup.
+- **Why:** each word is already the page's own ("Retired machines", "Vulnerable VMs", "challenge solutions",
+  "Wargames", "34 SSH levels"), so the entry says what the page lists. The five are distinct, so the pager,
+  where no group heading sits above the label, still hints where it leads. The autogenerate caused the
+  doubled name and would have labelled VulnHub's tiers "easy" and "medium", which PicoCTF's manual
+  structure already avoids.
+- **Rejected:**
+  - Overview everywhere: generic, and "Next: Overview" says nothing.
+  - The platform's own name, Bandit on Bandit's hub included: repeats the heading directly above.
+  - README everywhere: built and screenshotted, but one word on five entries tells the pager nothing.
+  - Labs for HackTheBox: Hack The Box uses Labs as its umbrella term and sells Pro Labs as a separate
+    product. These writeups are retired machines, and "lab" already means the owner's own lab on this site.
+  - Machines for VulnHub: accurate, but VMs is VulnHub's own word and keeps the five distinct.
+  - Also considered and dropped: Briefing, Index, Start here, Hub ("VulnHub > Hub"), Recon, Scope, `ls` or
+    `~`.
+- **Accepted trade-offs:** VMs is the one abbreviation, and a VulnHub writeup reaches the sidebar only once
+  its tier is uncommented.
+- **Verified:** production builds of HEAD and of the change, both from `git archive`: 206 files each, every
+  non-HTML file identical, and the 63 pages with a sidebar differ only in the five labels (sidebar and
+  pager) and in Starlight's sidebar-state hash.
+- **Status:** Adopted 2026-09-30.
+
 ### 2026-09-29 · The "On this page" TOC gives every entry a turn, and a clicked entry stays current
 - **Context, not a supersession:** 2026-06-20 · ToggleAll control: sidebar placement, scroll anchoring,
   native-anchor fix. Its `PageSidebar` override now also renders `<TocTracking />`, after the ToggleAll
