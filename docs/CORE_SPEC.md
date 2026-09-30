@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-09-30 (each platform's sidebar entry for its landing, and Bandit's for its hub, names what it holds: Machines, VMs, Challenges, Wargames, Levels; VulnHub's group is built by hand like the other three, its tiers commented until its first writeup).
+> Last updated: 2026-09-30 (each platform's sidebar entry for its landing, and Bandit's for its hub, names what it holds: Machines, VMs, Challenges, Wargames, Levels; VulnHub's group is built by hand like the other three, its tiers commented until its first writeup; About's practice cards split 2 + 2, and the public HackTheBox mark is framed on its ink).
 
 ---
 
@@ -534,6 +534,9 @@ token is an open ROADMAP item, not a bug.
 
 ### Component inventory (current)
 - Standalone: HUD/nav bar, hero, stats, platform/skill/practice cards, pipeline, contact, footer.
+  About's four practice cards hold at most two per row, `minmax(max(260px, 34%), 1fr)`: no card is
+  narrower than just over a third of the row, so they split 2 + 2 from 584px and stack below it (the
+  bare `minmax(260px, 1fr)` put three on the first row from 860px, 2026-09-30).
 - Starlight: themed headings (Syne + lime `#` marker, silent to screen readers, §8 "Decoration says
   nothing to a screen reader"), lead blockquote, code frames,
   Toggle, metadata badges, sidebar dots. (The `:::tip[Answer]` admonition is no longer used: zero
@@ -1700,7 +1703,11 @@ icon.
   The sidebar is NOT a consumer: it uses colored dots, and the commented-out logo block this note used to
   cite as the alternative was deleted from the theme pass in the Phase 4a dead-rule purge. `public/icons/htb.svg`
   is RETAINED as the brand mark for those marketing surfaces and now deliberately DIVERGES from the inlined
-  monochrome `src/assets/icons/htb.svg`; the former byte-identity was coincidental.
+  monochrome `src/assets/icons/htb.svg`; the former byte-identity was coincidental. Both are framed on the
+  same squared viewBox around the ink, `299.648 183.296 424.704 424.704` (2026-09-30): the Illustrator
+  canvas letterboxed the public mark to 42% of its box and 11% convex-hull area, against 56 to 86% for the
+  other three platform marks, so it read small on the About practice card and the HackTheBox landing hero.
+  Framed on the ink it fills the height at 66%.
 - **Accessibility:** every inline glyph carries `aria-hidden="true"`, so each chip's accessible name is
   exactly its text label. A build-time `inline()` normalizer in `icons.ts` strips comments, inter-element
   whitespace and the XML prolog from inlined glyphs (an `<?xml?>` prolog becomes a bogus comment node in an

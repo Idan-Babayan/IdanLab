@@ -353,7 +353,9 @@ import '../styles/fonts.css';
   .skill-card p { color: var(--muted); font-size: .88rem; line-height: 1.6; transform: translateZ(15px); }
 
   /* PRACTICE — now with the same 3D tilt + glare as the homepage cards */
-  .practice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap: 1rem; margin-top: 1.5rem; }
+  /* A card is never narrower than just over a third of the row (34%), so three never fit on one and
+     the four split 2 + 2 rather than 3 + 1. Below two 260px columns they stack, as before. */
+  .practice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(max(260px, 34%), 1fr)); gap: 1rem; margin-top: 1.5rem; }
   .practice { position: relative; display: flex; align-items: center; gap: 1rem; padding: 1.25rem 1.4rem; border-radius: 14px;
     background: var(--ink-2); border: 1px solid var(--panel-brd); text-decoration: none; color: var(--text);
     transform-style: preserve-3d; transition: transform .12s ease, border-color .3s; overflow: hidden; will-change: transform; }
