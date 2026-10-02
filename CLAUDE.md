@@ -140,6 +140,7 @@ Delegated authority (2026-07-25, owner instruction): Claude Code may run read co
 ## My rules
 
 - NO em dashes in any copy. Use commas, colons, or parentheses.
+- Decorative characters (`//`, `#`, arrows, dots, `~`) keep their look but never reach a screen reader as themselves: silent, or read as what they mean ("// SECURITY NOTES" is read "SECURITY NOTES", "cd ~" is read "cd home"). Check every one, existing or new, in Chrome's accessibility tree. CORE_SPEC §8.
 - Don't upgrade dependencies unless I ask. Versions are pinned.
 - Marketing pages are standalone. The homepage is dark-only; `/about` supports light and dark. Writeups are Starlight, themed via the `src/styles/` modules under the layer contract (tokens, base, prose, chrome, components, pages, utilities), with `overrides.css` the only unlayered surface. Never rebuild Starlight.
 - No `!important` inside a layer (it reverses layer order). Rules that must beat unlayered CSS, including our own Astro-scoped component styles, go in `overrides.css` with a comment naming what they beat.

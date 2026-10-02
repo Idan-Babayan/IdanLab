@@ -10,7 +10,9 @@ hero:
       link: /
       variant: primary
       attrs:
-        title: "Home"
+        # The eye reads "cd ~", a screen reader hears "cd home": the ~ is spoken as what it means
+        # (CORE_SPEC §8). No title beside it: Chrome would read it after the name, as a description.
+        aria-label: "cd home"
     - text: "browse writeups"
       link: /hackthebox/
       variant: secondary

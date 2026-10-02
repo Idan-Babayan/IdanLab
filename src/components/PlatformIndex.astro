@@ -216,7 +216,10 @@ const countLabel = (n: number): string => (n === 1 ? 'writeup' : 'writeups');
 		<span class="pi-glow" aria-hidden="true"></span>
 		<div class="pi-hero-inner">
 			<div class="pi-hero-text">
-				<div class="pi-eyebrow reveal">// {meta.name.toUpperCase()}</div>
+				{/* The // is decoration, aria-hidden (CORE_SPEC §8), and kept out of site search, which would
+				    otherwise show it in this page's excerpt. The eyebrow is a flex container, so an outer span
+				    keeps its text one flex item and the space after the glyph renders. */}
+				<div class="pi-eyebrow reveal"><span><span aria-hidden="true" data-pagefind-ignore>//</span> {meta.name.toUpperCase()}</span></div>
 				<h1 class="pi-name decode reveal" data-word={meta.name}>{meta.name}</h1>
 				{meta.tagline && <p class="pi-tagline reveal">{meta.tagline}</p>}
 
@@ -289,10 +292,10 @@ const countLabel = (n: number): string => (n === 1 ? 'writeup' : 'writeups');
 						>
 							<span class="pi-wg-bar" aria-hidden="true"></span>
 							<span class="pi-wg-glare" aria-hidden="true"></span>
-							<div class="pi-wg-eyebrow">// WARGAME</div>
+							<div class="pi-wg-eyebrow"><span aria-hidden="true" data-pagefind-ignore>//</span> WARGAME</div>
 							<h3 class="pi-wg-name">{wg.title}</h3>
 							{wg.description && <p class="pi-wg-desc">{wg.description}</p>}
-							<span class="pi-wg-go">Enter wargame <span class="pi-wg-arrow" aria-hidden="true">-&gt;</span></span>
+							<span class="pi-wg-go">Enter wargame <span class="pi-wg-arrow" aria-hidden="true" data-pagefind-ignore>-&gt;</span></span>
 						</a>
 					))
 					: cards.map((c) => (

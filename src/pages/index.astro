@@ -65,9 +65,12 @@ const OG_ALT = 'Idan.Lab, a lab notebook of CTF writeups and security notes';
 
 <a class="skip-link" href="#main">Skip to content</a>
 
+<!-- Decorative characters (every //, ·, / and →) sit in aria-hidden spans, so a screen reader reads
+     only the words (CORE_SPEC §8). The labels are flex containers: an outer span keeps each label one
+     flex item, so the space after the glyph still renders. -->
 <div class="hud">
   <div class="live"><span class="dot"></span> SESSION ACTIVE</div>
-  <div>IDAN.LAB // SECURITY NOTES</div>
+  <div>IDAN.LAB <span aria-hidden="true">//</span> SECURITY NOTES</div>
   <div class="hud-spacer"></div>
 </div>
 
@@ -78,7 +81,7 @@ const OG_ALT = 'Idan.Lab, a lab notebook of CTF writeups and security notes';
 <section class="hero">
   <canvas id="constellation"></canvas>
   <div class="wrap hero-inner">
-    <div class="eyebrow reveal">Offensive Security · CTF · Writeups</div>
+    <div class="eyebrow reveal"><span>Offensive Security <span aria-hidden="true">·</span> CTF <span aria-hidden="true">·</span> Writeups</span></div>
     <h1 class="headline reveal">
       <span class="alt">Curiosity</span> is my <span class="decode" data-word="exploit">exploit</span>.
     </h1>
@@ -87,7 +90,7 @@ const OG_ALT = 'Idan.Lab, a lab notebook of CTF writeups and security notes';
       <b>Recon to root</b>, documented in full, including the dead ends that taught me the most.
     </p>
     <div class="cta-row reveal">
-      <a href="/hackthebox/" class="btn btn-primary" data-magnetic>Explore Writeups <span class="arrow">→</span></a>
+      <a href="/hackthebox/" class="btn btn-primary" data-magnetic>Explore Writeups <span class="arrow" aria-hidden="true">→</span></a>
       <a href="/about/" class="btn btn-ghost" data-magnetic>About Me</a>
     </div>
   </div>
@@ -95,7 +98,7 @@ const OG_ALT = 'Idan.Lab, a lab notebook of CTF writeups and security notes';
 
 <!-- STATS -->
 <section class="sec wrap">
-  <div class="sec-label reveal">// Index</div>
+  <div class="sec-label reveal"><span><span aria-hidden="true">//</span> Index</span></div>
   <h2 class="sec-title reveal">By the numbers</h2>
   <div class="stats reveal">
     <!-- Resting text is each stat's FINAL value (4 / 50+ / infinity) so no-JS visitors, social
@@ -110,31 +113,31 @@ const OG_ALT = 'Idan.Lab, a lab notebook of CTF writeups and security notes';
 
 <!-- PLATFORMS -->
 <section class="sec wrap">
-  <div class="sec-label reveal">// Arsenal</div>
+  <div class="sec-label reveal"><span><span aria-hidden="true">//</span> Arsenal</span></div>
   <h2 class="sec-title reveal">Pick your poison</h2>
   <div class="grid">
     <a href="/hackthebox/" class="card htb reveal" data-tilt><span class="accent-bar"></span><span class="glare"></span>
-      <div class="idx">01 / HTB</div><div class="name">HackTheBox</div>
+      <div class="idx">01 <span aria-hidden="true">/</span> HTB</div><div class="name">HackTheBox</div>
       <div class="desc">Retired machines, full methodology from recon to root.</div>
-      <div class="go">Enter →</div></a>
+      <div class="go"><span>Enter <span aria-hidden="true">→</span></span></div></a>
     <a href="/vulnhub/" class="card vh reveal" data-tilt><span class="accent-bar"></span><span class="glare"></span>
-      <div class="idx">02 / VH</div><div class="name">VulnHub</div>
+      <div class="idx">02 <span aria-hidden="true">/</span> VH</div><div class="name">VulnHub</div>
       <div class="desc">Offline vulnerable VMs pulled apart in my home lab.</div>
-      <div class="go">Enter →</div></a>
+      <div class="go"><span>Enter <span aria-hidden="true">→</span></span></div></a>
     <a href="/picoctf/" class="card pico reveal" data-tilt><span class="accent-bar"></span><span class="glare"></span>
-      <div class="idx">03 / PICO</div><div class="name">PicoCTF</div>
+      <div class="idx">03 <span aria-hidden="true">/</span> PICO</div><div class="name">PicoCTF</div>
       <div class="desc">Web, crypto, forensics and reverse engineering.</div>
-      <div class="go">Enter →</div></a>
+      <div class="go"><span>Enter <span aria-hidden="true">→</span></span></div></a>
     <a href="/overthewire/" class="card otw reveal" data-tilt><span class="accent-bar"></span><span class="glare"></span>
-      <div class="idx">04 / OTW</div><div class="name">OverTheWire</div>
+      <div class="idx">04 <span aria-hidden="true">/</span> OTW</div><div class="name">OverTheWire</div>
       <div class="desc">Wargames and the Linux fundamentals behind them.</div>
-      <div class="go">Enter →</div></a>
+      <div class="go"><span>Enter <span aria-hidden="true">→</span></span></div></a>
   </div>
 </section>
 
 <!-- PIPELINE -->
 <section class="sec wrap">
-  <div class="sec-label reveal">// Methodology</div>
+  <div class="sec-label reveal"><span><span aria-hidden="true">//</span> Methodology</span></div>
   <h2 class="sec-title reveal">How I work</h2>
   <div class="pipe reveal">
     <div class="phase"><div class="pn">01</div><div class="pt">Recon</div><div class="pd">Map the surface before touching it.</div></div>
@@ -146,7 +149,7 @@ const OG_ALT = 'Idan.Lab, a lab notebook of CTF writeups and security notes';
 
 <!-- CONTACT -->
 <section class="wrap footcta reveal">
-  <div class="sec-label" style="justify-content:center;">// Contact</div>
+  <div class="sec-label" style="justify-content:center;"><span><span aria-hidden="true">//</span> Contact</span></div>
   <h2>Let's <span class="accent">connect</span>.</h2>
   <p class="foot-sub">Hiring, collaborating, or just want to talk shop? My inbox is open, and so is my code. I'm always happy to meet others in the field.</p>
   <div class="cta-row" style="justify-content:center;">
@@ -344,7 +347,7 @@ const OG_ALT = 'Idan.Lab, a lab notebook of CTF writeups and security notes';
   .phase .pn { font-family: var(--mono); font-size: .7rem; letter-spacing:.2em; color: var(--muted); }
   .phase .pt { font-family: var(--display); font-weight: 700; font-size: 1.25rem; margin: .6rem 0; }
   .phase .pd { font-size: .82rem; color: var(--muted); }
-  .phase::after { content: "→"; position: absolute; right: -10px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 1.1rem; z-index: 3; }
+  .phase::after { content: "→"; content: "→" / ""; position: absolute; right: -10px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 1.1rem; z-index: 3; }
   .phase:last-child::after { display: none; }
   .phase:nth-child(1) .pt { color: var(--cyan); }
   .phase:nth-child(2) .pt { color: var(--magenta); }
@@ -531,17 +534,25 @@ const OG_ALT = 'Idan.Lab, a lab notebook of CTF writeups and security notes';
     b.addEventListener('mouseleave', ()=> b.style.transform='');
   });
 
-  /* Click-to-copy email (avoids the OS mail-app prompt) */
+  /* Click-to-copy email (avoids the OS mail-app prompt). The label's own nodes are kept from load, so
+     the restore brings back its <wbr> (a textContent round trip dropped it) and a second click inside
+     1.6s cannot capture the confirmation as the label; it restarts the 1.6s instead of being cut short
+     by the first click's timer. The tick is decoration: aria-hidden (CORE_SPEC §8). */
   (document.querySelectorAll('[data-copy]') as NodeListOf<HTMLElement>).forEach(btn=>{
+    const lbl = btn.querySelector('.btn-label') as HTMLElement | null;
+    const label = lbl ? [...lbl.childNodes] : [];
+    let restore = 0;
     btn.addEventListener('click', async ()=>{
       const val = btn.getAttribute('data-copy') ?? '';
       try { await navigator.clipboard.writeText(val); } catch(_) {}
-      const lbl = btn.querySelector('.btn-label') as HTMLElement | null;
       if(!lbl) return;
-      const prev = lbl.textContent;
-      lbl.textContent = 'Copied to clipboard ✓';
+      const tick = document.createElement('span');
+      tick.setAttribute('aria-hidden', 'true');
+      tick.textContent = '✓';
+      lbl.replaceChildren('Copied to clipboard ', tick);
       btn.style.borderColor = 'var(--lime)';
-      setTimeout(()=>{ lbl.textContent = prev; btn.style.borderColor = ''; }, 1600);
+      clearTimeout(restore);
+      restore = window.setTimeout(()=>{ lbl.replaceChildren(...label); btn.style.borderColor = ''; }, 1600);
     });
   });
 </script>

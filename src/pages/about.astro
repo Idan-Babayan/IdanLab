@@ -50,9 +50,15 @@ import '../styles/fonts.css';
 
 <a class="skip-link" href="#main">Skip to content</a>
 
+<!-- Decorative characters (the arrow and every //) sit in aria-hidden spans, so a screen reader reads
+     only the words (CORE_SPEC §8). The labels are flex containers: an outer span keeps each label one
+     flex item, so the space after the glyph still renders. Inside <main>, which site search indexes,
+     they also carry data-pagefind-ignore: Pagefind indexes aria-hidden text, so a search excerpt would
+     show the // again. -->
+
 <!-- NAV HUD -->
 <div class="hud">
-  <a class="hud-home" href="/">◂ IDAN.LAB <span class="hud-sub">// SECURITY NOTES</span></a>
+  <a class="hud-home" href="/"><span aria-hidden="true">◂</span> IDAN.LAB <span class="hud-sub"><span aria-hidden="true">//</span> SECURITY NOTES</span></a>
   <nav class="hud-nav">
     <a href="/hackthebox/">Writeups</a>
     <a href="/about/" class="active">About</a>
@@ -74,7 +80,7 @@ import '../styles/fonts.css';
   <canvas id="constellation"></canvas>
   <div class="wrap about-hero-inner">
     <div class="about-hero-text">
-      <div class="eyebrow reveal">// whoami</div>
+      <div class="eyebrow reveal"><span><span aria-hidden="true" data-pagefind-ignore>//</span> whoami</span></div>
       <h1 class="headline reveal">Hi, I'm <span class="decode" data-word="Idan">Idan</span>.</h1>
       <p class="sub reveal">
         A 26-year-old cybersecurity enthusiast who fell hard for offensive security and never looked back.
@@ -90,7 +96,7 @@ import '../styles/fonts.css';
 <!-- Out of site search: its loop (recon, foothold, escalation, reflection) is the writeups' own
      vocabulary, and indexed it ranked About above them for those words. -->
 <section class="sec wrap" data-pagefind-ignore>
-  <div class="sec-label reveal">// Philosophy</div>
+  <div class="sec-label reveal"><span><span aria-hidden="true" data-pagefind-ignore>//</span> Philosophy</span></div>
   <h2 class="sec-title reveal">How I approach things</h2>
   <p class="prose reveal">
     Every machine I solve follows the same loop: <b>recon, foothold, escalation, reflection.</b>
@@ -110,7 +116,7 @@ import '../styles/fonts.css';
 <!-- Out of site search, like the practice cards: indexed, these headings ranked About above the
      writeups on the very topics they name. -->
 <section class="sec wrap" data-pagefind-ignore>
-  <div class="sec-label reveal">// Capabilities</div>
+  <div class="sec-label reveal"><span><span aria-hidden="true" data-pagefind-ignore>//</span> Capabilities</span></div>
   <h2 class="sec-title reveal">What I work with</h2>
   <div class="skill-grid">
     <div class="skill-card accent-cyan reveal" data-tilt>
@@ -155,7 +161,7 @@ import '../styles/fonts.css';
 <!-- PRACTICE -->
 <!-- Out of site search: each card points at a landing that search already finds. -->
 <section class="sec wrap" data-pagefind-ignore>
-  <div class="sec-label reveal">// Proving Grounds</div>
+  <div class="sec-label reveal"><span><span aria-hidden="true" data-pagefind-ignore>//</span> Proving Grounds</span></div>
   <h2 class="sec-title reveal">Where I practice</h2>
   <p class="prose reveal">Everything here happens in <b>legal, controlled environments</b>: CTF competitions, intentionally vulnerable labs, and personal VMs.</p>
   <div class="practice-grid">
@@ -168,7 +174,7 @@ import '../styles/fonts.css';
 
 <!-- HEADED -->
 <section class="sec wrap">
-  <div class="sec-label reveal">// Trajectory</div>
+  <div class="sec-label reveal"><span><span aria-hidden="true" data-pagefind-ignore>//</span> Trajectory</span></div>
   <h2 class="sec-title reveal">Where I'm headed</h2>
   <div class="headed-panel reveal">
     <p class="headed-main">I'm actively sharpening my skills toward my first role in security: pentesting, red teaming, or anywhere I get to break things for the right reasons.</p>
@@ -178,7 +184,7 @@ import '../styles/fonts.css';
 
 <!-- CONTACT -->
 <section class="wrap footcta reveal">
-  <div class="sec-label" style="justify-content:center;">// Contact</div>
+  <div class="sec-label" style="justify-content:center;"><span><span aria-hidden="true" data-pagefind-ignore>//</span> Contact</span></div>
   <h2>Let's <span class="accent">connect</span>.</h2>
   <p class="foot-sub">Hiring, collaborating, or just want to talk shop? My inbox is open, and so is my code. I'm always happy to meet others in the field.</p>
   <div class="cta-row" style="justify-content:center;">
@@ -601,17 +607,25 @@ import '../styles/fonts.css';
     b.addEventListener('mouseleave', ()=> b.style.transform='');
   });
 
-  /* Click-to-copy email */
+  /* Click-to-copy email. The label's own nodes are kept from load, so the restore brings back its
+     <wbr> (a textContent round trip dropped it) and a second click inside 1.6s cannot capture the
+     confirmation as the label; it restarts the 1.6s instead of being cut short by the first click's
+     timer. The tick is decoration: aria-hidden (CORE_SPEC §8). */
   (document.querySelectorAll('[data-copy]') as NodeListOf<HTMLElement>).forEach(btn=>{
+    const lbl = btn.querySelector('.btn-label') as HTMLElement | null;
+    const label = lbl ? [...lbl.childNodes] : [];
+    let restore = 0;
     btn.addEventListener('click', async ()=>{
       const val = btn.getAttribute('data-copy') ?? '';
       try { await navigator.clipboard.writeText(val); } catch(_) {}
-      const lbl = btn.querySelector('.btn-label') as HTMLElement | null;
       if(!lbl) return;
-      const prev = lbl.textContent;
-      lbl.textContent = 'Copied to clipboard ✓';
+      const tick = document.createElement('span');
+      tick.setAttribute('aria-hidden', 'true');
+      tick.textContent = '✓';
+      lbl.replaceChildren('Copied to clipboard ', tick);
       btn.style.borderColor = 'var(--lime)';
-      setTimeout(()=>{ lbl.textContent = prev; btn.style.borderColor = ''; }, 1600);
+      clearTimeout(restore);
+      restore = window.setTimeout(()=>{ lbl.replaceChildren(...label); btn.style.borderColor = ''; }, 1600);
     });
   });
 </script>

@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-10-01 (About is in site search for its owner, not for the writeups' topics; the marketing pages gain a skip link, a main landmark and `color-scheme`, and About's theme toggle reports its state; the writeup badge row names each fact for a screen reader; on 2026-09-30, sidebar entries that name what each platform holds, and About's practice cards split 2 + 2).
+> Last updated: 2026-10-01 (decorative characters keep their look and say only what they mean; About is in site search for its owner, not for the writeups' topics; the marketing pages gain a skip link, a main landmark and `color-scheme`, and About's theme toggle reports its state; the writeup badge row names each fact for a screen reader; on 2026-09-30, sidebar entries that name what each platform holds, and About's practice cards split 2 + 2).
 
 ---
 
@@ -1945,10 +1945,19 @@ The flag is visually hidden, not hidden: clip-rect text and a data attribute bot
 
 ### Decoration says nothing to a screen reader
 
-Generated content is part of an element's accessible name, so a decorative glyph drawn with `content`
-is read aloud with the text it decorates. Until 2026-09-28 every h2 was announced as "# Recon" and every
-toggle as "▶ Host reachability ping". A decorative `content` carries empty alternative text, and the
-plain declaration goes FIRST as the fallback:
+**The rule (2026-10-01, the owner's):** a character that is on the page for its look (the `//` before a
+label, the `#` before a heading, an arrow on a link, a dot between two words, the `~` in a command)
+stays exactly as it looks, and a screen reader never gets it as itself. One that only decorates is
+silent; one that stands for something is read as what it stands for. "// SECURITY NOTES" is read
+"SECURITY NOTES", "# Recon" is read "Recon", and the 404's "cd ~" is read "cd home". Characters that are
+content keep their voice: code (a Kali prompt in a code block is read as written), notation in writeup
+prose (`22/tcp`, a URL, a file name), `©`, `&`, the `@` in an address, `50+`, `∞`. Every character of
+this kind, existing or added later, is checked before it ships, in Chrome's accessibility tree.
+
+**Generated content** is part of an element's accessible name, so a decorative glyph drawn with
+`content` is read aloud with the text it decorates. Until 2026-09-28 every h2 was announced as "# Recon"
+and every toggle as "▶ Host reachability ping". A decorative `content` carries empty alternative text,
+and the plain declaration goes FIRST as the fallback:
 
 ```css
 content: "# ";
@@ -1958,7 +1967,35 @@ content: "# " / "";
 A browser that cannot parse the alt form drops that whole declaration, and the build targets browsers
 that predate it (§3, Safari 16.4 and Firefox 114), so without the fallback they would lose the glyph
 instead of keeping it. Lightning CSS keeps both declarations in the build (checked 2026-09-28). The
-heading `#` and the toggle `▶` in `prose.css` follow this; the look is unchanged, pixel for pixel.
+heading `#` and the toggle `▶` in `prose.css` follow this, and so do the arrows between the homepage's
+methodology phases; the look is unchanged, pixel for pixel.
+
+**A glyph written as text** sits in an `aria-hidden` span that holds the glyph alone, with the spaces
+around it left outside, so the words on either side are not run together. Inside a flex container (the
+marketing pages' section labels and eyebrows, the landings' eyebrow, the homepage cards' "Enter →") the
+label's text is wrapped in one more span, so it stays a single flex item and the space after the glyph
+still renders. The split can land a letter up to 0.05px from where it was, which moves no box and only
+re-rasterises glyph edges: about a hundred pixels on the homepage and twenty on About (measured
+2026-10-01). `WriteupCard`, `PlatformIndex`, `Principle` and AttackPath's title (its " · " is split out
+by the component) work this way, as do the marketing pages' `//`, `·`, `/` and arrows and the `#`
+opening the 404's line. Pagefind indexes `aria-hidden` text, so where the span sits in indexed content
+(About's `<main>`, a landing, a writeup) it also carries `data-pagefind-ignore`, or the search excerpt
+shows the glyph again.
+
+**A glyph with a meaning** is hidden the same way and its meaning given in words: as `.sr-only` text
+where the page has that class (the `/secret` title bar reads "home/secret"; the marketing pages have
+none yet, so the first glyph there that needs a spoken form brings the class into both files), or as
+the control's `aria-label`, keeping its visible words: the 404's "cd ~" is `aria-label: "cd home"`.
+Such a link carries no `title`: Chrome reads a title after the name, as a description.
+
+**Text a script writes** follows the rule too: the copy button's "✓" and the `/secret` prompt, on its
+input line and in every echoed command, are `aria-hidden`.
+
+**Known and accepted:** every tab title keeps its " | " (About's own included): the delimiter is a
+Starlight setting (`titleDelimiter`), but a title is plain text, so another character would only change
+what the tab shows. The decode animations (the homepage and About headlines, the landing names, the
+404's "secrets") scramble for up to 1.8 seconds and settle within about two and a half seconds of load,
+and a screen reader that reads the line meanwhile gets the scramble: not covered yet (ROADMAP).
 
 ### A pinned size implies a pinned leading
 
