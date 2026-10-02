@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-09-30 (each platform's sidebar entry for its landing, and Bandit's for its hub, names what it holds: Machines, VMs, Challenges, Wargames, Levels; VulnHub's group is built by hand like the other three, its tiers commented until its first writeup; About's practice cards split 2 + 2, and the public HackTheBox mark is framed on its ink).
+> Last updated: 2026-10-01 (the writeup badge row names each fact for a screen reader; on 2026-09-30, sidebar entries that name what each platform holds, and About's practice cards split 2 + 2).
 
 ---
 
@@ -1708,8 +1708,12 @@ icon.
   canvas letterboxed the public mark to 42% of its box and 11% convex-hull area, against 56 to 86% for the
   other three platform marks, so it read small on the About practice card and the HackTheBox landing hero.
   Framed on the ink it fills the height at 66%.
-- **Accessibility:** every inline glyph carries `aria-hidden="true"`, so each chip's accessible name is
-  exactly its text label. A build-time `inline()` normalizer in `icons.ts` strips comments, inter-element
+- **Accessibility:** every inline glyph carries `aria-hidden="true"`, and each chip's value is preceded by
+  a visually hidden name for its axis ("Platform: ", "Category: ", "Operating system: ", "Environment: ",
+  2026-09-30), as `DifficultyPips` does with "Difficulty N of 4", so a screen reader hears what each fact
+  is rather than one unpunctuated run. The names carry `data-pagefind-ignore`, so they stay out of every
+  writeup's search entry, and `.sr-only`'s `user-select: none` keeps them off the clipboard.
+  A build-time `inline()` normalizer in `icons.ts` strips comments, inter-element
   whitespace and the XML prolog from inlined glyphs (an `<?xml?>` prolog becomes a bogus comment node in an
   HTML document), keeping chip `textContent` clean. `active-directory.svg`'s creator credit (Amido Limited /
   Richard Slater, upstream CC0-1.0) ships as a `data-credit` attribute on the svg root (2026-09-07). It used
