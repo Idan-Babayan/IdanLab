@@ -65,8 +65,9 @@ import '../styles/fonts.css';
   </nav>
 </div>
 
-<!-- The main landmark the skip link lands on. -->
-<main id="main">
+<!-- The main landmark the skip link lands on. Site search indexes it (bar the philosophy, the skills
+     and the practice cards) and the footer's name line. -->
+<main id="main" data-pagefind-body data-pagefind-meta="title:About">
 
 <!-- HERO -->
 <section class="about-hero">
@@ -86,7 +87,9 @@ import '../styles/fonts.css';
 </section>
 
 <!-- APPROACH -->
-<section class="sec wrap">
+<!-- Out of site search: its loop (recon, foothold, escalation, reflection) is the writeups' own
+     vocabulary, and indexed it ranked About above them for those words. -->
+<section class="sec wrap" data-pagefind-ignore>
   <div class="sec-label reveal">// Philosophy</div>
   <h2 class="sec-title reveal">How I approach things</h2>
   <p class="prose reveal">
@@ -104,7 +107,9 @@ import '../styles/fonts.css';
 </section>
 
 <!-- SKILLS -->
-<section class="sec wrap">
+<!-- Out of site search, like the practice cards: indexed, these headings ranked About above the
+     writeups on the very topics they name. -->
+<section class="sec wrap" data-pagefind-ignore>
   <div class="sec-label reveal">// Capabilities</div>
   <h2 class="sec-title reveal">What I work with</h2>
   <div class="skill-grid">
@@ -148,7 +153,8 @@ import '../styles/fonts.css';
 </section>
 
 <!-- PRACTICE -->
-<section class="sec wrap">
+<!-- Out of site search: each card points at a landing that search already finds. -->
+<section class="sec wrap" data-pagefind-ignore>
   <div class="sec-label reveal">// Proving Grounds</div>
   <h2 class="sec-title reveal">Where I practice</h2>
   <p class="prose reveal">Everything here happens in <b>legal, controlled environments</b>: CTF competitions, intentionally vulnerable labs, and personal VMs.</p>
@@ -196,7 +202,8 @@ import '../styles/fonts.css';
 
 <footer class="footbar">
   <div class="wrap footbar-inner">
-    <span>© 2026 Idan Babayan</span>
+    <!-- Site search indexes this line too: it is the only place the surname is page text. -->
+    <span data-pagefind-body>© 2026 Idan Babayan</span>
     <span class="foot-live"><span class="dot"></span> idanlab.dev</span>
     <span>Built with Astro</span>
   </div>

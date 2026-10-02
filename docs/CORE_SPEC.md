@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-10-01 (the marketing pages gain a skip link, a main landmark and `color-scheme`, and About's theme toggle reports its state; the writeup badge row names each fact for a screen reader; on 2026-09-30, sidebar entries that name what each platform holds, and About's practice cards split 2 + 2).
+> Last updated: 2026-10-01 (About is in site search for its owner, not for the writeups' topics; the marketing pages gain a skip link, a main landmark and `color-scheme`, and About's theme toggle reports its state; the writeup badge row names each fact for a screen reader; on 2026-09-30, sidebar entries that name what each platform holds, and About's practice cards split 2 + 2).
 
 ---
 
@@ -361,6 +361,20 @@ The theme pass is organised into declared cascade layers, one module per layer, 
 - **Hiding a page from nav:** the sidebar is hand-curated in `astro.config.mjs`, so a new doc is
   hidden by simply not listing it (e.g. `/secret`); add `pagefind:false` + a noindex `head` meta
   to keep it out of search.
+- **Site search and the marketing pages:** Starlight marks every doc's content `data-pagefind-body`, and
+  once any page carries it Pagefind indexes marked content only, so a standalone page is searchable
+  only if it marks itself. About does (2026-09-30): its `<main>`, with `data-pagefind-meta="title:About"`,
+  and the footer's name line, the only place the surname is page text, so the owner's name finds it.
+  The philosophy section, the skills grid and the practice cards carry `data-pagefind-ignore`
+  (2026-10-01): they speak the writeups' own vocabulary, and indexed they put About first for "privilege
+  escalation" and "reflection" and second for "HackTheBox". Measured on 2026-10-01, About comes first for
+  the owner's name, "about", "contact" and "whoami", and alone for what the owner does in words no
+  writeup uses ("pentesting", "red teaming", "offensive security"); it is also first for "security",
+  second for "machine" (its intro's "machine walkthroughs") and eleventh for "CTF", and absent for
+  "privilege escalation", "HackTheBox", "Linux", "recon", "exploit" and "reflection". An exact match on
+  About switches off Pagefind's fuzzy fallback for that query, so "offensive security" no longer lists
+  the four writeups that matched only "security" (one through its `secure_path`). The homepage stays
+  out: its hero is three words, its stats are numbers and its cards point at the landings.
 - **Sidebar shape:** every platform group is a manual structure in `astro.config.mjs`, never an
   autogenerate over the whole platform directory, which labels the tier groups with their raw lowercase
   directory names and lists the landing a second time under the group's own name. Each group opens on
