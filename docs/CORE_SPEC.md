@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-10-01 (decorative characters keep their look and say only what they mean, and a build guard checks part of it; About is in site search for its owner, not for the writeups' topics; the marketing pages gain a skip link, a main landmark and `color-scheme`, and About's theme toggle reports its state; the writeup badge row names each fact for a screen reader; on 2026-09-30, sidebar entries that name what each platform holds, and About's practice cards split 2 + 2).
+> Last updated: 2026-10-02 (tool output in the writeups no longer dates the runs; on 2026-10-01, decorative characters keep their look and say only what they mean, and a build guard checks part of it; About is in site search for its owner, not for the writeups' topics; the marketing pages gain a skip link, a main landmark and `color-scheme`, and About's theme toggle reports its state; the writeup badge row names each fact for a screen reader; on 2026-09-30, sidebar entries that name what each platform holds, and About's practice cards split 2 + 2).
 
 ---
 
@@ -1453,6 +1453,17 @@ against any build directory.
   fails (`plugins/remark-inject-writeupmeta.mjs`). See DECISIONS 2026-09-03.
 - Long/indented code → wrapped in `<Toggle>`; all code blocks get `frame="code"` + a
   language `title` so bash and python look identical.
+- **Tool output never dates the run (2026-10-02, the owner's):** no writeup shows when its machine was
+  worked, so the order the machines were done in cannot be read off the site. Trim nmap's banner to
+  `Starting Nmap <version> ( https://nmap.org )`, as Bandit 16-17 always had it; drop Kerberos's
+  `(server time: ...)` and smb-os-discovery's `System time:` line (closing nmap's tree on the line
+  before); elide with `...`, the way a long hash already is, a timestamp whose line the reader still
+  needs (hashcat's `Time.Started.....: ... (8 secs)`, BloodHound's `..._bloodhound.zip`); drop an
+  `ls -la` entry the session itself touched (the home directory's `..`); paint a `Date:` header out of a
+  screenshot (Busqueda's Burp view). What every player sees alike stays: a box's own file dates, a
+  challenge image's listing, "3 years ago" against the box's history, tool versions. So does what the
+  page is for, though it places a run in a period: Bandit's passwords change from one OverTheWire
+  rotation to the next, and a PicoCTF flag ends in its deployment's tail.
 - Notion `<aside>` → the flag or password component of the bullets below, never an admonition (the
   `:::tip[Answer]` admonition it once mapped to has had zero instances since 2026-06-27). Task headings
   → brown `.task-title`.

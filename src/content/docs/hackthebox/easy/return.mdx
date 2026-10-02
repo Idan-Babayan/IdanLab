@@ -44,7 +44,7 @@ The `ttl=127` is the first tell: Windows starts at 128 and every hop knocks one 
 ```bash frame="code" title="Bash" {13,17}
 ┌──(Idan@Kali)-[~/Return]
 └─> nmap -sC -sV 10.129.19.227
-Starting Nmap 7.98 ( https://nmap.org ) at 2026-03-30 10:49 -0400
+Starting Nmap 7.98 ( https://nmap.org )
 Nmap scan report for 10.129.19.227
 Host is up (0.087s latency).
 Not shown: 987 closed tcp ports (reset)
@@ -55,7 +55,7 @@ PORT     STATE SERVICE       VERSION
 |_  Potentially risky methods: TRACE
 |_http-server-header: Microsoft-IIS/10.0
 |_http-title: HTB Printer Admin Panel
-88/tcp   open  kerberos-sec  Microsoft Windows Kerberos (server time: 2026-03-30 15:08:29Z)
+88/tcp   open  kerberos-sec  Microsoft Windows Kerberos
 135/tcp  open  msrpc         Microsoft Windows RPC
 139/tcp  open  netbios-ssn   Microsoft Windows netbios-ssn
 389/tcp  open  ldap          Microsoft Windows Active Directory LDAP (Domain: return.local, Site: Default-First-Site-Name)
@@ -273,7 +273,7 @@ INFO: Found AD domain: return.local
 INFO: Found 1 computers
 INFO: Found 5 users
 INFO: Found 52 groups
-INFO: Compressing output into 20260330122425_bloodhound.zip
+INFO: Compressing output into ..._bloodhound.zip
 ```
 
 </Toggle>
