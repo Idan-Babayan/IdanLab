@@ -1986,16 +1986,20 @@ shows the glyph again.
 where the page has that class (the `/secret` title bar reads "home/secret"; the marketing pages have
 none yet, so the first glyph there that needs a spoken form brings the class into both files), or as
 the control's `aria-label`, keeping its visible words: the 404's "cd ~" is `aria-label: "cd home"`.
-Such a link carries no `title`: Chrome reads a title after the name, as a description.
+Each Bandit level's sidebar entry is named "0 to 1" the same way, through `sidebar.attrs`. Such a link
+carries no `title`: Chrome reads a title after the name, as a description.
 
 **Text a script writes** follows the rule too: the copy button's "✓" and the `/secret` prompt, on its
 input line and in every echoed command, are `aria-hidden`.
 
-**Known and accepted:** every tab title keeps its " | " (About's own included): the delimiter is a
-Starlight setting (`titleDelimiter`), but a title is plain text, so another character would only change
-what the tab shows. The decode animations (the homepage and About headlines, the landing names, the
-404's "secrets") scramble for up to 1.8 seconds and settle within about two and a half seconds of load,
-and a screen reader that reads the line meanwhile gets the scramble: not covered yet (ROADMAP).
+**Known and accepted:** Bandit's page titles keep "→" in the h1, the pager and the browser tab:
+Starlight renders a title as plain text there, so a spoken form would mean changing what the page shows
+or rebuilding a Starlight component (§5). Every tab title keeps its " | " (About's own included): the
+delimiter is a Starlight setting (`titleDelimiter`), but a title is plain text, so another character
+would only change what the tab shows. The decode animations (the homepage and About headlines, the
+landing names, the 404's "secrets") scramble for up to 1.8 seconds and settle within about two and a
+half seconds of load, and a screen reader that reads the line meanwhile gets the scramble: not covered
+yet (ROADMAP).
 
 ### A pinned size implies a pinned leading
 
