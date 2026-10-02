@@ -1966,7 +1966,8 @@ silent; one that stands for something is read as what it stands for. "// SECURIT
 content keep their voice: code (a Kali prompt in a code block is read as written), notation in writeup
 prose (`22/tcp`, a URL, a file name), `©`, `&`, the `@` in an address, `50+`, `∞`. Every character of
 this kind, existing or added later, is checked before it ships, in Chrome's accessibility tree; the
-build checks part of it (below).
+build checks part of it (below). See DECISIONS 2026-10-01 · Decorative characters keep their look and
+say only what they mean.
 
 **Generated content** is part of an element's accessible name, so a decorative glyph drawn with
 `content` is read aloud with the text it decorates. Until 2026-09-28 every h2 was announced as "# Recon"
@@ -2116,3 +2117,4 @@ whole records.
 - The spec's takeover rule for every "On this page" heading, so each switches at mid-screen after a long section: rejected, it switches exactly where a click lands, so a just-clicked entry flips to the one above on a 10px upward scroll, and it changes the feel of every page; the takeover stays for sections shorter than half a screen. See DECISIONS 2026-09-29 · The "On this page" TOC gives every entry a turn, and a clicked entry stays current.
 - Per-device or per-browser tuning of which "On this page" entry is current: rejected, the rules are fractions of the screen and scale with it (owner call). See DECISIONS 2026-09-29 · The "On this page" TOC gives every entry a turn, and a clicked entry stays current.
 - Labelling a platform landing's sidebar entry Overview, README or with the platform's own name: rejected, the group heading directly above already names the platform, and each label is also the pager's link text, so the five stay distinct and name what the page holds. See DECISIONS 2026-09-30 · Each sidebar group opens on what it holds, and VulnHub's is built by hand.
+- Changing a decorative character's look so a screen reader handles it, or leaving one for a screen reader to read as itself: rejected, it keeps its look and is silent or read as what it means. See DECISIONS 2026-10-01 · Decorative characters keep their look and say only what they mean.
