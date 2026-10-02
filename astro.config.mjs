@@ -9,6 +9,7 @@ import remarkInjectPasswordReveal from './plugins/remark-inject-passwordreveal.m
 import remarkInjectWriteupMeta from './plugins/remark-inject-writeupmeta.mjs';
 import remarkValidateContentTaxonomy from './plugins/remark-validate-content-taxonomy.mjs';
 import remarkTransformReconRail from './plugins/remark-transform-recon-rail.mjs';
+import validateDecorativeGlyphs from './plugins/validate-decorative-glyphs.mjs';
 
 export default defineConfig({
   site: 'https://idanlab.dev',
@@ -189,5 +190,8 @@ export default defineConfig({
         },
       ],
     }),
+    // After the build, fails it when a decorative character (an arrow, a //, a dot between words)
+    // would be read aloud by a screen reader. Read-only. See plugins/ and CORE_SPEC §8.
+    validateDecorativeGlyphs(),
   ],
 });

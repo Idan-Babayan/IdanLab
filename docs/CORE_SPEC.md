@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-10-01 (decorative characters keep their look and say only what they mean; About is in site search for its owner, not for the writeups' topics; the marketing pages gain a skip link, a main landmark and `color-scheme`, and About's theme toggle reports its state; the writeup badge row names each fact for a screen reader; on 2026-09-30, sidebar entries that name what each platform holds, and About's practice cards split 2 + 2).
+> Last updated: 2026-10-01 (decorative characters keep their look and say only what they mean, and a build guard checks part of it; About is in site search for its owner, not for the writeups' topics; the marketing pages gain a skip link, a main landmark and `color-scheme`, and About's theme toggle reports its state; the writeup badge row names each fact for a screen reader; on 2026-09-30, sidebar entries that name what each platform holds, and About's practice cards split 2 + 2).
 
 ---
 
@@ -282,7 +282,8 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 │  ├─ remark-inject-passwordreveal.mjs # remark: injects the PasswordReveal import (§7 "Build-time plugins")
 │  ├─ remark-inject-writeupmeta.mjs   # remark: injects the WriteupMeta badge row (§7 "Build-time plugins")
 │  ├─ remark-transform-recon-rail.mjs  # remark: builds the recon findings rail (§7 "Build-time plugins")
-│  └─ remark-validate-content-taxonomy.mjs # remark: taxonomy build guard (§7 "Build-time plugins")
+│  ├─ remark-validate-content-taxonomy.mjs # remark: taxonomy build guard (§7 "Build-time plugins")
+│  └─ validate-decorative-glyphs.mjs  # integration: after the build, fails it when a decorative character on its list would be read aloud (§8 "Decoration says nothing to a screen reader")
 └─ public/
    ├─ robots.txt                      # in-repo; breadcrumb comment + Sitemap line (see §2)
    ├─ favicon.svg                     # site favicon
@@ -1403,6 +1404,18 @@ which reads as a passing test of a dead guard. It produced exactly that false ne
 Astro 7 upgrade verification. Any probe of the guard must use a filename that does not start with an
 underscore.
 
+**One guard runs after the build instead of over the source.** `validate-decorative-glyphs.mjs` is an
+integration, listed after `starlight()` in `astro.config.mjs` `integrations`, whose `astro:build:done`
+hook reads every built page and stylesheet and fails the build when a decorative character on its list
+would reach a screen reader (§8 "Decoration says nothing to a screen reader", 2026-10-01, which lists
+what it covers and what it does not). Reading the output is the point: the decoration lives in component
+and page markup, which the remark guards never see, while writeup prose, the one thing they do see, is
+outside the check. It parses with `hast-util-from-html` and walks the tree itself. That package is not
+declared in `package.json`: it resolves because npm hoists it from `@astrojs/markdown-remark`, so an
+upgrade that stops hoisting it fails the build at the import, loudly. Its scope and its one allowance
+are in the plugin's header, and `findReadAloudDecoration(dir)` is exported, so a session can run it
+against any build directory.
+
 ### MDX conventions (applied by hand)
 - Writeups are stored as flat .mdx files under src/content/docs
   (<platform>/<difficulty>/<machine>.mdx), one file per writeup with no per-writeup
@@ -1952,7 +1965,8 @@ silent; one that stands for something is read as what it stands for. "// SECURIT
 "SECURITY NOTES", "# Recon" is read "Recon", and the 404's "cd ~" is read "cd home". Characters that are
 content keep their voice: code (a Kali prompt in a code block is read as written), notation in writeup
 prose (`22/tcp`, a URL, a file name), `©`, `&`, the `@` in an address, `50+`, `∞`. Every character of
-this kind, existing or added later, is checked before it ships, in Chrome's accessibility tree.
+this kind, existing or added later, is checked before it ships, in Chrome's accessibility tree; the
+build checks part of it (below).
 
 **Generated content** is part of an element's accessible name, so a decorative glyph drawn with
 `content` is read aloud with the text it decorates. Until 2026-09-28 every h2 was announced as "# Recon"
@@ -1991,6 +2005,21 @@ carries no `title`: Chrome reads a title after the name, as a description.
 
 **Text a script writes** follows the rule too: the copy button's "✓" and the `/secret` prompt, on its
 input line and in every echoed command, are `aria-hidden`.
+
+**The check:** `plugins/validate-decorative-glyphs.mjs` (§7 "Build-time plugins") fails the build when
+a character on its list reaches a screen reader. The list: arrows, triangles, bullets and dots,
+box-drawing and block characters, symbols, dingbats and emoji, guillemets, the pipe and the tilde,
+anywhere; a `//`, `/`, `#`, `$`, `>`, `>_` or `[+]` standing as a word; and an ASCII arrow (`->`, `<-`,
+`=>`). It looks in text, in an `aria-label`, `alt` or `title`, in `list-style` strings, and in generated
+content, where a rule's effective `content` needs its alternative (empty, or in words) after its plain
+fallback. Outside its scope: writeup prose and the component chrome inside it (a `Callout` label, a
+`Toggle` summary, `FlagCapture`, `PasswordReveal`, `Principle`, the recon rail), code, the `<head>`,
+anything `aria-hidden`, and the content of a link or button named by its own `aria-label` (it checks the
+label). Beyond its reach, so checked by hand in Chrome's accessibility tree: that component chrome, a
+character off its list, a search excerpt, and text written at run time. Its one allowance is a level
+title ("Bandit 0 → 1"), in the h1 and the pager's link titles only, so a level whose sidebar entry lacks
+its spoken form fails the build. A character that is content in chrome text ("CVSS > 9") fails it too
+and is reworded: there is no per-element allowance yet (ROADMAP).
 
 **Known and accepted:** Bandit's page titles keep "→" in the h1, the pager and the browser tab:
 Starlight renders a title as plain text there, so a spoken form would mean changing what the page shows

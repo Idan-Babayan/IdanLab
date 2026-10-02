@@ -120,6 +120,17 @@
   one or two writeups and a filter returns a dead end, so it is pure invisible metadata for now. When it
   activates, tag emission + validation ride the import pipeline (see the content-taxonomy guard follow-up
   in this section) so there is no separate backfill.
+- [A11Y] **The decoration guard's blind spots** (CORE_SPEC §8 "Decoration says nothing to a screen
+  reader", "The check"). Each passes the build today and is checked by hand in the accessibility tree:
+  - Component chrome inside a writeup (a `Callout` label, a `Toggle` summary, `FlagCapture`,
+    `PasswordReveal`, `Principle`, the recon rail) sits under `.sl-markdown-content`, so the guard skips
+    it with the prose. All of it is clean today. Bringing those components' own markup into scope, and
+    not the prose they wrap, needs a marker the guard can tell apart.
+  - The one allowance is a pattern in two places. A character that is content in chrome text ("CVSS >
+    9") has no way through but rewording; a per-element marker would let it through where it is written.
+  - Search excerpts: Pagefind indexes `aria-hidden` text, so a hidden glyph in indexed content needs
+    `data-pagefind-ignore` by hand, and nothing checks that it has one. `FlagCapture`'s scrambled cipher
+    is indexed today, on the three writeups that capture a flag.
 - [ENG] Starlight plugins: scroll-to-top button, mobile sidebar swipe, fullscreen code blocks.
 - [DESIGN] Replace `ethical-hacking.png` about portrait with a transparent custom SVG.
 - [ENG] Extract repeated UI into reusable Astro components (cards, badges, buttons, hero FX).
