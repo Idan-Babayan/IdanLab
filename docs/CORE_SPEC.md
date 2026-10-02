@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-10-01 (the marketing pages gain a skip link, a main landmark and `color-scheme`; the writeup badge row names each fact for a screen reader; on 2026-09-30, sidebar entries that name what each platform holds, and About's practice cards split 2 + 2).
+> Last updated: 2026-10-01 (the marketing pages gain a skip link, a main landmark and `color-scheme`, and About's theme toggle reports its state; the writeup badge row names each fact for a screen reader; on 2026-09-30, sidebar entries that name what each platform holds, and About's practice cards split 2 + 2).
 
 ---
 
@@ -343,7 +343,8 @@ The theme pass is organised into declared cascade layers, one module per layer, 
   Both marketing pages declare `color-scheme` as Starlight does (2026-09-30): `dark` in the token
   block's `:root`, and `light` in About's light block, so the browser draws its own scrollbar and
   controls to match the page. Without it they followed the OS: on a light Windows the homepage wore a
-  white scrollbar.
+  white scrollbar. About's toggle is named for the theme it turns on, "Light theme", and carries its
+  state in `aria-pressed` (2026-09-30), as `PlatformIndex`'s filter pills do.
 - **Skip link and main landmark (2026-09-30):** Starlight gives every doc both, so the two marketing
   pages carry their own. Each opens with a "Skip to content" link, clipped until focused like
   Starlight's `.sl-skip-link` and shown on focus as a block in the primary button's colours, that lands
