@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-10-01 (the writeup badge row names each fact for a screen reader; on 2026-09-30, sidebar entries that name what each platform holds, and About's practice cards split 2 + 2).
+> Last updated: 2026-10-01 (the marketing pages gain a skip link and a main landmark; the writeup badge row names each fact for a screen reader; on 2026-09-30, sidebar entries that name what each platform holds, and About's practice cards split 2 + 2).
 
 ---
 
@@ -340,6 +340,12 @@ The theme pass is organised into declared cascade layers, one module per layer, 
   or who picked Auto (Starlight stores an empty string for Auto), gets dark on About and the OS scheme
   on a writeup, because About's bootstrap falls through to dark while Starlight's falls through to
   `prefers-color-scheme` (measured 2026-09-13; recorded as intended 2026-09-18).
+- **Skip link and main landmark (2026-09-30):** Starlight gives every doc both, so the two marketing
+  pages carry their own. Each opens with a "Skip to content" link, clipped until focused like
+  Starlight's `.sl-skip-link` and shown on focus as a block in the primary button's colours, that lands
+  on a `<main id="main">` wrapping everything between the HUD and the footer. The rule is written in
+  both files, like the token block. The homepage's HUD holds no link, so there the skip link passes
+  over nothing; it is kept so the first Tab stop is the same on every page.
 - **Content-embedded components:** platform landings, the 404, and `/secret` are Starlight docs
   that embed scoped Astro components via MDX (`PlatformIndex`, `NotFound`, `SecretTerminal`). They
   carry Starlight's `not-content` class so prose styling skips them; most of our prose rules in
@@ -1907,7 +1913,8 @@ borrow the other's rule.
 the production build, it reaches both flavours in both engines. It is the same clip-rect technique but it
 is not `.sr-only`, and unlike every node that rule covers it UNCLIPS on focus, so it is text a keyboard
 reader can actually see. One word of chrome, left alone rather than folded into a rule about permanently
-hidden text.
+hidden text. The marketing pages' `.skip-link` (2026-09-30) is built the same way and left alone for the
+same reason.
 
 Test with a RICH TEXT paste target and read `text/html` from a real paste event. A textarea only ever
 exposes `text/plain`, which Blink fixed in Chrome 97, and `getSelection().toString()` was not fixed until

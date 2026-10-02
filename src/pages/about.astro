@@ -48,6 +48,8 @@ import '../styles/fonts.css';
 </head>
 <body>
 
+<a class="skip-link" href="#main">Skip to content</a>
+
 <!-- NAV HUD -->
 <div class="hud">
   <a class="hud-home" href="/">◂ IDAN.LAB <span class="hud-sub">// SECURITY NOTES</span></a>
@@ -60,6 +62,9 @@ import '../styles/fonts.css';
     </button>
   </nav>
 </div>
+
+<!-- The main landmark the skip link lands on. -->
+<main id="main">
 
 <!-- HERO -->
 <section class="about-hero">
@@ -184,6 +189,8 @@ import '../styles/fonts.css';
     </button>
   </div>
 </section>
+
+</main>
 
 <footer class="footbar">
   <div class="wrap footbar-inner">
@@ -415,6 +422,7 @@ import '../styles/fonts.css';
      matching the shared content-page ring in base.css. :focus-visible only, so it shows for
      keyboard nav and not on mouse click. var(--lime) is theme-aware and matches the
      Starlight content-page accent (bright lime on dark ink, deep olive on light paper). */
+  .skip-link:focus-visible,
   .hud-home:focus-visible,
   .hud-nav a:focus-visible,
   .theme-toggle:focus-visible,
@@ -423,6 +431,11 @@ import '../styles/fonts.css';
     outline: 2px solid var(--lime);
     outline-offset: 2px;
   }
+  /* Skip link, as Starlight's .sl-skip-link on every content route: clipped at rest, and on focus a
+     block in the top corner in the primary button's colours. The same rule is in index.astro. */
+  .skip-link { position: fixed; top: .75rem; inset-inline-start: .75rem; z-index: 10000; clip: rect(0 0 0 0); }
+  .skip-link:focus { clip: auto; padding: .5rem 1rem; text-decoration: none;
+    background: var(--lime); color: var(--btn-primary-text); }
   /* Platform practice cards key the ring to their identity accent (echoes the hover border). */
   .practice:focus-visible { outline-color: var(--accent); }
 
