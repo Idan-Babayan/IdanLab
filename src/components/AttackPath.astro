@@ -125,7 +125,9 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
   style={`--ap-rise:${rise}px; --ap-climb:${climb}px; --ap-cw:${CONN_W}px; --ap-ch:${CONN_H}px; --ap-dash:${DASH}; --ap-edge-angle:${EDGE_ANGLE}deg;`}
 >
   <div class="ap-head">
-    <p class="ap-title">{title}</p>
+    {/* A " · " in the title is a visual separator: the dot is aria-hidden and kept out of site search,
+        and the words around it are read (CORE_SPEC §8). */}
+    <p class="ap-title">{title.split(' · ').map((part, i) => (i === 0 ? part : [' ', <span aria-hidden="true" data-pagefind-ignore>·</span>, ` ${part}`]))}</p>
     <div class="ap-meter">
       {/* The step count is real TEXT, so the position is available to assistive tech without a
           role=progressbar dance. The bar beside it is decoration and is hidden from the a11y tree. */}

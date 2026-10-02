@@ -131,7 +131,7 @@ const dataAttrs: Record<string, string> =
 		{showPlatform && (
 			<>
 				<span class="wc-platform">{platformLabel}</span>
-				<span class="wc-sep" aria-hidden="true">·</span>
+				<span class="wc-sep" aria-hidden="true" data-pagefind-ignore>·</span>
 			</>
 		)}
 		<span class={`wc-tx tx-${group.slug}`}>
@@ -142,9 +142,9 @@ const dataAttrs: Record<string, string> =
 		</span>
 		{(hasOs || hasEnv) && (
 			<span class="wc-facts">
-				{!stacked && <span class="wc-sep" aria-hidden="true">·</span>}
+				{!stacked && <span class="wc-sep" aria-hidden="true" data-pagefind-ignore>·</span>}
 				{hasOs && <span class="wc-fact">{os}</span>}
-				{hasOs && hasEnv && <span class="wc-sep" aria-hidden="true">·</span>}
+				{hasOs && hasEnv && <span class="wc-sep" aria-hidden="true" data-pagefind-ignore>·</span>}
 				{hasEnv && <span class="wc-fact">{environment}</span>}
 			</span>
 		)}
@@ -160,7 +160,7 @@ const dataAttrs: Record<string, string> =
 
 	{description && <p class="wc-desc">{description}</p>}
 
-	<span class="wc-go">Read writeup <span class="wc-arrow" aria-hidden="true">-&gt;</span></span>
+	<span class="wc-go">Read writeup <span class="wc-arrow" aria-hidden="true" data-pagefind-ignore>-&gt;</span></span>
 </a>
 
 <style>

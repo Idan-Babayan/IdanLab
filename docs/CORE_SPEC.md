@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-09-30 (each platform's sidebar entry for its landing, and Bandit's for its hub, names what it holds: Machines, VMs, Challenges, Wargames, Levels; VulnHub's group is built by hand like the other three, its tiers commented until its first writeup; About's practice cards split 2 + 2, and the public HackTheBox mark is framed on its ink).
+> Last updated: 2026-10-02 (tool output in the writeups no longer dates the runs; on 2026-10-01, decorative characters keep their look and say only what they mean, and a build guard checks part of it; About is in site search for its owner, not for the writeups' topics; the marketing pages gain a skip link, a main landmark and `color-scheme`, and About's theme toggle reports its state; the writeup badge row names each fact for a screen reader; on 2026-09-30, sidebar entries that name what each platform holds, and About's practice cards split 2 + 2).
 
 ---
 
@@ -282,7 +282,8 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 │  ├─ remark-inject-passwordreveal.mjs # remark: injects the PasswordReveal import (§7 "Build-time plugins")
 │  ├─ remark-inject-writeupmeta.mjs   # remark: injects the WriteupMeta badge row (§7 "Build-time plugins")
 │  ├─ remark-transform-recon-rail.mjs  # remark: builds the recon findings rail (§7 "Build-time plugins")
-│  └─ remark-validate-content-taxonomy.mjs # remark: taxonomy build guard (§7 "Build-time plugins")
+│  ├─ remark-validate-content-taxonomy.mjs # remark: taxonomy build guard (§7 "Build-time plugins")
+│  └─ validate-decorative-glyphs.mjs  # integration: after the build, fails it when a decorative character on its list would be read aloud (§8 "Decoration says nothing to a screen reader")
 └─ public/
    ├─ robots.txt                      # in-repo; breadcrumb comment + Sitemap line (see §2)
    ├─ favicon.svg                     # site favicon
@@ -340,6 +341,17 @@ The theme pass is organised into declared cascade layers, one module per layer, 
   or who picked Auto (Starlight stores an empty string for Auto), gets dark on About and the OS scheme
   on a writeup, because About's bootstrap falls through to dark while Starlight's falls through to
   `prefers-color-scheme` (measured 2026-09-13; recorded as intended 2026-09-18).
+  Both marketing pages declare `color-scheme` as Starlight does (2026-09-30): `dark` in the token
+  block's `:root`, and `light` in About's light block, so the browser draws its own scrollbar and
+  controls to match the page. Without it they followed the OS: on a light Windows the homepage wore a
+  white scrollbar. About's toggle is named for the theme it turns on, "Light theme", and carries its
+  state in `aria-pressed` (2026-09-30), as `PlatformIndex`'s filter pills do.
+- **Skip link and main landmark (2026-09-30):** Starlight gives every doc both, so the two marketing
+  pages carry their own. Each opens with a "Skip to content" link, clipped until focused like
+  Starlight's `.sl-skip-link` and shown on focus as a block in the primary button's colours, that lands
+  on a `<main id="main">` wrapping everything between the HUD and the footer. The rule is written in
+  both files, like the token block. The homepage's HUD holds no link, so there the skip link passes
+  over nothing; it is kept so the first Tab stop is the same on every page.
 - **Content-embedded components:** platform landings, the 404, and `/secret` are Starlight docs
   that embed scoped Astro components via MDX (`PlatformIndex`, `NotFound`, `SecretTerminal`). They
   carry Starlight's `not-content` class so prose styling skips them; most of our prose rules in
@@ -350,6 +362,20 @@ The theme pass is organised into declared cascade layers, one module per layer, 
 - **Hiding a page from nav:** the sidebar is hand-curated in `astro.config.mjs`, so a new doc is
   hidden by simply not listing it (e.g. `/secret`); add `pagefind:false` + a noindex `head` meta
   to keep it out of search.
+- **Site search and the marketing pages:** Starlight marks every doc's content `data-pagefind-body`, and
+  once any page carries it Pagefind indexes marked content only, so a standalone page is searchable
+  only if it marks itself. About does (2026-09-30): its `<main>`, with `data-pagefind-meta="title:About"`,
+  and the footer's name line, the only place the surname is page text, so the owner's name finds it.
+  The philosophy section, the skills grid and the practice cards carry `data-pagefind-ignore`
+  (2026-10-01): they speak the writeups' own vocabulary, and indexed they put About first for "privilege
+  escalation" and "reflection" and second for "HackTheBox". Measured on 2026-10-01, About comes first for
+  the owner's name, "about", "contact" and "whoami", and alone for what the owner does in words no
+  writeup uses ("pentesting", "red teaming", "offensive security"); it is also first for "security",
+  second for "machine" (its intro's "machine walkthroughs") and eleventh for "CTF", and absent for
+  "privilege escalation", "HackTheBox", "Linux", "recon", "exploit" and "reflection". An exact match on
+  About switches off Pagefind's fuzzy fallback for that query, so "offensive security" no longer lists
+  the four writeups that matched only "security" (one through its `secure_path`). The homepage stays
+  out: its hero is three words, its stats are numbers and its cards point at the landings.
 - **Sidebar shape:** every platform group is a manual structure in `astro.config.mjs`, never an
   autogenerate over the whole platform directory, which labels the tier groups with their raw lowercase
   directory names and lists the landing a second time under the group's own name. Each group opens on
@@ -1378,6 +1404,18 @@ which reads as a passing test of a dead guard. It produced exactly that false ne
 Astro 7 upgrade verification. Any probe of the guard must use a filename that does not start with an
 underscore.
 
+**One guard runs after the build instead of over the source.** `validate-decorative-glyphs.mjs` is an
+integration, listed after `starlight()` in `astro.config.mjs` `integrations`, whose `astro:build:done`
+hook reads every built page and stylesheet and fails the build when a decorative character on its list
+would reach a screen reader (§8 "Decoration says nothing to a screen reader", 2026-10-01, which lists
+what it covers and what it does not). Reading the output is the point: the decoration lives in component
+and page markup, which the remark guards never see, while writeup prose, the one thing they do see, is
+outside the check. It parses with `hast-util-from-html` and walks the tree itself. That package is not
+declared in `package.json`: it resolves because npm hoists it from `@astrojs/markdown-remark`, so an
+upgrade that stops hoisting it fails the build at the import, loudly. Its scope and its one allowance
+are in the plugin's header, and `findReadAloudDecoration(dir)` is exported, so a session can run it
+against any build directory.
+
 ### MDX conventions (applied by hand)
 - Writeups are stored as flat .mdx files under src/content/docs
   (<platform>/<difficulty>/<machine>.mdx), one file per writeup with no per-writeup
@@ -1415,6 +1453,17 @@ underscore.
   fails (`plugins/remark-inject-writeupmeta.mjs`). See DECISIONS 2026-09-03.
 - Long/indented code → wrapped in `<Toggle>`; all code blocks get `frame="code"` + a
   language `title` so bash and python look identical.
+- **Tool output never dates the run (2026-10-02, the owner's):** no writeup shows when its machine was
+  worked, so the order the machines were done in cannot be read off the site. Trim nmap's banner to
+  `Starting Nmap <version> ( https://nmap.org )`, as Bandit 16-17 always had it; drop Kerberos's
+  `(server time: ...)` and smb-os-discovery's `System time:` line (closing nmap's tree on the line
+  before); elide with `...`, the way a long hash already is, a timestamp whose line the reader still
+  needs (hashcat's `Time.Started.....: ... (8 secs)`, BloodHound's `..._bloodhound.zip`); drop an
+  `ls -la` entry the session itself touched (the home directory's `..`); paint a `Date:` header out of a
+  screenshot (Busqueda's Burp view). What every player sees alike stays: a box's own file dates, a
+  challenge image's listing, "3 years ago" against the box's history, tool versions. So does what the
+  page is for, though it places a run in a period: Bandit's passwords change from one OverTheWire
+  rotation to the next, and a PicoCTF flag ends in its deployment's tail.
 - Notion `<aside>` → the flag or password component of the bullets below, never an admonition (the
   `:::tip[Answer]` admonition it once mapped to has had zero instances since 2026-06-27). Task headings
   → brown `.task-title`.
@@ -1708,8 +1757,12 @@ icon.
   canvas letterboxed the public mark to 42% of its box and 11% convex-hull area, against 56 to 86% for the
   other three platform marks, so it read small on the About practice card and the HackTheBox landing hero.
   Framed on the ink it fills the height at 66%.
-- **Accessibility:** every inline glyph carries `aria-hidden="true"`, so each chip's accessible name is
-  exactly its text label. A build-time `inline()` normalizer in `icons.ts` strips comments, inter-element
+- **Accessibility:** every inline glyph carries `aria-hidden="true"`, and each chip's value is preceded by
+  a visually hidden name for its axis ("Platform: ", "Category: ", "Operating system: ", "Environment: ",
+  2026-09-30), as `DifficultyPips` does with "Difficulty N of 4", so a screen reader hears what each fact
+  is rather than one unpunctuated run. The names carry `data-pagefind-ignore`, so they stay out of every
+  writeup's search entry, and `.sr-only`'s `user-select: none` keeps them off the clipboard.
+  A build-time `inline()` normalizer in `icons.ts` strips comments, inter-element
   whitespace and the XML prolog from inlined glyphs (an `<?xml?>` prolog becomes a bogus comment node in an
   HTML document), keeping chip `textContent` clean. `active-directory.svg`'s creator credit (Amido Limited /
   Richard Slater, upstream CC0-1.0) ships as a `data-credit` attribute on the svg root (2026-09-07). It used
@@ -1903,7 +1956,8 @@ borrow the other's rule.
 the production build, it reaches both flavours in both engines. It is the same clip-rect technique but it
 is not `.sr-only`, and unlike every node that rule covers it UNCLIPS on focus, so it is text a keyboard
 reader can actually see. One word of chrome, left alone rather than folded into a rule about permanently
-hidden text.
+hidden text. The marketing pages' `.skip-link` (2026-09-30) is built the same way and left alone for the
+same reason.
 
 Test with a RICH TEXT paste target and read `text/html` from a real paste event. A textarea only ever
 exposes `text/plain`, which Blink fixed in Chrome 97, and `getSelection().toString()` was not fixed until
@@ -1915,10 +1969,21 @@ The flag is visually hidden, not hidden: clip-rect text and a data attribute bot
 
 ### Decoration says nothing to a screen reader
 
-Generated content is part of an element's accessible name, so a decorative glyph drawn with `content`
-is read aloud with the text it decorates. Until 2026-09-28 every h2 was announced as "# Recon" and every
-toggle as "▶ Host reachability ping". A decorative `content` carries empty alternative text, and the
-plain declaration goes FIRST as the fallback:
+**The rule (2026-10-01, the owner's):** a character that is on the page for its look (the `//` before a
+label, the `#` before a heading, an arrow on a link, a dot between two words, the `~` in a command)
+stays exactly as it looks, and a screen reader never gets it as itself. One that only decorates is
+silent; one that stands for something is read as what it stands for. "// SECURITY NOTES" is read
+"SECURITY NOTES", "# Recon" is read "Recon", and the 404's "cd ~" is read "cd home". Characters that are
+content keep their voice: code (a Kali prompt in a code block is read as written), notation in writeup
+prose (`22/tcp`, a URL, a file name), `©`, `&`, the `@` in an address, `50+`, `∞`. Every character of
+this kind, existing or added later, is checked before it ships, in Chrome's accessibility tree; the
+build checks part of it (below). See DECISIONS 2026-10-01 · Decorative characters keep their look and
+say only what they mean.
+
+**Generated content** is part of an element's accessible name, so a decorative glyph drawn with
+`content` is read aloud with the text it decorates. Until 2026-09-28 every h2 was announced as "# Recon"
+and every toggle as "▶ Host reachability ping". A decorative `content` carries empty alternative text,
+and the plain declaration goes FIRST as the fallback:
 
 ```css
 content: "# ";
@@ -1928,7 +1993,54 @@ content: "# " / "";
 A browser that cannot parse the alt form drops that whole declaration, and the build targets browsers
 that predate it (§3, Safari 16.4 and Firefox 114), so without the fallback they would lose the glyph
 instead of keeping it. Lightning CSS keeps both declarations in the build (checked 2026-09-28). The
-heading `#` and the toggle `▶` in `prose.css` follow this; the look is unchanged, pixel for pixel.
+heading `#` and the toggle `▶` in `prose.css` follow this, and so do the arrows between the homepage's
+methodology phases; the look is unchanged, pixel for pixel.
+
+**A glyph written as text** sits in an `aria-hidden` span that holds the glyph alone, with the spaces
+around it left outside, so the words on either side are not run together. Inside a flex container (the
+marketing pages' section labels and eyebrows, the landings' eyebrow, the homepage cards' "Enter →") the
+label's text is wrapped in one more span, so it stays a single flex item and the space after the glyph
+still renders. The split can land a letter up to 0.05px from where it was, which moves no box and only
+re-rasterises glyph edges: about a hundred pixels on the homepage and twenty on About (measured
+2026-10-01). `WriteupCard`, `PlatformIndex`, `Principle` and AttackPath's title (its " · " is split out
+by the component) work this way, as do the marketing pages' `//`, `·`, `/` and arrows and the `#`
+opening the 404's line. Pagefind indexes `aria-hidden` text, so where the span sits in indexed content
+(About's `<main>`, a landing, a writeup) it also carries `data-pagefind-ignore`, or the search excerpt
+shows the glyph again.
+
+**A glyph with a meaning** is hidden the same way and its meaning given in words: as `.sr-only` text
+where the page has that class (the `/secret` title bar reads "home/secret"; the marketing pages have
+none yet, so the first glyph there that needs a spoken form brings the class into both files), or as
+the control's `aria-label`, keeping its visible words: the 404's "cd ~" is `aria-label: "cd home"`.
+Each Bandit level's sidebar entry is named "0 to 1" the same way, through `sidebar.attrs`. Such a link
+carries no `title`: Chrome reads a title after the name, as a description.
+
+**Text a script writes** follows the rule too: the copy button's "✓" and the `/secret` prompt, on its
+input line and in every echoed command, are `aria-hidden`.
+
+**The check:** `plugins/validate-decorative-glyphs.mjs` (§7 "Build-time plugins") fails the build when
+a character on its list reaches a screen reader. The list: arrows, triangles, bullets and dots,
+box-drawing and block characters, symbols, dingbats and emoji, guillemets, the pipe and the tilde,
+anywhere; a `//`, `/`, `#`, `$`, `>`, `>_` or `[+]` standing as a word; and an ASCII arrow (`->`, `<-`,
+`=>`). It looks in text, in an `aria-label`, `alt` or `title`, in `list-style` strings, and in generated
+content, where a rule's effective `content` needs its alternative (empty, or in words) after its plain
+fallback. Outside its scope: writeup prose and the component chrome inside it (a `Callout` label, a
+`Toggle` summary, `FlagCapture`, `PasswordReveal`, `Principle`, the recon rail), code, the `<head>`,
+anything `aria-hidden`, and the content of a link or button named by its own `aria-label` (it checks the
+label). Beyond its reach, so checked by hand in Chrome's accessibility tree: that component chrome, a
+character off its list, a search excerpt, and text written at run time. Its one allowance is a level
+title ("Bandit 0 → 1"), in the h1 and the pager's link titles only, so a level whose sidebar entry lacks
+its spoken form fails the build. A character that is content in chrome text ("CVSS > 9") fails it too
+and is reworded: there is no per-element allowance yet (ROADMAP).
+
+**Known and accepted:** Bandit's page titles keep "→" in the h1, the pager and the browser tab:
+Starlight renders a title as plain text there, so a spoken form would mean changing what the page shows
+or rebuilding a Starlight component (§5). Every tab title keeps its " | " (About's own included): the
+delimiter is a Starlight setting (`titleDelimiter`), but a title is plain text, so another character
+would only change what the tab shows. The decode animations (the homepage and About headlines, the
+landing names, the 404's "secrets") scramble for up to 1.8 seconds and settle within about two and a
+half seconds of load, and a screen reader that reads the line meanwhile gets the scramble: not covered
+yet (ROADMAP).
 
 ### A pinned size implies a pinned leading
 
@@ -2016,3 +2128,4 @@ whole records.
 - The spec's takeover rule for every "On this page" heading, so each switches at mid-screen after a long section: rejected, it switches exactly where a click lands, so a just-clicked entry flips to the one above on a 10px upward scroll, and it changes the feel of every page; the takeover stays for sections shorter than half a screen. See DECISIONS 2026-09-29 · The "On this page" TOC gives every entry a turn, and a clicked entry stays current.
 - Per-device or per-browser tuning of which "On this page" entry is current: rejected, the rules are fractions of the screen and scale with it (owner call). See DECISIONS 2026-09-29 · The "On this page" TOC gives every entry a turn, and a clicked entry stays current.
 - Labelling a platform landing's sidebar entry Overview, README or with the platform's own name: rejected, the group heading directly above already names the platform, and each label is also the pager's link text, so the five stay distinct and name what the page holds. See DECISIONS 2026-09-30 · Each sidebar group opens on what it holds, and VulnHub's is built by hand.
+- Changing a decorative character's look so a screen reader handles it, or leaving one for a screen reader to read as itself: rejected, it keeps its look and is silent or read as what it means. See DECISIONS 2026-10-01 · Decorative characters keep their look and say only what they mean.

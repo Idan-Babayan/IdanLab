@@ -44,13 +44,13 @@ The `ttl=127` is the first tell: Windows starts at 128, and a hop has already co
 ```bash frame="code" title="Bash" {9,12}
 ┌──(Idan@Kali)-[~/Forest]
 └─> nmap -sC -sV 10.129.16.68
-Starting Nmap 7.98 ( https://nmap.org ) at 2026-03-25 11:36 -0400
+Starting Nmap 7.98 ( https://nmap.org )
 Nmap scan report for 10.129.16.68
 Host is up (0.088s latency).
 Not shown: 988 closed tcp ports (reset)
 PORT     STATE SERVICE      VERSION
 53/tcp   open  domain       Simple DNS Plus
-88/tcp   open  kerberos-sec Microsoft Windows Kerberos (server time: 2026-03-25 15:43:09Z)
+88/tcp   open  kerberos-sec Microsoft Windows Kerberos
 135/tcp  open  msrpc        Microsoft Windows RPC
 139/tcp  open  netbios-ssn  Microsoft Windows netbios-ssn
 389/tcp  open  ldap         Microsoft Windows Active Directory LDAP (Domain: htb.local, Site: Default-First-Site-Name)
@@ -74,8 +74,7 @@ Host script results:
 |   OS: Windows Server 2016 Standard 14393 (Windows Server 2016 Standard 6.3)
 |   Computer name: FOREST
 |   Domain name: htb.local
-|   FQDN: FOREST.htb.local
-|_  System time: 2026-03-25T08:43:17-07:00
+|_  FQDN: FOREST.htb.local
 ```
 
 </Toggle>
@@ -89,7 +88,7 @@ An aggressive scan pins down the OS version but adds nothing else.
 ```bash frame="code" title="Bash"
 ┌──(Idan@Kali)-[~/Forest]
 └─> nmap -A 10.129.16.68
-Starting Nmap 7.98 ( https://nmap.org ) at 2026-03-25 11:37 -0400
+Starting Nmap 7.98 ( https://nmap.org )
 Nmap scan report for 10.129.16.68
 Host is up (0.078s latency).
 Not shown: 988 closed tcp ports (reset)
@@ -236,7 +235,7 @@ $krb5asrep$23$svc-alfresco@HTB.LOCAL:4b64285a129fcfebc9668ee61df78c9d$4724ab...5
 
 Status...........: Cracked
 Hash.Mode........: 18200 (Kerberos 5, etype 23, AS-REP)
-Time.Started.....: Wed Mar 25 12:54:46 2026 (8 secs)
+Time.Started.....: ... (8 secs)
 Recovered........: 1/1 (100.00%) Digests (total), 1/1 (100.00%) Digests (new)
 ```
 
@@ -337,7 +336,7 @@ INFO: Starting computer enumeration with 10 workers
 INFO: Querying computer: EXCH01.htb.local
 INFO: Querying computer: FOREST.htb.local
 INFO: Done in 00M 36S
-INFO: Compressing output into 20260325141243_bloodhound.zip
+INFO: Compressing output into ..._bloodhound.zip
 ```
 
 </Toggle>

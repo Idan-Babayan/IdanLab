@@ -6,6 +6,51 @@
 
 ---
 
+### 2026-10-01 · Decorative characters keep their look and say only what they mean
+- **Decision:** a character that is on the page for its look (the `//` before a label, the `#` before a
+  heading, an arrow, a dot between two words, the `~` in a command) stays exactly as it looks, and a
+  screen reader never gets it as itself: one that only decorates is silent, one that stands for something
+  is read as what it stands for. "// SECURITY NOTES" is read "SECURITY NOTES", "# Recon" is read "Recon",
+  and the 404's "cd ~" is read "cd home". Characters that are content keep their voice: code, notation in
+  writeup prose, `©`, `&`, the `@` in an address. Every such character, existing or added, is checked in
+  Chrome's accessibility tree, and `plugins/validate-decorative-glyphs.mjs` fails the build on the ones its
+  list knows (CORE_SPEC §8 "The check" says what it covers and what it does not).
+- **Why:** the owner's rule. These characters carry the site's terminal voice to the eye; to the ear they
+  are noise ("slash slash", "left-pointing triangle") or misleading ("c d tilde" for the way home). Fixed
+  one at a time (the heading `#` and the toggle `▶` on 2026-09-28), the next one was always left behind: a
+  scan of the built site on 2026-10-01 still found 34 places, and 33 unnamed Bandit sidebar entries. A
+  rule with a build check stops the next one before it ships.
+- **Rejected:**
+  - Changing what the page shows so it reads well (dropping the arrow, writing "home" for `~`): the look
+    is the point.
+  - "Home" alone as the 404's spoken form: it drops the command the link is written as, and none of its
+    visible text would be left in its name. "cd home" keeps both.
+  - The meaning in a `title`: content outranks `title` in the accessible name, and a `title` beside an
+    `aria-label` is read again, as a description.
+  - A Starlight route middleware that names Bandit's sidebar entries by pattern: it would work without
+    forking anything, but the spoken form would live away from the label it speaks for. Each level's
+    frontmatter keeps the two side by side, and the guard fails a level that forgets.
+  - One allowance for the level-title pattern everywhere: it also let an unnamed sidebar entry through.
+    The allowance holds only in the h1 and the pager, where Starlight prints a title as plain text.
+  - The check as a remark plugin: remark sees only Markdown, while the decoration lives in component and
+    page markup and writeup prose is outside the check. The built output is what a reader gets.
+  - Checking by hand only: the next label written with a `//` would ship before anyone looked.
+- **Accepted trade-offs:**
+  - Bandit's page titles keep "→" in the h1, the pager and the browser tab, and every tab title keeps its
+    " | ": a title is plain text there, so a spoken form would mean changing what the page shows or
+    rebuilding a Starlight component. The sidebar entries, which can, read "0 to 1".
+  - Splitting a line at a hidden glyph can move a letter by up to 0.05px; no box moves, and glyph edges
+    re-rasterise (about a hundred pixels on the homepage, twenty on About).
+  - The guard has blind spots: component chrome inside writeups, characters off its list, search excerpts,
+    and text written at run time, the decode animations' scramble among it. CORE_SPEC §8 lists them,
+    ROADMAP parks them, and they are checked by hand meanwhile.
+- **Verified:** production builds of HEAD and of every commit in the change, in headless Chrome: the
+  accessibility tree reads every label, eyebrow, card, link and title above without its glyph; full-page
+  pixels match on every page checked except those edges; the guard passes the build, reports exactly the
+  34 places and 33 sidebar entries against the build from before, lands 51 fixture cases as intended, and
+  fails a real build planted with a `//` label and an unnamed level.
+- **Status:** Adopted 2026-10-01.
+
 ### 2026-09-30 · Each sidebar group opens on what it holds, and VulnHub's is built by hand
 - **Decision:** the sidebar entry for each platform landing names what the platform holds, in the page's own
   words: HackTheBox **Machines**, VulnHub **VMs**, PicoCTF **Challenges**, OverTheWire **Wargames**, and
