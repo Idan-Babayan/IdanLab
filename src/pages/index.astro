@@ -396,8 +396,11 @@ const OG_ALT = 'Idan.Lab, a lab notebook of CTF writeups and security notes';
     background: var(--lime); color: #06251a; }
 
   @media (max-width: 720px){ .stats{grid-template-columns:1fr} .phase::after{display:none} .hud-spacer{display:none} }
+  /* html is named because the smooth rule above names it, and html (0-0-1) outranks the universal
+     selector (0-0-0): with that alone the page still scrolled smoothly under reduced motion. The same
+     rule is in about.astro. */
   @media (prefers-reduced-motion: reduce){
-    .reveal{opacity:1;transform:none;transition:none} .dot{animation:none} * { scroll-behavior: auto; }
+    .reveal{opacity:1;transform:none;transition:none} .dot{animation:none} html, * { scroll-behavior: auto; }
   }
 </style>
 

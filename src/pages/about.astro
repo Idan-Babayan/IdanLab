@@ -465,9 +465,12 @@ import '../styles/fonts.css';
     .hud-sub { display: none; }
     .headed-panel { grid-template-columns: 1fr; gap: 1.2rem; padding: 1.75rem 2rem; }
   }
+  /* html is named because the smooth rule above names it, and html (0-0-1) outranks the universal
+     selector (0-0-0): with that alone the page still scrolled smoothly under reduced motion. The same
+     rule is in index.astro. */
   @media (prefers-reduced-motion: reduce){
     .reveal{opacity:1;transform:none;transition:none} .dot{animation:none}
-    body, body::before { transition: none; } * { scroll-behavior: auto; }
+    body, body::before { transition: none; } html, * { scroll-behavior: auto; }
   }
 </style>
 

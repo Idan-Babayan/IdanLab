@@ -556,7 +556,10 @@ token is an open ROADMAP item, not a bug.
 - **Scroll-reveal** (IntersectionObserver), film **grain** overlay, atmospheric **glows**.
 - **Reading-progress bar** (lime→cyan) on Starlight pages (injected via config `head`).
 - All effects are **`prefers-reduced-motion` aware**. Reading content stays calm
-  (NO tilt/scroll-reveal on writeup body text).
+  (NO tilt/scroll-reveal on writeup body text). That includes the marketing pages' smooth scroll since
+  2026-10-03: each page's reduced-motion block names `html, *`, because the smooth rule names `html`
+  (0-0-1), which outranked the bare `*` (0-0-0) the block used to set, so a Tab past the fold still
+  scrolled smoothly (computed `scroll-behavior` now `auto` under reduced motion on both pages).
 
 ### Component inventory (current)
 - Standalone: HUD/nav bar, hero, stats, platform/skill/practice cards, pipeline, contact, footer.
