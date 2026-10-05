@@ -129,8 +129,9 @@
   - The one allowance is a pattern in two places. A character that is content in chrome text ("CVSS >
     9") has no way through but rewording; a per-element marker would let it through where it is written.
   - Search excerpts: Pagefind indexes `aria-hidden` text, so a hidden glyph in indexed content needs
-    `data-pagefind-ignore` by hand, and nothing checks that it has one. `FlagCapture`'s scrambled cipher
-    is indexed today, on the three writeups that capture a flag.
+    `data-pagefind-ignore` by hand, and nothing checks that it has one. The last `aria-hidden` text still
+    indexed is the landings' pill counts, numbers whose meaning the visually hidden ", N writeups" also
+    carries (checked 2026-10-03; FlagCapture's cipher and "Copied!" pill left the index that day).
 - [ENG] Starlight plugins: scroll-to-top button, mobile sidebar swipe, fullscreen code blocks.
 - [DESIGN] Replace `ethical-hacking.png` about portrait with a transparent custom SVG.
 - [ENG] Extract repeated UI into reusable Astro components (cards, badges, buttons, hero FX).

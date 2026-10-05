@@ -1241,7 +1241,8 @@ DECISIONS 2026-06-20.
 The unredacted value lives in exactly one place, the visually hidden `.flagcap-real`, which is both the
 screen-reader source and what the copy button reads. It carries `user-select: none` and there is no
 `data-flag` attribute, because both routes put the flag on the clipboard on a plain Ctrl+A
-(DECISIONS 2026-09-12).
+(DECISIONS 2026-09-12). It also carries `data-pagefind-ignore` (2026-10-03), as do the cipher and the
+"Copied!" pill, so site search never indexes the flag or its stand-ins (§8).
 
 **After capture the decrypt button is spent (2026-10-03).** It is named for its state, "User flag,
 captured", and carries `aria-disabled="true"` (never `disabled`, which would drop focus to `<body>` the
@@ -2001,6 +2002,12 @@ borrow the other's rule.
   `data-flag` on 2026-09-12 and PasswordReveal `data-password` on 2026-09-28 (a plain Ctrl+A then copy
   had handed over the unrevealed value on 53 pages); each script reads the value from the element screen
   readers already use (`.flagcap-real`, `.pw-value`).
+- **Hidden answers carry `data-pagefind-ignore` (2026-10-03):** `.flagcap-real`, FlagCapture's cipher
+  and "Copied!" pill, `.pw-value` and the body of PasswordReveal's block mode. Site search indexed all
+  of them, and a search excerpt could print the answer the page hides: before, 26 of the 45 results for
+  "password" and 53 of 56 for "reveal" showed one in their excerpt; after, none of the 59 flags and
+  passwords and none of the block key's body lines is in the index, and no excerpt holds one (counted,
+  never printed). A screen reader still gets every value.
 
 **Still exposed, deliberately: Starlight's skip link** (`.sl-skip-link`, "Skip to content"). Measured on
 the production build, it reaches both flavours in both engines. It is the same clip-rect technique but it

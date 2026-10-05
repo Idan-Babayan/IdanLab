@@ -83,14 +83,16 @@ const noun = isRoot ? 'root flag' : 'user flag';
     text/html clipboard flavour whatever its element's selectability, so a plain Ctrl+A then copy
     handed over the unredacted flag even once .flagcap-real was made unselectable. The value lives in
     .flagcap-real, which the script reads instead: that element has to exist anyway for screen
-    readers, so this removes a duplicate rather than adding a hiding place. */}
+    readers, so this removes a duplicate rather than adding a hiding place.
+    data-pagefind-ignore keeps the value, the cipher and the "Copied!" pill out of site search: indexed,
+    a search excerpt printed the flag the button hides. A screen reader still gets the value. */}
 <div class:list={['flagcap', isRoot ? 'flagcap-root' : 'flagcap-user']} data-flagcap>
   <button type="button" class="flagcap-btn" aria-label={`Decrypt ${noun}`}>
     <svg class="fc-ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
       <path class="fc-ico-path" d="M12 1.5a4.5 4.5 0 0 0-4.5 4.5V9H6.75A1.75 1.75 0 0 0 5 10.75v9.5A1.75 1.75 0 0 0 6.75 22h10.5A1.75 1.75 0 0 0 19 20.25v-9.5A1.75 1.75 0 0 0 17.25 9H16.5V6A4.5 4.5 0 0 0 12 1.5ZM15 9H9V6a3 3 0 0 1 6 0Z" />
     </svg>
 
-    <code class="flagcap-value" aria-hidden="true">{cypher}</code>
+    <code class="flagcap-value" aria-hidden="true" data-pagefind-ignore>{cypher}</code>
 
     <span class="flagcap-state"><span class="fc-state-text">LOCKED</span></span>
   </button>
@@ -100,9 +102,9 @@ const noun = isRoot ? 'root flag' : 'user flag';
       <path class="fc-copy-path" d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11z" />
     </svg>
   </button>
-  <span class="fc-copy-feedback" aria-hidden="true">Copied!</span>
+  <span class="fc-copy-feedback" aria-hidden="true" data-pagefind-ignore>Copied!</span>
 
-  <span class="flagcap-real">{flag}</span>
+  <span class="flagcap-real" data-pagefind-ignore>{flag}</span>
   <span class="flagcap-live" aria-live="polite"></span>
 </div>
 
