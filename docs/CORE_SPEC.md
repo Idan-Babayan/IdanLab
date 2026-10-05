@@ -232,7 +232,7 @@ each Vite major; recorded, not pinned.
 
 ```
 C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Windows user profile path
-├─ astro.config.mjs                   # Starlight config: site, sidebar, customCss[layers.css, fonts.css, then the eight theme modules tokens/base/prose/chrome/components/pages/utilities/overrides, in that order], EC themes + pluginPrivCommand, reading-progress head script (no font preloads, see DECISIONS 2026-07-07), image-zoom, vite alias, components overrides (PageSidebar + MarkdownContent + Head), markdown remarkPlugins (content-taxonomy validation guard, PasswordReveal import injection, WriteupMeta injection, recon-rail transform, search-field injection) + rehypePlugins (content image loading)
+├─ astro.config.mjs                   # Starlight config: site, sidebar, customCss[layers.css, fonts.css, then the eight theme modules tokens/base/prose/chrome/components/pages/utilities/overrides, in that order], EC themes + pluginPrivCommand, reading-progress head script (no font preloads, see DECISIONS 2026-07-07), image-zoom, vite alias, components overrides (PageSidebar + MarkdownContent + Head), pagefind ranking weights for the search fields, markdown remarkPlugins (content-taxonomy validation guard, PasswordReveal import injection, WriteupMeta injection, recon-rail transform, search-field injection) + rehypePlugins (content image loading)
 ├─ src/
 │  ├─ content.config.ts               # docs collection (gatedDocsLoader, a wrapper that delegates to Starlight's docsLoader and then refuses any non-index file under the four platform directories that is not .mdx, so a .md writeup fails the content sync before any page builds, 2026-09-14; + docsSchema) + the writeup metadata schema (§7)
 │  ├─ pages/
@@ -283,7 +283,7 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 │  ├─ remark-inject-writeupmeta.mjs   # remark: injects the WriteupMeta badge row (§7 "Build-time plugins")
 │  ├─ remark-transform-recon-rail.mjs  # remark: builds the recon findings rail (§7 "Build-time plugins")
 │  ├─ remark-validate-content-taxonomy.mjs # remark: taxonomy build guard (§7 "Build-time plugins")
-│  ├─ remark-inject-search-meta.mjs   # remark: a hidden site-search field, an empty image on every page (§7 "Build-time plugins")
+│  ├─ remark-inject-search-meta.mjs   # remark: hidden site-search fields: an empty image on every page, level and login on OverTheWire wargame levels, wargame on hubs (§7 "Build-time plugins")
 │  └─ validate-decorative-glyphs.mjs  # integration: after the build, fails it when a decorative character on its list would be read aloud (§8 "Decoration says nothing to a screen reader")
 └─ public/
    ├─ robots.txt                      # in-repo; breadcrumb comment + Sitemap line (see §2)
@@ -382,9 +382,13 @@ The theme pass is organised into declared cascade layers, one module per layer, 
 - **Search ranking and the search fields (2026-10-03; the fields 2026-10-05):** the search UI passes
   Starlight's ranking options to Pagefind (`pageLength` 0.1, `termFrequency` 0.1, `termSaturation` 2,
   `termSimilarity` 9, `diacriticSimilarity` 0.8, read from the built search script), so any measurement
-  of search has to apply them; Pagefind's own defaults rank differently.
-  `plugins/remark-inject-search-meta.mjs` writes one field, on an empty `hidden` span at the end of the
-  content (nothing to see, hear or select; pixels unchanged on every page, measured):
+  of search has to apply them; Pagefind's own defaults rank differently. Three facts about how Pagefind
+  1.5.2 scores a metadata field, read from its source, shape everything below: a typed term matches every
+  word that STARTS with it ("1" matches 1, 12 and 1718 alike); a field match gets no credit for being
+  exact, as page text does; and every distinct word a term matches adds to the field's score, which then
+  grows with the cube of the share of the query the field covers. `plugins/remark-inject-search-meta.mjs`
+  writes these fields, each on an empty `hidden` span at the end of the content (nothing to see, hear or
+  select; pixels unchanged on every page, measured):
   - **An empty `image` on every content page**, and About carries the same span by hand. Otherwise
     Pagefind keeps the first image after the title, and its alt text, as searchable fields, though
     Starlight's search never shows images (`showImages: false`). On OverTheWire and PicoCTF pages that
@@ -393,15 +397,52 @@ The theme pass is organised into declared cascade layers, one module per layer, 
     scored 6, and it alone made "svg" and "uploaded" find Bandit pages. 63 of the 64 records carried
     one, 164,861 characters in all, and blanking it alone shrinks the records from 136,736 to 82,322
     bytes.
+  - **On each wargame level N to M, `level` and `login`.** `level` holds "bandit Level", N when it is
+    one digit, the route's digits run together, and M when it is one digit: 1-2 carries "bandit Level 1
+    12 2", 9-10 "bandit Level 9 910", 17-18 "bandit Level 1718". A typed "17-18" reaches Pagefind as
+    1718, so the route's digits answer it and, as a prefix, "bandit 17" and "level 17". A one-digit
+    level carries its bare number too, one word more than the two-digit levels that share its digit,
+    because a title like "Bandit 12 → 13" holds two words starting with 1 (without it "bandit 1" listed
+    12-13 first); M, when one digit, makes the typed title "bandit 6 7" prefer 6-7, which holds both
+    numbers, to 7-8. `login` is the level's SSH user ("bandit17"), so a pasted login finds the level
+    played as that user. Each level's title is "Bandit N → N+1" and its prose names both neighbours,
+    which is why the number alone never picked one page.
+  - **On each wargame hub, `wargame`** (its title), so "bandit" lists the hub first.
 
-  Measured 2026-10-05 on the built indexes before and after, each with the ranking the site ships:
-  "svg" went from 60 results to 5, "uploaded" from 39 to 5, "repo" from 41 to 16 and "disc" from 26 to
-  7; "privilege escalation" and "bloodhound" list Return before Forest, whose lead came from its first
-  screenshot's alt text (Return's text names BloodHound six times, Forest's five); "ethical hacking" no
-  longer finds About, which matched only through its decorative portrait's file name, a phrase the page
-  never says; "hacking" and "python 3" each lose one result that matched only an image field; "HTB"
-  lists the three machines and no longer the HackTheBox landing, which matched only through its logo's
-  file name.
+  `astro.config.mjs` weights them: title 5 (Pagefind's), level 10, login 1, wargame 11.15. level has to
+  outweigh title or the one-digit levels' extra word loses to the two-digit titles. wargame is level
+  plus login plus 0.15, and that 0.15 is the hub's whole lead for "bandit" (0.9% of the top score, about
+  0.09): whatever the hub gains on "bandit" it gains on every "bandit <word>" query too, so each step up
+  hands it more of them. Of 68 such queries, measured against the state with the image field blanked and
+  no other field, plus 0.15 moves two to the hub ("bandit read", "bandit the"), 0.2 four ("password",
+  "binary"), 1 eight ("find", "file"), 2 eleven; the fields first tried (`level: Level N`, wargame
+  weight 1) had moved nine. The lead is thin on purpose: it is about twice the spread of the level pages'
+  own text scores for "bandit" (0.12 to 0.16 on the eleven sampled), or some 34 more plain "bandit"s
+  than the hub on a page of the index's average 358 words. If an edit or a new level ever overtakes it,
+  raise wargame by a tenth and re-run the "bandit <word>" check.
+  Measured 2026-10-05 on the built indexes of the deployed site (`81f2f28`) and of this one, each with
+  its own shipped ranking (before, after), the first result being the right page: "bandit" (the hub)
+  no, yes; "bandit N" 19/33, 33/33; "level N" 3/33, 33/33; "bandit level N" 4/33, 33/33; the title as
+  typed ("Bandit 6 → 7") 31/33, 33/33; "N N+1" 31/33, 33/33; the route "N-N+1" and "bandit N-N+1"
+  11/33, 31/33; the login "banditN" 17/33, 31/33; and each of the 64 indexed pages' own title 61/64,
+  64/64. Bar the hub's deliberately thin lead, the smallest winning margin in any family is 7.7% of the
+  top score. The four misses are Pagefind's prefix matching and no field can fix them: "1-2" and "2-3"
+  reach it as 12 and 23, which are levels too, so 12-13 and 23-24 come first and 1-2 and 2-3 second;
+  "bandit1" and "bandit2" are prefixes of ten other logins each. Of 70 other queries, 11 changed their
+  first result or their count: "level 1 to 2" now finds 1-2; "level" and "bandit level" list a level
+  rather than the hub, every level's field holding the word; "svg", "uploaded" and "repo" no longer
+  match logo source; "privilege escalation" and "bloodhound" list Return before Forest, whose lead came
+  from its first screenshot's alt text (Return's text names BloodHound six times, Forest's five);
+  "ethical hacking" no longer finds About, which matched only through its decorative portrait's file
+  name, a phrase the page never says; "hacking" and "python 3" each lose one result that matched only
+  an image field. "HTB" likewise lists the three machines and no longer the HackTheBox landing, which
+  matched only through its logo's file name. None of the eighteen "bandit <word>" queries among the 70
+  changed. Measured and rejected: the route kept hyphenated in the field (Pagefind also indexes the halves of "17-18", so
+  17-18 holds three words starting with 1 against 1-2's two, and "bandit 1" to "bandit 3" stay lost);
+  the field without "bandit" (the one-digit levels then need level at 300 to win "bandit 1" and "bandit
+  2"); the field without the one-digit next number (the typed title "Bandit 2 → 3" and "2 3" then list
+  3-4 first); the login inside the level field (19-20 then takes "bandit" from the hub, even at
+  wargame 30); and `termSimilarity` at 200, which overflows Pagefind's scores to NaN.
 - **Sidebar shape:** every platform group is a manual structure in `astro.config.mjs`, never an
   autogenerate over the whole platform directory, which labels the tier groups with their raw lowercase
   directory names and lists the landing a second time under the group's own name. Each group opens on
@@ -1486,12 +1527,15 @@ unset option back to the shared top-level value and all three already sit at the
 - **`remark-transform-recon-rail.mjs`** converts the recon findings list into the rail. It emits `dt`
   and `dd` as SIBLINGS with no per-row wrapper, because both must be direct grid children (a wrapper
   would need subgrid, which blockifies inline `<code>` onto its own track).
-- **`remark-inject-search-meta.mjs`** (2026-10-05) appends a hidden site-search field, an empty `image`,
-  on an empty `hidden` span at the end of every page's content, so Pagefind keeps no image as a
-  searchable field. On a HackTheBox writeup the span sits before the Principle coda, which
-  `overrides/MarkdownContent.astro` renders after the content; that changes nothing, as the coda's
-  margins come from `@layer components`, above Starlight's sibling spacing. The measurements are in §5
-  "Search ranking and the search fields".
+- **`remark-inject-search-meta.mjs`** (2026-10-05) appends hidden site-search fields, each on an empty
+  `hidden` span at the end of the content: an empty `image` on every page, and on OverTheWire a `level`
+  and a `login` field for each wargame level (from the `N-M.mdx` filename) and a `wargame` field for each
+  hub (from `index.mdx`'s frontmatter). It derives them from the path, so no writeup declares them, and a
+  badge opt-out cannot drop them. A comma in a hub title is safe: Pagefind splits `key:value` at the
+  first colon and keeps the rest whole (read from its source). On a HackTheBox writeup the spans sit
+  before the Principle coda, which `overrides/MarkdownContent.astro` renders after the content; that
+  changes nothing, as the coda's margins come from `@layer components`, above Starlight's sibling
+  spacing. The weights and the measurements are in §5 "Search ranking and the search fields".
 - **`remark-validate-content-taxonomy.mjs`** FAILS the build on an unknown hand-authored class token in
   the two live families (`port-label`, `task-title`), on ANY hand-authored token in a retired badge family
   (`machine-`, `meta-`, `platform-`, `difficulty-`, `os-`: retired 2026-09-07 when the landing card moved
