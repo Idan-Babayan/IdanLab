@@ -10,9 +10,12 @@
  */
 ---
 
+{/* The decode span scrambles its own text, so it is aria-hidden and a visually hidden copy carries the
+    word: a screen reader reads "secrets" throughout (CORE_SPEC §8). The copy comes first, as on the
+    headlines, so nothing sits between the word and the full stop. This page is not in site search. */}
 <p class="nf-crumb not-content">
 	<span class="nf-hash" aria-hidden="true">#</span> even my <a class="nf-link" href="/robots.txt">robots.txt</a> keeps
-	<span class="nf-decode" data-word="secrets">secrets</span>. the curious ones always check.
+	<span class="sr-only">secrets</span><span class="nf-decode" data-word="secrets" aria-hidden="true">secrets</span>. the curious ones always check.
 </p>
 
 <style>

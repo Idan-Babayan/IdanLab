@@ -81,7 +81,12 @@ import '../styles/fonts.css';
   <div class="wrap about-hero-inner">
     <div class="about-hero-text">
       <div class="eyebrow reveal"><span><span aria-hidden="true" data-pagefind-ignore>//</span> whoami</span></div>
-      <h1 class="headline reveal">Hi, I'm <span class="decode" data-word="Idan">Idan</span>.</h1>
+      <!-- The decode span scrambles its own text for up to 1.5s, so it is aria-hidden and a visually
+           hidden copy carries the name: a screen reader reads "Idan" throughout (CORE_SPEC §8). The
+           scrambling span is also out of site search, which would otherwise index the name twice. The
+           copy goes before the decode span, so nothing splits the name from the full stop's kerning,
+           as on the homepage. -->
+      <h1 class="headline reveal">Hi, I'm <span class="sr-only">Idan</span><span class="decode" data-word="Idan" aria-hidden="true" data-pagefind-ignore>Idan</span>.</h1>
       <p class="sub reveal">
         A 26-year-old cybersecurity enthusiast who fell hard for offensive security and never looked back.
         This site is my <b>lab notebook made public</b>, a growing collection of machine walkthroughs,
@@ -454,6 +459,11 @@ import '../styles/fonts.css';
   .skip-link { position: fixed; top: .75rem; inset-inline-start: .75rem; z-index: 10000; clip: rect(0 0 0 0); }
   .skip-link:focus { clip: auto; padding: .5rem 1rem; text-decoration: none;
     background: var(--lime); color: var(--btn-primary-text); }
+  /* Visually hidden text a screen reader still reads (the headline's settled name), the clip-rect
+     technique of the content pages' .sr-only, unselectable so a copied headline holds the name once
+     (CORE_SPEC §8). The same rule is in index.astro. */
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
+    clip: rect(0 0 0 0); white-space: nowrap; border: 0; user-select: none; -webkit-user-select: none; }
   /* Platform practice cards key the ring to their identity accent (echoes the hover border). */
   .practice:focus-visible { outline-color: var(--accent); }
 

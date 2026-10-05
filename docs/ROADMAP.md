@@ -170,15 +170,6 @@
 
 ## Open bugs / known issues
 
-- [A11Y] **The decode animations break the decoration rule while they run** (CORE_SPEC §8 "Decoration
-  says nothing to a screen reader"). The homepage and About headlines, each platform landing's name and
-  the 404's "secrets" scramble through `!<>-_\/[]{}=+*^?#01` for up to 1.8 seconds,
-  settling within about two and a half seconds of load, and a screen reader that reads the line
-  meanwhile gets the scramble. The fix should keep the animation and give assistive technology the
-  settled word throughout, then be checked in Chrome's accessibility tree mid-animation: the build never
-  sees text written at run time. `FlagCapture` already has the pattern: its cipher is `aria-hidden` and
-  the real value sits in visually hidden text.
-
 - [DESIGN] **The `46ch` Principle cap is the third instance of the context law and is deliberately NOT
   fixed** (CORE_SPEC section 8, DECISIONS 2026-07-27). `.sl-markdown-content .principle` declares
   `max-width: 46ch`, and `ch` resolves on the ASIDE (18px JetBrains Mono, 1ch = 10.80px) giving 496.80px,

@@ -220,7 +220,11 @@ const countLabel = (n: number): string => (n === 1 ? 'writeup' : 'writeups');
 				    otherwise show it in this page's excerpt. The eyebrow is a flex container, so an outer span
 				    keeps its text one flex item and the space after the glyph renders. */}
 				<div class="pi-eyebrow reveal"><span><span aria-hidden="true" data-pagefind-ignore>//</span> {meta.name.toUpperCase()}</span></div>
-				<h1 class="pi-name decode reveal" data-word={meta.name}>{meta.name}</h1>
+				{/* The decode span scrambles its own text for up to 1.8s, so it is aria-hidden (and out of
+				    site search, which would index the name twice) and a visually hidden copy carries the name:
+				    a screen reader reads it whole throughout (CORE_SPEC §8). The copy comes first, as on the
+				    marketing headlines, where a copy after the word would split it from the text that follows. */}
+				<h1 class="pi-name reveal"><span class="sr-only">{meta.name}</span><span class="decode" data-word={meta.name} aria-hidden="true" data-pagefind-ignore>{meta.name}</span></h1>
 				{meta.tagline && <p class="pi-tagline reveal">{meta.tagline}</p>}
 
 				{!isEmpty && (
@@ -816,7 +820,7 @@ const countLabel = (n: number): string => (n === 1 ? 'writeup' : 'writeups');
 				(el.querySelectorAll('[data-count],[data-text]') as NodeListOf<HTMLElement>).forEach(countUp);
 			}, 120 * i)
 		);
-		const d = document.querySelector('.pi-name.decode') as HTMLElement | null;
+		const d = document.querySelector('.pi-name .decode') as HTMLElement | null;
 		if (d && !reduce) setTimeout(() => decode(d), 600);
 		else if (d) d.textContent = d.dataset.word ?? '';
 	});

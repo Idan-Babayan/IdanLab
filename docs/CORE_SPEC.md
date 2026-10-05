@@ -562,6 +562,8 @@ token is an open ROADMAP item, not a bug.
   2026-10-03: each page's reduced-motion block names `html, *`, because the smooth rule names `html`
   (0-0-1), which outranked the bare `*` (0-0-0) the block used to set, so a Tab past the fold still
   scrolled smoothly (computed `scroll-behavior` now `auto` under reduced motion on both pages).
+- The decode word is `aria-hidden` and doubled in visually hidden text, so a screen reader never hears
+  the scramble (§8 "Text a script writes").
 
 ### Component inventory (current)
 - Standalone: HUD/nav bar, hero, stats, platform/skill/practice cards, pipeline, contact, footer.
@@ -2066,14 +2068,22 @@ opening the 404's line. Pagefind indexes `aria-hidden` text, so where the span s
 shows the glyph again.
 
 **A glyph with a meaning** is hidden the same way and its meaning given in words: as `.sr-only` text
-where the page has that class (the `/secret` title bar reads "home/secret"; the marketing pages have
-none yet, so the first glyph there that needs a spoken form brings the class into both files), or as
+(the `/secret` title bar reads "home/secret"; the marketing pages carry the class too since
+2026-10-03, in both inline style blocks, unselectable like the content pages' rule), or as
 the control's `aria-label`, keeping its visible words: the 404's "cd ~" is `aria-label: "cd home"`.
 Each Bandit level's sidebar entry is named "0 to 1" the same way, through `sidebar.attrs`. Such a link
 carries no `title`: Chrome reads a title after the name, as a description.
 
 **Text a script writes** follows the rule too: the copy button's "✓" and the `/secret` prompt, on its
-input line and in every echoed command, are `aria-hidden`.
+input line and in every echoed command, are `aria-hidden`. So are the four decode animations (the
+homepage's "exploit", About's "Idan", each landing's platform name, the 404's "secrets"), which write a
+scramble into their own text for up to 1.8 seconds (2026-10-03, FlagCapture's pattern): the animated
+span is `aria-hidden`, and a visually hidden copy of the word sits in FRONT of it, because a copy placed
+between the word and the full stop after it split the text run and cost the "t." kern, moving the stop
+1.8px. Where the line is indexed (About's `<main>`, the landings) the animated span also carries
+`data-pagefind-ignore`, so the index holds the word once, from the copy. Measured mid-animation in
+Chrome's accessibility tree (800ms and 1.5s after load): each line reads the settled word throughout,
+and a copied headline holds the word once.
 
 **The check:** `plugins/validate-decorative-glyphs.mjs` (§7 "Build-time plugins") fails the build when
 a character on its list reaches a screen reader. The list: arrows, triangles, bullets and dots,
@@ -2094,10 +2104,7 @@ and is reworded: there is no per-element allowance yet (ROADMAP).
 Starlight renders a title as plain text there, so a spoken form would mean changing what the page shows
 or rebuilding a Starlight component (§5). Every tab title keeps its " | " (About's own included): the
 delimiter is a Starlight setting (`titleDelimiter`), but a title is plain text, so another character
-would only change what the tab shows. The decode animations (the homepage and About headlines, the
-landing names, the 404's "secrets") scramble for up to 1.8 seconds and settle within about two and a
-half seconds of load, and a screen reader that reads the line meanwhile gets the scramble: not covered
-yet (ROADMAP).
+would only change what the tab shows.
 
 ### A pinned size implies a pinned leading
 
