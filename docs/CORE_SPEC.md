@@ -268,7 +268,7 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 │  │  └─ taxonomy.mjs                 # what a writeup's MIDDLE directory means per platform (difficulty tiers, the six picoCTF categories, PLATFORM_AXIS); dependency-free because Node (plugins/) and Vite (src/) both import it
 │  └─ styles/                         # the theme pass, split into cascade-layer modules (see §5 "The layer contract")
 │     ├─ layers.css                   # the order statement `@layer starlight, tokens, base, prose, chrome, components, pages, utilities;` plus the cascade contract and the unit rule. First customCss entry
-│     ├─ fonts.css                    # self-hosted @font-face (subset WOFF2: Syne, JetBrains Mono, Geist) + metric-matched fallbacks for each; loaded via customCss and imported by the marketing pages. The one module with no layer statement
+│     ├─ fonts.css                    # self-hosted @font-face (subset WOFF2: Syne, JetBrains Mono, Geist) + metric-matched fallbacks for each (Syne's one face per weight, plus a glyph fallback for what Syne's subset lacks); loaded via customCss and imported by the marketing pages. The one module with no layer statement. Ships as its own /_astro/ stylesheet since 2026-10-03 (see §6 "Fonts")
 │     ├─ tokens.css                   # @layer tokens: every custom property (surfaces, accents, flag gold, the PasswordReveal amber pair, the prose/chrome type scale). Also owns the prose/chrome type token block (see §6)
 │     ├─ base.css                     # @layer base: the zero-specificity defaults under everything, today the shared focus ring alone
 │     ├─ prose.css                    # @layer prose: the reading surface inside .sl-markdown-content (type, rhythm, links, quotes, the raw <details> default)
@@ -402,8 +402,30 @@ The theme pass is organised into declared cascade layers, one module per layer, 
 - **Fonts:** display = **Syne** (600/700/800); code/chrome/UI = **JetBrains Mono** (400/500/700, plus italic
   400/500 for the Principle coda maxim); **writeup prose = Geist** (400/600/700 plus a true drawn italic 400).
   Self-hosted as subset WOFF2 in public/fonts/ (see src/styles/fonts.css), with metric-matched
-  size-adjust fallbacks so the font swap is shift-free; no Google Fonts origin. See DECISIONS 2026-07-04
-  (self-hosting) and 2026-07-25 (the Geist prose face and the prose/chrome split below).
+  size-adjust fallbacks so the font swap moves as little as it can; no Google Fonts origin. See DECISIONS
+  2026-07-04 (self-hosting) and 2026-07-25 (the Geist prose face and the prose/chrome split below).
+- **Syne's fallback is one face per weight (2026-10-03).** `Syne Fallback` declares 600, 700 and 800,
+  each over Arial Bold (DejaVu Sans Bold and Liberation Sans Bold on Linux) with its own size-adjust
+  (106.17%, 115.66%, 164.37%) and Syne's 0.925 / 0.275 em ascent and descent carried through it. One
+  weightless face over regular Arial (123.39%, tuned to Syne 600 and 700) used to serve all three in
+  synthesized bold, and Syne 800 averages about 0.78 em, so the homepage's "Curiosity" was 413.9px in
+  the fallback against 613.0px in Syne and the headline jumped about 200px when the font arrived; it is
+  622.1px now. The split is forced: a 600 or 700 request picks the nearest declared face at or above it,
+  and a face declared at 600 or more is never synthesized bold. Tuned by measurement on the site's own
+  heading strings (47 at 600, 21 at 700, 68 at 800) so each weight's total width matches Syne; what
+  size-adjust cannot fix is shape, a per-string error of 3.5, 1.7 and 4.3% rms, so at 800 "Curiosity"
+  is +1.5%, "Let's connect." +0.3%, the writeup titles about -1.5 to -3.5% and the platform names -3
+  to -6%. Measured with every `.woff2` blocked, no heading changes height and nothing after one moves
+  on Syne's account.
+  Each face carries Syne's own unicode-range, and a third family in every Syne stack, `Syne Glyph
+  Fallback`, is the old face unchanged: it draws what Syne's subset lacks, today the "→" in every Bandit
+  title, exactly as before, so pages render identically once the fonts load. The three stacks naming it
+  are `--tp-display` in `tokens.css` and `--display` in the token blocks of `index.astro` and
+  `about.astro`.
+- **`fonts.css` ships as its own stylesheet (2026-10-03).** Astro inlines a stylesheet under Vite's
+  4,096-byte limit into the page; with 19 faces the minified file is 4,229 bytes, so it is now one
+  `/_astro/fonts.*.css` link on every page (650 bytes gzipped, cached immutably), where the 16 faces
+  used to sit inline in each page's HTML (3,420 bytes per page).
 - **Starlight var overrides:** `--sl-color-accent` = lime, `--sl-color-bg` = ink,
   `--sl-font` = JetBrains Mono. Headings forced to Syne via CSS.
 
