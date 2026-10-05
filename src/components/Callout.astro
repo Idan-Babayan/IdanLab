@@ -5,6 +5,14 @@
 // accent tint, and a header row of icon + UPPERCASE label in the accent color. All colors live in
 // components.css (.cl / .cl-<type>, @layer components). Markdown inside the slot renders, so authors can write inline
 // `code`, lists, and links.
+//
+// The root is a <div>, not an <aside>. An <aside> inside <main> is a complementary landmark, so a
+// writeup's callouts (six on Busqueda) each landed in a screen reader's landmarks list, unnamed, and
+// each was announced as "complementary" on entry. They are the writeup's own content (recon findings,
+// loot), not a side note, and Firefox's Reader View drops every <aside>, callouts included. As a div,
+// a screen reader reads the visible label first ("recon"), then the box, as a sighted reader sees it.
+// Not role="note" (announced inconsistently) or role="group" (adds "grouping" to every box), and not
+// aria-labelledby on an aside, which reads the label twice. Principle.astro stays an <aside>, named.
 
 import { Icon } from '@astrojs/starlight/components';
 
@@ -29,7 +37,7 @@ const ICONS = {
 } as const satisfies Record<Exclude<CalloutType, 'defense'>, string>;
 ---
 
-<aside class={`cl cl-${type}`}>
+<div class={`cl cl-${type}`}>
   <p class="cl-header">
     {type === 'defense' ? (
       <svg class="cl-icon" viewBox="0 0 24 24" fill="currentColor" width="1em" height="1em" aria-hidden="true">
@@ -41,4 +49,4 @@ const ICONS = {
     <span class="cl-label">{text}</span>
   </p>
   <slot />
-</aside>
+</div>

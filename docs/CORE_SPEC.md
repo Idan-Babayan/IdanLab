@@ -1189,6 +1189,16 @@ Five semantic writeup callouts, each a 3px accent left border + faint tint + a h
 label): recon (cyan `#41efff`, magnifier), loot (gold `#ffc23d`, padlock), intel (lavender `#ceaafd`,
 information), vuln (magenta `#ff4d9d`, warning), defense (green `#22c55e`, an inline shield SVG since
 Starlight has no shield). Icons via Starlight's `<Icon>`. Authored as `<Callout type="...">` in MDX.
+- **The root is a `<div>` (2026-10-04), not an `<aside>`.** An `<aside>` inside `<main>` is a
+  complementary landmark, so Busqueda's six callouts each sat unnamed in a screen reader's landmarks
+  list and each announced "complementary" on entry; as a div a screen reader reads the visible label
+  first ("RECON"), then the box. Busqueda's complementary landmarks went from 8 to 2: Principle (named)
+  and Starlight's own right-sidebar `<aside>`, unnamed and outside `<main>`. Pixels are unchanged at
+  1280 and 375 in both themes. Callouts hold core content (the recon findings, the loot), and Firefox's
+  Reader View drops every `<aside>`, so as divs they now reach it; Principle stays an `<aside>`, a side
+  note by design, so Reader View still drops the coda. Not `role="note"` (announced inconsistently),
+  not `role="group"` (adds "grouping" to every box), and not `aria-labelledby` on an aside, which reads
+  the label twice. The recon rail transform matches the MDX component by name, not the element.
 - **Five voices (2026-09-28).** A callout wears a colour the page already owns only when it means the
   same thing there, never a platform's identity. Recon takes the site's cyan secondary (h3, links, port
   chips; the About sidebar dot inherits it too), loot the flag gold (credentials are loot), vuln the magenta
