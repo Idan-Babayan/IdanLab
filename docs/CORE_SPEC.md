@@ -1301,21 +1301,36 @@ exceptions, `16-17.mdx` is now BLOCK mode (its RSA private key) and one level ha
 See DECISIONS 2026-07-05 (inline) and 2026-07-25 (block mode + the shared amber).
 
 ### TOC active-entry color ladder
-The right "On this page" entry the reader is currently on (`aria-current="true"`) takes the hue of the
-heading it points to, so the column mirrors the in-page hierarchy: h1/h2 keep Starlight's green
-`--sl-color-text-accent`, h3 turns cyan (`--tp-cyan` / `--tp-cyan-ink`, the same tokens as the `###`
-heading), and h4/h5/h6 go muted gray (`--sl-color-gray-2`, the h4 heading color). Flags stay gold (above).
-Only the current entry recolors; inactive entries keep the muted default. On the desktop right column
-heading level is read from Starlight's TOC nesting depth (h3 nested under h2, etc.). The mobile TOC
-dropdown (`<mobile-starlight-toc>`) now gets the SAME gold-flag + cyan-current-h3 treatment
-(DECISIONS 2026-07-10), and the current top-level h2 entry now turns green (`--sl-color-text-accent`,
-matching desktop) as of 2026-07-11; it is nested too but under a different wrapper
-(`nav > details > .dropdown`), so the depth rules match Starlight's per-entry inline `--depth`
-(`[style*="--depth: 1"]` = h3 cyan, `[style*="--depth: 0"]` = h2 green; flags render at `--depth: 1` and
-are excluded so they stay gold, verified in the real DOM). Mobile now mirrors the full desktop
-active-color set (current h2 green, current h3 cyan, flags gold); non-current entries keep Starlight's
-white + checkmark default. Unlayered CSS so it beats Starlight's layered green/white; parity with the
-heading rules is by shared tokens. See DECISIONS 2026-06-29, 2026-07-10, 2026-07-11.
+The "On this page" entry the reader is currently on (`aria-current="true"`) takes the hue of the heading
+it points to, so the list mirrors the in-page hierarchy: the page title and every h2 lime
+(`--sl-color-text-accent`), h3 cyan (`--tp-cyan` / `--tp-cyan-ink`, the same tokens as the `###`
+heading), h4 and deeper the muted gray of the h4 heading (`--sl-color-gray-2`), and the two flags gold
+(above). Only the current entry changes colour. The ladder is written twice in `chrome.css` (`@layer
+chrome`, which outranks every Starlight layer), once per surface, and every rung is ours, so a current
+entry keeps its colour under the pointer:
+- **Desktop column** reads level from Starlight's nesting (h3 nested under h2, h4 under h3).
+- **Mobile dropdown** (`<mobile-starlight-toc>`) nests under a different wrapper, so it matches the
+  inline custom property Starlight writes on every entry: `style="--depth: N;"`, 0 for the title and h2,
+  1 for h3, 2 and deeper for h4 and below (read from the built DOM at Starlight 0.41.10). Flags sit at
+  depth 1 and are excluded from the h3 rule.
+
+Until 2026-10-03 the current h2 had no rule of ours on desktop: it showed Starlight's own lime, and
+inside `starlight.core` Starlight's hover rule (`.right-sidebar-panel :where(a):hover`, white) outranks
+its `a[aria-current]`, so the current h2 and the title turned white under the pointer (measured
+`rgb(182,255,60)` to `rgb(255,255,255)`) while h3 and the flags held; and mobile had no h4+ rung, so a
+current h4 showed Starlight's white. Both are fixed, and the full matrix now measures the same on both
+surfaces, in both themes (Busqueda, 1280x800 and 375x812 with the dropdown open, pointer parked with
+real mouse events, the h4 rung on a synthetic entry since no page lists h4s): current and current under
+hover are lime, cyan, gray-2 and gold for title/h2, h3, h4+ and flags. What still differs between the
+two surfaces is Starlight's, untouched: an entry that is not current is gray-3 in the desktop column
+(white on hover) and the text colour in the dropdown (no hover change). The dropdown marks its current
+entry with Starlight's check, which since 2026-10-04 wears the entry's colour on every rung (it was
+lime whatever the rung): Starlight draws it as the entry's `::after`, a box masked to a check and filled
+from `background-color`, and `chrome.css` sets that to `currentColor`. On light, a flag's check is the
+flag gold `#C6A243`, 2.43:1 on the white dropdown, as the flag's text already was. Focus rings follow the heading the entry
+points to (flags `--flag-gold-val`, h3 cyan, title, h2 and h4+ the lime default) on both surfaces.
+Which entry is current is `TocTracking.astro`'s job (§6 "Starlight Component Overrides"). See DECISIONS
+2026-06-29, 2026-07-10, 2026-07-11.
 
 The flag VALUE is now the **FlagCapture** "Decrypt to Capture" control under the heading (DECISIONS
 2026-06-27), which supersedes the old `.toggle-flag` reveal. The heading + gold TOC entry are unchanged;
