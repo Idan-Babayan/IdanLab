@@ -9,6 +9,7 @@ import remarkInjectPasswordReveal from './plugins/remark-inject-passwordreveal.m
 import remarkInjectWriteupMeta from './plugins/remark-inject-writeupmeta.mjs';
 import remarkValidateContentTaxonomy from './plugins/remark-validate-content-taxonomy.mjs';
 import remarkTransformReconRail from './plugins/remark-transform-recon-rail.mjs';
+import remarkInjectSearchMeta from './plugins/remark-inject-search-meta.mjs';
 import validateDecorativeGlyphs from './plugins/validate-decorative-glyphs.mjs';
 
 export default defineConfig({
@@ -54,9 +55,12 @@ export default defineConfig({
   // findings rail's dl/dt/dd structure, so a recon rail is authored as data rather than as markup.
   // Appended LAST for the same reason as the injector: the taxonomy guard's boundary is hand-authored
   // markup, and the dl/dt/dd this emits are generated nodes it should never see.
+  // remarkInjectSearchMeta: appends a hidden site-search field, an empty `image` on every page, so
+  // Pagefind keeps no image as a searchable field. After the guard for the same reason; it only
+  // appends, so its place among the generators does not matter.
   markdown: {
     processor: unified({
-      remarkPlugins: [remarkValidateContentTaxonomy, remarkInjectPasswordReveal, remarkInjectWriteupMeta, remarkTransformReconRail],
+      remarkPlugins: [remarkValidateContentTaxonomy, remarkInjectPasswordReveal, remarkInjectWriteupMeta, remarkTransformReconRail, remarkInjectSearchMeta],
       rehypePlugins: [rehypeContentImageLoading],
     }),
   },

@@ -72,8 +72,11 @@ import '../styles/fonts.css';
 </div>
 
 <!-- The main landmark the skip link lands on. Site search indexes it (bar the philosophy, the skills
-     and the practice cards) and the footer's name line. -->
+     and the practice cards) and the footer's name line. The empty `image` field keeps Pagefind from
+     taking the portrait's file name as one, as the search-meta plugin does on every content page:
+     "ethical hacking" found this page only through that name, which the page never says. -->
 <main id="main" data-pagefind-body data-pagefind-meta="title:About">
+<span hidden data-pagefind-meta="image:"></span>
 
 <!-- HERO -->
 <section class="about-hero">
