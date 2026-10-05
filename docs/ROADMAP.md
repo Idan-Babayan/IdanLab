@@ -125,6 +125,12 @@
     `data-pagefind-ignore` by hand, and nothing checks that it has one. The last `aria-hidden` text still
     indexed is the landings' pill counts, numbers whose meaning the visually hidden ", N writeups" also
     carries (checked 2026-10-03; FlagCapture's cipher and "Copied!" pill left the index that day).
+- [ENG] Can the nine `.ec-cmd-*` rules (eight colour rules and the weight rule) leave the unlayered
+  tail? The premise that kept them there (an inline colour on the span) is false (CORE_SPEC §8 "The
+  layer law"), and a layered, non-important rule governed the span in a live-page test; move one
+  category into `@layer components` without `!important`, build, compare the computed colours and
+  weight in both themes, then the rest. Success shrinks the tail from 13 rules to 4 and its
+  `!important` count from 11 to 2 (the FlagCapture reduced-motion kill keeps its two).
 - [ENG] Starlight plugins: scroll-to-top button, mobile sidebar swipe, fullscreen code blocks.
 - [DESIGN] Replace `ethical-hacking.png` about portrait with a transparent custom SVG.
 - [ENG] Extract repeated UI into reusable Astro components (cards, badges, buttons, hero FX).

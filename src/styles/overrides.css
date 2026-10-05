@@ -24,8 +24,7 @@
 
 /* ── Command highlight by category (.ec-cmd-*) ──
    The ec-priv-command plugin tags command words by semantic category (see
-   astro.config.mjs / src/lib/ec-priv-command.mjs). EC sets each token color inline per theme, so
-   we override with theme-scoped rules + !important.
+   astro.config.mjs / src/lib/ec-priv-command.mjs), and these theme-scoped rules colour each category.
 
    Palette designed in OKLCH (perceptual lightness / chroma / hue), measured against the rendered
    code background (tokyo-night #1a1b26 on dark, one-light #fafafa on light):
@@ -42,10 +41,17 @@
    just under the 7:1 the redesigned set meets, by design). Every recognized command also goes bold
    (weight channel below), so a command pops by weight while color only signals category.
 
-   UNLAYERED ON PURPOSE. Expressive Code paints every token colour as an INLINE style on the span, so
-   these rules carry !important to beat it. !important in a layer is ordered by REVERSED layer order,
-   which would put them below any later layer, and an inline style is beaten only from outside the
-   layer stack, so this whole set stays unlayered. */
+   WHAT EXPRESSIVE CODE ACTUALLY DOES (read from the build, 2026-10-03): it writes each token's two
+   theme colours as inline CUSTOM PROPERTIES (style="--0:#9ECE6A;--1:#387138"), never as an inline
+   colour; none of the 148 tagged spans carries one. Its stylesheet then paints them from
+   @layer starlight.components through :where(span[style^='--']:not([class])), which skips a span that
+   has a class, so a tagged span only inherits the line's ink and these rules are the one colour
+   declaration that reaches it. The !important and the unlayered position were written for an inline
+   colour that is not there.
+   OPEN QUESTION, not yet acted on: can the eight colour rules and the weight rule move into
+   @layer components without !important? A layered, non-important rule injected into the live page
+   (2026-09-15) governed the span in both themes. That was not a build, so the move
+   waits for a build test, and until then the set stays here, unlayered and important, as it ships. */
 html[data-theme="dark"] .ec-cmd-priv,
 html[data-theme="dark"] .ec-cmd-priv span {
   color: #ff4d9d !important;

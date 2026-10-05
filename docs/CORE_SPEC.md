@@ -1980,7 +1980,11 @@ icon.
   exactly one of two grounds: it must beat unlayered CSS (a vendor stylesheet, an inline style, or one of
   our own Astro-scoped component styles, all of which sit above every layer), or it carries `!important`.
   Every tail rule carries a comment naming what it beats. The tail is 13 rules today: nine `.ec-cmd-*`
-  colour rules (they beat Expressive Code's inline per-token styles), the two `.pi-index .reveal`
+  rules, eight colours and the weight (unlayered and `!important` on a premise the build contradicts: Expressive Code puts no
+  inline colour on a tagged span, only inline custom properties, and paints token colours through a
+  rule that skips classed spans, read from the build 2026-10-03; whether they can move into
+  `@layer components` without `!important` waits for a build test, see the comment in
+  `overrides.css`), the two `.pi-index .reveal`
   transition rules and the V3 light card shadow (they beat WriteupCard's and PlatformIndex's own scoped
   styles), and the `.flagcap` reduced-motion kill.
 - **Growing the tail is a decision, not a convenience.** Reach for a layer first; the tail is for cases
