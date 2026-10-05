@@ -68,13 +68,6 @@
   machinery as the deferred `/principles` index, so the two are worth building together. The badge system
   itself is complete and injected from frontmatter; this is the only piece left.
 
-- [CONTENT] Reuse `AttackPath` on other multi-hop writeups. Live on two so far, Forest and Return, both
-  under `## Summary`. It is data-driven, so adding one is authoring a `nodes[]` array with no component
-  change, and the component is considered signature-quality and stable. Good candidates are any chain with
-  3 or more hops. Deliberately NOT retrofitted onto single-hop writeups, where a two-node path says less
-  than the prose already does. It is LINEAR ONLY: a writeup whose escalation genuinely branches needs a
-  design decision first, not a quiet extension of this component.
-
 - [ENG/INFRA] GitHub Support request for the pull request refs: PENDING, and may be declined. The identity
   rewrite cleaned `main` and `dev`, but 23 server-managed `refs/pull/N/head` refs still hold pre-rewrite
   history carrying the old author address, and they are not writable by push. GitHub's documented policy
@@ -138,8 +131,9 @@
 - [ENG] CI on push: type-check, build, link-check, (later) visual-regression screenshots.
 - [ENG] Content-taxonomy build guard (`plugins/remark-validate-content-taxonomy.mjs`) shipped as the
   astro-check alternative (DECISIONS 2026-07-12). Both original follow-ups are now CLOSED. The
-  "narrow or remove the class families" half: only `machine-` was dead and it was removed 2026-07-19; the
-  rest stay because `WriteupCard` still emits them (DECISIONS 2026-07-19). The "extend it to frontmatter"
+  "narrow or remove the class families" half: `machine-` was removed 2026-07-19, and the rest of the
+  legacy badge family went on 2026-09-07, once `WriteupCard` stopped emitting it; the guard now fails the
+  build on any hand-authored token in those families (CORE_SPEC §7). The "extend it to frontmatter"
   half: frontmatter metadata is now validated by strict Zod enums in `content.config.ts` instead, which is
   the better home for it (the remark stage does not see frontmatter cleanly, and Zod gives editor support),
   so the guard keeps its hand-authored-markup boundary and its WriteupMeta prop checks were retired
@@ -165,8 +159,8 @@
   - Standalone's ring stays regardless. It beat every candidate by resolving its hole at 15px and dodging
     the prospective PicoCTF two-disc collision. This item is AD only.
   - Any redraw inherits the current 15px hull-area grid (model B, cap 1.128) and, being a we-authored
-    geometric glyph, should size by hull area rather than clamp. It also retires the Amido `<metadata>`
-    attribution the diamond asset currently carries.
+    geometric glyph, should size by hull area rather than clamp. It also retires the Amido credit the
+    diamond asset carries (a `data-credit` attribute on the svg root since 2026-09-07, CORE_SPEC §7).
 
 ## Open bugs / known issues
 
@@ -208,8 +202,9 @@
   fragility. Breaks if those headings are renamed or another page reuses the slugs. Clean fix: add a
   `.flag-title` class to flag headings during authoring, used by both the gold rule and the cyan exclusion.
 - [ENG] Command-highlighting residual risk: an OUTPUT line whose first word is exactly a listed command
-  (e.g. `ls: cannot access`) can be mis-tagged. Rare; documented in `ec-priv-command.mjs` (EC 0.42
-  exposes no token scopes, so strings/comments cannot be skipped by scope).
+  (e.g. `ls: cannot access`) can be mis-tagged. Rare; documented in `ec-priv-command.mjs` (Expressive
+  Code highlights with `includeExplanation: false`, so no token scopes reach a plugin and
+  strings/comments cannot be skipped by scope: true at 0.42 and still at 0.44.1, read 2026-10-03).
 - [DESIGN] Right rail mobile layout at 375px: unresolved how the TOC rail behaves
   at the narrow breakpoint. Needs a real-device or 375px-viewport decision, paired
   with the narrow-screen gutter call below.

@@ -573,8 +573,10 @@ const countLabel = (n: number): string => (n === 1 ? 'writeup' : 'writeups');
 	html[data-theme='light'] .pi-pill.is-active {
 		background: color-mix(in oklab, var(--pill) 12%, transparent);
 	}
-	/* Narrow screens: the counts leave the pills so the six-category PicoCTF rail stays two rows. The
-	   visually hidden ", N writeups" inside each pill still carries the number. */
+	/* Narrow screens: the counts leave the pills to keep the six-category PicoCTF rail short. Measured
+	   2026-10-03: two rows at 480, three at 375 and 320 (three again at 481, where the counts return,
+	   two at 640, one at 1280). The visually hidden ", N writeups" inside each pill still carries the
+	   number. */
 	@media (max-width: 480px) {
 		.pi-pill-n {
 			display: none;

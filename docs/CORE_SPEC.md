@@ -56,8 +56,10 @@
   plus `frame-ancestors 'none'` and `upgrade-insecure-requests`, which were inert under Report-Only and are
   now ACTIVE (frame-ancestors backs up the enforced `X-Frame-Options: DENY`; upgrade-insecure-requests
   upgrades same-origin subresources to HTTPS). `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'`:
-  `'unsafe-inline'` because the build emits 21 distinct inline scripts (Starlight's own plus our
-  marketing/writeup FX; counted by SHA-256 over every inline script body in `dist/`, 2026-09-13) and a hash would disable `'unsafe-inline'` and block the rest; `'wasm-unsafe-eval'`
+  `'unsafe-inline'` because the build emits 20 distinct inline scripts (Starlight's own, About's theme
+  bootstrap and our writeup and landing components; the homepage's and About's effects ship as script
+  files since 2026-10-02; counted by SHA-256 over every inline script body in the deployable pages of
+  `dist/`, 2026-10-03, 21 on 2026-09-13) and a hash would disable `'unsafe-inline'` and block the rest; `'wasm-unsafe-eval'`
   because Starlight search (Pagefind) instantiates WebAssembly in a Web Worker, which CSP blocks without it
   (see DECISIONS). No third-party script origin, so `script-src 'self'` is honest: the site loads only
   same-origin scripts (see the Web Analytics bullet below). No reporting endpoint (report-to / report-uri)
@@ -114,8 +116,10 @@
   Content and design (writeups, prose, the "Decrypted" visual language) are CC BY-NC-SA 4.0. The split
   names the paths each license covers explicitly, stated in the license files themselves plus a README
   section.
-- **The license files and the README section do not exist yet.** Writing them is a separate open task
-  (see ROADMAP). This bullet records the posture, not the state of the tree.
+- **The license files and the README section exist:** `LICENSE` (MIT) and `LICENSE-CONTENT` (CC BY-NC-SA
+  4.0) at the repository root, and the README's License section naming the paths each covers (checked
+  in the tree 2026-10-03). See DECISIONS 2026-08-01 · Dual licensing: MIT for code, CC BY-NC-SA 4.0 for
+  content, because licenses cover FILES.
 - **Retired machines only:** a writeup is published only for a retired machine. Writeups for active
   machines violate platform terms.
 - **Published flag and password values are deliberate content, not secrets.** On a retired machine whose
@@ -371,12 +375,16 @@ The theme pass is organised into declared cascade layers, one module per layer, 
   and the footer's name line, the only place the surname is page text, so the owner's name finds it.
   The philosophy section, the skills grid and the practice cards carry `data-pagefind-ignore`
   (2026-10-01): they speak the writeups' own vocabulary, and indexed they put About first for "privilege
-  escalation" and "reflection" and second for "HackTheBox". Measured on 2026-10-01, About comes first for
-  the owner's name, "about", "contact" and "whoami", and alone for what the owner does in words no
-  writeup uses ("pentesting", "red teaming", "offensive security"); it is also first for "security",
-  second for "machine" (its intro's "machine walkthroughs") and eleventh for "CTF", and absent for
-  "privilege escalation", "HackTheBox", "Linux", "recon", "exploit" and "reflection". An exact match on
-  About switches off Pagefind's fuzzy fallback for that query, so "offensive security" no longer lists
+  escalation" and "reflection" and second for "HackTheBox". Measured on 2026-10-03 with the ranking the
+  site ships (the options in the next bullet, which the search UI passes to Pagefind; the figures
+  recorded here on 2026-10-01 came from Pagefind's own defaults, which rank differently), About comes
+  first for the owner's full name and surname, "about" and "contact", second for "Idan", and alone for
+  what the owner does in words no writeup uses ("pentesting", "red teaming", "offensive security"); it
+  is second for "security", third for "machine" (its intro's "machine walkthroughs"), fourth of six for
+  "whoami" and sixth of 23 for "CTF" (last until 2026-10-05, when the 21 PicoCTF pages lost the "ctf"
+  their badge logo's SVG source gave them; see the next bullet), and absent for "privilege escalation",
+  "HackTheBox", "Linux", "recon", "exploit" and "reflection" (all re-measured 2026-10-05 with the
+  current ranking). An exact match on About switches off Pagefind's fuzzy fallback for that query, so "offensive security" no longer lists
   the four writeups that matched only "security" (one through its `secure_path`). The homepage stays
   out: its hero is three words, its stats are numbers and its cards point at the landings.
 - **Search ranking and the search fields (2026-10-03; the fields 2026-10-05):** the search UI passes
@@ -1025,7 +1033,9 @@ its own arc).
   writeups`) after every change, `--focus-ring: var(--pill)` rings each pill in its OWN hue (the group's
   on a group pill, the neutral on ALL), the hover lift is gated under `prefers-reduced-motion`, the stat numbers
   rest at their final value in the HTML and count up only when motion is allowed (the homepage rule),
-  and below 480px the visible counts leave the pills so the six-category PicoCTF rail stays two rows.
+  and at 480px and below the visible counts leave the pills to keep the six-category PicoCTF rail short: two
+  rows at 480, three at 375 and 320 (three again at 481, where the counts return, two at 640, one at
+  1280; measured 2026-10-03). It never was two rows on a phone, as this line used to say.
 
 **No sideways scroll on a landing (2026-09-07).** The hero glow (`.pi-glow`, inset `-12%` left and `-10%`
 right of the hero) is MEANT to spill past its box, and at 1280 and 640 it is the only element that
