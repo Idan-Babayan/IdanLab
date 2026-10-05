@@ -5,8 +5,8 @@
 // injected at the BOTTOM of the right "On this page" sidebar by the PageSidebar override, as a
 // standalone utility set apart from the TOC list by whitespace (clearly interactive, not a TOC entry).
 // It targets only the <details class="toggle"> rendered by
-// Toggle.astro, scoped to .sl-markdown-content and excluding flag toggles, so it never touches the
-// sidebar, the nav, code-block details, or the spoiler-gated flags.
+// Toggle.astro (and PasswordReveal's block mode), scoped to .sl-markdown-content, so it never touches
+// the sidebar, the nav or code-block details.
 //
 // The wrapper starts hidden and the script reveals it only when a page has two or more content
 // toggles, so there is no dead button without JS, no empty control on a page that has no toggles, and
@@ -46,12 +46,13 @@
     btn.classList.toggle('is-collapse', expanded); // chevron points up when everything is open
   }
 
-  // Only the writeup's own methodology toggles: <details class="toggle"> inside the main content,
-  // excluding the spoiler-gated flag toggles (.toggle-flag) so expand-all never reveals a flag.
+  // Only the writeup's own toggles: <details class="toggle"> inside the main content (Toggle and
+  // PasswordReveal's block mode). Flags are FlagCapture controls, not toggles, so expand-all can never
+  // reveal one.
   function contentToggles(): HTMLDetailsElement[] {
     const scope = document.querySelector('.sl-markdown-content');
     if (!scope) return [];
-    return Array.from(scope.querySelectorAll('details.toggle:not(.toggle-flag)')) as HTMLDetailsElement[];
+    return Array.from(scope.querySelectorAll('details.toggle')) as HTMLDetailsElement[];
   }
 
   // A stable scroll anchor for the bulk operation: the content heading (h2/h3) at or just above the

@@ -202,7 +202,8 @@
   on `document.scrollingElement`, and instrument the correction delta against where `scrollY`
   actually settles. If a sub-pixel residual remains, it is rounding territory, leave it.
 - [DESIGN] Flag-gold targets the slug ids `#user-flag` / `#root-flag` as an interim (no `.flag-title`
-  class exists; flag headings reuse `.task-title`). The TOC active-color ladder (DECISIONS 2026-06-29)
+  class exists; flag headings reuse `.task-title`, which has no colour of its own since 2026-10-03 and
+  no carrier but the six flag headings). The TOC active-color ladder (DECISIONS 2026-06-29)
   also excludes flags by those same two slug ids so they stay gold instead of going cyan, so it shares the
   fragility. Breaks if those headings are renamed or another page reuses the slugs. Clean fix: add a
   `.flag-title` class to flag headings during authoring, used by both the gold rule and the cyan exclusion.

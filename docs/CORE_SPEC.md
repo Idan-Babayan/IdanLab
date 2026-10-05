@@ -246,7 +246,7 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 │  │  └─ secret.mdx                   # hidden /secret (splash, pagefind:false, noindex), renders <SecretTerminal/>
 │  ├─ assets/{platform}/{difficulty}/{slug}/{slug}-N.ext   # writeup screenshots; astro:assets optimizes + hashes them, referenced by relative ../ from writeups (NOT public/)
 │  ├─ components/
-│  │  ├─ Toggle.astro                 # <details class="toggle"> wrapper; flag prop adds .toggle-flag; renders MDX (incl. code) in slot
+│  │  ├─ Toggle.astro                 # <details class="toggle"> wrapper; renders MDX (incl. code) in slot (its `flag` prop and .toggle-flag were deleted 2026-10-03, no page used them)
 │  │  ├─ FlagCapture.astro            # "Decrypt to Capture" gold flag control (props: type user|root, flag); replaces the heading-plus-duplicate flag Toggle
 │  │  ├─ PasswordReveal.astro         # amber wargame secret waypoint, TWO modes derived from the slot: INLINE (prop: password) blur-to-reveal then copy-in-place, BLOCK (slot content + prop: label) collapses a multi-line secret as a <details class="toggle pwreveal-block">, no copy button. Both wear one amber (--pw-amber accent / --pw-amber-ink AA text ink / --pw-amber-rgb wash base). Deliberately distinct from FlagCapture (no gold, no decode animation); replaced the retired .spoiler-toggle class; no per-file import needed, see plugins/remark-inject-passwordreveal.mjs
 │  │  ├─ ToggleAll.astro              # Expand/Collapse-all control (vanilla TS, scroll-anchored); injected via PageSidebar override
@@ -491,6 +491,12 @@ The theme pass is organised into declared cascade layers, one module per layer, 
   4,096-byte limit into the page; with 19 faces the minified file is 4,229 bytes, so it is now one
   `/_astro/fonts.*.css` link on every page (650 bytes gzipped, cached immutably), where the 16 faces
   used to sit inline in each page's HTML (3,420 bytes per page).
+- **A digit column is set in JetBrains Mono.** Its ten digits share one advance, which is what keeps a
+  counting number (the homepage stats, the landing hero numbers, the filter pill counts) from
+  jittering. `font-variant-numeric: tabular-nums` does nothing on this site: the mono's digits are all
+  0.6 em already, and the Geist subset carries no tabular figures (its digits run 0.35 to 0.70 em
+  across 400, 600 and 700 with the feature on or off; measured 2026-10-03), so the three declarations that
+  asked for it were deleted. A new digit column must be mono.
 - **Starlight var overrides:** `--sl-color-accent` = lime, `--sl-color-bg` = ink,
   `--sl-font` = JetBrains Mono. Headings forced to Syne via CSS.
 
@@ -532,8 +538,9 @@ is unchanged by construction rather than by exclusion. The tokens live in `token
   paragraph gap carries `:not(:where(blockquote *))` because `blockquote p { margin: 0 }` is only (0,1,2)
   and was being outranked, leaking ~2x the gap into every blockquote.
 - **Toggle titles are one system:** `--toggle-title-face` / `--toggle-title-weight` (Geist 600) on
-  `details.toggle:not(.toggle-flag) > summary`, so no toggle variant carries a bespoke face/weight; the gold
-  flag toggle keeps its own identity.
+  `details.toggle > summary` (the regular Toggle and PasswordReveal's block mode), so no toggle variant
+  carries a bespoke face/weight. The gold flag toggle that once kept its own identity is gone with its
+  `.toggle-flag` rules (deleted 2026-10-03; flags are FlagCapture controls).
 
 ### Focus ring system (keyboard accessibility)
 
@@ -660,8 +667,8 @@ token is an open ROADMAP item, not a bug.
 - Starlight: themed headings (Syne + lime `#` marker, silent to screen readers, §8 "Decoration says
   nothing to a screen reader"), lead blockquote, code frames,
   Toggle, metadata badges, sidebar dots. (The `:::tip[Answer]` admonition is no longer used: zero
-  instances since `FlagCapture` and `PasswordReveal` took over, its prose-layer tint and icon rules
-  match nothing, see §7.)
+  instances since `FlagCapture` and `PasswordReveal` took over, and its prose-layer tint and icon rules,
+  which matched nothing, were deleted on 2026-10-03; see §7.)
 - Content-embedded (in `src/components/`): `PlatformIndex` (animated hero + a multi-select filter rail on the platform's own axis, difficulty or
   category, with the counts in the pills + writeup-card grid; reuses the homepage effects), `WriteupCard`
   (presentational: one meta line, title, description clamped to two lines, affordance; `showPlatform` prop for a future mixed
@@ -1319,7 +1326,8 @@ Starlight has no shield). Icons via Starlight's `<Icon>`. Authored as `<Callout 
 
 ### Flag loot gold (User Flag / Root Flag)
 One gold signal across the flag's states via the `--flag-gold` token (`#ffc23d` dark / `#C6A243` light):
-the body heading (gold, with a flag-SVG mask icon; replaces the brown `.task-title`) and the TOC entry
+the body heading (gold, with a flag-SVG mask icon, on the `.task-title` span the heading wraps its words
+in, which has no colour of its own: its old Notion brown never showed and was deleted 2026-10-03) and the TOC entry
 (muted gold at rest, full gold on hover/current; non-flag TOC entries follow the active-color ladder
 below). The TOC treatment applies on both the desktop right column and the mobile dropdown (mobile added
 DECISIONS 2026-07-10). Flag headings have no dedicated class yet, so the CSS targets the slug ids
@@ -1469,7 +1477,8 @@ A dependency-free control auto-injected at the bottom of the right TOC via `over
 (additive override, renders `<Default/>`; wired in `astro.config.mjs` `components`). Bordered pill (gray +
 cyan hover), set apart by a gap + a `--sl-color-hairline` divider, desktop-only, self-hides unless a page
 has two or more toggles (a bulk expand/collapse is pointless with 0 or 1; the `>= 2` threshold clears every
-single-toggle page automatically). Acts on `.sl-markdown-content details.toggle:not(.toggle-flag)` (skips flags, code, nav).
+single-toggle page automatically). Acts on `.sl-markdown-content details.toggle` (the regular Toggle and
+PasswordReveal's block mode; flags are FlagCapture controls, never toggles; code and nav are skipped).
 Its name carries the NEXT action, "Expand all toggles" or "Collapse all toggles", like any action button,
 and it carries no `aria-pressed` (2026-10-03): paired with a name that flips, the pressed state announced
 "Collapse all toggles, pressed" with everything open, the opposite of the truth.
@@ -1615,8 +1624,9 @@ against any build directory.
   page is for, though it places a run in a period: Bandit's passwords change from one OverTheWire
   rotation to the next, and a PicoCTF flag ends in its deployment's tail.
 - Notion `<aside>` → the flag or password component of the bullets below, never an admonition (the
-  `:::tip[Answer]` admonition it once mapped to has had zero instances since 2026-06-27). Task headings
-  → brown `.task-title`.
+  `:::tip[Answer]` admonition it once mapped to has had zero instances since 2026-06-27, and its styles
+  were deleted 2026-10-03). `.task-title` is the span a flag heading wraps its words in (below): bold,
+  gold under `#user-flag` / `#root-flag`, and no colour of its own; no other heading carries it.
 - **Flags, MACHINES ONLY (HackTheBox and VulnHub):** emit the gold heading
   `### <span class="task-title">User Flag</span>` (or `Root Flag`) immediately followed by
   `<FlagCapture type="user" flag="..." />` (or `type="root"`), and add

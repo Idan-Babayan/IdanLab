@@ -1,32 +1,25 @@
 @layer starlight, tokens, base, prose, chrome, components, pages, utilities;
 /* Components: the named pieces (badges, toggles, callouts, FlagCapture, PasswordReveal, Principle).
    Layer order, not file order, decides precedence. */
-/* ── Task title headings (Notion brown) ──────── */
-/* Notion-accurate: light #9f6b53, dark #ba856f   */
+/* ── Task title headings ──────── */
+/* The span the flag headings wrap their words in (### <span class="task-title">User Flag</span>). Every
+   carrier is a flag heading, which takes the gold below, so the class has no colour of its own: the
+   Notion brown it once had never showed, on any page, in either theme (checked on the build,
+   2026-10-03), and was deleted. */
 
 @layer components {
 .task-title {
   font-weight: 700;
 }
 
-html[data-theme="light"] .task-title {
-  color: #9f6b53;
-}
-
-html[data-theme="dark"] .task-title {
-  color: #ba856f;
-}
-
 /* ── Flag loot system: User Flag / Root Flag read as one gold signal ───────────────────────────
-   Three states share the gold: the body heading (below), the reveal toggle (see .toggle-flag in the
-   Toggle section), and the TOC entry (below). All pull the theme-aware --flag-gold token.
+   Two places share the gold: the body heading (below) and the "On this page" entry (chrome.css).
+   Both pull the theme-aware --flag-gold token.
 
-   DEPENDENCY: the flag headings reuse .task-title (shared with real Task headings like "Task 1"), so
-   there is no dedicated .flag-title yet. A .flag-title emitted by the content pipeline would be the
-   clean hook; until then these target the deterministic Starlight slug ids (#user-flag / #root-flag).
-   The id outranks the .task-title brown inside the components layer (both are components rules, so
-   specificity still decides between them), and --flag-gold is theme-aware, so one rule covers both
-   themes. */
+   DEPENDENCY: the flag headings reuse .task-title, so there is no dedicated .flag-title yet. A
+   .flag-title emitted by the content pipeline would be the clean hook; until then these target the
+   deterministic Starlight slug ids (#user-flag / #root-flag), and --flag-gold is theme-aware, so one
+   rule covers both themes. */
 #user-flag .task-title,
 #root-flag .task-title {
   color: var(--flag-gold);
@@ -288,13 +281,13 @@ html[data-theme="dark"] .port-label {
 } /* @layer components */
 
 /* Toggle summary title: face + weight on dials for the owner to judge live. Covers the regular <Toggle>
-   AND PasswordReveal's block mode (which carries .toggle), so every toggle title reads as one system;
-   :not(.toggle-flag) leaves the gold flag toggle to its own identity. Size stays --component-title-size
-   (base rule above). Defaults: Geist (content-label reading) at weight 600. To flip, edit the two tokens
-   in the token block: --toggle-title-face (var(--body-face) <-> var(--sl-font-mono)) and
-   --toggle-title-weight (600 <-> 700). Inline <code> in a title keeps its own mono chip rule. */
+   AND PasswordReveal's block mode (which carries .toggle), so every toggle title reads as one system.
+   Size stays --component-title-size (base rule above). Defaults: Geist (content-label reading) at
+   weight 600. To flip, edit the two tokens in the token block: --toggle-title-face (var(--body-face)
+   <-> var(--sl-font-mono)) and --toggle-title-weight (600 <-> 700). Inline <code> in a title keeps its
+   own mono chip rule. */
 @layer components {
-.sl-markdown-content details.toggle:not(.toggle-flag) > summary {
+.sl-markdown-content details.toggle > summary {
   font-family: var(--toggle-title-face);
   font-weight: var(--toggle-title-weight);
 }
@@ -303,38 +296,9 @@ html[data-theme="dark"] .port-label {
 /* Toggle titles use the normal foreground text color (no cyan), so cyan stays reserved for links, and
    the disclosure chevron stays dim (the ::before above). Inline <code> in a summary is deliberately NOT
    special-cased here: the unified inline-code rule at the top of this file already renders it as the
-   same red chip on the toggle-panel surface (that was the point of making inline code its own object).
-   The flag-toggle summary keeps its gold label; a code chip inside it still reads red, because that
-   global rule sets color on the <code> directly and so wins over the summary's inherited gold. */
+   same red chip on the toggle-panel surface (that was the point of making inline code its own object). */
 
-/* Flag reveal is the prize of the writeup, so it is the one toggle that keeps a pop. Flag toggles
-   carry the .toggle-flag class (Toggle's `flag` prop). Single-line layout: the summary is a flex row
-   so the inline flag icon sits beside the label. (Starlight renders content <svg> as display:block,
-   which otherwise dropped the icon onto its own line and wrapped the title.) The svg gets a fixed 1em
-   box and flex-shrink:0 so it never collapses or wraps off. The disclosure ::before marker is kept,
-   its margin zeroed so the flex gap spaces all three items evenly. */
 @layer components {
-.sl-markdown-content details.toggle-flag > summary {
-  display: flex;
-  align-items: center;
-  flex-wrap: nowrap;
-  gap: 0.4rem;
-}
-.sl-markdown-content details.toggle-flag > summary::before {
-  margin-right: 0;
-}
-.sl-markdown-content details.toggle-flag > summary svg {
-  flex-shrink: 0;
-  width: 1em;
-  height: 1em;
-}
-/* Treasure gold via the shared --flag-gold token, so the toggle, the flag heading, and the flag TOC
-   entry read as one system. Theme-aware and WCAG AA on the toggle panel; the flag svg uses
-   fill:currentColor, so the icon and label share this gold ("this is the prize"). */
-.sl-markdown-content details.toggle-flag > summary {
-  color: var(--flag-gold);
-}
-
 .toggle-body {
   padding-top: 0.25rem;
 }
