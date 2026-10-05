@@ -16,7 +16,7 @@
 ---
 
 <div class="toggle-all-wrap" hidden>
-  <button type="button" class="toggle-all" data-toggle-all aria-pressed="false" aria-label="Expand all toggles">
+  <button type="button" class="toggle-all" data-toggle-all aria-label="Expand all toggles">
     <span class="ta-label">Expand all</span>
     <svg
       class="ta-chev"
@@ -36,11 +36,12 @@
 </div>
 
 <script>
-  // Reflect the bulk state on a button: expanded=true means every toggle is open.
+  // Reflect the bulk state on a button: expanded=true means every toggle is open. The name carries the
+  // NEXT action, like any action button, so there is no aria-pressed: paired with a name that flips,
+  // it announced "Collapse all toggles, pressed" with everything open, the opposite of the truth.
   function setExpanded(btn: HTMLButtonElement, expanded: boolean): void {
     const label = btn.querySelector('.ta-label') as HTMLElement | null;
     if (label) label.textContent = expanded ? 'Collapse all' : 'Expand all';
-    btn.setAttribute('aria-pressed', expanded ? 'true' : 'false');
     btn.setAttribute('aria-label', expanded ? 'Collapse all toggles' : 'Expand all toggles');
     btn.classList.toggle('is-collapse', expanded); // chevron points up when everything is open
   }

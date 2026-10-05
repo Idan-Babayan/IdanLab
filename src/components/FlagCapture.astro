@@ -20,6 +20,9 @@
 // Accessibility: real <button>; the real flag is always present in the DOM (.flagcap-real, visually
 // hidden) so screen readers get the value regardless of the visual scramble; an aria-live region
 // announces capture. prefers-reduced-motion skips the scramble + glow and reveals instantly.
+// Once captured, the decrypt button is spent: it is named for its state ("User flag, captured") and
+// carries aria-disabled, so it no longer offers an action it cannot perform, and a capture made from
+// the keyboard moves focus on to the copy button, the one control left to use.
 
 interface Props {
   /** Which flag this is. Drives ONLY the gold tier (user vs richer root); there is no per-type glyph. */
@@ -132,7 +135,8 @@ const noun = isRoot ? 'root flag' : 'user flag';
     }, 45);
   }
 
-  function capture(root: HTMLElement): void {
+  // viaKeyboard: the click came from Enter or Space, not a pointer (see init below).
+  function capture(root: HTMLElement, viaKeyboard: boolean): void {
     if (root.dataset.captured === 'true') return; // ceremony happens once
     root.dataset.captured = 'true';
 
@@ -152,9 +156,18 @@ const noun = isRoot ? 'root flag' : 'user flag';
       root.classList.remove('is-capturing');
       root.classList.add('is-captured');
       if (stateText) stateText.textContent = 'CAPTURED';
-      if (btn) btn.setAttribute('aria-label', `${Noun} captured`);
+      if (btn) {
+        // Spent. Named for its state, and aria-disabled rather than `disabled`: the property would take
+        // the button out of the tab order while it holds focus and drop focus to <body>, the lesson
+        // AttackPath's advance control learned.
+        btn.setAttribute('aria-label', `${Noun}, captured`);
+        btn.setAttribute('aria-disabled', 'true');
+      }
       if (copy) copy.hidden = false;
       if (live) live.textContent = `${Noun} captured`;
+      // From the keyboard, focus moves on to the copy button, now visible, but only while it is still on
+      // the spent button: a reader who tabbed away during the decode keeps their place.
+      if (viaKeyboard && copy && btn && document.activeElement === btn) copy.focus();
     };
 
     // Reduced motion (or no value node): reveal instantly, no scramble, no glow. Copy still works.
@@ -222,7 +235,9 @@ const noun = isRoot ? 'root flag' : 'user flag';
       if (root.dataset.fcReady === 'true') return; // avoid double-binding
       root.dataset.fcReady = 'true';
       const btn = root.querySelector('.flagcap-btn') as HTMLButtonElement | null;
-      if (btn) btn.addEventListener('click', () => capture(root));
+      // A click that Enter or Space produced on a button carries detail 0; a pointer click counts 1 or
+      // more. That is how capture() tells a keyboard capture from a pointer one.
+      if (btn) btn.addEventListener('click', (e: MouseEvent) => capture(root, e.detail === 0));
       bindCopy(root);
     });
   }

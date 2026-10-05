@@ -1243,6 +1243,14 @@ screen-reader source and what the copy button reads. It carries `user-select: no
 `data-flag` attribute, because both routes put the flag on the clipboard on a plain Ctrl+A
 (DECISIONS 2026-09-12).
 
+**After capture the decrypt button is spent (2026-10-03).** It is named for its state, "User flag,
+captured", and carries `aria-disabled="true"` (never `disabled`, which would drop focus to `<body>` the
+moment the button holding it went inert, the AttackPath lesson). A capture made with Enter or Space
+moves focus to the copy button once it shows, but only while focus is still on the spent button; a
+pointer capture leaves focus where it is. The script tells the two apart by the click's `detail`, which
+is 0 for a keyboard activation. Measured in headless Chrome, both motion settings: the keyboard flow
+lands on "Copy flag", and the copied value pastes as the flag, against a clipboard poisoned first.
+
 ### Password waypoint amber (PasswordReveal)
 
 **Two modes, one component, one amber (2026-07-25).** A wargame secret comes in two shapes and the
@@ -1372,6 +1380,9 @@ A dependency-free control auto-injected at the bottom of the right TOC via `over
 cyan hover), set apart by a gap + a `--sl-color-hairline` divider, desktop-only, self-hides unless a page
 has two or more toggles (a bulk expand/collapse is pointless with 0 or 1; the `>= 2` threshold clears every
 single-toggle page automatically). Acts on `.sl-markdown-content details.toggle:not(.toggle-flag)` (skips flags, code, nav).
+Its name carries the NEXT action, "Expand all toggles" or "Collapse all toggles", like any action button,
+and it carries no `aria-pressed` (2026-10-03): paired with a name that flips, the pressed state announced
+"Collapse all toggles, pressed" with everything open, the opposite of the truth.
 Preserves reading position: anchors on the current heading and corrects scroll synchronously, with native
 `overflow-anchor` suppressed for the operation (see DECISIONS; ROADMAP has the unverified few-pixel shift).
 
