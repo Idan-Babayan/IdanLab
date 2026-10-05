@@ -328,7 +328,9 @@ html[data-theme="light"] .starlight-aside--tip {
   letter-spacing: -0.01em;
 }
 .sl-markdown-content h1 { font-weight: 800; }
-.sl-markdown-content h2 { font-weight: 700; }
+/* The h2 rules carry the .not-content guard (see the h3 note below) since 2026-10-04, when the landing
+   card titles became h2s: unguarded, the "# " marker below drew a lime "# " before every card title. */
+.sl-markdown-content h2:not(:where(.not-content *)) { font-weight: 700; }
 } /* @layer prose */
 
 /* Decorative lime # before section headings (purely visual cue). Purely visual now in fact too: the
@@ -336,7 +338,7 @@ html[data-theme="light"] .starlight-aside--tip {
    "# Recon" on every h2 (measured 2026-09-28). The plain declaration first is the fallback for the
    build's older targets, as on the toggle triangle above. */
 @layer prose {
-.sl-markdown-content h2::before {
+.sl-markdown-content h2:not(:where(.not-content *))::before {
   content: "# ";
   content: "# " / "";
   color: var(--sl-color-accent);
@@ -470,7 +472,7 @@ html[data-theme="light"] .starlight-aside--tip {
 /* Decorative accent (NOT body text): the lime "#" before each h2 runs the vivid deco-lime on
    paper, bolder than the AA text ink, for a confident risograph marker. Light-only. */
 @layer prose {
-:root[data-theme='light'] .sl-markdown-content h2::before {
+:root[data-theme='light'] .sl-markdown-content h2:not(:where(.not-content *))::before {
   color: var(--tp-deco-lime);
 }
 } /* @layer prose */

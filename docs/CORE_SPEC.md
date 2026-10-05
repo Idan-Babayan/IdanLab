@@ -355,7 +355,9 @@ The theme pass is organised into declared cascade layers, one module per layer, 
 - **Content-embedded components:** platform landings, the 404, and `/secret` are Starlight docs
   that embed scoped Astro components via MDX (`PlatformIndex`, `NotFound`, `SecretTerminal`). They
   carry Starlight's `not-content` class so prose styling skips them; most of our prose rules in
-  `prose.css` are guarded with `:not(:where(.not-content *))`. Astro scopes component styles with
+  `prose.css` are guarded with `:not(:where(.not-content *))`, the h2 weight and "# " marker rules
+  since 2026-10-04: until then no h2 sat in a component, and the landing card titles' move to h2 would
+  have drawn a lime "# " before every card title. Astro scopes component styles with
   `:where()` (zero specificity), so component CSS never out-ranks a global rule on selector weight.
   What actually protects a component subtree is that an Astro scoped style is UNLAYERED, and unlayered
   author CSS beats every layered rule regardless of weight. See §8 "The two instruments".
@@ -903,6 +905,15 @@ its own arc).
   characters>: ` from the card blurb and capitalises the first character of what follows, so a PicoCTF card does not repeat its
   own title; the frontmatter description (the SEO and Open Graph string) is untouched, HackTheBox never
   matches, and the OverTheWire wargame card reads its description verbatim.
+- **Card titles are h2 (2026-10-04).** Starlight's own `h1#_top` is `display: none` on a landing, so
+  the outline is the hero's `h1.pi-name` and then the card titles, which were h3 and skipped a level.
+  `WriteupCard`'s `.wc-name` and the wargame card's `.pi-wg-name` are h2 now (21 on PicoCTF, 3 on
+  HackTheBox, 1 on OverTheWire; VulnHub has only its h1), with a comment at each to go back to h3 if
+  category headings ever sit between hero and grid. The prose h2 rules carry the `.not-content` guard
+  since the same day (§5 "Content-embedded components"), so the title shows no "# " marker: `::before`
+  computes `none`, and font, size, weight, colour and margins are unchanged in both themes, pixels 0
+  at 1280 and 375. No other built page had an h2 inside `.not-content`, so the guard changes nothing
+  else.
 - **Capitalisation law, three tiers.** A `//`-prefixed UPPERCASE tracked mono line is a KICKER that
   opens a section (hero eyebrow, wargame card eyebrow); UPPERCASE tracked mono without the prefix is a
   SLOT LABEL (`WRITEUPS`, `CATEGORIES`); Title Case JetBrains Mono 0.75rem 600 is a VALUE or a CONTROL
