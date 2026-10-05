@@ -1811,6 +1811,9 @@ DECISIONS). `src/components/badges/icons.ts` is the single source of truth mappi
 icon.
 - **Polychrome marks** (VulnHub, PicoCTF, OverTheWire, Linux): native-color `<img>` via hashed `?url`
   import. They carry 3 to 16 fills (Linux is Tux plus gradients), so `currentColor` would flatten them.
+  They load eagerly (2026-10-03): the row sits right under the h1, above the fold at every width, and
+  lazy loading only delayed them (Busqueda's Linux logo was requested 448 to 1,484ms into the load over
+  six runs, 53 to 61ms now).
 - **Monochrome marks** (HackTheBox, Windows, Active Directory, Progressive, Standalone): inlined via `?raw`
   + `set:html` and tinted from `--wm-c` (`currentColor`) in both themes. Sourced only from
   `src/assets/icons/` (inlining requires importing, and `public/` is not in the import graph); Standalone is
