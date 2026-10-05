@@ -592,7 +592,7 @@ ring echoes what the element is rather than inventing an identity. Everything el
 | TOC entries | the hue of the heading they point to: flags `--flag-gold-val`, h3 cyan, h2/h4+ lime |
 | In-prose links | `--tp-cyan` / `--tp-cyan-ink` |
 | `WriteupMeta` chips | `--wm-c` (live: the chips render on every writeup) |
-| Filter rail pills (`.pi-pill`) | `--pill` (its own hue: the group hue, or the neutral on ALL; 2026-09-07) |
+| Filter rail pills (`.pi-pill`) | `--pill` (its own hue: the group hue, or the neutral on ALL; 2026-09-07). On the PRESSED pill the ring sits 4px out (`outline-offset`), so 2px of page separates it from the 2px pressed ring; at the shared 2px the two touched and read as one 4px band, 1.01:1 between them (2026-10-03) |
 | Landing pagination (`.pagination-links a` on a page carrying `.pi-index`) | `--pf-accent` (the platform, lifted onto the footer container by `:has()` in `pages.css`; writeup pages keep the site default; 2026-09-07) |
 | Anything else inside `.pi-index` (the wargame card) | `--accent` (the platform, set on the landing root; 2026-09-07) |
 

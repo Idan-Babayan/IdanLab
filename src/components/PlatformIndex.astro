@@ -566,6 +566,13 @@ const countLabel = (n: number): string => (n === 1 ? 'writeup' : 'writeups');
 		background: color-mix(in oklab, var(--pill) 22%, transparent);
 		box-shadow: 0 0 0 2px var(--pill), 0 6px 18px -8px var(--pill);
 	}
+	/* Focus on the pressed pill: the shared 2px offset is exactly the pressed ring's 2px spread, so the
+	   two rings touched and read as one 4px band in one colour (1.01:1 between them), and focus landing
+	   on the selected pill showed only as a thicker ring. Twice the offset leaves 2px of page between
+	   them. The colour stays the pill's own (owner decision 2026-09-07). */
+	.pi-pill.is-active:focus-visible {
+		outline-offset: 4px;
+	}
 	/* LIGHT: the pressed fill stays at the resting 12%. On paper the label sits on a fill mixed from
 	   its OWN hue, the one backdrop no wash change can reach, and the ring values were solved on that
 	   12% fill; the 2026-07-31 pass already found the tint the weakest of the three pressed cues, so
