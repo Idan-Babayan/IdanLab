@@ -114,14 +114,14 @@ const envClass = `wm-env-${envSlug}`; // wm-env-standalone | wm-env-active-direc
     <a class={`wm-chip ${platformClass[platform]}`} href={`/platform/${platformSlug[platform]}`} data-astro-prefetch="false">
       {platform === 'HackTheBox'
         ? <span class="wm-ico" set:html={platformIcons.HackTheBox} />
-        : <img class="wm-ico wm-ico-logo" src={platformLogos[platform]} alt="" width="15" height="15" loading="lazy" decoding="async" />}{platform}
+        : <img class="wm-ico wm-ico-logo" src={platformLogos[platform]} alt="" width="15" height="15" loading="eager" decoding="async" />}{platform}
     </a>
     <a class={`wm-chip wm-cat tx-${category}`} href={`/picoctf/#${category}`} data-astro-prefetch="false">
       <span class="wm-ico wm-ico-cat" set:html={categoryGlyph} />{categoryLabel}
     </a>
     <a class={`wm-chip ${osClass}`} href={`/os/${osSlug}`} data-astro-prefetch="false">
       {os === 'Linux'
-        ? <img class="wm-ico wm-ico-logo" src={osLogos.Linux} alt="" width="15" height="15" loading="lazy" decoding="async" />
+        ? <img class="wm-ico wm-ico-logo" src={osLogos.Linux} alt="" width="15" height="15" loading="eager" decoding="async" />
         : <span class="wm-ico" set:html={osIcons.Windows} />}{os}
     </a>
     <a class={`wm-chip ${envClass}`} href={`/environment/${envSlug}`} data-astro-prefetch="false">
@@ -131,11 +131,13 @@ const envClass = `wm-env-${envSlug}`; // wm-env-standalone | wm-env-active-direc
     {/* Each value is preceded by a visually hidden name for its axis, as DifficultyPips does with
         "Difficulty N of 4", so a screen reader hears "Platform: HackTheBox" rather than one
         unpunctuated run of values. data-pagefind-ignore keeps the four names out of every writeup's
-        search entry and excerpt; .sr-only carries user-select: none, so they stay off the clipboard. */}
+        search entry and excerpt; .sr-only carries user-select: none, so they stay off the clipboard.
+        The two logo images load eagerly: the row sits right under the h1, above the fold at every
+        width, so lazy loading only made the browser wait to learn that before fetching them. */}
     <span class={`wm-chip ${platformClass[platform]}`}>
       {platform === 'HackTheBox'
         ? <span class="wm-ico" set:html={platformIcons.HackTheBox} />
-        : <img class="wm-ico wm-ico-logo" src={platformLogos[platform]} alt="" width="15" height="15" loading="lazy" decoding="async" />}<span class="sr-only" data-pagefind-ignore>{'Platform: '}</span>{platform}
+        : <img class="wm-ico wm-ico-logo" src={platformLogos[platform]} alt="" width="15" height="15" loading="eager" decoding="async" />}<span class="sr-only" data-pagefind-ignore>{'Platform: '}</span>{platform}
     </span>
     {categoryLabel !== undefined && (
       <span class={`wm-chip wm-cat tx-${category}`}>
@@ -145,7 +147,7 @@ const envClass = `wm-env-${envSlug}`; // wm-env-standalone | wm-env-active-direc
     {os !== undefined && (
       <span class={`wm-chip ${osClass}`}>
         {os === 'Linux'
-          ? <img class="wm-ico wm-ico-logo" src={osLogos.Linux} alt="" width="15" height="15" loading="lazy" decoding="async" />
+          ? <img class="wm-ico wm-ico-logo" src={osLogos.Linux} alt="" width="15" height="15" loading="eager" decoding="async" />
           : <span class="wm-ico" set:html={osIcons.Windows} />}<span class="sr-only" data-pagefind-ignore>{'Operating system: '}</span>{os}
       </span>
     )}

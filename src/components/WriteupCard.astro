@@ -150,7 +150,9 @@ const dataAttrs: Record<string, string> =
 		)}
 	</div>
 
-	<h3 class="wc-name">{title}</h3>
+	{/* h2: the grid sits right under the landing hero's h1, so its titles are the next level down. Back
+	    to h3 if category headings ever arrive between them. */}
+	<h2 class="wc-name">{title}</h2>
 
 	{cleanTags.length > 0 && (
 		<div class="wc-tags">
@@ -164,11 +166,13 @@ const dataAttrs: Record<string, string> =
 </a>
 
 <style>
-	/* The card renders as an <a> + <h3> inside Starlight's .sl-markdown-content, whose
-	   prose rules (link color/underline, h3 cyan) would tint it. The PlatformIndex root
-	   carries Starlight's `not-content` class, and our prose.css rules are guarded
-	   with :not(:where(.not-content *)), so this whole subtree opts out of prose styling
-	   and these component styles apply cleanly (no specificity arms race). */
+	/* The card renders as an <a> + <h2> inside Starlight's .sl-markdown-content, whose
+	   prose rules (link color/underline, the h2 weight and its lime "# " marker) would reach it. The
+	   PlatformIndex root carries Starlight's `not-content` class, and the prose.css rules that reach
+	   into an element are guarded with :not(:where(.not-content *)) (the h2 ones since 2026-10-04,
+	   when this title became an h2; of the heading rules, only h3's and h4's were before), so this whole
+	   subtree opts out of prose styling and these component styles apply cleanly (no specificity arms
+	   race). */
 	.wc-card {
 		position: relative;
 		display: flex;
@@ -292,7 +296,7 @@ const dataAttrs: Record<string, string> =
 	}
 
 	/* Card title stays neutral (accent is reserved for the bar / hover / go).
-	   The not-content opt-out (see top of block) keeps the prose h3 rule off it. */
+	   The not-content opt-out (see top of block) keeps the prose h2 rules off it. */
 	.wc-name {
 		font-family: var(--tp-display);
 		font-weight: 700;

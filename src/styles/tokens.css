@@ -154,7 +154,7 @@ html[data-theme="dark"] {
 :root {
   --sl-font: 'JetBrains Mono', 'JetBrains Mono Fallback', ui-monospace, SFMono-Regular, Menlo, monospace;
   --sl-font-mono: 'JetBrains Mono', 'JetBrains Mono Fallback', ui-monospace, SFMono-Regular, Menlo, monospace;
-  --tp-display: 'Syne', 'Syne Fallback', sans-serif;
+  --tp-display: 'Syne', 'Syne Fallback', 'Syne Glyph Fallback', sans-serif;
 
   /* Writeup PROSE face. Geist sets running prose only (see the prose/chrome split just below); all code,
      badges, and chrome stay JetBrains Mono because --sl-font / --sl-font-mono are left untouched.

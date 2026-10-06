@@ -1,10 +1,25 @@
 @layer starlight, tokens, base, prose, chrome, components, pages, utilities;
 /* Chrome: everything around the reading column (header, sidebar, TOC, code frames, scrollbars).
    Layer order, not file order, decides precedence. */
-/* Flag TOC entries: the gold identity in the right "On this page" column, others keep the green
-   active accent. Targeted by their deterministic anchors; this is unlayered so it overrides
-   Starlight's layered a[aria-current] green. A persistent muted gold makes the loot scannable at a
-   glance; full gold on hover and when current. */
+/* ── "On this page": the current entry wears its heading's colour ──────────────
+   The entry the reader is on (aria-current) takes the hue of the heading it points to, so the list
+   echoes the in-page ladder: the page title and every h2 lime (--sl-color-text-accent), h3 cyan
+   (--tp-cyan, --tp-cyan-ink on light), h4 and deeper the muted gray of the h4 heading
+   (--sl-color-gray-2), and the two flags gold. Only the current entry changes colour. The same ladder
+   is written twice, for the desktop column and for the mobile dropdown, and every rung is ours: this
+   layer outranks all of Starlight's, so a current entry keeps its colour under the pointer. That is
+   why the current h2 has a rule too. It used to show Starlight's own lime, and inside starlight.core
+   Starlight's desktop hover (`.right-sidebar-panel :where(a):hover`, white) outranks its
+   `a[aria-current]`, so the current h2 turned white on hover while h3 and the flags held (measured
+   rgb(182,255,60) to rgb(255,255,255)). The heading rules share these tokens: if a heading colour
+   changes, change it here too. Which entry is current is TocTracking.astro's job, not this file's.
+   Entries that are not current keep Starlight's colours: gray-3, white on hover, in the desktop
+   column; the text colour in the dropdown, which also marks its current entry with a check in the
+   entry's own colour. */
+
+/* Flags, desktop: matched by their slug anchors (#user-flag / #root-flag; no .flag-title class exists
+   yet). A persistent muted gold makes the loot scannable at a glance; full gold on hover and when
+   current. */
 @layer chrome {
 .right-sidebar-panel a[href="#user-flag"],
 .right-sidebar-panel a[href="#root-flag"] {
@@ -17,16 +32,12 @@
   color: var(--flag-gold);
 }
 
-/* TOC active-entry color mirrors the content heading ladder: the entry the reader is currently on
-   (aria-current) takes the hue of the heading it points to, so the "On this page" column echoes the
-   in-page hierarchy (h2 green, h3 cyan, h4+ muted). Heading level is read from Starlight's TOC
-   nesting (it nests h3 under h2, h4 under h3, by maxHeadingLevel), so depth maps to level. ONLY the
-   current entry recolors; inactive entries keep their muted default. h1/h2 (top level) keep
-   Starlight's green accent (untouched), and flags keep gold (their rule above wins and they are
-   excluded below). Unlayered, so it beats Starlight's layered a[aria-current] green. Desktop column
-   only; the mobile TOC keeps Starlight's white + checkmark active style. Parity with the heading
-   rules is by shared tokens (--tp-cyan / --sl-color-gray-2); if a heading color changes, change it
-   here too. */
+/* Desktop reads heading level from Starlight's nesting (h3 under h2, h4 under h3), so depth is level.
+   The page title and h2 (top level): lime. Flags are never top level; the exclusions keep the
+   desktop and mobile rules the same shape. */
+.right-sidebar-panel nav > ul > li > a[aria-current="true"]:not([href="#user-flag"]):not([href="#root-flag"]) {
+  color: var(--sl-color-text-accent);
+}
 
 /* h3 (nested one level): cyan, matching the ### heading. Flags are also h3, so their anchors are
    excluded here (they own the gold rule above). */
@@ -45,13 +56,14 @@
   color: var(--sl-color-gray-2);
 }
 
-/* ── Mobile TOC: gold flag entries (parity with the desktop right column) ─────
-   Ports the desktop gold-flag TOC treatment to the mobile TOC dropdown. Mobile renders as
-   <mobile-starlight-toc> (a <details> list) which the desktop .right-sidebar-panel rules never reach,
-   so flags were plain there. Same mechanism as desktop: match the deterministic slug anchors
-   (#user-flag / #root-flag), persistent muted gold, full --flag-gold on hover and when current. Href
-   matching is depth-independent, so this is a near-verbatim re-scope. Unlayered so it beats Starlight's
-   layered mobile active color. --flag-gold is theme-aware (no light override needed). Desktop untouched. */
+/* ── Mobile dropdown: the same ladder ─────────────────────────────────────────
+   <mobile-starlight-toc> is a <details> list that the .right-sidebar-panel rules never reach, and its
+   nesting sits under a different wrapper (nav > details > .dropdown > ul), so level is read from the
+   inline custom property Starlight writes on every entry instead: style="--depth: N;", 0 for the page
+   title and h2, 1 for h3, 2 and deeper for h4 and below (read from the built DOM at Starlight
+   0.41.10, 2026-10-03; first verified at 0.39.2). If Starlight changes that format, update every
+   selector below. Starlight's own mobile current style is white for the text, on hover and on focus
+   too, so each rung here replaces it. Flags first: matched by href, so depth does not matter. */
 mobile-starlight-toc a[href="#user-flag"],
 mobile-starlight-toc a[href="#root-flag"] {
   color: color-mix(in oklab, var(--flag-gold) 70%, var(--sl-color-gray-3));
@@ -63,16 +75,13 @@ mobile-starlight-toc a[href="#root-flag"][aria-current="true"] {
   color: var(--flag-gold);
 }
 
-/* ── Mobile TOC: h3 entries cyan when current (parity with desktop) ───────────
-   Desktop colors the CURRENT h3 TOC entry cyan by reading heading level from nested <ul> depth. The
-   mobile TOC is nested too, but under a different wrapper (mobile-starlight-toc > nav > details >
-   .dropdown > ul), so the desktop `nav > ul > li > ul` chain does not line up. Instead we match the
-   inline `--depth` custom property that Starlight emits per entry: verified in the real mobile DOM
-   (Starlight 0.39.2, 2026-07-10) that each <a> carries style="--depth: N;" with h2 = 0 and h3 = 1, so
-   `[style*="--depth: 1"]` selects exactly the h3 entries. Flags are also h3 (depth 1) and keep gold, so
-   they are excluded here. Unlayered so it beats Starlight's layered mobile active color. Light uses
-   --tp-cyan-ink, matching the desktop light variant. If Starlight changes the emitted format or the h3
-   depth number, update both selectors. */
+/* The page title and h2 (--depth: 0): lime. Flags sit at depth 1, so the exclusions never fire here;
+   they keep this rule the same shape as the desktop one. */
+mobile-starlight-toc a[aria-current="true"][style*="--depth: 0"]:not([href="#user-flag"]):not([href="#root-flag"]) {
+  color: var(--sl-color-text-accent);
+}
+
+/* h3 (--depth: 1): cyan. Flags are h3 too, so they are excluded and keep their gold. */
 mobile-starlight-toc a[aria-current="true"][style*="--depth: 1"]:not([href="#user-flag"]):not([href="#root-flag"]) {
   color: var(--tp-cyan);
 }
@@ -80,19 +89,18 @@ mobile-starlight-toc a[aria-current="true"][style*="--depth: 1"]:not([href="#use
   color: var(--tp-cyan-ink);
 }
 
-/* ── Mobile TOC: top-level (h2) entries green when current (parity with desktop) ──
-   On desktop, the current top-level TOC entry is green because Starlight's default active color
-   (--sl-color-text-accent) shows through there. The mobile TOC's default active style is white +
-   checkmark, so the green is added explicitly here. Top-level = h2 (the h1 title is not in the TOC),
-   which in the flat mobile list are the --depth: 0 items (same depth model as the mobile cyan-h3 rule
-   at --depth: 1). Confirmed --depth: 0 for a top-level entry in the real mobile DOM (Starlight 0.39.2),
-   same as the depth model verified for the cyan-h3 rule. Flags render at --depth: 1 (confirmed in the
-   DOM), so this --depth: 0 selector never matches them anyway; the flag :not() exclusions are a harmless
-   safeguard kept for parity with the cyan-h3 rule. --sl-color-text-accent is theme-aware (green #b6ff3c dark / #4d7c0f
-   light), so no separate light override is needed. Unlayered so it beats Starlight's mobile active
-   color. Desktop TOC untouched. */
-mobile-starlight-toc a[aria-current="true"][style*="--depth: 0"]:not([href="#user-flag"]):not([href="#root-flag"]) {
-  color: var(--sl-color-text-accent);
+/* h4 and deeper (any depth past 1): muted gray, as on desktop. Like the desktop rule, it only matters
+   once tableOfContents.maxHeadingLevel is raised past 3; until then no entry is this deep. */
+mobile-starlight-toc a[aria-current="true"]:not([style*="--depth: 0"]):not([style*="--depth: 1"]) {
+  color: var(--sl-color-gray-2);
+}
+
+/* The dropdown's check mark on the current entry wears the entry's colour too (owner, 2026-10-04).
+   Starlight draws it as the entry's ::after, an empty box masked to a check and filled from
+   background-color, which it sets to --sl-color-text-accent: lime beside a cyan h3, a gold flag or a
+   gray h4. currentColor is the colour the rungs above give the entry, so the two always agree. */
+mobile-starlight-toc a[aria-current="true"]::after {
+  background-color: currentColor;
 }
 
 /* ── TOC focus rings echo the heading ladder ──────────────────────────────────

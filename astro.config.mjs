@@ -9,6 +9,7 @@ import remarkInjectPasswordReveal from './plugins/remark-inject-passwordreveal.m
 import remarkInjectWriteupMeta from './plugins/remark-inject-writeupmeta.mjs';
 import remarkValidateContentTaxonomy from './plugins/remark-validate-content-taxonomy.mjs';
 import remarkTransformReconRail from './plugins/remark-transform-recon-rail.mjs';
+import remarkInjectSearchMeta from './plugins/remark-inject-search-meta.mjs';
 import validateDecorativeGlyphs from './plugins/validate-decorative-glyphs.mjs';
 
 export default defineConfig({
@@ -54,9 +55,14 @@ export default defineConfig({
   // findings rail's dl/dt/dd structure, so a recon rail is authored as data rather than as markup.
   // Appended LAST for the same reason as the injector: the taxonomy guard's boundary is hand-authored
   // markup, and the dl/dt/dd this emits are generated nodes it should never see.
+  // remarkInjectSearchMeta: appends hidden site-search fields: an empty `image` on every page (so
+  // Pagefind keeps no image as a searchable field), and a `level` and `login` field on each
+  // OverTheWire wargame level and a `wargame` field on each hub, weighted by pagefind.ranking below.
+  // After the guard for the same reason; it only appends, so its place among the generators does not
+  // matter.
   markdown: {
     processor: unified({
-      remarkPlugins: [remarkValidateContentTaxonomy, remarkInjectPasswordReveal, remarkInjectWriteupMeta, remarkTransformReconRail],
+      remarkPlugins: [remarkValidateContentTaxonomy, remarkInjectPasswordReveal, remarkInjectWriteupMeta, remarkTransformReconRail, remarkInjectSearchMeta],
       rehypePlugins: [rehypeContentImageLoading],
     }),
   },
@@ -76,6 +82,23 @@ export default defineConfig({
         plugins: [pluginPrivCommand()],
       },
       plugins: [starlightImageZoom()],
+      // Site search ranking. Starlight's own defaults for the other options still apply (pageLength
+      // 0.1, termFrequency 0.1, termSaturation 2, termSimilarity 9); this weights the fields
+      // plugins/remark-inject-search-meta.mjs writes, keeping title at Pagefind's 5. level has to
+      // outweigh title, or a one-digit level's extra word cannot beat the two-digit titles that hold two
+      // words starting with its digit. login 1 settles a pasted user name. wargame is level plus login
+      // plus 0.15, and the 0.15 is the hub's whole lead for "bandit" (0.9% of the score): whatever the
+      // hub gains there it gains on every "bandit <word>" query too, so each step up hands it more of
+      // them ("read" at plus 0.15, "password" and "binary" at 0.2, "find" and "file" at 1, eleven of 68
+      // at 2). If an edit or a new level ever puts a level first for "bandit", raise it by a tenth and
+      // re-run the "bandit <word>" check. Measured 2026-10-05 against the built index (CORE_SPEC §5
+      // "Search ranking and the search fields"): every "bandit N", "level N", "bandit level N", "N N+1"
+      // and level title lists its own level first; so do 31 of the 33 typed routes and logins.
+      pagefind: {
+        ranking: {
+          metaWeights: { title: 5, level: 10, login: 1, wargame: 11.15 },
+        },
+      },
       head: [
         // Fonts are self-hosted via @font-face in src/styles/fonts.css (public/fonts/) with
         // metric-matched fallbacks and font-display: swap, so first paint is shift-free with no

@@ -17,8 +17,9 @@
    Each real face is followed by a metric-matched fallback (size-adjust plus ascent, descent, and
    line-gap overrides tuned from the real font metrics against a local system font), so the swap from
    fallback to web font is shift-free (no CLS). Overrides were computed from the actual font metrics
-   (capsize xWidthAvg method): JetBrains Mono against Courier New, Syne and Geist against Arial, and
-   Geist italic against Arial Italic with its own computed overrides. No motion anywhere. */
+   (capsize xWidthAvg method): JetBrains Mono against Courier New, Geist against Arial, and Geist
+   italic against Arial Italic with its own computed overrides. Syne is tuned per weight against Arial
+   Bold by measuring the site's own headings (see its block below). No motion anywhere. */
 
 /* ── JetBrains Mono: real faces (roman 400/500/700, italic 400/500) ── */
 @font-face {
@@ -127,7 +128,7 @@
 
 /* ── Metric-matched fallbacks (shift-free swap). Values computed from the real font metrics:
    JetBrains Mono (upm 1000, asc 1020, desc 300, gap 0, avg width ratio 0.598) vs Courier New (ratio
-   0.598); Syne (upm 1000, asc 925, desc 275, gap 0, avg width ratio 0.540) vs Arial (ratio 0.437).
+   0.598). Syne is measured instead, per weight (below).
    Each family lists its Windows and macOS face first, then DejaVu and Liberation, which are
    near-universal on Linux and close enough in metrics that these same overrides stay approximately
    correct there (strictly better than falling to an un-adjusted generic monospace or sans-serif).
@@ -140,8 +141,69 @@
   descent-override: 30.00%;
   line-gap-override: 0.00%;
 }
+
+/* ── Syne Fallback: one face per weight the site sets (600 h3 and h4, 700 h2 and the card titles, 800
+   the headlines and page titles), all over Arial Bold. One face used to serve every weight: regular
+   Arial at 123.39%, tuned to the 0.540 em average advance of Syne 600 and 700 and drawn in synthesized
+   bold. Syne 800 averages about 0.78 em, so the homepage headline's "Curiosity" was 413.88px in the
+   fallback against 612.97px in Syne (measured), and the line jumped about 200px when the font arrived.
+   A face per weight is the only fix CSS allows: a 600 or 700 request picks the nearest declared face at
+   or above it, so an 800 face beside a weightless one would take 600 and 700 too, and a face declared
+   at 600 or above is never synthesized bold (measured: regular Arial declared 600 to 700 rendered 28%
+   less ink than the synthesized bold). Arial Bold keeps the bold look, and of Arial, Arial Bold and
+   Arial Black it fits Syne's shapes best (the rms figures below).
+   Tuned by measurement, not arithmetic (2026-10-03, Chrome on Windows): every distinct heading string
+   the site sets at that weight (47 at 600, 21 at 700, 68 at 800, the 800 set including both marketing
+   headlines, the footer heading and the platform names), each width in the fallback over its width in
+   Syne, with size-adjust set so the totals match (1.000 at each weight). What size-adjust cannot fix is
+   shape: after tuning, the per-string error is 3.5% rms at 600 (today's face, re-tuned alone, would be
+   4.9%), 1.7% at 700 (1.6%) and 4.3% at 800 (4.9%). At 800, "Curiosity" is +1.5%, "Let's connect."
+   +0.3%, the writeup titles about -1.5 to -3.5%, the platform names -3 to -6%. Ascent and descent
+   carry Syne's 0.925 and 0.275 em through each size-adjust (override = metric / size-adjust), so line
+   boxes and baselines match within a pixel at 100px. The previous face's 600 widths ran 9% wide on
+   the same corpus, its 700 widths 1% narrow.
+   Each face carries Syne's own unicode-range, so it stands in only for glyphs Syne has. A character
+   outside Syne's subset falls through to 'Syne Glyph Fallback' below, even with Syne loaded. ── */
 @font-face {
   font-family: 'Syne Fallback';
+  font-weight: 600;
+  src: local('Arial Bold'), local('Arial-BoldMT'), local('DejaVu Sans Bold'), local('Liberation Sans Bold');
+  unicode-range: U+0000-00FF, U+2000-206F;
+  size-adjust: 106.17%;
+  ascent-override: 87.12%;
+  descent-override: 25.90%;
+  line-gap-override: 0.00%;
+}
+@font-face {
+  font-family: 'Syne Fallback';
+  font-weight: 700;
+  src: local('Arial Bold'), local('Arial-BoldMT'), local('DejaVu Sans Bold'), local('Liberation Sans Bold');
+  unicode-range: U+0000-00FF, U+2000-206F;
+  size-adjust: 115.66%;
+  ascent-override: 79.98%;
+  descent-override: 23.78%;
+  line-gap-override: 0.00%;
+}
+@font-face {
+  font-family: 'Syne Fallback';
+  font-weight: 800;
+  src: local('Arial Bold'), local('Arial-BoldMT'), local('DejaVu Sans Bold'), local('Liberation Sans Bold');
+  unicode-range: U+0000-00FF, U+2000-206F;
+  size-adjust: 164.37%;
+  ascent-override: 56.28%;
+  descent-override: 16.73%;
+  line-gap-override: 0.00%;
+}
+
+/* ── Syne Glyph Fallback: what draws characters Syne's subset lacks, loaded or not. Today that is the
+   "→" in every Bandit title (Syne 800). It is the single face 'Syne Fallback' used to be, unchanged
+   (regular Arial at 123.39%, synthesized bold at 600 and up), kept so those glyphs render exactly as
+   they did: the per-weight faces above are declared at 600 or more and could only draw a lighter
+   arrow at the old size (measured 1,015 px of ink against 1,653 at 100px) or a bigger one at the new
+   (164.38px wide against 123.39). Every Syne stack names it after 'Syne Fallback': tokens.css and the
+   token blocks of index.astro and about.astro. ── */
+@font-face {
+  font-family: 'Syne Glyph Fallback';
   src: local('Arial'), local('DejaVu Sans'), local('Liberation Sans');
   size-adjust: 123.39%;
   ascent-override: 74.97%;

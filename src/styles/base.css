@@ -4,7 +4,8 @@
 /* Shared, zero-specificity base for the general (rectangular) case. :where() holds specificity at 0 so
    any element that intentionally needs a different width/offset still wins, and the layer order in
    layers.css (base above every starlight.* sublayer) already beats Starlight's layered styles.
-   Starlight 0.39 ships no :focus-visible outline of its own, so this becomes the ring for every
+   Starlight ships no :focus-visible outline of its own (checked at 0.39.2 and again at 0.41.10,
+   2026-10-03), so this becomes the ring for every
    content-page control (nav, TOC, prose links, buttons, the theme toggle), lime unless an ancestor set
    --focus-ring. Keyboard only (:focus-visible), never on click. */
 @layer base {

@@ -82,8 +82,12 @@ const OG_ALT = 'Idan.Lab, a lab notebook of CTF writeups and security notes';
   <canvas id="constellation"></canvas>
   <div class="wrap hero-inner">
     <div class="eyebrow reveal"><span>Offensive Security <span aria-hidden="true">·</span> CTF <span aria-hidden="true">·</span> Writeups</span></div>
+    <!-- The decode span scrambles its own text for up to 1.8s, so it is aria-hidden and a visually
+         hidden copy carries the word: a screen reader reads "exploit" throughout (CORE_SPEC §8). The
+         copy goes BEFORE the decode span: between them and the full stop it would split the text run
+         and cost the "t." kern, moving the stop 1.8px at 1280 (measured). -->
     <h1 class="headline reveal">
-      <span class="alt">Curiosity</span> is my <span class="decode" data-word="exploit">exploit</span>.
+      <span class="alt">Curiosity</span> is my <span class="sr-only">exploit</span><span class="decode" data-word="exploit" aria-hidden="true">exploit</span>.
     </h1>
     <p class="sub reveal">
       A living lab notebook of machine walkthroughs and capture-the-flag solutions.
@@ -192,7 +196,7 @@ const OG_ALT = 'Idan.Lab, a lab notebook of CTF writeups and security notes';
     --lime: #b6ff3c;
     --cyan: #41efff;
     --magenta: #ff4d9d;
-    --display: 'Syne', 'Syne Fallback', sans-serif;
+    --display: 'Syne', 'Syne Fallback', 'Syne Glyph Fallback', sans-serif;
     --mono: 'JetBrains Mono', 'JetBrains Mono Fallback', monospace;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -270,7 +274,7 @@ const OG_ALT = 'Idan.Lab, a lab notebook of CTF writeups and security notes';
      2.2rem floor only 320 to 480 differ at normal size; 640 and up are identical. */
   h1.headline {
     font-family: var(--display); font-weight: 800; font-size: clamp(min(2.3rem, 11.5vw), 7vw, 5.6rem);
-    line-height: .98; letter-spacing: -.02em; margin-bottom: 1.6rem; max-width: 16ch;
+    line-height: .98; letter-spacing: -.02em; margin-bottom: 1.6rem;
   }
   .headline .decode { color: var(--lime); }
   .headline .alt { color: var(--cyan); font-style: italic; }
@@ -306,7 +310,7 @@ const OG_ALT = 'Idan.Lab, a lab notebook of CTF writeups and security notes';
     border: 1px solid var(--panel-brd); border-radius: 16px; overflow: hidden; }
   .stat { background: var(--ink-2); padding: 2.5rem 1.5rem; text-align: center; }
   .stat .num { font-family: var(--mono); font-weight: 700; font-size: clamp(2.4rem,5vw,3.5rem);
-    line-height: 1; color: var(--lime); letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+    line-height: 1; color: var(--lime); letter-spacing: -.01em; }
   .stat .lbl { font-family: var(--mono); font-size: .72rem; letter-spacing: .22em; text-transform: uppercase;
     color: var(--muted); margin-top: .8rem; }
   .stat:nth-child(2) .num { color: var(--cyan); }
@@ -394,10 +398,18 @@ const OG_ALT = 'Idan.Lab, a lab notebook of CTF writeups and security notes';
   .skip-link { position: fixed; top: .75rem; inset-inline-start: .75rem; z-index: 10000; clip: rect(0 0 0 0); }
   .skip-link:focus { clip: auto; padding: .5rem 1rem; text-decoration: none;
     background: var(--lime); color: #06251a; }
+  /* Visually hidden text a screen reader still reads (the headline's settled word), the clip-rect
+     technique of the content pages' .sr-only, unselectable so a copied headline holds the word once
+     (CORE_SPEC §8). The same rule is in about.astro. */
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
+    clip: rect(0 0 0 0); white-space: nowrap; border: 0; user-select: none; -webkit-user-select: none; }
 
   @media (max-width: 720px){ .stats{grid-template-columns:1fr} .phase::after{display:none} .hud-spacer{display:none} }
+  /* html is named because the smooth rule above names it, and html (0-0-1) outranks the universal
+     selector (0-0-0): with that alone the page still scrolled smoothly under reduced motion. The same
+     rule is in about.astro. */
   @media (prefers-reduced-motion: reduce){
-    .reveal{opacity:1;transform:none;transition:none} .dot{animation:none} * { scroll-behavior: auto; }
+    .reveal{opacity:1;transform:none;transition:none} .dot{animation:none} html, * { scroll-behavior: auto; }
   }
 </style>
 

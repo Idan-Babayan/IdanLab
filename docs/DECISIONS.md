@@ -6,6 +6,183 @@
 
 ---
 
+### 2026-10-05 · Site search keeps no image as a field, and each wargame level carries level and login fields
+- **Decision:** `plugins/remark-inject-search-meta.mjs` appends hidden site-search fields, each on an empty
+  `hidden` span at the end of a page's content, derived from the page's path so no writeup declares them:
+  an empty `image` on every content page (About carries the same span by hand); on each OverTheWire
+  wargame level N to M, `level` ("bandit Level", N when it is one digit, the route's digits run together,
+  and M when it is one digit: 1-2 carries "bandit Level 1 12 2", 17-18 "bandit Level 1718") and `login`
+  (the level's SSH user, "bandit17"); on each wargame hub, `wargame` (its title). `astro.config.mjs`
+  weights them through Starlight's `pagefind.ranking.metaWeights`: title 5 (Pagefind's), level 10, login 1,
+  wargame 11.15.
+- **Why the image field:** Pagefind keeps the first image after a page's title, and its alt text, as
+  searchable metadata, though Starlight's search never shows images. On every OverTheWire and PicoCTF page
+  that image is the badge row's logo, which the build inlines as an SVG data URI, so the logo's source was
+  searchable: every coordinate in it matched a typed number (it scored 381 for "bandit 6 7" on every
+  Bandit page, where the title of 6-7 scored 6), and "svg", "uploaded", "repo" and "disc" found pages
+  through it. Elsewhere it held a screenshot's file name and alt text, or a decorative image's file name.
+  63 of the 64 records carried one, 164,861 characters in all; blanking it shrinks the records from
+  136,736 to 82,322 bytes.
+- **Why the level fields:** every Bandit level's title is "Bandit N → N+1" and its prose names both
+  neighbours, so "bandit 17" could not tell 16-17 from 17-18, "bandit" listed 19-20 ahead of the hub,
+  "level 17" found no level (no page writes the word), and a typed route ("17-18") or login ("bandit17")
+  went to whichever page mentioned it most. Three facts about how Pagefind 1.5.2 scores a field, read from
+  its source, shaped the fields: a typed term matches every word that starts with it ("1" matches 1, 12
+  and 1718 alike); a field match gets no credit for being exact, as page text does; and every distinct
+  word a term matches adds to the field's score, which then grows with the cube of the share of the query
+  the field covers. So a one-digit level carries its bare number, one word more than the two-digit levels
+  that share its digit; the route's digits run together answer a typed route, which reaches Pagefind as
+  "1718"; and level has to outweigh title, or that extra word loses to the two-digit titles.
+- **Why the hub's lead is thin:** wargame is level plus login plus 0.15, and the 0.15 is the hub's whole
+  lead for "bandit" (0.9% of the top score). Whatever the hub gains there it gains on every "bandit
+  <word>" query too: of 68 measured, plus 0.15 sends two to the hub ("read", "the"), 0.2 four, 1 eight and
+  2 eleven. The lead is about twice the spread of the level pages' own text scores for "bandit". If an
+  edit or a new level ever overtakes it, raise wargame by a tenth and re-run the "bandit <word>" check.
+- **Rejected, each measured on the built index:**
+  - The route kept hyphenated in the field, as first proposed (`Level N N-M`): Pagefind also indexes the
+    halves of "17-18", so 17-18 holds three words starting with 1 against 1-2's two, "bandit 1" to
+    "bandit 3" stay lost, and two typed titles went to the wrong page.
+  - The field without "bandit": the one-digit levels then need level at 300 to win "bandit 1" and
+    "bandit 2".
+  - The field without the one-digit next number: the typed title "Bandit 2 → 3" and "2 3" list 3-4
+    first.
+  - The login inside the level field: 19-20 then takes "bandit" from the hub, even at wargame 30.
+  - The fields first tried (`level: Level N`, wargame weight 1): they moved nine "bandit <word>" queries
+    to the hub.
+  - `termSimilarity` at 200: it overflows Pagefind's scores to NaN.
+- **Accepted trade-offs:**
+  - Four misses no field can fix, all prefix matching: "1-2" and "2-3" reach Pagefind as 12 and 23, which
+    are levels too, so 1-2 and 2-3 come second; "bandit1" and "bandit2" begin ten other logins each.
+  - "bandit read" and "bandit the" list the hub, "bandit next level" lists 14-15, and "level" and "bandit
+    level" list a level rather than the hub, every level's field holding the word.
+  - No image and no alt text is searchable now. "privilege escalation" and "bloodhound" list Return before
+    Forest, whose lead came from its first screenshot's alt text (Return's text names BloodHound six
+    times, Forest's five); "ethical hacking" no longer finds About, which matched only through its
+    portrait's file name, a phrase the page never says; "HTB" no longer lists the HackTheBox landing,
+    which matched only through its logo's file name.
+- **Verified:** on the built indexes of the deployed site (`81f2f28`) and of this one, each with its own
+  shipped ranking, first result right, before and after: "bandit" (the hub) no, yes; "bandit N" 19/33,
+  33/33; "level N" 3/33, 33/33; "bandit level N" 4/33, 33/33; the title as typed 31/33, 33/33; "N N+1"
+  31/33, 33/33; the route "N-N+1" 11/33, 31/33; the login 17/33, 31/33; each of the 64 indexed pages' own
+  title 61/64, 64/64. Bar the hub's lead, the smallest winning margin in any family is 7.7% of the top
+  score. The hidden spans change nothing on any page at 1280 in dark and 375 in light.
+- **Status:** Adopted; committed to `dev` on 2026-10-05 as
+  `fix(search): no page keeps an image as a search field` and
+  `fix(search): each Bandit page ranks first however it is typed`.
+
+### 2026-10-04 · The landing glow holds its pools whole, and a landing keeps to its own pane on a desktop
+- **Supersedes in part:** 2026-09-07 · Two taxonomy palettes: the landing pages re-base onto the
+  WriteupMeta chip model. Only the figures in "The glow is the only element on the site that overflows
+  the viewport, by 71px at 1280 and 45px at 640": it still is, now by half the hero's width past each side
+  (156px at 375, 288px at 640), and from 50rem the landing's pane cuts it first. The clip pair and the
+  propagation property stand.
+- **Supersedes in part:** 2026-07-31 · The platform ink family, and the wash that was causing the failure
+  it hid. Only the glow box's geometry: "a fixed 360px everywhere", and the light pools at "86% x" and
+  "95%" of a box 122% of the hero's width. The box is twice the hero's width and 640px tall now, and the
+  same pools sit at 92.92% and 103.9% of the hero's width, where they were. The move, its measurements
+  and both traps stand.
+- **Decision:** two rules. `.pi-glow` is a box twice the hero's width (`-50%` each side) and 640px tall,
+  starting 280px higher than before, holding the same two radial pools with every centre and radius
+  converted (on dark, centres at 12.4% and 85.6% of the hero's width; on light, 92.92% and 103.9%; radii
+  63.44% and 56.12% of the hero's width, 360px and 324px tall), so each pool fades to transparent inside
+  the box. And from 50rem, Starlight's sidebar breakpoint, `.main-pane:has(.pi-index) { overflow: clip }`
+  in `pages.css` cuts everything a landing paints at the pane's edges.
+- **Why:** the old box (`-12%` left, `-10%` right, `top: -40%`, 360px) cut its pools off while they were
+  still bright. On a desktop its top edge, the pools' brightest row, and its left edge showed through the
+  translucent header as a hard-edged lit band over the sidebar's column: at 1536, from 24px down and from
+  150px in, on HackTheBox, PicoCTF and OverTheWire, whose 279px heroes lift the box 112px (VulnHub's 183px
+  hero lifted it to 63px, so its band was a 1px row). Wider than about 1810px, where the capped landing
+  sits centred, its side edges stood in the page as vertical lines (302 and 1864 at 1920, 622 and 2184 at
+  2560). The owner's terms: each section keeps its own space, at every screen size, and the header stays
+  translucent.
+- **Why both rules:** the bigger box alone removes every hard edge, but its pools still ran under the
+  header and across the sidebar's column, soft instead of sharp. The pane's edges are the header's bottom
+  border and the sidebar's border wherever Starlight puts them, so clipping there keeps each region to
+  itself at any width without touching the header. `clip`, not `hidden`, so the pane does not become a
+  scroll container, the clip pair's reasoning.
+- **Why phones keep the glow under the header:** below 50rem there is no sidebar, and the glow running on
+  under the header is part of the phone design (owner, 2026-10-04). The rule starts at the breakpoint.
+- **Rejected:** an opaque header (the owner keeps the translucency); clipping the glow to the hero (a hard
+  edge again, the defect itself).
+- **Accepted trade-off:** the sidebar's text on a landing drew with subpixel antialiasing only while the
+  glow ran under it; it now draws grayscale, as on every other page (measured in headless and in a
+  windowed Chrome).
+- **Verified:** on all four landings at 800 to 2560 in both themes, hiding the glow changes no pixel in
+  the header band or the sidebar's column (before, it changed tens of thousands of pixels in the band).
+  Against the build before, outside the glow's own area only the sidebar's text changes; where the old
+  box painted, the wash differs by at most 2 to 5 levels of 255 (the same gradient rasterised in a
+  different box), and the larger changes sit on and past its cut edges; phones paint as before within 1
+  to 4 levels; no landing scrolls sideways under a real wheel gesture at 320 to 1920, and the document's
+  scrollWidth is the viewport's at every width.
+- **Status:** Adopted; committed to `dev` on 2026-10-07 as
+  `fix(landings): the hero glow stays in its own pane, with no hard edge at any width`.
+
+### 2026-10-04 · Callouts are divs, not asides
+- **Supersedes in part:** 2026-06-20 · Icon-based tagged callouts (Callout.astro). Only the element: the
+  root is a `<div class="cl cl-{type}">`, not an `<aside>`. The rest stands.
+- **Decision:** `Callout.astro` renders a `<div>`. Principle stays an `<aside>`, named.
+- **Why:** an `<aside>` inside `<main>` is a complementary landmark. Busqueda's landmarks list held eight,
+  its six callouts unnamed beside the Principle coda and Starlight's sidebar, and each callout announced
+  "complementary" on entry. The callouts are the writeup's own content, the recon findings and the loot,
+  not side notes, and Firefox's Reader View drops every `<aside>`, so it dropped them. As a div, a screen
+  reader reads the visible label first, then the box, as a sighted reader sees it.
+- **Rejected:**
+  - `aria-labelledby` naming each aside after its label: the label is then read twice, and the eight
+    landmarks stay.
+  - `role="note"`: announced inconsistently across screen readers.
+  - `role="group"`: adds "grouping" to every box.
+- **Accepted trade-off:** Principle is a side note by design and stays an `<aside>`, so Reader View still
+  drops the coda.
+- **Verified:** Busqueda's complementary landmarks go from 8 to 2, Principle and Starlight's own
+  right-sidebar `<aside>` outside `<main>`; each callout's first spoken text is its label; full-page
+  pixels unchanged on Busqueda, Forest and Return at 1280 and 375 in both themes. The recon rail's
+  transform matches the MDX component by name, not the element, so it is unaffected.
+- **Status:** Adopted; committed to `dev` on 2026-10-05 as
+  `fix(a11y): callouts read as their label, not as unnamed landmarks`.
+
+### 2026-10-03 · Syne's fallback is one face per weight, over Arial Bold
+- **Supersedes in part:** 2026-07-04 · Self-hosted fonts (subset WOFF2 + metric-matched fallbacks), Google
+  Fonts removed. Only the Syne half of its "Shift-free swap" bullet: one Syne fallback face for every
+  weight, computed from metrics (Syne vs Arial = 123.39/74.97/22.29/0). The JetBrains Mono fallback, the
+  faces, the subsetting and `font-display: swap` stand.
+- **Decision:** `Syne Fallback` declares three faces, 600, 700 and 800, each over Arial Bold (DejaVu Sans
+  Bold and Liberation Sans Bold on Linux), with size-adjust 106.17%, 115.66% and 164.37%, Syne's 0.925 and
+  0.275 em ascent and descent carried through each (override = metric / size-adjust), and Syne's own
+  unicode-range. The old face, unchanged, becomes `Syne Glyph Fallback`, third in every Syne stack
+  (`--tp-display` in `tokens.css`, `--display` in `index.astro` and `about.astro`), and draws what Syne's
+  subset lacks: today the "→" in every Bandit title.
+- **Why:** one weightless face over regular Arial at 123.39%, tuned to Syne 600 and 700 and drawn in
+  synthesized bold, served all three weights. Syne 800 averages about 0.78 em, so the homepage's
+  "Curiosity" was 413.9px in the fallback against 613.0px in Syne, and the headline jumped about 200px
+  when the font arrived. It is 622.1px now.
+- **Why one face per weight:** it is the only shape CSS allows. A 600 or 700 request takes the nearest
+  declared face at or above it, so an 800 face beside the weightless one would serve 600 and 700 too; and a
+  face declared at 600 or more is never synthesized bold (regular Arial declared at 600 to 700 drew 28%
+  less ink than the synthesized bold). Arial Bold keeps the bold look and, of Arial, Arial Bold and Arial
+  Black, fits Syne's shapes best overall.
+- **Why measured, not computed:** each size-adjust makes the total width of every distinct heading string
+  the site sets at that weight (47 at 600, 21 at 700, 68 at 800, the headlines, the footer heading and the
+  platform names among them) match Syne's, measured in Chrome on Windows. The metric arithmetic the old
+  face came from ran 9% wide at 600 and 1% narrow at 700 on the same strings.
+- **Why the glyph fallback:** the per-weight faces are declared at 600 or more, so they could only draw
+  the arrow lighter at the old size (1,015 px of ink against 1,653 at 100px) or bigger at the new
+  (164.38px wide against 123.39). The old face draws it exactly as before.
+- **Rejected:** a single 800 face (it would serve 600 and 700 too); regular Arial declared at 600 and up
+  (never synthesized bold, so too light); Arial Black (a worse fit than Arial Bold); the metric arithmetic
+  (9% wide at 600).
+- **Accepted trade-offs:**
+  - Shape is beyond size-adjust: the per-string error after tuning is 3.5% rms at 600, 1.7% at 700 and
+    4.3% at 800 (regular Arial re-tuned alone: 4.9, 1.6 and 4.9). At 800 "Curiosity" is +1.5%, "Let's
+    connect." +0.3%, the writeup titles about -1.5 to -3.5%, the platform names -3 to -6%.
+  - With 19 faces, `fonts.css` minifies to 4,229 bytes, past Vite's 4,096-byte inline limit, so it ships
+    as its own `/_astro/fonts.*.css` stylesheet (650 bytes gzipped, cached immutably) where its faces sat
+    inline in every page (3,420 bytes each).
+- **Verified:** with every `.woff2` blocked, "Curiosity" is 622px in the fallback against 613px in Syne
+  (414 before), and no heading changes height or moves what follows it on Syne's account; with the fonts
+  loaded, full-page pixels unchanged, the Bandit arrow included.
+- **Status:** Adopted; committed to `dev` on 2026-10-05 as
+  `fix(fonts): Syne 800's fallback matches its width, so the headline stops jumping`.
+
 ### 2026-10-01 · Decorative characters keep their look and say only what they mean
 - **Decision:** a character that is on the page for its look (the `//` before a label, the `#` before a
   heading, an arrow, a dot between two words, the `~` in a command) stays exactly as it looks, and a
@@ -1157,6 +1334,10 @@
   to the word. The glow was the only overflowing element at 1280 and 640; below 390 the platform name
   overflowed the viewport too, by 60px at 320 and 5px at 375, silently behind this clip pair, until its
   floor was tied to the viewport. The pair itself and the propagation property stand.
+  **Partly superseded by:** 2026-10-04 · The landing glow holds its pools whole, and a landing keeps to
+  its own pane on a desktop, specifically the figures: the glow now reaches half the hero's width past
+  each side (156px at 375, 288px at 640), and from 50rem the landing's pane cuts it first. The pair and
+  the propagation property stand.
 - **Status:** Adopted; committed to `dev` on 2026-09-07 as fourteen commits, taxonomy registry through
   tokens, badges, the content gate, the landing rewrite, the colour decision and the badge retirement,
   with the four unrelated fixes it uncovered (the Active Directory credit, the landing stat resting at
@@ -1217,9 +1398,10 @@
   still renders OverTheWire / Linux / Progressive, and Busqueda still renders HackTheBox / Linux /
   Standalone plus its Difficulty chip and both FlagCapture controls. The other three PicoCTF pages, which
   do declare `os`, still show their Linux chip.
-- **Status:** Adopted (working tree; NOT committed). Component + docs only: no CSS, no config, no new
-  deps, pinned versions unchanged. CORE_SPEC §6 and §7 updated in three places, including two claims that
-  the change falsified (`os` listed as always-declared, and the "other three props are required" line).
+- **Status:** Adopted; committed to `dev` on 2026-09-04 as `feat(badges): make WriteupMeta os optional`.
+  Component + docs only: no CSS, no config, no new deps, pinned versions unchanged. CORE_SPEC §6 and §7
+  updated in three places, including two claims that the change falsified (`os` listed as
+  always-declared, and the "other three props are required" line).
 
 ---
 
@@ -1790,6 +1972,10 @@
   a fixed 360px everywhere. And pulling the gradient's own centre up measures identically to switching
   the wash off, because peak visible alpha collapses to 0.076: it is lever 2 wearing a geometry costume.
   Pooling downward was rejected outright, it breaks `.pi-num` from 4.11 to 3.23.
+  **Partly superseded by:** 2026-10-04 · The landing glow holds its pools whole, and a landing keeps to
+  its own pane on a desktop, specifically the box's geometry: it is twice the hero's width and 640px
+  tall now, not a fixed 360px, and the pools this entry moved to 86% and 95% of the old box sit at 92.92%
+  and 103.9% of the hero's width, the same place. The move, the measurements and both traps stand.
 - **The band converged on 5.76:1 from three independent directions,** which is why it was chosen over
   the 4.8 to 5.2 the brief opened with. It is where OverTheWire's existing ink already sat once the wash
   moved, so the other three come up to meet amber and amber does not move at all. It is the only band
@@ -2415,9 +2601,10 @@
   at every scroll position, so the affordance never went away; the peek of the next node under the right fade
   is intact; no page-level horizontal overflow at any width. Chain-length independent by construction (the
   rest positions are set by the gutter, not by how long the chain is). `npm run build` green (46 pages).
-- **Status:** Adopted (working tree; NOT committed). Component-scoped CSS only, no new tokens beyond the one
-  alias, no JS, no dependency or version changes. Band width is the one number left to taste: `--ap-fade-w`
-  is the single knob if the owner wants the fade stronger or weaker.
+- **Status:** Adopted; committed to `dev` on 2026-07-20 as
+  `fix(attackpath): production-polish pass (labels, weight, targets, mask)`. Component-scoped CSS only, no
+  new tokens beyond the one alias, no JS, no dependency or version changes. Band width is the one number
+  left to taste: `--ap-fade-w` is the single knob if the owner wants the fade stronger or weaker.
 
 ### 2026-07-20 · AttackPath production-polish pass (connector-label rhythm, honest weight ramp, dot touch targets) + Return instance
 - **Decision:** a refinement-only pass over the existing `AttackPath` component (concept, structure, and
@@ -2475,8 +2662,10 @@
   6.0, Next 8.2, goal gold 5.2); no page-level horizontal overflow at any width, path scrolls internally with
   the fade + peeking-next-node affordance intact on touch. `npm run build` green (46 pages), no console
   errors. Both dist instances render; BloodHound evidence preserved in both.
-- **Status:** Adopted (working tree; NOT committed). Component-scoped styles + one content file (return.mdx);
-  no custom.css, config, token, or dependency changes; pinned versions unchanged.
+- **Status:** Adopted; committed to `dev` on 2026-07-20 as
+  `fix(attackpath): production-polish pass (labels, weight, targets, mask)` and
+  `content(return): chart the escalation with AttackPath`. Component-scoped styles + one content file
+  (return.mdx); no custom.css, config, token, or dependency changes; pinned versions unchanged.
 
 ### 2026-07-20 · WriteupMeta is injected from frontmatter, platform is derived from the directory
 - **Decision:** writeups no longer hand-place `<WriteupMeta />`. A new remark plugin
@@ -2610,7 +2799,8 @@
   fires once on first arrival and does NOT replay on revisit; arrow keys, node clicks and dots all revisit;
   no visible scrollbar with 1511px of path scrolling inside 318px on mobile and no page-level horizontal
   scroll. `npm run build` green (46 pages), no console errors, no new dependencies.
-- **Status:** Adopted (working tree; not committed).
+- **Status:** Adopted; committed to `dev` on 2026-07-20 as
+  `feat(writeups): add the AttackPath chain infographic component`, which shipped it in its reworked form.
 - **Partly superseded by:** 2026-07-19 · AttackPath reworked onto the site's native fabric (surfaces, prize
   identity, computed escalation), specifically the surfaces, container background, and goal treatment
   described in the original build, which were reworked off invented values onto the site's own fabric. The
@@ -2685,8 +2875,9 @@
   with no runner or bloom (zero ungated animation declarations); mobile scrolls internally with no page
   overflow and no scrollbar; every checked text pairing is AA. Forest still carries it under Summary with
   the BloodHound graph intact as evidence. `npm run build` green (46 pages), no console errors.
-- **Status:** Adopted (working tree; not committed). Component-scoped styles only; no custom.css, config,
-  or dependency changes.
+- **Status:** Adopted; committed to `dev` on 2026-07-20 as part of
+  `feat(writeups): add the AttackPath chain infographic component`, the component's first commit.
+  Component-scoped styles only; no custom.css, config, or dependency changes.
 
 ### 2026-07-19 · `.machine-meta` deleted; the REST of the badge family is not dead (corrects the entry below)
 - **Decision:** the `.machine-meta` rule is removed from `custom.css` and its `machine-` family from
@@ -2778,8 +2969,10 @@
   "Easy" at `data-level="1"`, leading pip grown to 6px, "Difficulty 1 of 4" text equivalent intact. In
   `dist`: 0 of 34 Bandit pages carry `machine-meta` or `wm-diff`, 34 carry the Progressive chip, busqueda
   keeps its Difficulty chip. `npm run build` green (46 pages), no console errors, no horizontal overflow.
-- **Status:** Adopted (working tree; NOT committed). Component + content only: no CSS, no config, no new
-  deps, pinned versions unchanged.
+- **Status:** Adopted; committed to `dev` on 2026-07-19 as
+  `feat(badges): make WriteupMeta difficulty optional` and
+  `content(bandit): adopt WriteupMeta across the 34 level pages`. Component + content only: no CSS, no
+  config, no new deps, pinned versions unchanged.
 
 ### 2026-07-17 · Linux OS badge separated from OverTheWire (H60 re-hue + L0.40 deepen)
 - **Decision:** `wm-os-linux` gets its own hue in both themes, distinct from `pf-otw`. Dark `#f0b429` ->
@@ -3199,7 +3392,9 @@
   hud-home and toggle `#4d7c0f`. A non-keyboard (programmatic/pointer) focus gives `:focus-visible` false
   and `outline: none`, so no ring appears on mouse click. `npm run build` green (45 pages). No new deps,
   pinned versions unchanged, no motion added.
-- **Status:** Adopted (working tree; not committed). CSS-only, additive, marketing pages only.
+- **Status:** Adopted; committed to `dev` on 2026-07-13 as
+  `fix: add :focus-visible keyboard focus rings to marketing pages`. CSS-only, additive, marketing pages
+  only.
 
 ### 2026-07-13 · Marketing About-page touch targets meet WCAG 2.2 minimum (24px) via layout-neutral hit-area growth
 - **Decision:** The four interactive controls in the About page HUD now carry a >= 24x24px pointer
@@ -3225,7 +3420,8 @@
   its own center; the toggle flips theme light/dark and persists to `localStorage['starlight-theme']`; the
   Writeups link navigates to /hackthebox/. `npm run build` green (45 pages). No new dependencies, pinned
   versions unchanged, no motion added.
-- **Status:** Adopted (working tree; not committed). CSS-only, additive, `about.astro` only.
+- **Status:** Adopted; committed to `dev` on 2026-07-13 as
+  `fix: meet WCAG 2.2 24px min touch targets on About-page HUD`. CSS-only, additive, `about.astro` only.
 
 ### 2026-07-12 · Code-block min-content width leak contained at `.main-pane` (min-width: 0), verified in-browser
 - **Decision:** Two additive rules in `custom.css` (placed right after the three-column layout block):
@@ -3261,7 +3457,9 @@
   not in a `<details>`) scrolls internally with tocShift 0; no page-level horizontal scroll; safety check
   confirmed the rules change nothing with the cap intact. `npm run build` green (45 pages). No new deps,
   pinned versions unchanged, no Starlight fork, no motion.
-- **Status:** Adopted (working tree; not committed). CSS-only, additive.
+- **Status:** Adopted; committed to `dev` on 2026-07-12 as
+  `fix: contain code-block min-content width leak so long lines scroll, not widen the column`. CSS-only,
+  additive.
 
 ### 2026-07-12 · Build-time content-taxonomy guard (remark plugin) as the ruled-out astro check alternative
 - **Decision:** New additive build-time plugin `plugins/remark-validate-content-taxonomy.mjs`, wired FIRST in
@@ -3323,7 +3521,8 @@
   `pagehide` teardown). The off-screen pause is a scroll behavior that headless checks report false negatives
   on (documented project learning), so it was NOT verified headlessly: the owner should confirm on the
   deployed preview by scrolling the hero out of view (loop stops) and back (resumes smoothly, no visual jump).
-- **Status:** Adopted (working tree; not committed). No new dependencies, pinned versions unchanged.
+- **Status:** Adopted; committed to `dev` on 2026-07-11 as
+  `perf(hero): pause offscreen constellation canvas loop`. No new dependencies, pinned versions unchanged.
 
 ### 2026-07-11 · Content pipeline is manual editorial polish, not a script (retires notion_cleaner.py)
 - **Supersedes:** 2026-05-31 · Notion → notion_cleaner.py → MDX pipeline
@@ -3382,7 +3581,8 @@
   `/icons/*` carries no immutable cache rule (only `/_astro/*` and `/fonts/*` do), so the in-place
   replacement cannot serve stale to returning visitors. The 2026-07-08 note that `assetsInlineLimit`
   hashing matters for a 65 KB pico asset is moot now.
-- **Status:** Adopted; on `dev`, uncommitted.
+- **Status:** Adopted; committed to `dev` on 2026-07-11 as
+  `chore(badges): rebuild PicoCTF icon as a clean ~815 B vector`.
 
 ### 2026-07-11 · Mobile TOC: current top-level (h2) entry green (completes desktop parity)
 - **Decision:** One add-only, mobile-scoped rule in `custom.css` (directly after the existing mobile
@@ -3825,6 +4025,10 @@ ever wanted later, it would require adding static.cloudflareinsights.com to scri
   overrides computed from the real font metrics (JetBrains Mono vs Courier New = 99.98/102.02/30/0;
   Syne vs Arial = 123.39/74.97/22.29/0). Each lists Windows and macOS locals first, then DejaVu and
   Liberation so the shift-free swap also applies on Linux, then the generic.
+  **Partly superseded by:** 2026-10-03 · Syne's fallback is one face per weight, over Arial Bold,
+  specifically the Syne half of this bullet: one face per weight over Arial Bold, tuned on the site's own
+  headings, replaced the single Syne face computed from metrics, which stays on as `Syne Glyph Fallback`
+  for the glyphs Syne's subset lacks. The JetBrains Mono fallback stands.
 - **Preloads:** only jetbrains-mono-400 and syne-800 (the dominant above-the-fold body/code and display
   faces), crossorigin. font-display: swap on every real face.
   **Partly superseded by:** 2026-07-07 · Font `<link rel=preload>` hints removed site-wide (Firefox
@@ -4168,6 +4372,8 @@ automatically; no astro.config.mjs edit is needed per writeup.
   **Partly superseded by:** 2026-09-28 · Callouts speak in five voices, and light mode gets its own border
   and label. Intel's violet and vuln's red are stale (intel is a lavender, vuln the sudo magenta), and so is
   the vivid border on light (paper reads its own per-type border). The rest of this entry stays in force.
+  **Partly superseded by:** 2026-10-04 · Callouts are divs, not asides, specifically the element: the
+  root is a `<div class="cl cl-{type}">`, not an `<aside>`.
 - **Why:** semantic, scannable writeup callouts (recon/loot/intel/vuln/defense) without forking Starlight
   admonitions. Applied to `busquedav2.mdx` (the design testbed).
 - **Status:** Adopted.

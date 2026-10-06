@@ -24,8 +24,9 @@
 // shell separator (|, ||, &&, ;). Flags keep the theme's flag color because only the command TOKEN is
 // matched ("ls -la" tags ls, never -la).
 //
-// Scope limitation (documented, not guessed): EC 0.42 highlights with includeExplanation:false, so
-// per-token TextMate scopes are unavailable; we cannot skip string/comment scopes directly. Command
+// Scope limitation (documented, not guessed): EC highlights with includeExplanation:false (0.42, and
+// still at 0.44.1: @expressive-code/plugin-shiki, read 2026-10-03), so per-token TextMate scopes are
+// unavailable; we cannot skip string/comment scopes directly. Command
 // position handles the common false positives (a short word mid-output is never in command position).
 // Residual risk: an OUTPUT line whose FIRST word happens to be exactly a listed command (rare) would
 // be tagged. Accepted and documented.

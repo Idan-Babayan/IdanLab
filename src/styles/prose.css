@@ -43,8 +43,8 @@ html[data-theme="light"] :not(pre) > code {
 /* Scoped to .sl-markdown-content so these content-Toggle styles never leak onto Starlight's
    sidebar group <details> (which was boxing every group and breaking the nesting line). */
 /* Styling a raw <details> is a DELIBERATE prose default, not an oversight: these rules set the
-   baseline card and summary for any content disclosure, and every named variant (.toggle face,
-   .toggle-flag, .pwreveal-block) states its own identity on top from a later layer. Living in
+   baseline card and summary for any content disclosure, and every named variant (the .toggle face,
+   .pwreveal-block) states its own identity on top from a later layer. Living in
    `prose` is what makes that layering do the work, so no variant needs specificity armor to win. */
 @layer prose {
 .sl-markdown-content details {
@@ -103,7 +103,7 @@ html[data-theme="light"] .sl-markdown-content details {
   font-weight: 500;
   /* Component TITLE, held at a fixed size so it does not inflate with the 18px Geist prose (it inherits
      the mono chrome family; without this it tracked the prose container and read oversized). Covers every
-     toggle title built on this base: the regular Toggle, the flag toggle, and PasswordReveal block mode. */
+     toggle title built on this base: the regular Toggle and PasswordReveal block mode. */
   font-size: var(--component-title-size);
   padding-block: 0.3rem;
   margin-inline: calc(-1 * (0.75rem - 0.4rem));
@@ -194,42 +194,6 @@ html[data-theme="light"] .sl-markdown-content details {
 }
 } /* @layer prose */
 
-
-/* ── Answer callouts (:::tip[Answer]) ────────── */
-
-@layer prose {
-.starlight-aside--tip {
-  border-left-width: 3px;
-  border-radius: 4px;
-}
-
-html[data-theme="dark"] .starlight-aside--tip {
-  background-color: rgba(50, 200, 100, 0.08);
-}
-
-html[data-theme="light"] .starlight-aside--tip {
-  background-color: rgba(50, 180, 80, 0.07);
-}
-
-/* Answer callouts are Starlight :::tip asides, whose default icon is a rocket. Swap it for a
-   check-in-circle (reads as answer/solution) with a pure CSS mask, so this stays in the theme-pass
-   lane and the new glyph inherits the tip color in both themes. Note: the .starlight-aside__icon IS
-   the inline <svg> (no separate container), so hide its drawn glyph, then repaint the same 1em box
-   with a currentColor fill masked to the check. Size/alignment follow Starlight's own icon box
-   (1em at font-size 1.333em); flex-shrink:0 keeps the box from collapsing. fill-rule evenodd makes
-   the check read as a clean cutout. */
-.starlight-aside--tip .starlight-aside__icon > * {
-  display: none;
-}
-.starlight-aside--tip .starlight-aside__icon {
-  width: 1em;
-  height: 1em;
-  flex-shrink: 0;
-  background-color: currentColor;
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'/%3E%3C/svg%3E") center / contain no-repeat;
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'/%3E%3C/svg%3E") center / contain no-repeat;
-}
-} /* @layer prose */
 
 /* ── Writeup prose face + rhythm (Geist), scoped to .sl-markdown-content prose surfaces ONLY ──────────
    Geist sets running prose (paragraphs, list items, blockquotes, table body cells, strong, and em, the
@@ -328,7 +292,9 @@ html[data-theme="light"] .starlight-aside--tip {
   letter-spacing: -0.01em;
 }
 .sl-markdown-content h1 { font-weight: 800; }
-.sl-markdown-content h2 { font-weight: 700; }
+/* The h2 rules carry the .not-content guard (see the h3 note below) since 2026-10-04, when the landing
+   card titles became h2s: unguarded, the "# " marker below drew a lime "# " before every card title. */
+.sl-markdown-content h2:not(:where(.not-content *)) { font-weight: 700; }
 } /* @layer prose */
 
 /* Decorative lime # before section headings (purely visual cue). Purely visual now in fact too: the
@@ -336,7 +302,7 @@ html[data-theme="light"] .starlight-aside--tip {
    "# Recon" on every h2 (measured 2026-09-28). The plain declaration first is the fallback for the
    build's older targets, as on the toggle triangle above. */
 @layer prose {
-.sl-markdown-content h2::before {
+.sl-markdown-content h2:not(:where(.not-content *))::before {
   content: "# ";
   content: "# " / "";
   color: var(--sl-color-accent);
@@ -470,7 +436,7 @@ html[data-theme="light"] .starlight-aside--tip {
 /* Decorative accent (NOT body text): the lime "#" before each h2 runs the vivid deco-lime on
    paper, bolder than the AA text ink, for a confident risograph marker. Light-only. */
 @layer prose {
-:root[data-theme='light'] .sl-markdown-content h2::before {
+:root[data-theme='light'] .sl-markdown-content h2:not(:where(.not-content *))::before {
   color: var(--tp-deco-lime);
 }
 } /* @layer prose */

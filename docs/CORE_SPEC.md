@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-10-02 (tool output in the writeups no longer dates the runs; on 2026-10-01, decorative characters keep their look and say only what they mean, and a build guard checks part of it; About is in site search for its owner, not for the writeups' topics; the marketing pages gain a skip link, a main landmark and `color-scheme`, and About's theme toggle reports its state; the writeup badge row names each fact for a screen reader; on 2026-09-30, sidebar entries that name what each platform holds, and About's practice cards split 2 + 2).
+> Last updated: 2026-10-05 (the landing hero's glow stays in its own pane on a desktop and shows no hard edge at any width; callouts are no longer unnamed landmarks; landing card titles sit one level under the page title; the mobile "On this page" check wears its entry's colour; site search keeps no image as a field and ranks each Bandit page first however it is typed, bar two routes and two logins that Pagefind cannot tell from other levels; on 2026-10-03, site search no longer indexes the flags and passwords the pages hide; the decode headlines give a screen reader the settled word; the current "On this page" entry keeps its colour under the pointer on desktop and mobile; Syne's fallback is one face per weight, so the headline no longer jumps when the font arrives; a captured flag's spent button and the toggle-all control announce the truth; reduced motion stops the marketing pages' smooth scroll; the pressed filter pill's focus ring stands apart; the secret terminal's dim labels reach AA; dead CSS deleted and stale counts refreshed; on 2026-10-02, tool output in the writeups no longer dates the runs; on 2026-10-01, decorative characters keep their look and say only what they mean, and a build guard checks part of it; About is in site search for its owner, not for the writeups' topics; the marketing pages gain a skip link, a main landmark and `color-scheme`, and About's theme toggle reports its state; the writeup badge row names each fact for a screen reader; on 2026-09-30, sidebar entries that name what each platform holds, and About's practice cards split 2 + 2).
 
 ---
 
@@ -56,8 +56,10 @@
   plus `frame-ancestors 'none'` and `upgrade-insecure-requests`, which were inert under Report-Only and are
   now ACTIVE (frame-ancestors backs up the enforced `X-Frame-Options: DENY`; upgrade-insecure-requests
   upgrades same-origin subresources to HTTPS). `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'`:
-  `'unsafe-inline'` because the build emits 21 distinct inline scripts (Starlight's own plus our
-  marketing/writeup FX; counted by SHA-256 over every inline script body in `dist/`, 2026-09-13) and a hash would disable `'unsafe-inline'` and block the rest; `'wasm-unsafe-eval'`
+  `'unsafe-inline'` because the build emits 20 distinct inline scripts (Starlight's own, About's theme
+  bootstrap and our writeup and landing components; the homepage's and About's effects ship as script
+  files since 2026-10-02; counted by SHA-256 over every inline script body in the deployable pages of
+  `dist/`, 2026-10-03, 21 on 2026-09-13) and a hash would disable `'unsafe-inline'` and block the rest; `'wasm-unsafe-eval'`
   because Starlight search (Pagefind) instantiates WebAssembly in a Web Worker, which CSP blocks without it
   (see DECISIONS). No third-party script origin, so `script-src 'self'` is honest: the site loads only
   same-origin scripts (see the Web Analytics bullet below). No reporting endpoint (report-to / report-uri)
@@ -114,8 +116,10 @@
   Content and design (writeups, prose, the "Decrypted" visual language) are CC BY-NC-SA 4.0. The split
   names the paths each license covers explicitly, stated in the license files themselves plus a README
   section.
-- **The license files and the README section do not exist yet.** Writing them is a separate open task
-  (see ROADMAP). This bullet records the posture, not the state of the tree.
+- **The license files and the README section exist:** `LICENSE` (MIT) and `LICENSE-CONTENT` (CC BY-NC-SA
+  4.0) at the repository root, and the README's License section naming the paths each covers (checked
+  in the tree 2026-10-03). See DECISIONS 2026-08-01 · Dual licensing: MIT for code, CC BY-NC-SA 4.0 for
+  content, because licenses cover FILES.
 - **Retired machines only:** a writeup is published only for a retired machine. Writeups for active
   machines violate platform terms.
 - **Published flag and password values are deliberate content, not secrets.** On a retired machine whose
@@ -232,7 +236,7 @@ each Vite major; recorded, not pinned.
 
 ```
 C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Windows user profile path
-├─ astro.config.mjs                   # Starlight config: site, sidebar, customCss[layers.css, fonts.css, then the eight theme modules tokens/base/prose/chrome/components/pages/utilities/overrides, in that order], EC themes + pluginPrivCommand, reading-progress head script (no font preloads, see DECISIONS 2026-07-07), image-zoom, vite alias, components overrides (PageSidebar + MarkdownContent + Head), markdown remarkPlugins (content-taxonomy validation guard + PasswordReveal import injection) + rehypePlugins (content image loading)
+├─ astro.config.mjs                   # Starlight config: site, sidebar, customCss[layers.css, fonts.css, then the eight theme modules tokens/base/prose/chrome/components/pages/utilities/overrides, in that order], EC themes + pluginPrivCommand, reading-progress head script (no font preloads, see DECISIONS 2026-07-07), image-zoom, vite alias, components overrides (PageSidebar + MarkdownContent + Head), pagefind ranking weights for the search fields, markdown remarkPlugins (content-taxonomy validation guard, PasswordReveal import injection, WriteupMeta injection, recon-rail transform, search-field injection) + rehypePlugins (content image loading)
 ├─ src/
 │  ├─ content.config.ts               # docs collection (gatedDocsLoader, a wrapper that delegates to Starlight's docsLoader and then refuses any non-index file under the four platform directories that is not .mdx, so a .md writeup fails the content sync before any page builds, 2026-09-14; + docsSchema) + the writeup metadata schema (§7)
 │  ├─ pages/
@@ -246,7 +250,7 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 │  │  └─ secret.mdx                   # hidden /secret (splash, pagefind:false, noindex), renders <SecretTerminal/>
 │  ├─ assets/{platform}/{difficulty}/{slug}/{slug}-N.ext   # writeup screenshots; astro:assets optimizes + hashes them, referenced by relative ../ from writeups (NOT public/)
 │  ├─ components/
-│  │  ├─ Toggle.astro                 # <details class="toggle"> wrapper; flag prop adds .toggle-flag; renders MDX (incl. code) in slot
+│  │  ├─ Toggle.astro                 # <details class="toggle"> wrapper; renders MDX (incl. code) in slot (its `flag` prop and .toggle-flag were deleted 2026-10-03, no page used them)
 │  │  ├─ FlagCapture.astro            # "Decrypt to Capture" gold flag control (props: type user|root, flag); replaces the heading-plus-duplicate flag Toggle
 │  │  ├─ PasswordReveal.astro         # amber wargame secret waypoint, TWO modes derived from the slot: INLINE (prop: password) blur-to-reveal then copy-in-place, BLOCK (slot content + prop: label) collapses a multi-line secret as a <details class="toggle pwreveal-block">, no copy button. Both wear one amber (--pw-amber accent / --pw-amber-ink AA text ink / --pw-amber-rgb wash base). Deliberately distinct from FlagCapture (no gold, no decode animation); replaced the retired .spoiler-toggle class; no per-file import needed, see plugins/remark-inject-passwordreveal.mjs
 │  │  ├─ ToggleAll.astro              # Expand/Collapse-all control (vanilla TS, scroll-anchored); injected via PageSidebar override
@@ -268,7 +272,7 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 │  │  └─ taxonomy.mjs                 # what a writeup's MIDDLE directory means per platform (difficulty tiers, the six picoCTF categories, PLATFORM_AXIS); dependency-free because Node (plugins/) and Vite (src/) both import it
 │  └─ styles/                         # the theme pass, split into cascade-layer modules (see §5 "The layer contract")
 │     ├─ layers.css                   # the order statement `@layer starlight, tokens, base, prose, chrome, components, pages, utilities;` plus the cascade contract and the unit rule. First customCss entry
-│     ├─ fonts.css                    # self-hosted @font-face (subset WOFF2: Syne, JetBrains Mono, Geist) + metric-matched fallbacks for each; loaded via customCss and imported by the marketing pages. The one module with no layer statement
+│     ├─ fonts.css                    # self-hosted @font-face (subset WOFF2: Syne, JetBrains Mono, Geist) + metric-matched fallbacks for each (Syne's one face per weight, plus a glyph fallback for what Syne's subset lacks); loaded via customCss and imported by the marketing pages. The one module with no layer statement. Ships as its own /_astro/ stylesheet since 2026-10-03 (see §6 "Fonts")
 │     ├─ tokens.css                   # @layer tokens: every custom property (surfaces, accents, flag gold, the PasswordReveal amber pair, the prose/chrome type scale). Also owns the prose/chrome type token block (see §6)
 │     ├─ base.css                     # @layer base: the zero-specificity defaults under everything, today the shared focus ring alone
 │     ├─ prose.css                    # @layer prose: the reading surface inside .sl-markdown-content (type, rhythm, links, quotes, the raw <details> default)
@@ -283,6 +287,7 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 │  ├─ remark-inject-writeupmeta.mjs   # remark: injects the WriteupMeta badge row (§7 "Build-time plugins")
 │  ├─ remark-transform-recon-rail.mjs  # remark: builds the recon findings rail (§7 "Build-time plugins")
 │  ├─ remark-validate-content-taxonomy.mjs # remark: taxonomy build guard (§7 "Build-time plugins")
+│  ├─ remark-inject-search-meta.mjs   # remark: hidden site-search fields: an empty image on every page, level and login on OverTheWire wargame levels, wargame on hubs (§7 "Build-time plugins")
 │  └─ validate-decorative-glyphs.mjs  # integration: after the build, fails it when a decorative character on its list would be read aloud (§8 "Decoration says nothing to a screen reader")
 └─ public/
    ├─ robots.txt                      # in-repo; breadcrumb comment + Sitemap line (see §2)
@@ -355,7 +360,9 @@ The theme pass is organised into declared cascade layers, one module per layer, 
 - **Content-embedded components:** platform landings, the 404, and `/secret` are Starlight docs
   that embed scoped Astro components via MDX (`PlatformIndex`, `NotFound`, `SecretTerminal`). They
   carry Starlight's `not-content` class so prose styling skips them; most of our prose rules in
-  `prose.css` are guarded with `:not(:where(.not-content *))`. Astro scopes component styles with
+  `prose.css` are guarded with `:not(:where(.not-content *))`, the h2 weight and "# " marker rules
+  since 2026-10-04: until then no h2 sat in a component, and the landing card titles' move to h2 would
+  have drawn a lime "# " before every card title. Astro scopes component styles with
   `:where()` (zero specificity), so component CSS never out-ranks a global rule on selector weight.
   What actually protects a component subtree is that an Astro scoped style is UNLAYERED, and unlayered
   author CSS beats every layered rule regardless of weight. See §8 "The two instruments".
@@ -368,14 +375,84 @@ The theme pass is organised into declared cascade layers, one module per layer, 
   and the footer's name line, the only place the surname is page text, so the owner's name finds it.
   The philosophy section, the skills grid and the practice cards carry `data-pagefind-ignore`
   (2026-10-01): they speak the writeups' own vocabulary, and indexed they put About first for "privilege
-  escalation" and "reflection" and second for "HackTheBox". Measured on 2026-10-01, About comes first for
-  the owner's name, "about", "contact" and "whoami", and alone for what the owner does in words no
-  writeup uses ("pentesting", "red teaming", "offensive security"); it is also first for "security",
-  second for "machine" (its intro's "machine walkthroughs") and eleventh for "CTF", and absent for
-  "privilege escalation", "HackTheBox", "Linux", "recon", "exploit" and "reflection". An exact match on
-  About switches off Pagefind's fuzzy fallback for that query, so "offensive security" no longer lists
+  escalation" and "reflection" and second for "HackTheBox". Measured on 2026-10-03 with the ranking the
+  site ships (the options in the next bullet, which the search UI passes to Pagefind; the figures
+  recorded here on 2026-10-01 came from Pagefind's own defaults, which rank differently), About comes
+  first for the owner's full name and surname, "about" and "contact", second for "Idan", and alone for
+  what the owner does in words no writeup uses ("pentesting", "red teaming", "offensive security"); it
+  is second for "security", third for "machine" (its intro's "machine walkthroughs"), fourth of six for
+  "whoami" and sixth of 23 for "CTF" (last until 2026-10-05, when the 21 PicoCTF pages lost the "ctf"
+  their badge logo's SVG source gave them; see the next bullet), and absent for "privilege escalation",
+  "HackTheBox", "Linux", "recon", "exploit" and "reflection" (all re-measured 2026-10-05 with the
+  current ranking). An exact match on About switches off Pagefind's fuzzy fallback for that query, so "offensive security" no longer lists
   the four writeups that matched only "security" (one through its `secure_path`). The homepage stays
   out: its hero is three words, its stats are numbers and its cards point at the landings.
+- **Search ranking and the search fields (2026-10-03; the fields 2026-10-05):** the search UI passes
+  Starlight's ranking options to Pagefind (`pageLength` 0.1, `termFrequency` 0.1, `termSaturation` 2,
+  `termSimilarity` 9, `diacriticSimilarity` 0.8, read from the built search script), so any measurement
+  of search has to apply them; Pagefind's own defaults rank differently. Three facts about how Pagefind
+  1.5.2 scores a metadata field, read from its source, shape everything below: a typed term matches every
+  word that STARTS with it ("1" matches 1, 12 and 1718 alike); a field match gets no credit for being
+  exact, as page text does; and every distinct word a term matches adds to the field's score, which then
+  grows with the cube of the share of the query the field covers. `plugins/remark-inject-search-meta.mjs`
+  writes these fields, each on an empty `hidden` span at the end of the content (nothing to see, hear or
+  select; pixels unchanged on every page, measured):
+  - **An empty `image` on every content page**, and About carries the same span by hand. Otherwise
+    Pagefind keeps the first image after the title, and its alt text, as searchable fields, though
+    Starlight's search never shows images (`showImages: false`). On OverTheWire and PicoCTF pages that
+    image was the badge row's logo, inlined as an SVG data URI, so every coordinate in the logo was a
+    searchable number: it scored 381 for "bandit 6 7" on every Bandit page, where the title of 6-7
+    scored 6, and it alone made "svg" and "uploaded" find Bandit pages. 63 of the 64 records carried
+    one, 164,861 characters in all, and blanking it alone shrinks the records from 136,736 to 82,322
+    bytes.
+  - **On each wargame level N to M, `level` and `login`.** `level` holds "bandit Level", N when it is
+    one digit, the route's digits run together, and M when it is one digit: 1-2 carries "bandit Level 1
+    12 2", 9-10 "bandit Level 9 910", 17-18 "bandit Level 1718". A typed "17-18" reaches Pagefind as
+    1718, so the route's digits answer it and, as a prefix, "bandit 17" and "level 17". A one-digit
+    level carries its bare number too, one word more than the two-digit levels that share its digit,
+    because a title like "Bandit 12 → 13" holds two words starting with 1 (without it "bandit 1" listed
+    12-13 first); M, when one digit, makes the typed title "bandit 6 7" prefer 6-7, which holds both
+    numbers, to 7-8. `login` is the level's SSH user ("bandit17"), so a pasted login finds the level
+    played as that user. Each level's title is "Bandit N → N+1" and its prose names both neighbours,
+    which is why the number alone never picked one page.
+  - **On each wargame hub, `wargame`** (its title), so "bandit" lists the hub first.
+
+  `astro.config.mjs` weights them: title 5 (Pagefind's), level 10, login 1, wargame 11.15. level has to
+  outweigh title or the one-digit levels' extra word loses to the two-digit titles. wargame is level
+  plus login plus 0.15, and that 0.15 is the hub's whole lead for "bandit" (0.9% of the top score, about
+  0.09): whatever the hub gains on "bandit" it gains on every "bandit <word>" query too, so each step up
+  hands it more of them. Of 68 such queries, measured against the state with the image field blanked and
+  no other field, plus 0.15 moves two to the hub ("bandit read", "bandit the"), 0.2 four ("password",
+  "binary"), 1 eight ("find", "file"), 2 eleven; the fields first tried (`level: Level N`, wargame
+  weight 1) had moved nine. The lead is thin on purpose: it is about twice the spread of the level pages'
+  own text scores for "bandit" (0.12 to 0.16 on the eleven sampled), or some 34 more plain "bandit"s
+  than the hub on a page of the index's average 358 words. If an edit or a new level ever overtakes it,
+  raise wargame by a tenth and re-run the "bandit <word>" check.
+  Measured 2026-10-05 on the built indexes of the deployed site (`81f2f28`) and of this one, each with
+  its own shipped ranking (before, after), the first result being the right page: "bandit" (the hub)
+  no, yes; "bandit N" 19/33, 33/33; "level N" 3/33, 33/33; "bandit level N" 4/33, 33/33; the title as
+  typed ("Bandit 6 → 7") 31/33, 33/33; "N N+1" 31/33, 33/33; the route "N-N+1" and "bandit N-N+1"
+  11/33, 31/33; the login "banditN" 17/33, 31/33; and each of the 64 indexed pages' own title 61/64,
+  64/64. Bar the hub's deliberately thin lead, the smallest winning margin in any family is 7.7% of the
+  top score. The four misses are Pagefind's prefix matching and no field can fix them: "1-2" and "2-3"
+  reach it as 12 and 23, which are levels too, so 12-13 and 23-24 come first and 1-2 and 2-3 second;
+  "bandit1" and "bandit2" are prefixes of ten other logins each. Of 70 other queries, 11 changed their
+  first result or their count: "level 1 to 2" now finds 1-2; "level" and "bandit level" list a level
+  rather than the hub, every level's field holding the word; "svg", "uploaded" and "repo" no longer
+  match logo source; "privilege escalation" and "bloodhound" list Return before Forest, whose lead came
+  from its first screenshot's alt text (Return's text names BloodHound six times, Forest's five);
+  "ethical hacking" no longer finds About, which matched only through its decorative portrait's file
+  name, a phrase the page never says; "hacking" and "python 3" each lose one result that matched only
+  an image field. "HTB" likewise lists the three machines and no longer the HackTheBox landing, which
+  matched only through its logo's file name. None of the eighteen "bandit <word>" queries among the 70
+  changed. Measured and rejected: the route kept hyphenated in the field (Pagefind also indexes the halves of "17-18", so
+  17-18 holds three words starting with 1 against 1-2's two, and "bandit 1" to "bandit 3" stay lost);
+  the field without "bandit" (the one-digit levels then need level at 300 to win "bandit 1" and "bandit
+  2"); the field without the one-digit next number (the typed title "Bandit 2 → 3" and "2 3" then list
+  3-4 first); the login inside the level field (19-20 then takes "bandit" from the hub, even at
+  wargame 30); and `termSimilarity` at 200, which overflows Pagefind's scores to NaN. See DECISIONS
+  2026-10-05 · Site search keeps no image as a field, and each wargame level carries level and login
+  fields.
 - **Sidebar shape:** every platform group is a manual structure in `astro.config.mjs`, never an
   autogenerate over the whole platform directory, which labels the tier groups with their raw lowercase
   directory names and lists the landing a second time under the group's own name. Each group opens on
@@ -400,8 +477,36 @@ The theme pass is organised into declared cascade layers, one module per layer, 
 - **Fonts:** display = **Syne** (600/700/800); code/chrome/UI = **JetBrains Mono** (400/500/700, plus italic
   400/500 for the Principle coda maxim); **writeup prose = Geist** (400/600/700 plus a true drawn italic 400).
   Self-hosted as subset WOFF2 in public/fonts/ (see src/styles/fonts.css), with metric-matched
-  size-adjust fallbacks so the font swap is shift-free; no Google Fonts origin. See DECISIONS 2026-07-04
-  (self-hosting) and 2026-07-25 (the Geist prose face and the prose/chrome split below).
+  size-adjust fallbacks so the font swap moves as little as it can; no Google Fonts origin. See DECISIONS
+  2026-07-04 (self-hosting) and 2026-07-25 (the Geist prose face and the prose/chrome split below).
+- **Syne's fallback is one face per weight (2026-10-03).** `Syne Fallback` declares 600, 700 and 800,
+  each over Arial Bold (DejaVu Sans Bold and Liberation Sans Bold on Linux) with its own size-adjust
+  (106.17%, 115.66%, 164.37%) and Syne's 0.925 / 0.275 em ascent and descent carried through it. One
+  weightless face over regular Arial (123.39%, tuned to Syne 600 and 700) used to serve all three in
+  synthesized bold, and Syne 800 averages about 0.78 em, so the homepage's "Curiosity" was 413.9px in
+  the fallback against 613.0px in Syne and the headline jumped about 200px when the font arrived; it is
+  622.1px now. The split is forced: a 600 or 700 request picks the nearest declared face at or above it,
+  and a face declared at 600 or more is never synthesized bold. Tuned by measurement on the site's own
+  heading strings (47 at 600, 21 at 700, 68 at 800) so each weight's total width matches Syne; what
+  size-adjust cannot fix is shape, a per-string error of 3.5, 1.7 and 4.3% rms, so at 800 "Curiosity"
+  is +1.5%, "Let's connect." +0.3%, the writeup titles about -1.5 to -3.5% and the platform names -3
+  to -6%. Measured with every `.woff2` blocked, no heading changes height and nothing after one moves
+  on Syne's account.
+  Each face carries Syne's own unicode-range, and a third family in every Syne stack, `Syne Glyph
+  Fallback`, is the old face unchanged: it draws what Syne's subset lacks, today the "→" in every Bandit
+  title, exactly as before, so pages render identically once the fonts load. The three stacks naming it
+  are `--tp-display` in `tokens.css` and `--display` in the token blocks of `index.astro` and
+  `about.astro`. See DECISIONS 2026-10-03 · Syne's fallback is one face per weight, over Arial Bold.
+- **`fonts.css` ships as its own stylesheet (2026-10-03).** Astro inlines a stylesheet under Vite's
+  4,096-byte limit into the page; with 19 faces the minified file is 4,229 bytes, so it is now one
+  `/_astro/fonts.*.css` link on every page (650 bytes gzipped, cached immutably), where the 16 faces
+  used to sit inline in each page's HTML (3,420 bytes per page).
+- **A digit column is set in JetBrains Mono.** Its ten digits share one advance, which is what keeps a
+  counting number (the homepage stats, the landing hero numbers, the filter pill counts) from
+  jittering. `font-variant-numeric: tabular-nums` does nothing on this site: the mono's digits are all
+  0.6 em already, and the Geist subset carries no tabular figures (its digits run 0.35 to 0.70 em
+  across 400, 600 and 700 with the feature on or off; measured 2026-10-03), so the three declarations that
+  asked for it were deleted. A new digit column must be mono.
 - **Starlight var overrides:** `--sl-color-accent` = lime, `--sl-color-bg` = ink,
   `--sl-font` = JetBrains Mono. Headings forced to Syne via CSS.
 
@@ -443,8 +548,9 @@ is unchanged by construction rather than by exclusion. The tokens live in `token
   paragraph gap carries `:not(:where(blockquote *))` because `blockquote p { margin: 0 }` is only (0,1,2)
   and was being outranked, leaking ~2x the gap into every blockquote.
 - **Toggle titles are one system:** `--toggle-title-face` / `--toggle-title-weight` (Geist 600) on
-  `details.toggle:not(.toggle-flag) > summary`, so no toggle variant carries a bespoke face/weight; the gold
-  flag toggle keeps its own identity.
+  `details.toggle > summary` (the regular Toggle and PasswordReveal's block mode), so no toggle variant
+  carries a bespoke face/weight. The gold flag toggle that once kept its own identity is gone with its
+  `.toggle-flag` rules (deleted 2026-10-03; flags are FlagCapture controls).
 
 ### Focus ring system (keyboard accessibility)
 
@@ -488,7 +594,7 @@ ring echoes what the element is rather than inventing an identity. Everything el
 | TOC entries | the hue of the heading they point to: flags `--flag-gold-val`, h3 cyan, h2/h4+ lime |
 | In-prose links | `--tp-cyan` / `--tp-cyan-ink` |
 | `WriteupMeta` chips | `--wm-c` (live: the chips render on every writeup) |
-| Filter rail pills (`.pi-pill`) | `--pill` (its own hue: the group hue, or the neutral on ALL; 2026-09-07) |
+| Filter rail pills (`.pi-pill`) | `--pill` (its own hue: the group hue, or the neutral on ALL; 2026-09-07). On the PRESSED pill the ring sits 4px out (`outline-offset`), so 2px of page separates it from the 2px pressed ring; at the shared 2px the two touched and read as one 4px band, 1.01:1 between them (2026-10-03) |
 | Landing pagination (`.pagination-links a` on a page carrying `.pi-index`) | `--pf-accent` (the platform, lifted onto the footer container by `:has()` in `pages.css`; writeup pages keep the site default; 2026-09-07) |
 | Anything else inside `.pi-index` (the wargame card) | `--accent` (the platform, set on the landing root; 2026-09-07) |
 
@@ -556,7 +662,12 @@ token is an open ROADMAP item, not a bug.
 - **Scroll-reveal** (IntersectionObserver), film **grain** overlay, atmospheric **glows**.
 - **Reading-progress bar** (lime→cyan) on Starlight pages (injected via config `head`).
 - All effects are **`prefers-reduced-motion` aware**. Reading content stays calm
-  (NO tilt/scroll-reveal on writeup body text).
+  (NO tilt/scroll-reveal on writeup body text). That includes the marketing pages' smooth scroll since
+  2026-10-03: each page's reduced-motion block names `html, *`, because the smooth rule names `html`
+  (0-0-1), which outranked the bare `*` (0-0-0) the block used to set, so a Tab past the fold still
+  scrolled smoothly (computed `scroll-behavior` now `auto` under reduced motion on both pages).
+- The decode word is `aria-hidden` and doubled in visually hidden text, so a screen reader never hears
+  the scramble (§8 "Text a script writes").
 
 ### Component inventory (current)
 - Standalone: HUD/nav bar, hero, stats, platform/skill/practice cards, pipeline, contact, footer.
@@ -566,8 +677,8 @@ token is an open ROADMAP item, not a bug.
 - Starlight: themed headings (Syne + lime `#` marker, silent to screen readers, §8 "Decoration says
   nothing to a screen reader"), lead blockquote, code frames,
   Toggle, metadata badges, sidebar dots. (The `:::tip[Answer]` admonition is no longer used: zero
-  instances since `FlagCapture` and `PasswordReveal` took over, its prose-layer tint and icon rules
-  match nothing, see §7.)
+  instances since `FlagCapture` and `PasswordReveal` took over, and its prose-layer tint and icon rules,
+  which matched nothing, were deleted on 2026-10-03; see §7.)
 - Content-embedded (in `src/components/`): `PlatformIndex` (animated hero + a multi-select filter rail on the platform's own axis, difficulty or
   category, with the counts in the pills + writeup-card grid; reuses the homepage effects), `WriteupCard`
   (presentational: one meta line, title, description clamped to two lines, affordance; `showPlatform` prop for a future mixed
@@ -900,6 +1011,15 @@ its own arc).
   characters>: ` from the card blurb and capitalises the first character of what follows, so a PicoCTF card does not repeat its
   own title; the frontmatter description (the SEO and Open Graph string) is untouched, HackTheBox never
   matches, and the OverTheWire wargame card reads its description verbatim.
+- **Card titles are h2 (2026-10-04).** Starlight's own `h1#_top` is `display: none` on a landing, so
+  the outline is the hero's `h1.pi-name` and then the card titles, which were h3 and skipped a level.
+  `WriteupCard`'s `.wc-name` and the wargame card's `.pi-wg-name` are h2 now (21 on PicoCTF, 3 on
+  HackTheBox, 1 on OverTheWire; VulnHub has only its h1), with a comment at each to go back to h3 if
+  category headings ever sit between hero and grid. The prose h2 rules carry the `.not-content` guard
+  since the same day (§5 "Content-embedded components"), so the title shows no "# " marker: `::before`
+  computes `none`, and font, size, weight, colour and margins are unchanged in both themes, pixels 0
+  at 1280 and 375. No other built page had an h2 inside `.not-content`, so the guard changes nothing
+  else.
 - **Capitalisation law, three tiers.** A `//`-prefixed UPPERCASE tracked mono line is a KICKER that
   opens a section (hero eyebrow, wargame card eyebrow); UPPERCASE tracked mono without the prefix is a
   SLOT LABEL (`WRITEUPS`, `CATEGORIES`); Title Case JetBrains Mono 0.75rem 600 is a VALUE or a CONTROL
@@ -915,11 +1035,48 @@ its own arc).
   writeups`) after every change, `--focus-ring: var(--pill)` rings each pill in its OWN hue (the group's
   on a group pill, the neutral on ALL), the hover lift is gated under `prefers-reduced-motion`, the stat numbers
   rest at their final value in the HTML and count up only when motion is allowed (the homepage rule),
-  and below 480px the visible counts leave the pills so the six-category PicoCTF rail stays two rows.
+  and at 480px and below the visible counts leave the pills to keep the six-category PicoCTF rail short: two
+  rows at 480, three at 375 and 320 (three again at 481, where the counts return, two at 640, one at
+  1280; measured 2026-10-03). It never was two rows on a phone, as this line used to say.
 
-**No sideways scroll on a landing (2026-09-07).** The hero glow (`.pi-glow`, inset `-12%` left and `-10%`
-right of the hero) is MEANT to spill past its box, and at 1280 and 640 it is the only element that
-overflows the viewport: 71px and 45px. (Below 390 the platform name overflowed too, silently, until its
+**The hero glow holds its pools whole (2026-10-04).** `.pi-glow` is a box twice the hero's width
+(`-50%` each side) and 640px tall, reaching 280px above where it used to start, and its two radial
+pools are the same ones in that larger box: centres at 12.4% and 85.6% of the hero's width on dark
+(92.92% and 103.9% on light), radii 63.44% and 56.12% of it, 360px and 324px tall. Every pool now fades
+to transparent inside the box, so no edge of the box can show at any width. The old box (`-12%` left,
+`-10%` right, `top: -40%`, 360px) cut its pools while they were still bright, at their brightest row
+on top: on a desktop that edge and the left one showed through the translucent header as a hard-edged
+lit band over the sidebar's column (at 1536: from 24px down and from 150px in, against a 64px header
+and a 272px sidebar, on HackTheBox, PicoCTF and OverTheWire, whose 279px heroes lift the box 112px;
+VulnHub's 183px hero lifted it to 63px, so its band was a 1px row), and above about 1810px, where the
+capped landing sits centred, its side edges stood in the page as vertical lines (302 and 1864 at 1920,
+622 and 2184 at 2560; on light the right one was the brightest). The wash over the hero is unchanged:
+in the area the old box painted, the new one differs by at most 2 to 5 levels of 255 (rasterising the
+same gradient in a different box). Below 800 the same hard top edge is gone from under the header
+where it reached into it (HackTheBox, PicoCTF and OverTheWire at 799, VulnHub from 640); phones paint
+as before, their old top edge being above the screen.
+
+**A landing keeps to its own pane on a desktop (2026-10-04).** From 50rem, Starlight's own breakpoint
+for the sidebar, `.main-pane:has(.pi-index) { overflow: clip }` (`pages.css`) cuts everything a landing
+paints at the pane's edges: the header's bottom border and the sidebar's border, wherever Starlight puts
+them, so the glow no longer runs under the translucent header or across the sidebar column at any
+desktop width (the owner: each section keeps its own space, and the header stays translucent). Below
+50rem there is no sidebar and the glow running on under the header is part of the phone design (owner,
+2026-10-04), so the rule starts at the breakpoint. Everything else in the pane sits inside its 24px
+gutter, so no ring or shadow reaches the cut: on all four landings at 800 to 2560 in both themes,
+full-page pixels change only in the header band, the glow's own area and the sidebar's text. That last
+is the one side effect, measured in headless and in a windowed Chrome: the sidebar's text on a landing
+drew with subpixel antialiasing only while the glow ran under it, and now draws grayscale, as it does
+on the Bandit hub. See DECISIONS 2026-10-04 · The landing glow holds its pools whole, and a landing
+keeps to its own pane on a desktop.
+
+**No sideways scroll on a landing (2026-09-07).** The hero glow (`.pi-glow`) is MEANT to spill past its
+box, and it is the only element that overflows the viewport: since 2026-10-04 by half the hero's width
+on each side (156px at 375, 288px at 640, 184px left and 456px right at 1280, where the pane cuts it
+first); before, 72px past the right edge at 1280, 45px right and 57px left at 640, 18px right and 25px
+left at 375 (measured 2026-10-03 on all three live landings; 71px and 45px when first recorded). Measured
+2026-10-04: no landing scrolls sideways under a real wheel gesture at 320 to 1920, and the document's
+scrollWidth is the viewport's at every width. (Below 390 the platform name overflowed too, silently, until its
 floor was tied to the viewport on 2026-09-18; see "Narrow-width containment" below. The clip pair is a
 silencer, so overflow on a landing has to be measured, never looked for.) It is clipped by a PAIR of rules in `pages.css`,
 `html:has(.pi-index)` and `body:has(.pi-index)`, both `overflow-x: clip`. **Both are required and either
@@ -1186,6 +1343,17 @@ Five semantic writeup callouts, each a 3px accent left border + faint tint + a h
 label): recon (cyan `#41efff`, magnifier), loot (gold `#ffc23d`, padlock), intel (lavender `#ceaafd`,
 information), vuln (magenta `#ff4d9d`, warning), defense (green `#22c55e`, an inline shield SVG since
 Starlight has no shield). Icons via Starlight's `<Icon>`. Authored as `<Callout type="...">` in MDX.
+- **The root is a `<div>` (2026-10-04), not an `<aside>`.** An `<aside>` inside `<main>` is a
+  complementary landmark, so Busqueda's six callouts each sat unnamed in a screen reader's landmarks
+  list and each announced "complementary" on entry; as a div a screen reader reads the visible label
+  first ("RECON"), then the box. Busqueda's complementary landmarks went from 8 to 2: Principle (named)
+  and Starlight's own right-sidebar `<aside>`, unnamed and outside `<main>`. Pixels are unchanged at
+  1280 and 375 in both themes. Callouts hold core content (the recon findings, the loot), and Firefox's
+  Reader View drops every `<aside>`, so as divs they now reach it; Principle stays an `<aside>`, a side
+  note by design, so Reader View still drops the coda. Not `role="note"` (announced inconsistently),
+  not `role="group"` (adds "grouping" to every box), and not `aria-labelledby` on an aside, which reads
+  the label twice. The recon rail transform matches the MDX component by name, not the element. See
+  DECISIONS 2026-10-04 · Callouts are divs, not asides.
 - **Five voices (2026-09-28).** A callout wears a colour the page already owns only when it means the
   same thing there, never a platform's identity. Recon takes the site's cyan secondary (h3, links, port
   chips; the About sidebar dot inherits it too), loot the flag gold (credentials are loot), vuln the magenta
@@ -1206,7 +1374,8 @@ Starlight has no shield). Icons via Starlight's `<Icon>`. Authored as `<Callout 
 
 ### Flag loot gold (User Flag / Root Flag)
 One gold signal across the flag's states via the `--flag-gold` token (`#ffc23d` dark / `#C6A243` light):
-the body heading (gold, with a flag-SVG mask icon; replaces the brown `.task-title`) and the TOC entry
+the body heading (gold, with a flag-SVG mask icon, on the `.task-title` span the heading wraps its words
+in, which has no colour of its own: its old Notion brown never showed and was deleted 2026-10-03) and the TOC entry
 (muted gold at rest, full gold on hover/current; non-flag TOC entries follow the active-color ladder
 below). The TOC treatment applies on both the desktop right column and the mobile dropdown (mobile added
 DECISIONS 2026-07-10). Flag headings have no dedicated class yet, so the CSS targets the slug ids
@@ -1217,7 +1386,16 @@ DECISIONS 2026-06-20.
 The unredacted value lives in exactly one place, the visually hidden `.flagcap-real`, which is both the
 screen-reader source and what the copy button reads. It carries `user-select: none` and there is no
 `data-flag` attribute, because both routes put the flag on the clipboard on a plain Ctrl+A
-(DECISIONS 2026-09-12).
+(DECISIONS 2026-09-12). It also carries `data-pagefind-ignore` (2026-10-03), as do the cipher and the
+"Copied!" pill, so site search never indexes the flag or its stand-ins (§8).
+
+**After capture the decrypt button is spent (2026-10-03).** It is named for its state, "User flag,
+captured", and carries `aria-disabled="true"` (never `disabled`, which would drop focus to `<body>` the
+moment the button holding it went inert, the AttackPath lesson). A capture made with Enter or Space
+moves focus to the copy button once it shows, but only while focus is still on the spent button; a
+pointer capture leaves focus where it is. The script tells the two apart by the click's `detail`, which
+is 0 for a keyboard activation. Measured in headless Chrome, both motion settings: the keyboard flow
+lands on "Copy flag", and the copied value pastes as the flag, against a clipboard poisoned first.
 
 ### Password waypoint amber (PasswordReveal)
 
@@ -1298,21 +1476,36 @@ exceptions, `16-17.mdx` is now BLOCK mode (its RSA private key) and one level ha
 See DECISIONS 2026-07-05 (inline) and 2026-07-25 (block mode + the shared amber).
 
 ### TOC active-entry color ladder
-The right "On this page" entry the reader is currently on (`aria-current="true"`) takes the hue of the
-heading it points to, so the column mirrors the in-page hierarchy: h1/h2 keep Starlight's green
-`--sl-color-text-accent`, h3 turns cyan (`--tp-cyan` / `--tp-cyan-ink`, the same tokens as the `###`
-heading), and h4/h5/h6 go muted gray (`--sl-color-gray-2`, the h4 heading color). Flags stay gold (above).
-Only the current entry recolors; inactive entries keep the muted default. On the desktop right column
-heading level is read from Starlight's TOC nesting depth (h3 nested under h2, etc.). The mobile TOC
-dropdown (`<mobile-starlight-toc>`) now gets the SAME gold-flag + cyan-current-h3 treatment
-(DECISIONS 2026-07-10), and the current top-level h2 entry now turns green (`--sl-color-text-accent`,
-matching desktop) as of 2026-07-11; it is nested too but under a different wrapper
-(`nav > details > .dropdown`), so the depth rules match Starlight's per-entry inline `--depth`
-(`[style*="--depth: 1"]` = h3 cyan, `[style*="--depth: 0"]` = h2 green; flags render at `--depth: 1` and
-are excluded so they stay gold, verified in the real DOM). Mobile now mirrors the full desktop
-active-color set (current h2 green, current h3 cyan, flags gold); non-current entries keep Starlight's
-white + checkmark default. Unlayered CSS so it beats Starlight's layered green/white; parity with the
-heading rules is by shared tokens. See DECISIONS 2026-06-29, 2026-07-10, 2026-07-11.
+The "On this page" entry the reader is currently on (`aria-current="true"`) takes the hue of the heading
+it points to, so the list mirrors the in-page hierarchy: the page title and every h2 lime
+(`--sl-color-text-accent`), h3 cyan (`--tp-cyan` / `--tp-cyan-ink`, the same tokens as the `###`
+heading), h4 and deeper the muted gray of the h4 heading (`--sl-color-gray-2`), and the two flags gold
+(above). Only the current entry changes colour. The ladder is written twice in `chrome.css` (`@layer
+chrome`, which outranks every Starlight layer), once per surface, and every rung is ours, so a current
+entry keeps its colour under the pointer:
+- **Desktop column** reads level from Starlight's nesting (h3 nested under h2, h4 under h3).
+- **Mobile dropdown** (`<mobile-starlight-toc>`) nests under a different wrapper, so it matches the
+  inline custom property Starlight writes on every entry: `style="--depth: N;"`, 0 for the title and h2,
+  1 for h3, 2 and deeper for h4 and below (read from the built DOM at Starlight 0.41.10). Flags sit at
+  depth 1 and are excluded from the h3 rule.
+
+Until 2026-10-03 the current h2 had no rule of ours on desktop: it showed Starlight's own lime, and
+inside `starlight.core` Starlight's hover rule (`.right-sidebar-panel :where(a):hover`, white) outranks
+its `a[aria-current]`, so the current h2 and the title turned white under the pointer (measured
+`rgb(182,255,60)` to `rgb(255,255,255)`) while h3 and the flags held; and mobile had no h4+ rung, so a
+current h4 showed Starlight's white. Both are fixed, and the full matrix now measures the same on both
+surfaces, in both themes (Busqueda, 1280x800 and 375x812 with the dropdown open, pointer parked with
+real mouse events, the h4 rung on a synthetic entry since no page lists h4s): current and current under
+hover are lime, cyan, gray-2 and gold for title/h2, h3, h4+ and flags. What still differs between the
+two surfaces is Starlight's, untouched: an entry that is not current is gray-3 in the desktop column
+(white on hover) and the text colour in the dropdown (no hover change). The dropdown marks its current
+entry with Starlight's check, which since 2026-10-04 wears the entry's colour on every rung (it was
+lime whatever the rung): Starlight draws it as the entry's `::after`, a box masked to a check and filled
+from `background-color`, and `chrome.css` sets that to `currentColor`. On light, a flag's check is the
+flag gold `#C6A243`, 2.43:1 on the white dropdown, as the flag's text already was. Focus rings follow the heading the entry
+points to (flags `--flag-gold-val`, h3 cyan, title, h2 and h4+ the lime default) on both surfaces.
+Which entry is current is `TocTracking.astro`'s job (§6 "Starlight Component Overrides"). See DECISIONS
+2026-06-29, 2026-07-10, 2026-07-11.
 
 The flag VALUE is now the **FlagCapture** "Decrypt to Capture" control under the heading (DECISIONS
 2026-06-27), which supersedes the old `.toggle-flag` reveal. The heading + gold TOC entry are unchanged;
@@ -1332,7 +1525,11 @@ A dependency-free control auto-injected at the bottom of the right TOC via `over
 (additive override, renders `<Default/>`; wired in `astro.config.mjs` `components`). Bordered pill (gray +
 cyan hover), set apart by a gap + a `--sl-color-hairline` divider, desktop-only, self-hides unless a page
 has two or more toggles (a bulk expand/collapse is pointless with 0 or 1; the `>= 2` threshold clears every
-single-toggle page automatically). Acts on `.sl-markdown-content details.toggle:not(.toggle-flag)` (skips flags, code, nav).
+single-toggle page automatically). Acts on `.sl-markdown-content details.toggle` (the regular Toggle and
+PasswordReveal's block mode; flags are FlagCapture controls, never toggles; code and nav are skipped).
+Its name carries the NEXT action, "Expand all toggles" or "Collapse all toggles", like any action button,
+and it carries no `aria-pressed` (2026-10-03): paired with a name that flips, the pressed state announced
+"Collapse all toggles, pressed" with everything open, the opposite of the truth.
 Preserves reading position: anchors on the current heading and corrects scroll synchronously, with native
 `overflow-anchor` suppressed for the operation (see DECISIONS; ROADMAP has the unverified few-pixel shift).
 
@@ -1364,9 +1561,10 @@ Preserves reading position: anchors on the current heading and corrects scroll s
 
 ### Build-time plugins (wired in `astro.config.mjs` `markdown.processor: unified({...})`)
 
-Four remark plugins run over the MDX source. All are zero-dependency (`unist-util-visit`, plus `acorn`
+Five remark plugins run over the MDX source. All are zero-dependency (`unist-util-visit`, plus `acorn`
 for the injectors), and all see hand-authored markup only, never component output. Order matters in one
-place: the recon-rail transform is wired LAST.
+place: the taxonomy guard runs first, so the generators wired after it (the WriteupMeta injector, the
+recon-rail transform, the search-field injector) never show it their output.
 
 They are passed to `unified()` from `@astrojs/markdown-remark`, NOT to the top-level
 `markdown.remarkPlugins` / `markdown.rehypePlugins` keys, which Astro 6.4 deprecated and Astro 8
@@ -1386,6 +1584,15 @@ unset option back to the shared top-level value and all three already sit at the
 - **`remark-transform-recon-rail.mjs`** converts the recon findings list into the rail. It emits `dt`
   and `dd` as SIBLINGS with no per-row wrapper, because both must be direct grid children (a wrapper
   would need subgrid, which blockifies inline `<code>` onto its own track).
+- **`remark-inject-search-meta.mjs`** (2026-10-05) appends hidden site-search fields, each on an empty
+  `hidden` span at the end of the content: an empty `image` on every page, and on OverTheWire a `level`
+  and a `login` field for each wargame level (from the `N-M.mdx` filename) and a `wargame` field for each
+  hub (from `index.mdx`'s frontmatter). It derives them from the path, so no writeup declares them, and a
+  badge opt-out cannot drop them. A comma in a hub title is safe: Pagefind splits `key:value` at the
+  first colon and keeps the rest whole (read from its source). On a HackTheBox writeup the spans sit
+  before the Principle coda, which `overrides/MarkdownContent.astro` renders after the content; that
+  changes nothing, as the coda's margins come from `@layer components`, above Starlight's sibling
+  spacing. The weights and the measurements are in §5 "Search ranking and the search fields".
 - **`remark-validate-content-taxonomy.mjs`** FAILS the build on an unknown hand-authored class token in
   the two live families (`port-label`, `task-title`), on ANY hand-authored token in a retired badge family
   (`machine-`, `meta-`, `platform-`, `difficulty-`, `os-`: retired 2026-09-07 when the landing card moved
@@ -1465,8 +1672,9 @@ against any build directory.
   page is for, though it places a run in a period: Bandit's passwords change from one OverTheWire
   rotation to the next, and a PicoCTF flag ends in its deployment's tail.
 - Notion `<aside>` → the flag or password component of the bullets below, never an admonition (the
-  `:::tip[Answer]` admonition it once mapped to has had zero instances since 2026-06-27). Task headings
-  → brown `.task-title`.
+  `:::tip[Answer]` admonition it once mapped to has had zero instances since 2026-06-27, and its styles
+  were deleted 2026-10-03). `.task-title` is the span a flag heading wraps its words in (below): bold,
+  gold under `#user-flag` / `#root-flag`, and no colour of its own; no other heading carries it.
 - **Flags, MACHINES ONLY (HackTheBox and VulnHub):** emit the gold heading
   `### <span class="task-title">User Flag</span>` (or `Root Flag`) immediately followed by
   `<FlagCapture type="user" flag="..." />` (or `type="root"`), and add
@@ -1736,6 +1944,9 @@ DECISIONS). `src/components/badges/icons.ts` is the single source of truth mappi
 icon.
 - **Polychrome marks** (VulnHub, PicoCTF, OverTheWire, Linux): native-color `<img>` via hashed `?url`
   import. They carry 3 to 16 fills (Linux is Tux plus gradients), so `currentColor` would flatten them.
+  They load eagerly (2026-10-03): the row sits right under the h1, above the fold at every width, and
+  lazy loading only delayed them (Busqueda's Linux logo was requested 448 to 1,484ms into the load over
+  six runs, 53 to 61ms now).
 - **Monochrome marks** (HackTheBox, Windows, Active Directory, Progressive, Standalone): inlined via `?raw`
   + `set:html` and tinted from `--wm-c` (`currentColor`) in both themes. Sourced only from
   `src/assets/icons/` (inlining requires importing, and `public/` is not in the import graph); Standalone is
@@ -1807,7 +2018,11 @@ icon.
   exactly one of two grounds: it must beat unlayered CSS (a vendor stylesheet, an inline style, or one of
   our own Astro-scoped component styles, all of which sit above every layer), or it carries `!important`.
   Every tail rule carries a comment naming what it beats. The tail is 13 rules today: nine `.ec-cmd-*`
-  colour rules (they beat Expressive Code's inline per-token styles), the two `.pi-index .reveal`
+  rules, eight colours and the weight (unlayered and `!important` on a premise the build contradicts: Expressive Code puts no
+  inline colour on a tagged span, only inline custom properties, and paints token colours through a
+  rule that skips classed spans, read from the build 2026-10-03; whether they can move into
+  `@layer components` without `!important` waits for a build test, see the comment in
+  `overrides.css`), the two `.pi-index .reveal`
   transition rules and the V3 light card shadow (they beat WriteupCard's and PlatformIndex's own scoped
   styles), and the `.flagcap` reduced-motion kill.
 - **Growing the tail is a decision, not a convenience.** Reach for a layer first; the tail is for cases
@@ -1951,6 +2166,12 @@ borrow the other's rule.
   `data-flag` on 2026-09-12 and PasswordReveal `data-password` on 2026-09-28 (a plain Ctrl+A then copy
   had handed over the unrevealed value on 53 pages); each script reads the value from the element screen
   readers already use (`.flagcap-real`, `.pw-value`).
+- **Hidden answers carry `data-pagefind-ignore` (2026-10-03):** `.flagcap-real`, FlagCapture's cipher
+  and "Copied!" pill, `.pw-value` and the body of PasswordReveal's block mode. Site search indexed all
+  of them, and a search excerpt could print the answer the page hides: before, 26 of the 45 results for
+  "password" and 53 of 56 for "reveal" showed one in their excerpt; after, none of the 59 flags and
+  passwords and none of the block key's body lines is in the index, and no excerpt holds one (counted,
+  never printed). A screen reader still gets every value.
 
 **Still exposed, deliberately: Starlight's skip link** (`.sl-skip-link`, "Skip to content"). Measured on
 the production build, it reaches both flavours in both engines. It is the same clip-rect technique but it
@@ -2009,14 +2230,22 @@ opening the 404's line. Pagefind indexes `aria-hidden` text, so where the span s
 shows the glyph again.
 
 **A glyph with a meaning** is hidden the same way and its meaning given in words: as `.sr-only` text
-where the page has that class (the `/secret` title bar reads "home/secret"; the marketing pages have
-none yet, so the first glyph there that needs a spoken form brings the class into both files), or as
+(the `/secret` title bar reads "home/secret"; the marketing pages carry the class too since
+2026-10-03, in both inline style blocks, unselectable like the content pages' rule), or as
 the control's `aria-label`, keeping its visible words: the 404's "cd ~" is `aria-label: "cd home"`.
 Each Bandit level's sidebar entry is named "0 to 1" the same way, through `sidebar.attrs`. Such a link
 carries no `title`: Chrome reads a title after the name, as a description.
 
 **Text a script writes** follows the rule too: the copy button's "✓" and the `/secret` prompt, on its
-input line and in every echoed command, are `aria-hidden`.
+input line and in every echoed command, are `aria-hidden`. So are the four decode animations (the
+homepage's "exploit", About's "Idan", each landing's platform name, the 404's "secrets"), which write a
+scramble into their own text for up to 1.8 seconds (2026-10-03, FlagCapture's pattern): the animated
+span is `aria-hidden`, and a visually hidden copy of the word sits in FRONT of it, because a copy placed
+between the word and the full stop after it split the text run and cost the "t." kern, moving the stop
+1.8px. Where the line is indexed (About's `<main>`, the landings) the animated span also carries
+`data-pagefind-ignore`, so the index holds the word once, from the copy. Measured mid-animation in
+Chrome's accessibility tree (800ms and 1.5s after load): each line reads the settled word throughout,
+and a copied headline holds the word once.
 
 **The check:** `plugins/validate-decorative-glyphs.mjs` (§7 "Build-time plugins") fails the build when
 a character on its list reaches a screen reader. The list: arrows, triangles, bullets and dots,
@@ -2037,10 +2266,7 @@ and is reworded: there is no per-element allowance yet (ROADMAP).
 Starlight renders a title as plain text there, so a spoken form would mean changing what the page shows
 or rebuilding a Starlight component (§5). Every tab title keeps its " | " (About's own included): the
 delimiter is a Starlight setting (`titleDelimiter`), but a title is plain text, so another character
-would only change what the tab shows. The decode animations (the homepage and About headlines, the
-landing names, the 404's "secrets") scramble for up to 1.8 seconds and settle within about two and a
-half seconds of load, and a screen reader that reads the line meanwhile gets the scramble: not covered
-yet (ROADMAP).
+would only change what the tab shows.
 
 ### A pinned size implies a pinned leading
 
@@ -2129,3 +2355,7 @@ whole records.
 - Per-device or per-browser tuning of which "On this page" entry is current: rejected, the rules are fractions of the screen and scale with it (owner call). See DECISIONS 2026-09-29 · The "On this page" TOC gives every entry a turn, and a clicked entry stays current.
 - Labelling a platform landing's sidebar entry Overview, README or with the platform's own name: rejected, the group heading directly above already names the platform, and each label is also the pager's link text, so the five stay distinct and name what the page holds. See DECISIONS 2026-09-30 · Each sidebar group opens on what it holds, and VulnHub's is built by hand.
 - Changing a decorative character's look so a screen reader handles it, or leaving one for a screen reader to read as itself: rejected, it keeps its look and is silent or read as what it means. See DECISIONS 2026-10-01 · Decorative characters keep their look and say only what they mean.
+- One Syne fallback face for every weight, a single 800 face, regular Arial declared at 600 and up, Arial Black, or fallback metrics from arithmetic: rejected, each misfits a weight or loses the bold, and only one face per weight, tuned on the site's own headings, holds all three. See DECISIONS 2026-10-03 · Syne's fallback is one face per weight, over Arial Bold.
+- Callouts as asides, named with `aria-labelledby`, or given `role="note"` or `role="group"`: rejected, a named aside reads its label twice and stays a landmark, `note` is announced inconsistently and `group` adds "grouping" to every box. See DECISIONS 2026-10-04 · Callouts are divs, not asides.
+- An opaque header to hide the landing glow, or the glow clipped to the hero: rejected, the header stays translucent (owner) and a clip at the hero is a hard edge again. See DECISIONS 2026-10-04 · The landing glow holds its pools whole, and a landing keeps to its own pane on a desktop.
+- Search fields with the route kept hyphenated, without the wargame's name, without the one-digit next number, or with the login inside the level field, and a wider lead for the Bandit hub: rejected, each, measured on the built index, loses levels or hands the hub "bandit <word>" queries. See DECISIONS 2026-10-05 · Site search keeps no image as a field, and each wargame level carries level and login fields.
