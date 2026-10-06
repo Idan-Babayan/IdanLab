@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-10-02 (tool output in the writeups no longer dates the runs; on 2026-10-01, decorative characters keep their look and say only what they mean, and a build guard checks part of it; About is in site search for its owner, not for the writeups' topics; the marketing pages gain a skip link, a main landmark and `color-scheme`, and About's theme toggle reports its state; the writeup badge row names each fact for a screen reader; on 2026-09-30, sidebar entries that name what each platform holds, and About's practice cards split 2 + 2).
+> Last updated: 2026-10-05 (the landing hero's glow stays in its own pane on a desktop and shows no hard edge at any width; callouts are no longer unnamed landmarks; landing card titles sit one level under the page title; the mobile "On this page" check wears its entry's colour; site search keeps no image as a field and ranks each Bandit page first however it is typed, bar two routes and two logins that Pagefind cannot tell from other levels; on 2026-10-03, site search no longer indexes the flags and passwords the pages hide; the decode headlines give a screen reader the settled word; the current "On this page" entry keeps its colour under the pointer on desktop and mobile; Syne's fallback is one face per weight, so the headline no longer jumps when the font arrives; a captured flag's spent button and the toggle-all control announce the truth; reduced motion stops the marketing pages' smooth scroll; the pressed filter pill's focus ring stands apart; the secret terminal's dim labels reach AA; dead CSS deleted and stale counts refreshed; on 2026-10-02, tool output in the writeups no longer dates the runs; on 2026-10-01, decorative characters keep their look and say only what they mean, and a build guard checks part of it; About is in site search for its owner, not for the writeups' topics; the marketing pages gain a skip link, a main landmark and `color-scheme`, and About's theme toggle reports its state; the writeup badge row names each fact for a screen reader; on 2026-09-30, sidebar entries that name what each platform holds, and About's practice cards split 2 + 2).
 
 ---
 
@@ -1037,9 +1037,43 @@ its own arc).
   rows at 480, three at 375 and 320 (three again at 481, where the counts return, two at 640, one at
   1280; measured 2026-10-03). It never was two rows on a phone, as this line used to say.
 
-**No sideways scroll on a landing (2026-09-07).** The hero glow (`.pi-glow`, inset `-12%` left and `-10%`
-right of the hero) is MEANT to spill past its box, and at 1280 and 640 it is the only element that
-overflows the viewport: 71px and 45px. (Below 390 the platform name overflowed too, silently, until its
+**The hero glow holds its pools whole (2026-10-04).** `.pi-glow` is a box twice the hero's width
+(`-50%` each side) and 640px tall, reaching 280px above where it used to start, and its two radial
+pools are the same ones in that larger box: centres at 12.4% and 85.6% of the hero's width on dark
+(92.92% and 103.9% on light), radii 63.44% and 56.12% of it, 360px and 324px tall. Every pool now fades
+to transparent inside the box, so no edge of the box can show at any width. The old box (`-12%` left,
+`-10%` right, `top: -40%`, 360px) cut its pools while they were still bright, at their brightest row
+on top: on a desktop that edge and the left one showed through the translucent header as a hard-edged
+lit band over the sidebar's column (at 1536: from 24px down and from 150px in, against a 64px header
+and a 272px sidebar, on HackTheBox, PicoCTF and OverTheWire, whose 279px heroes lift the box 112px;
+VulnHub's 183px hero lifted it to 63px, so its band was a 1px row), and above about 1810px, where the
+capped landing sits centred, its side edges stood in the page as vertical lines (302 and 1864 at 1920,
+622 and 2184 at 2560; on light the right one was the brightest). The wash over the hero is unchanged:
+in the area the old box painted, the new one differs by at most 2 to 5 levels of 255 (rasterising the
+same gradient in a different box). Below 800 the same hard top edge is gone from under the header
+where it reached into it (HackTheBox, PicoCTF and OverTheWire at 799, VulnHub from 640); phones paint
+as before, their old top edge being above the screen.
+
+**A landing keeps to its own pane on a desktop (2026-10-04).** From 50rem, Starlight's own breakpoint
+for the sidebar, `.main-pane:has(.pi-index) { overflow: clip }` (`pages.css`) cuts everything a landing
+paints at the pane's edges: the header's bottom border and the sidebar's border, wherever Starlight puts
+them, so the glow no longer runs under the translucent header or across the sidebar column at any
+desktop width (the owner: each section keeps its own space, and the header stays translucent). Below
+50rem there is no sidebar and the glow running on under the header is part of the phone design (owner,
+2026-10-04), so the rule starts at the breakpoint. Everything else in the pane sits inside its 24px
+gutter, so no ring or shadow reaches the cut: on all four landings at 800 to 2560 in both themes,
+full-page pixels change only in the header band, the glow's own area and the sidebar's text. That last
+is the one side effect, measured in headless and in a windowed Chrome: the sidebar's text on a landing
+drew with subpixel antialiasing only while the glow ran under it, and now draws grayscale, as it does
+on the Bandit hub.
+
+**No sideways scroll on a landing (2026-09-07).** The hero glow (`.pi-glow`) is MEANT to spill past its
+box, and it is the only element that overflows the viewport: since 2026-10-04 by half the hero's width
+on each side (156px at 375, 288px at 640, 184px left and 456px right at 1280, where the pane cuts it
+first); before, 72px past the right edge at 1280, 45px right and 57px left at 640, 18px right and 25px
+left at 375 (measured 2026-10-03 on all three live landings; 71px and 45px when first recorded). Measured
+2026-10-04: no landing scrolls sideways under a real wheel gesture at 320 to 1920, and the document's
+scrollWidth is the viewport's at every width. (Below 390 the platform name overflowed too, silently, until its
 floor was tied to the viewport on 2026-09-18; see "Narrow-width containment" below. The clip pair is a
 silencer, so overflow on a landing has to be measured, never looked for.) It is clipped by a PAIR of rules in `pages.css`,
 `html:has(.pi-index)` and `body:has(.pi-index)`, both `overflow-x: clip`. **Both are required and either

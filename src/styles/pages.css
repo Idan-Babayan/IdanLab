@@ -106,10 +106,13 @@ body:has(.pi-index.pf-overthewire) .pagination-links { --pf-accent: #f2e300; }
    Writeup pages carry no .pi-index and keep the site default ring. */
 body:has(.pi-index) .pagination-links { --focus-ring: var(--pf-accent); }
 
-/* No sideways scroll on a landing. The hero glow (.pi-glow, inset -12% left and -10% right of the
-   hero) is MEANT to spill past its box and fade out beyond the screen edge, and nothing clipped that
-   spill. Measured on the built pages at 1280 and 640: the only element overflowing the viewport at
-   those widths, by 71px and 45px, so every landing wobbled sideways under a trackpad or a thumb.
+/* No sideways scroll on a landing. The hero glow (.pi-glow) is MEANT to spill past its box and fade
+   out beyond the screen edge, and nothing clipped that spill. Measured on the built pages at 1280 and
+   640, when the glow reached 12% and 10% of the hero past its sides: the only element overflowing the
+   viewport at those widths, by 71px and 45px, so every landing wobbled sideways under a trackpad or a
+   thumb. Since 2026-10-04 it reaches half the hero's width past each side (156px at 375, 288px at 640,
+   measured), so its pools fade out whole. These two rules still hold it on a phone; from 50rem the
+   pane rule after them cuts it first, at the pane's edges.
    (Below 390 the platform name overflowed as well until its floor was tied to the viewport on
    2026-09-18, and the splash hero glow below spills the same way; the pair silences both, so overflow
    on a landing is measured, never looked for.)
@@ -131,6 +134,24 @@ body:has(.pi-index) .pagination-links { --focus-ring: var(--pf-accent); }
    404 (the pair below) were the only pages that ever showed it. */
 html:has(.pi-index) { overflow-x: clip; }
 body:has(.pi-index) { overflow-x: clip; }
+
+/* A landing keeps to its own pane on a desktop. From 50rem, Starlight's breakpoint for the sidebar,
+   the page is three regions: the header across the top (translucent on purpose), the opaque sidebar,
+   and the pane beside it, where the landing lives. The hero glow spills past the hero by design, and
+   nothing stopped it at the pane's edge, so it ran up under the header and across the sidebar's
+   column, and the translucent header showed it there as a lit band with hard edges (at 1536: from
+   24px down and from 150px in, over the sidebar's 272px column) on the three landings whose heroes
+   are tall enough to lift it that far (measured 2026-10-04). `overflow: clip` on the pane cuts
+   everything at the pane's own edges, which are the header's bottom border and the sidebar's border,
+   wherever Starlight puts them at any width; `clip` rather than `hidden` for the reasons above (no
+   scroll container). Below 50rem there is no sidebar, and the glow running on under the header is
+   part of the phone design (owner, 2026-10-04), so the rule starts at the breakpoint. Everything else
+   in the pane sits inside its 24px gutter, so no ring or shadow reaches the cut. One side effect,
+   measured in a windowed Chrome too: the sidebar's text on a landing drew with subpixel antialiasing
+   only while the glow ran under it, and now draws grayscale, as it does on the Bandit hub. */
+@media (min-width: 50rem) {
+  .main-pane:has(.pi-index) { overflow: clip; }
+}
 
 /* The splash hero glow (.hero::before, inset -10% on both sides of the hero) spills the same way,
    and the 404 page is in neither selector above, so it scrolled sideways: 19px at 375, 13 at 320
