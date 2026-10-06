@@ -1398,9 +1398,10 @@
   still renders OverTheWire / Linux / Progressive, and Busqueda still renders HackTheBox / Linux /
   Standalone plus its Difficulty chip and both FlagCapture controls. The other three PicoCTF pages, which
   do declare `os`, still show their Linux chip.
-- **Status:** Adopted (working tree; NOT committed). Component + docs only: no CSS, no config, no new
-  deps, pinned versions unchanged. CORE_SPEC §6 and §7 updated in three places, including two claims that
-  the change falsified (`os` listed as always-declared, and the "other three props are required" line).
+- **Status:** Adopted; committed to `dev` on 2026-09-04 as `feat(badges): make WriteupMeta os optional`.
+  Component + docs only: no CSS, no config, no new deps, pinned versions unchanged. CORE_SPEC §6 and §7
+  updated in three places, including two claims that the change falsified (`os` listed as
+  always-declared, and the "other three props are required" line).
 
 ---
 
@@ -2600,9 +2601,10 @@
   at every scroll position, so the affordance never went away; the peek of the next node under the right fade
   is intact; no page-level horizontal overflow at any width. Chain-length independent by construction (the
   rest positions are set by the gutter, not by how long the chain is). `npm run build` green (46 pages).
-- **Status:** Adopted (working tree; NOT committed). Component-scoped CSS only, no new tokens beyond the one
-  alias, no JS, no dependency or version changes. Band width is the one number left to taste: `--ap-fade-w`
-  is the single knob if the owner wants the fade stronger or weaker.
+- **Status:** Adopted; committed to `dev` on 2026-07-20 as
+  `fix(attackpath): production-polish pass (labels, weight, targets, mask)`. Component-scoped CSS only, no
+  new tokens beyond the one alias, no JS, no dependency or version changes. Band width is the one number
+  left to taste: `--ap-fade-w` is the single knob if the owner wants the fade stronger or weaker.
 
 ### 2026-07-20 · AttackPath production-polish pass (connector-label rhythm, honest weight ramp, dot touch targets) + Return instance
 - **Decision:** a refinement-only pass over the existing `AttackPath` component (concept, structure, and
@@ -2660,8 +2662,10 @@
   6.0, Next 8.2, goal gold 5.2); no page-level horizontal overflow at any width, path scrolls internally with
   the fade + peeking-next-node affordance intact on touch. `npm run build` green (46 pages), no console
   errors. Both dist instances render; BloodHound evidence preserved in both.
-- **Status:** Adopted (working tree; NOT committed). Component-scoped styles + one content file (return.mdx);
-  no custom.css, config, token, or dependency changes; pinned versions unchanged.
+- **Status:** Adopted; committed to `dev` on 2026-07-20 as
+  `fix(attackpath): production-polish pass (labels, weight, targets, mask)` and
+  `content(return): chart the escalation with AttackPath`. Component-scoped styles + one content file
+  (return.mdx); no custom.css, config, token, or dependency changes; pinned versions unchanged.
 
 ### 2026-07-20 · WriteupMeta is injected from frontmatter, platform is derived from the directory
 - **Decision:** writeups no longer hand-place `<WriteupMeta />`. A new remark plugin
@@ -2795,7 +2799,8 @@
   fires once on first arrival and does NOT replay on revisit; arrow keys, node clicks and dots all revisit;
   no visible scrollbar with 1511px of path scrolling inside 318px on mobile and no page-level horizontal
   scroll. `npm run build` green (46 pages), no console errors, no new dependencies.
-- **Status:** Adopted (working tree; not committed).
+- **Status:** Adopted; committed to `dev` on 2026-07-20 as
+  `feat(writeups): add the AttackPath chain infographic component`, which shipped it in its reworked form.
 - **Partly superseded by:** 2026-07-19 · AttackPath reworked onto the site's native fabric (surfaces, prize
   identity, computed escalation), specifically the surfaces, container background, and goal treatment
   described in the original build, which were reworked off invented values onto the site's own fabric. The
@@ -2870,8 +2875,9 @@
   with no runner or bloom (zero ungated animation declarations); mobile scrolls internally with no page
   overflow and no scrollbar; every checked text pairing is AA. Forest still carries it under Summary with
   the BloodHound graph intact as evidence. `npm run build` green (46 pages), no console errors.
-- **Status:** Adopted (working tree; not committed). Component-scoped styles only; no custom.css, config,
-  or dependency changes.
+- **Status:** Adopted; committed to `dev` on 2026-07-20 as part of
+  `feat(writeups): add the AttackPath chain infographic component`, the component's first commit.
+  Component-scoped styles only; no custom.css, config, or dependency changes.
 
 ### 2026-07-19 · `.machine-meta` deleted; the REST of the badge family is not dead (corrects the entry below)
 - **Decision:** the `.machine-meta` rule is removed from `custom.css` and its `machine-` family from
@@ -2963,8 +2969,10 @@
   "Easy" at `data-level="1"`, leading pip grown to 6px, "Difficulty 1 of 4" text equivalent intact. In
   `dist`: 0 of 34 Bandit pages carry `machine-meta` or `wm-diff`, 34 carry the Progressive chip, busqueda
   keeps its Difficulty chip. `npm run build` green (46 pages), no console errors, no horizontal overflow.
-- **Status:** Adopted (working tree; NOT committed). Component + content only: no CSS, no config, no new
-  deps, pinned versions unchanged.
+- **Status:** Adopted; committed to `dev` on 2026-07-19 as
+  `feat(badges): make WriteupMeta difficulty optional` and
+  `content(bandit): adopt WriteupMeta across the 34 level pages`. Component + content only: no CSS, no
+  config, no new deps, pinned versions unchanged.
 
 ### 2026-07-17 · Linux OS badge separated from OverTheWire (H60 re-hue + L0.40 deepen)
 - **Decision:** `wm-os-linux` gets its own hue in both themes, distinct from `pf-otw`. Dark `#f0b429` ->
@@ -3384,7 +3392,9 @@
   hud-home and toggle `#4d7c0f`. A non-keyboard (programmatic/pointer) focus gives `:focus-visible` false
   and `outline: none`, so no ring appears on mouse click. `npm run build` green (45 pages). No new deps,
   pinned versions unchanged, no motion added.
-- **Status:** Adopted (working tree; not committed). CSS-only, additive, marketing pages only.
+- **Status:** Adopted; committed to `dev` on 2026-07-13 as
+  `fix: add :focus-visible keyboard focus rings to marketing pages`. CSS-only, additive, marketing pages
+  only.
 
 ### 2026-07-13 · Marketing About-page touch targets meet WCAG 2.2 minimum (24px) via layout-neutral hit-area growth
 - **Decision:** The four interactive controls in the About page HUD now carry a >= 24x24px pointer
@@ -3410,7 +3420,8 @@
   its own center; the toggle flips theme light/dark and persists to `localStorage['starlight-theme']`; the
   Writeups link navigates to /hackthebox/. `npm run build` green (45 pages). No new dependencies, pinned
   versions unchanged, no motion added.
-- **Status:** Adopted (working tree; not committed). CSS-only, additive, `about.astro` only.
+- **Status:** Adopted; committed to `dev` on 2026-07-13 as
+  `fix: meet WCAG 2.2 24px min touch targets on About-page HUD`. CSS-only, additive, `about.astro` only.
 
 ### 2026-07-12 · Code-block min-content width leak contained at `.main-pane` (min-width: 0), verified in-browser
 - **Decision:** Two additive rules in `custom.css` (placed right after the three-column layout block):
@@ -3446,7 +3457,9 @@
   not in a `<details>`) scrolls internally with tocShift 0; no page-level horizontal scroll; safety check
   confirmed the rules change nothing with the cap intact. `npm run build` green (45 pages). No new deps,
   pinned versions unchanged, no Starlight fork, no motion.
-- **Status:** Adopted (working tree; not committed). CSS-only, additive.
+- **Status:** Adopted; committed to `dev` on 2026-07-12 as
+  `fix: contain code-block min-content width leak so long lines scroll, not widen the column`. CSS-only,
+  additive.
 
 ### 2026-07-12 · Build-time content-taxonomy guard (remark plugin) as the ruled-out astro check alternative
 - **Decision:** New additive build-time plugin `plugins/remark-validate-content-taxonomy.mjs`, wired FIRST in
@@ -3508,7 +3521,8 @@
   `pagehide` teardown). The off-screen pause is a scroll behavior that headless checks report false negatives
   on (documented project learning), so it was NOT verified headlessly: the owner should confirm on the
   deployed preview by scrolling the hero out of view (loop stops) and back (resumes smoothly, no visual jump).
-- **Status:** Adopted (working tree; not committed). No new dependencies, pinned versions unchanged.
+- **Status:** Adopted; committed to `dev` on 2026-07-11 as
+  `perf(hero): pause offscreen constellation canvas loop`. No new dependencies, pinned versions unchanged.
 
 ### 2026-07-11 · Content pipeline is manual editorial polish, not a script (retires notion_cleaner.py)
 - **Supersedes:** 2026-05-31 · Notion → notion_cleaner.py → MDX pipeline
@@ -3567,7 +3581,8 @@
   `/icons/*` carries no immutable cache rule (only `/_astro/*` and `/fonts/*` do), so the in-place
   replacement cannot serve stale to returning visitors. The 2026-07-08 note that `assetsInlineLimit`
   hashing matters for a 65 KB pico asset is moot now.
-- **Status:** Adopted; on `dev`, uncommitted.
+- **Status:** Adopted; committed to `dev` on 2026-07-11 as
+  `chore(badges): rebuild PicoCTF icon as a clean ~815 B vector`.
 
 ### 2026-07-11 · Mobile TOC: current top-level (h2) entry green (completes desktop parity)
 - **Decision:** One add-only, mobile-scoped rule in `custom.css` (directly after the existing mobile
