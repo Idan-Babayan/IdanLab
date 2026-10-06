@@ -450,7 +450,9 @@ The theme pass is organised into declared cascade layers, one module per layer, 
   the field without "bandit" (the one-digit levels then need level at 300 to win "bandit 1" and "bandit
   2"); the field without the one-digit next number (the typed title "Bandit 2 → 3" and "2 3" then list
   3-4 first); the login inside the level field (19-20 then takes "bandit" from the hub, even at
-  wargame 30); and `termSimilarity` at 200, which overflows Pagefind's scores to NaN.
+  wargame 30); and `termSimilarity` at 200, which overflows Pagefind's scores to NaN. See DECISIONS
+  2026-10-05 · Site search keeps no image as a field, and each wargame level carries level and login
+  fields.
 - **Sidebar shape:** every platform group is a manual structure in `astro.config.mjs`, never an
   autogenerate over the whole platform directory, which labels the tier groups with their raw lowercase
   directory names and lists the landing a second time under the group's own name. Each group opens on
@@ -494,7 +496,7 @@ The theme pass is organised into declared cascade layers, one module per layer, 
   Fallback`, is the old face unchanged: it draws what Syne's subset lacks, today the "→" in every Bandit
   title, exactly as before, so pages render identically once the fonts load. The three stacks naming it
   are `--tp-display` in `tokens.css` and `--display` in the token blocks of `index.astro` and
-  `about.astro`.
+  `about.astro`. See DECISIONS 2026-10-03 · Syne's fallback is one face per weight, over Arial Bold.
 - **`fonts.css` ships as its own stylesheet (2026-10-03).** Astro inlines a stylesheet under Vite's
   4,096-byte limit into the page; with 19 faces the minified file is 4,229 bytes, so it is now one
   `/_astro/fonts.*.css` link on every page (650 bytes gzipped, cached immutably), where the 16 faces
@@ -1065,7 +1067,8 @@ gutter, so no ring or shadow reaches the cut: on all four landings at 800 to 256
 full-page pixels change only in the header band, the glow's own area and the sidebar's text. That last
 is the one side effect, measured in headless and in a windowed Chrome: the sidebar's text on a landing
 drew with subpixel antialiasing only while the glow ran under it, and now draws grayscale, as it does
-on the Bandit hub.
+on the Bandit hub. See DECISIONS 2026-10-04 · The landing glow holds its pools whole, and a landing
+keeps to its own pane on a desktop.
 
 **No sideways scroll on a landing (2026-09-07).** The hero glow (`.pi-glow`) is MEANT to spill past its
 box, and it is the only element that overflows the viewport: since 2026-10-04 by half the hero's width
@@ -1349,7 +1352,8 @@ Starlight has no shield). Icons via Starlight's `<Icon>`. Authored as `<Callout 
   Reader View drops every `<aside>`, so as divs they now reach it; Principle stays an `<aside>`, a side
   note by design, so Reader View still drops the coda. Not `role="note"` (announced inconsistently),
   not `role="group"` (adds "grouping" to every box), and not `aria-labelledby` on an aside, which reads
-  the label twice. The recon rail transform matches the MDX component by name, not the element.
+  the label twice. The recon rail transform matches the MDX component by name, not the element. See
+  DECISIONS 2026-10-04 · Callouts are divs, not asides.
 - **Five voices (2026-09-28).** A callout wears a colour the page already owns only when it means the
   same thing there, never a platform's identity. Recon takes the site's cyan secondary (h3, links, port
   chips; the About sidebar dot inherits it too), loot the flag gold (credentials are loot), vuln the magenta
@@ -2351,3 +2355,7 @@ whole records.
 - Per-device or per-browser tuning of which "On this page" entry is current: rejected, the rules are fractions of the screen and scale with it (owner call). See DECISIONS 2026-09-29 · The "On this page" TOC gives every entry a turn, and a clicked entry stays current.
 - Labelling a platform landing's sidebar entry Overview, README or with the platform's own name: rejected, the group heading directly above already names the platform, and each label is also the pager's link text, so the five stay distinct and name what the page holds. See DECISIONS 2026-09-30 · Each sidebar group opens on what it holds, and VulnHub's is built by hand.
 - Changing a decorative character's look so a screen reader handles it, or leaving one for a screen reader to read as itself: rejected, it keeps its look and is silent or read as what it means. See DECISIONS 2026-10-01 · Decorative characters keep their look and say only what they mean.
+- One Syne fallback face for every weight, a single 800 face, regular Arial declared at 600 and up, Arial Black, or fallback metrics from arithmetic: rejected, each misfits a weight or loses the bold, and only one face per weight, tuned on the site's own headings, holds all three. See DECISIONS 2026-10-03 · Syne's fallback is one face per weight, over Arial Bold.
+- Callouts as asides, named with `aria-labelledby`, or given `role="note"` or `role="group"`: rejected, a named aside reads its label twice and stays a landmark, `note` is announced inconsistently and `group` adds "grouping" to every box. See DECISIONS 2026-10-04 · Callouts are divs, not asides.
+- An opaque header to hide the landing glow, or the glow clipped to the hero: rejected, the header stays translucent (owner) and a clip at the hero is a hard edge again. See DECISIONS 2026-10-04 · The landing glow holds its pools whole, and a landing keeps to its own pane on a desktop.
+- Search fields with the route kept hyphenated, without the wargame's name, without the one-digit next number, or with the login inside the level field, and a wider lead for the Bandit hub: rejected, each, measured on the built index, loses levels or hands the hub "bandit <word>" queries. See DECISIONS 2026-10-05 · Site search keeps no image as a field, and each wargame level carries level and login fields.
