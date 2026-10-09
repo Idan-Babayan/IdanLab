@@ -55,11 +55,12 @@
     are levels too, so 1-2 and 2-3 come second; "bandit1" and "bandit2" begin ten other logins each.
   - "bandit read" and "bandit the" list the hub, "bandit next level" lists 14-15, and "level" and "bandit
     level" list a level rather than the hub, every level's field holding the word.
-  - No image and no alt text is searchable now. "privilege escalation" and "bloodhound" list Return before
-    Forest, whose lead came from its first screenshot's alt text (Return's text names BloodHound six
-    times, Forest's five); "ethical hacking" no longer finds About, which matched only through its
-    portrait's file name, a phrase the page never says; "HTB" no longer lists the HackTheBox landing,
-    which matched only through its logo's file name.
+  - No image and no alt text is searchable now, and alt text stays out: indexing it on its own (Pagefind's
+    `data-pagefind-index-attrs`) was offered and declined by the owner on 2026-10-07. "privilege
+    escalation" and "bloodhound" list Return before Forest, whose lead came from its first screenshot's
+    alt text (Return's text names BloodHound six times, Forest's five); "ethical hacking" no longer finds
+    About, which matched only through its portrait's file name, a phrase the page never says; "HTB" no
+    longer lists the HackTheBox landing, which matched only through its logo's file name.
 - **Verified:** on the built indexes of the deployed site (`81f2f28`) and of this one, each with its own
   shipped ranking, first result right, before and after: "bandit" (the hub) no, yes; "bandit N" 19/33,
   33/33; "level N" 3/33, 33/33; "bandit level N" 4/33, 33/33; the title as typed 31/33, 33/33; "N N+1"
@@ -221,6 +222,11 @@
   - The guard has blind spots: component chrome inside writeups, characters off its list, search excerpts,
     and text written at run time, the decode animations' scramble among it. CORE_SPEC §8 lists them,
     ROADMAP parks them, and they are checked by hand meanwhile.
+    **Since 2026-10-03:** the decode animations no longer give a screen reader the scramble. The animated
+    span is `aria-hidden` and a visually hidden copy carries the word, and ROADMAP's item on them is gone
+    (`fix(a11y): the decode animations give a screen reader the settled word`); FlagCapture's cipher left
+    the search index the same day (`fix(search): site search no longer reveals flags and wargame
+    passwords`). The guard itself still cannot see text written at run time.
 - **Verified:** production builds of HEAD and of every commit in the change, in headless Chrome: the
   accessibility tree reads every label, eyebrow, card, link and title above without its glyph; full-page
   pixels match on every page checked except those edges; the guard passes the build, reports exactly the
@@ -416,8 +422,10 @@
   block summary. The dark range the tokens comment had carried, 11.4 to 12.4:1, missed the hovered button
   and is corrected.
 - **ROADMAP:** the OverTheWire `.pi-name` contrast item is resolved and deleted.
-- **Status:** Adopted; committed to `dev` on 2026-09-29 as two local commits (the change with its comment
-  sync, then CORE_SPEC, ROADMAP and this entry), not pushed.
+- **Status:** Adopted; committed to `dev` on 2026-09-29 as
+  `feat(platform): OverTheWire moves to Canary yellow, and the waypoint keeps its amber`, the change with
+  its comment sync, then
+  `docs: record OverTheWire's move to Canary yellow in CORE_SPEC, DECISIONS and ROADMAP`.
 
 ### 2026-09-28 · Focus rings the reader can see on the flag buttons and the image zoom control
 - **Supersedes in part:** 2026-07-13 · Site-wide focus-ring token (--focus-ring) on content pages: one
@@ -2446,8 +2454,9 @@
   `class` prop and the taxonomy guard's "ignored tokens" note); the class name now appears nowhere in `src/`.
 - **Verified:** `npm run build` green (46 pages); `16-17.mdx` renders one `.pwreveal-block` collapse and no
   page carries `spoiler-toggle`.
-- **Status:** Adopted (working tree, committed to `dev`, not pushed). Component + one content file + the
-  `custom.css` block; no config, no new dependencies, pinned versions unchanged.
+- **Status:** Adopted; committed to `dev` on 2026-07-25 as
+  `feat(passwordreveal): block mode for multi-line secrets, retiring spoiler-toggle`. Component + one
+  content file + the `custom.css` block; no config, no new dependencies, pinned versions unchanged.
 
 ### 2026-07-25 · Writeup prose moves to Geist; chrome is pinned OFF the prose scale
 - **Decision:** running prose in writeup bodies is set in **Geist** (self-hosted subset WOFF2, roman
@@ -2490,17 +2499,22 @@
   `details.toggle:not(.toggle-flag) > summary` (Geist 600). This supersedes the spoiler toggle's bespoke mono
   700, which is what exposed that one-off class as the last toggle carrying its own face and weight for no
   reason; retiring the class itself is a separate change. The gold flag toggle keeps its own identity.
+  **Since 2026-10-03:** the selector is `details.toggle > summary`, and the gold flag toggle is gone with its
+  styles: flags are FlagCapture controls, and no page used it (`chore(styles): delete CSS that no element
+  can reach`).
 - **Metric-matched fallbacks by the same method as the existing faces:** `Geist Fallback` is computed with
   the capsize xWidthAvg method (Geist upm 1000, ascent 1005, descent 295, line-gap 0; roman xWidthAvg 467,
   italic 460) against Arial, and the ITALIC carries its own overrides against Arial Italic so italic prose
   does not shift on swap either. New filenames, so the immutable one-year `/fonts/*` cache is not a concern
   (the rename-on-change rule only bites when replacing a face).
 - **Verified:** `npm run build` green (46 pages); all four Geist faces ship to `dist/fonts/`.
-- **Status:** Adopted (working tree, committed to `dev`, not pushed). **The prose dials are deliberately
-  left as tokens pending the owner's judgement on the deployed preview:** `--prose-size` (18.5px, or
-  `1.125rem` for 18px), `--prose-leading`, `--prose-strong-weight`, and the two `--toggle-title-*` tokens.
-  Tuning any of them is a token edit with no other code change, because the component sizes are decoupled
-  from the prose size. Tracked in ROADMAP.
+- **Status:** Adopted; committed to `dev` on 2026-07-25 as
+  `feat(type): Geist prose face for writeup bodies, chrome pinned off the prose scale`. Of the prose dials
+  this entry left as tokens for the owner's judgement, `--prose-size` and `--prose-leading` were locked by
+  derivation on 2026-07-26, at `1.125rem` (18px) and 1.7 (see 2026-07-27 · The release hold is lifted and
+  `dev` ships to production); `--prose-strong-weight` and the two `--toggle-title-*` tokens are still the
+  owner's live calls, tracked in ROADMAP. Tuning any of them is a token edit with no other code change,
+  because the component sizes are decoupled from the prose size.
 
 ### 2026-07-20 · AttackPath production-readiness audit: 8 findings fixed (2 were real WCAG AA failures)
 - **Decision:** a full audit pass over the finished component, hunting for defects rather than confirming the
@@ -2558,8 +2572,9 @@
   **Partly superseded by:** 2026-09-23 · The AttackPath dossier is one stacked label/value grid, `via` is
   reserved, and the goal step wears gold, specifically "all chrome text returns **belowAA: []**": the step
   count and the dossier's kind label were not in the probe.
-- **Status:** Adopted (working tree). Component-scoped CSS + script only; no content, config, token, or
-  dependency changes.
+- **Status:** Adopted; committed to `dev` on 2026-07-20 as
+  `fix(attackpath): production-readiness audit (2 WCAG AA failures, focus loss, +5)`. Component-scoped CSS +
+  script only; no content, config, token, or dependency changes.
 
 ### 2026-07-20 · AttackPath edge mask overlays a GUTTER, not the endpoint nodes (one token drives band + inset)
 - **Decision:** the horizontal edge fade is kept as the no-scrollbar "more path off-screen" affordance, but it
@@ -3300,7 +3315,10 @@
   not depend on active state); prose links ring cyan; the spoiler-toggle rings lime (not amber, not green);
   WriteupCard still rings `--pf-accent`; on a fresh load, pointer/plain focus gives `:focus-visible` false
   and `outline: none`, so nothing rings on mouse click. `npm run build` green (45 pages).
-- **Status:** Adopted; committed to `dev` (not pushed). CSS-only, additive, `custom.css` only.
+- **Status:** Adopted; committed to `dev` on 2026-07-16 as
+  `feat: extend --focus-ring to TOC entries and in-prose links` and
+  `fix: light flag focus ring reads --flag-gold-val (5.24:1, was 2.00:1)`. CSS-only, additive, `custom.css`
+  only.
 
 ### 2026-07-13 · Site-wide focus-ring token (--focus-ring) on content pages: one color, identity where it exists, lime default
 - **Decision:** A single `--focus-ring` custom property now drives every keyboard focus-ring COLOR on
@@ -3355,7 +3373,8 @@
   match the shared rule and were ringed all along. It went unnoticed because the module runs on a
   250ms-debounced ResizeObserver, so the attribute is absent from the static HTML and from any DOM check
   made too early. Wait for the observer to settle before counting. See the 2026-07-17 code-frame entry.
-- **Status:** Adopted; committed to `dev` (not pushed). CSS-only, additive, `custom.css` only.
+- **Status:** Adopted; committed to `dev` on 2026-07-13 as
+  `feat: unify content-page focus rings under a --focus-ring token`. CSS-only, additive, `custom.css` only.
 
 ### 2026-07-13 · Marketing-page keyboard focus rings (:focus-visible), matching the component-ring pattern
 - **Decision:** Both standalone marketing pages now define a `:focus-visible` ring on every interactive
@@ -3496,7 +3515,8 @@
   expected to be RETIRED when WriteupMeta fully rolls out and the `.machine-meta` badge row is dropped; narrow
   the allow-lists then and keep the component-enum checks. Frontmatter os/tags validation was considered and
   deferred (no writeup sets those in frontmatter today, and the remark stage does not see frontmatter cleanly).
-- **Status:** Adopted; committed to `dev` (not pushed). No new deps, pinned versions unchanged.
+- **Status:** Adopted; committed to `dev` on 2026-07-12 as `feat: build-time content-taxonomy validation guard`.
+  No new deps, pinned versions unchanged.
 
 ### 2026-07-11 · Constellation hero canvas pauses off-screen (IntersectionObserver, perf-only)
 - **Decision:** The constellation canvas `draw()` loop on the two marketing heroes now stops its per-frame
@@ -3593,6 +3613,10 @@
   color (`--sl-color-text-accent`) shows through, and the custom rules override only deeper levels. The
   mobile TOC uses a different default active style (white + checkmark), so the green had to be added
   explicitly. The theme-aware token (green `#b6ff3c` dark / `#4d7c0f` light) means no light override.
+  **Since 2026-10-03:** the desktop current h2 has a rule of ours as well. Inside `starlight.core`,
+  Starlight's hover rule outranks its own `a[aria-current]`, so the current h2 turned white under the
+  pointer (`fix(toc): the current section keeps its colour under the pointer, on desktop and mobile
+  alike`).
 - **Selector / depth model:** `mobile-starlight-toc a[aria-current="true"][style*="--depth: 0"]:not([href="#user-flag"]):not([href="#root-flag"])`.
   Verified in the real mobile DOM (Starlight 0.39.2): h2 entries carry `style="--depth: 0;"`, h3 entries
   `--depth: 1;`. NOTE the flags (`#user-flag` / `#root-flag`) render at `--depth: 1`, NOT h2-level, so the
@@ -3664,6 +3688,10 @@ data URI rather than hashing.
   `background-color: --sl-color-text-accent`) and the white h2 active color are untouched; h2/other
   non-flag entries keep Starlight's default active style. Unlayered so the flag/h3 colors beat Starlight's
   layered mobile active color.
+  **Since 2026-10-03:** every rung of the ladder is ours in `@layer chrome`, the h2 and a new h4+ rung
+  included, so a current entry keeps its colour under the pointer; since 2026-10-04 the check takes the
+  entry's colour, `background-color: currentColor` on the same `::after`, by the owner's call. Both shipped
+  as `fix(toc): the current section keeps its colour under the pointer, on desktop and mobile alike`.
 - **Verification:** both themes, real mobile viewport (375px), computed styles + screenshots. Dark: flags
   muted→full gold, current h3 `#41efff`, current h2 stays white, checkmark intact. Light: current h3
   `#08697a`, flags `#C6A243`/muted, checkmark bg = light accent. Desktop right column unchanged (flag
@@ -4273,6 +4301,9 @@ automatically; no astro.config.mjs edit is needed per writeup.
   expand/collapse adds nothing over a single lone toggle, so single-toggle pages (every current
   single-toggle Bandit level) now behave like the zero-toggle pages and drop the control. It is count-driven,
   so it clears automatically with no per-writeup edits.
+  **Since 2026-10-03:** the set is `.sl-markdown-content details.toggle`; its `:not(.toggle-flag)` went
+  with the flag toggle's styles, which no page used (`chore(styles): delete CSS that no element can
+  reach`).
 - **Supersedes in part:** 2026-06-20 · ToggleAll control: sidebar placement, scroll anchoring, native-anchor
   fix, specifically its "self-hides when a page has no toggles" threshold. The rest of that entry stays in
   force and it is not archived.
@@ -4360,6 +4391,9 @@ automatically; no astro.config.mjs edit is needed per writeup.
 - **Dependency / interim:** flag headings have no dedicated class (they reuse `.task-title`, shared with
   real Task headings), so they are targeted by the deterministic slug ids `#user-flag` / `#root-flag`. A
   `.flag-title` (and a flag-toggle hook) from the pipeline is the clean fix (see ROADMAP).
+  **Since 2026-10-03:** no heading but the six flag headings carries `.task-title`, and its old brown, which
+  the gold always outranked, is deleted (`chore(styles): delete CSS that no element can reach`). The slug-id
+  targeting and the `.flag-title` fix stand.
 - **Status:** Adopted. Optional Root-vs-User hierarchy (part 4) deferred: the toggle icon is content-lane
   (flag SVG hardcoded in the MDX label), so a CSS-only Root crown/richer-gold would desync from its toggle.
 
@@ -4403,6 +4437,12 @@ automatically; no astro.config.mjs edit is needed per writeup.
   entry stays in force);
   desktop-only (`sl-hidden lg:sl-block`; the right sidebar is
   `position:fixed`, so it follows scroll). Per-page model (a cross-page global was rejected).
+  **Since 2026-10-03:** it targets `.sl-markdown-content details.toggle`, the regular Toggle and
+  PasswordReveal's block mode; flags are FlagCapture controls, never toggles, and the `:not(.toggle-flag)`
+  went with the flag toggle's styles (`chore(styles): delete CSS that no element can reach`). Its name
+  carries the next action, and it no longer carries `aria-pressed`, which announced "Collapse all toggles,
+  pressed" with everything open (`fix(a11y): a captured flag's spent button and the toggle-all control
+  announce the truth`).
 - **Look:** the original bordered pill (neutral gray text + border, cyan accent on hover/focus). An
   earlier de-emphasized treatment (small/dim/light) was tried and REVERTED. Separated from the TOC by a
   2.5rem gap plus a subtle `--sl-color-hairline` divider (a hard divider had read as a list separator).
