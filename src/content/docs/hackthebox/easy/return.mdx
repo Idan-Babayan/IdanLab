@@ -112,7 +112,7 @@ I kick off `autorecon` in the background to blanket the host, but it turns up no
 The home page is decoration. The Settings tab is where a printer stops being a printer.
 
 ![The panel's settings.php page: Server Address printer.return.local, Server Port 389, Username svc-printer, and a masked password field above an Update button](../../../../assets/hackthebox/easy/return/return-2.png)
-*The Settings page holds the printer's directory login as four editable fields: printer.return.local, port 389, the username svc-printer, and a password. The password comes back as a fixed mask of seven asterisks, shorter than the real secret turns out to be. The field is not leaking the credential. It is advertising that one is stored.*
+*The password field shows a fixed mask of seven asterisks. The field is not leaking the credential. It is advertising that one is stored.*
 
 <Callout type="intel">
 
@@ -262,7 +262,46 @@ SeTimeZonePrivilege           Change the time zone                Enabled
 
 </Toggle>
 
-`SeBackupPrivilege`, `SeRestorePrivilege`, and `SeLoadDriverPrivilege` on a print service account are already a red flag. Rights like these are almost never granted to a user directly: they arrive with a group. So the question is which group, and BloodHound answers it by drawing the whole domain.
+`SeBackupPrivilege`, `SeRestorePrivilege`, and `SeLoadDriverPrivilege` on a print service account are already a red flag. Rights like these are almost never granted to a user directly: they arrive with a group. So the next question is which groups this account carries.
+
+<Toggle label="Group membership <code>whoami /groups</code>">
+
+```powershell frame="code" title="PowerShell" {9,10,11}
+*Evil-WinRM* PS C:\Users\svc-printer\Desktop> whoami /groups
+
+GROUP INFORMATION
+-----------------
+
+Group Name                                 Type             SID          Attributes
+========================================== ================ ============ ==================================================
+Everyone                                   Well-known group S-1-1-0      Mandatory group, Enabled by default, Enabled group
+BUILTIN\Server Operators                   Alias            S-1-5-32-549 Mandatory group, Enabled by default, Enabled group
+BUILTIN\Print Operators                    Alias            S-1-5-32-550 Mandatory group, Enabled by default, Enabled group
+BUILTIN\Remote Management Users            Alias            S-1-5-32-580 Mandatory group, Enabled by default, Enabled group
+BUILTIN\Users                              Alias            S-1-5-32-545 Mandatory group, Enabled by default, Enabled group
+BUILTIN\Pre-Windows 2000 Compatible Access Alias            S-1-5-32-554 Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\NETWORK                       Well-known group S-1-5-2      Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\Authenticated Users           Well-known group S-1-5-11     Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\This Organization             Well-known group S-1-5-15     Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\NTLM Authentication           Well-known group S-1-5-64-10  Mandatory group, Enabled by default, Enabled group
+Mandatory Label\High Mandatory Level       Label            S-1-16-12288
+```
+
+</Toggle>
+
+Both questions I left open at the foothold close here. Remote Management Users is the group that exists to open the endpoint on port 5985, which is why WinRM let a print account in.
+
+Server Operators is the only one of netexec's five privileged groups this account holds, so that is the match its LDAP check would not name.
+
+Most of that privilege list belongs to the two operator groups. Loading drivers is a Print Operators default on a domain controller.
+
+Backup, restore, setting the system time, and shutting the machine down locally or remotely are all Server Operators defaults, which is six of the ten lines accounted for by one group.
+
+The remainder is housekeeping. The working set right comes with plain Users, bypass traverse checking is granted to Everyone, and adding workstations to the domain is a default for any authenticated account.
+
+Not one right on that list was handed to `svc-printer`. Every one of them walked in through a group.
+
+What the two operator groups can control on this domain controller is another question, so I map the domain with BloodHound.
 
 <Toggle label="Domain mapping <code>bloodhound-python</code>">
 
@@ -279,17 +318,7 @@ INFO: Compressing output into ..._bloodhound.zip
 </Toggle>
 
 ![BloodHound graph showing svc-printer as a member of Print Operators, Remote Management Users, Domain Users, and Server Operators, with both operator groups flagged high value](../../../../assets/hackthebox/easy/return/return-4.png)
-*Four group memberships for a print account, and two of them are operator groups on a domain controller. BloodHound flags both as high value.*
-
-The graph closes both questions I left open. `svc-printer` sits in Remote Management Users, the group that exists to open the endpoint on port 5985.
-
-Most of that privilege list belongs to the other two. Loading drivers is a Print Operators default on a domain controller.
-
-Backup, restore, setting the system time, and shutting the machine down locally or remotely are all Server Operators defaults, which is six of the ten lines accounted for by one group.
-
-The remainder is housekeeping. The working set right comes with plain Users, bypass traverse checking is granted to Everyone, and adding workstations to the domain is a default for any authenticated account.
-
-Not one right on that list was handed to `svc-printer`. Every one of them walked in through a group.
+*Both operator groups carry BloodHound's high-value flag.*
 
 The way Server Operators reaches services is worth being precise about. There is no privilege called start-a-service. Those powers live in the individual service's own security descriptor, and on a domain controller the default descriptor on many services hands this group start, stop, and change-config together.
 
