@@ -732,6 +732,14 @@ html[data-theme="light"] .sl-markdown-content .cl {
 .sl-markdown-content details.pwreveal-block > summary::before {
   transition: none;
 }
+/* The disclosure chevron is the summary's ink at the shared 0.5 opacity. On this block that is the
+   light amber ink at half strength, 2.20:1 against the toggle card (#f2ede0, model B), under the
+   3:1 the only visual cue on a control needs; at 0.8 it reads 3.92:1. Light only: dark reads
+   3.70:1 at 0.5, and the generic toggle 3.26:1 light and 5.34:1 dark (each on its own toggle card,
+   model B), so they keep it. */
+:root[data-theme='light'] .sl-markdown-content details.pwreveal-block > summary::before {
+  opacity: 0.8;
+}
 
 
 /* ── PasswordReveal: wargame waypoint (its own amber, not gold flag) ───────────

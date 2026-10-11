@@ -165,12 +165,16 @@ html[data-theme="light"] .sl-markdown-content details {
   display: none;
 }
 
-/* The triangle is decoration: the summary is already a disclosure control and says so. Generated
+/* The disclosure marker is Starlight's own chevron (markdown.css): a 1.25rem box filled with
+   currentColor and masked to the shape. This rule and the open rule below set its opacity, margin,
+   transition and rotation; display repeats Starlight's. The "▶ " content and its size draw a glyph
+   the mask hides, so it is not the shape a reader sees, but taking the two out still moved 1 to 14
+   pixels inside each marker's box by up to 3 levels (measured 2026-10-11), so they stay. Generated
    content is part of an element's accessible name, so without the empty alternative text after the
    slash every toggle was announced as "▶ Host reachability ping" (measured 2026-09-28). The plain
    declaration first is the fallback, not a leftover: a browser that cannot parse the alt form drops
    that whole declaration, and the build targets Safari 16.4 and Firefox 114 (CORE_SPEC section 3),
-   which predate it, so without the fallback they would lose the triangle instead of keeping it. */
+   which predate it. */
 .sl-markdown-content details > summary::before {
   content: "▶ ";
   content: "▶ " / "";
@@ -300,7 +304,7 @@ html[data-theme="light"] .sl-markdown-content details {
 /* Decorative lime # before section headings (purely visual cue). Purely visual now in fact too: the
    empty alternative text after the slash keeps it out of the heading's accessible name, which read
    "# Recon" on every h2 (measured 2026-09-28). The plain declaration first is the fallback for the
-   build's older targets, as on the toggle triangle above. */
+   build's older targets, as on the toggle marker above. */
 @layer prose {
 .sl-markdown-content h2:not(:where(.not-content *))::before {
   content: "# ";
