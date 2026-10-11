@@ -231,6 +231,10 @@ each Vite major; recorded, not pinned.
   byte-reproducible build. `npx @astrojs/upgrade` is the starting point but is NOT sufficient alone:
   it needs an interactive TTY for its breaking-changes prompt, it does not touch non-Astro packages,
   and it wrote a caret where an exact pin was required. Check its output; never hand-bump blind.
+- After an Expressive Code or Starlight upgrade, check that a marked code line (`{n}`) still shows one
+  lime bar with its text in line with the lines around it. The bar is EC's own border, recoloured by
+  `chrome.css` (§6 "Code-block command highlighting"); a second bar means EC moved it, and the rule has
+  to follow it rather than draw a bar of its own.
 
 ## 4. Repository Map
 
@@ -471,9 +475,17 @@ The theme pass is organised into declared cascade layers, one module per layer, 
 
 ### Tokens (canonical)
 - **Surfaces (dark):** `--ink #07090a`, `--ink-2 #0d1113`. **(light):** paper `#ece9e0`, `#f7f5ee`.
-- **Text (dark):** `--text #e9f1ee`, `--muted #79857f`. **(light):** `#12181a`, `#586460`.
+- **Text (dark):** `--text #e9f1ee`, `--muted #79857f`. **(light):** `#12181a`, `#515c59`.
 - **Accents (dark):** lime `#b6ff3c`, cyan `#41efff`, magenta `#ff4d9d`.
-- **Accents (light, darkened for contrast):** lime `#4d7c0f`, cyan `#0b7e92`, magenta `#c41d6f`.
+- **Accents (light, darkened for contrast):** lime `#4d7c0f`, cyan `#08697a`, magenta `#c41d6f`. The
+  light block alone also declares `--lime-ink #3e6700`, the theme pass's `--tp-lime-ink`, for small lime
+  text (the eyebrow, the HUD's hover and active links, the pull quote's emphasis), read as
+  `var(--lime-ink, var(--lime))` so dark falls back to `--lime` and the homepage's dark-only copy of the
+  block needs nothing. About's glows tint the paper under that text, where the accent read 3.50 to
+  4.03:1; the lime ink reads 4.68:1 at its tightest (the HUD wordmark under the pointer on the blue glow,
+  model C, floor 4.55). Light `--muted` holds its hue and drops lightness until the HUD's
+  "SECURITY NOTES" clears AA on the blue glow (4.40 to 4.96:1, model C), and light `--cyan` took the
+  theme pass's corrected ink (3.92 to 5.22:1 on the page, model B), all 2026-10-11.
 - **Fonts:** display = **Syne** (600/700/800); code/chrome/UI = **JetBrains Mono** (400/500/700, plus italic
   400/500 for the Principle coda maxim); **writeup prose = Geist** (400/600/700 plus a true drawn italic 400).
   Self-hosted as subset WOFF2 in public/fonts/ (see src/styles/fonts.css), with metric-matched
@@ -727,7 +739,9 @@ token is an open ROADMAP item, not a bug.
   keyed `via` (any case) fails the build. The goal's panel wears the goal node's gold (kind label, name,
   inline code) and the step count turns gold at the goal; on light the count and the other kind labels
   read `--sl-color-accent-high`, the carve-out the active node and the Next button already use (the accent
-  read 4.27:1 on the panel). The dots take their place on the meter's green-to-gold ramp from their `--t`
+  read 4.27:1 on the panel). A done connector's bold run reads `--tp-lime-ink` on light instead (4.27 to
+  5.71:1 on the `#f2ede0` panel, model C median, 2026-10-11): accent-high (OKLCH L 0.38) would sit at the
+  lightness of the caption around it (L 0.41), while the lime ink (L 0.47) stays a step lighter. The dots take their place on the meter's green-to-gold ramp from their `--t`
   (mixed in sRGB, the gradient's own space), future dots stay grey, and the bar's gradient spans the whole
   track, so its leading edge is the current dot's colour and gold arrives only at the goal. Every node state and all chrome text measures AA in BOTH themes. REQUIRED on every HackTheBox writeup
   under `## Summary` (2026-09-12), no longer an Active Directory device, see §8. Live on Forest (6 hops),
@@ -1284,8 +1298,22 @@ Light is art-directed on its own terms (dark is unchanged). All rules scoped to
 - **Texture not glow:** a faint warm technical dot-grid behind content (`body::before`), replacing
   the old bottom atmosphere wash. Static, low contrast, prefers-reduced-motion safe.
 - **Decorative accent palette (NON-text):** vivid `--pf-accent-2`-style trio for dots, fills,
-  the `#` marker, the h2 rule, the sidebar active bar, panel accents. The darkened text inks stay
-  for body text. Reading-progress bar light gradient: `#4d7c0f` to `#0b7e92`.
+  the `#` marker, the h2 rule, the sidebar active bar, panel accents. Reading-progress bar light
+  gradient: `#4d7c0f` to `#0b7e92`.
+- **Text inks, measured where they land (2026-10-11):** coloured TEXT on paper reads an ink, never the
+  accent. Cyan reads `--tp-cyan-ink` (`#08697a`, 5.22:1 on the page `#ece9e0`, model B). Lime reads
+  `--tp-lime-ink` (`#3e6700`: 5.50:1 on the page, model B, 4.96:1 on the darkest grid dot, model C;
+  6.68:1 on the white TOC dropdown), which About mirrors as its own `--lime-ink`: the current h2 in both
+  TOCs, the 404 page's two marks, AttackPath's done run, and a prose link under the pointer. That link
+  now moves from the cyan ink to the lime ink on light as it moves from cyan to lime on dark; before,
+  the light rest rule outranked the shared hover rule and a light link never changed.
+  `--sl-color-accent-high` (`#2f4d09`) is kept for lime text on a lime tint (the `/secret/` chip, 6.31:1
+  on its own 16% tint, model C median) and its existing carve-outs (the sidebar's current page,
+  AttackPath's labels). Gold text reads `--flag-gold-val` (`#7a5a12`, 5.24:1) or, for the flag
+  headings, `--flag-gold-display` (`#a27500`, 3.40:1 against the 3:1 large-text bar). The accent
+  `#4d7c0f` reads 4.11:1 on the page, under AA as small text, so it paints display type, rings, bars
+  and fills only. Dimmed text follows the same rule: the 404 crumb and the `/secret/` hint mix the text
+  colour at 66% on light (5.22 and 5.14:1), where the 58% and 60% set on ink read 4.09 and 4.30:1.
 - **Crisp badges:** solid (no-glow) platform dots and bolder flat fills; per-badge text inks
   deepened so every pill clears WCAG AA on its own fill (a bright hue cannot clear AA on a light
   same-hue fill, so inspect-style inks go deep).
@@ -1308,35 +1336,53 @@ are tinted by the difficulty arc or the category ring as the cards' bars, border
 
 ### Code-block command highlighting (by category, OKLCH palette)
 `ec-priv-command.mjs` tags command words by semantic category, colored in `overrides.css` (theme-aware,
-`!important`). The palette is designed in OKLCH and measured against the rendered code bg
-(tokyo-night `#1a1b26` dark, one-light `#fafafa` light), separating the three perceptual channels:
+`!important`). The palette is designed in OKLCH and measured against the rendered code bg: tokyo-night
+`#1a1b26` on dark; on light the warm `--ec-frm-edBg` `#e6dfd0` that `chrome.css` paints, not one-light's
+`#fafafa`, which no frame shows and which the first light figures were taken against. It separates the
+three perceptual channels:
 - **Lightness = contrast (uniform):** one target L per theme (dark `L 0.745`, light `L 0.43`) so all
-  categories read at one brightness. Measured: dark recon 7.56 / net 7.96 / inspect 7.45 (all AAA);
-  light recon 7.72 / net 7.45 (AAA). **Exception:** light inspect is deliberately lightened to `L 0.50`
-  (~5.8:1, still AA) per owner preference, because the darker uniform brown read too heavy on paper.
+  categories read at one brightness. Measured: dark recon 7.56 / net 7.96 / inspect 7.45 (all AAA, on
+  `#1a1b26`, model B). On the light frame the set clears AA, not 7:1: recon 6.08 / net 5.86 / inspect
+  4.59 (`#e6dfd0`, model B, measured 2026-10-11). **Exception:** light inspect is deliberately lightened
+  to `L 0.50` per owner preference, because the darker uniform brown read too heavy on paper (the ~5.8:1
+  first recorded was against `#fafafa`).
 - **Hue = category** (kept clear of the theme's string/keyword/function token hues): privilege magenta,
   recon gold `h95`, network cyan `h200`, inspect warm-sand `h60` (~145 deg off the theme's cool neutral
   text, so the near-neutral inspect still reads as a distinct tint).
 - **Chroma = loud vs quiet** (NOT lightness): recon + network vivid (high C); inspect LOW C at the same
   L/contrast, so it is calm without going dim. This fixed the previously near-invisible inspect color
   (it had been quieted by dropping CONTRAST instead of chroma).
-- Values: privilege `.ec-cmd-priv` `#ff4d9d`/`#c41d6f` (sudo, su, doas). recon `.ec-cmd-recon`
+- Values: privilege `.ec-cmd-priv` `#ff4d9d`/`#b70066` (sudo, su, doas). recon `.ec-cmd-recon`
   `oklch(0.745 0.153 95)`/`oklch(0.43 0.088 95)` (nmap, gobuster, ffuf, feroxbuster, nikto, whatweb,
   enum4linux, smbclient). network `.ec-cmd-net` `oklch(0.745 0.126 200)`/`oklch(0.43 0.073 200)`
   (nc, ncat, netcat, penelope, socat, curl, wget, ssh, chisel). inspect `.ec-cmd-inspect`
   `oklch(0.745 0.045 60)`/`oklch(0.5 0.045 60)` (ls, cd, cat, echo, whoami, id, find, grep, pwd, ping).
 - **Weight channel:** every recognized command is `font-weight:700`, so a command pops by weight while
-  color only signals category. **sudo's COLOR is the fixed anchor (unchanged); it gains bold only** and
-  sits at ~5.5:1 dark / ~5.4:1 light (just under the 7:1 the redesigned set meets, by design, because
-  it must not be recolored).
+  color only signals category. **sudo's dark COLOR is the fixed anchor (`#ff4d9d`, unchanged); it
+  gains bold only** and sits at 5.53:1 on `#1a1b26` (model B), just under the 7:1 the redesigned set
+  meets, by design, because the dark anchor must not be recolored. On light the old `#c41d6f` read
+  4.22:1 on the warm frame, under AA, so since 2026-10-11 light reads `#b70066`, the vuln callout's own
+  light ink, 4.94:1 (`#e6dfd0`, model B): one magenta on paper for privilege and the dangerous path.
 - Mechanism: command-position detection (first word after prompt / `sudo` / `|` `&&` `;`); sudo stays
   content-matched. Command lists are one-line-extendable. Residual risk: an output line whose first
   word is exactly a listed command (rare) can be mis-tagged.
 - EC `{n}` line highlights get a decisive-line focus treatment (`chrome.css`, after the scrollbar rules):
   `.ec-line.mark` gets a lime gutter bar + a low tint (dark accent 10%, light `--tp-deco-lime` 12%) that
-  sits under the command-token colors. The `chrome` layer outranks every `starlight.*` sublayer, so it
-  overrides EC's default blue marked
-  line cleanly (no `styleOverrides`). See DECISIONS 2026-07-04.
+  sits under the command-token colors. The bar is Expressive Code's own, the code cell's 0.15rem
+  inline-start border, recoloured to the accent in both themes; EC takes its width back out of the cell's
+  padding, so the marked line's text stays in line with the rest. Until 2026-10-11 the rule drew a second,
+  2px border on the line itself, which sat beside EC's blue bar (a lime and a blue bar on every marked
+  line) and pushed the marked line's text 2px right. That blue is EC's default whenever nothing recolours
+  the bar: Starlight's neutral marker colours apply only to its own default themes, and this site sets
+  `tokyo-night` / `one-light`. The 2026-06-16 rule had recoloured it through `--ec-tm-markBrdCol`; the
+  2026-07-04 rule drew its own border instead, and both bars showed from the first marked fence after it
+  (Busqueda, 2026-07-17). No dependency update moved it: EC's marker styles are byte-identical from
+  0.42.0 to 0.44.1, and Starlight's EC settings from 0.39.2 to 0.41.10. The bar clears the 3:1 a state shape needs: 14.13:1
+  against the frame `#1a1b26` and 10.95:1 against the tint on dark, 3.76:1 against the frame `#e6dfd0`
+  and 3.45:1 against the tint on light (model B); the light decorative lime would read 2.05:1, so it
+  stays in the tint. The `chrome` layer outranks every `starlight.*` sublayer, so the tint and the bar's
+  colour override EC's defaults cleanly (no `styleOverrides`). See DECISIONS 2026-07-04, and 2026-10-11 · A
+  marked code line shows one lime bar: Expressive Code's own, recoloured.
 
 ### Tagged callouts (icon-based, `Callout.astro` + `.cl*` in `components.css`)
 Five semantic writeup callouts, each a 3px accent left border + faint tint + a header (icon + UPPERCASE
@@ -1357,7 +1403,8 @@ Starlight has no shield). Icons via Starlight's `<Icon>`. Authored as `<Callout 
 - **Five voices (2026-09-28).** A callout wears a colour the page already owns only when it means the
   same thing there, never a platform's identity. Recon takes the site's cyan secondary (h3, links, port
   chips; the About sidebar dot inherits it too), loot the flag gold (credentials are loot), vuln the magenta
-  sudo wears in code blocks (`.ec-cmd-priv`: privilege, the dangerous path). Intel is the one new hue, a pale
+  sudo wears in code blocks (`.ec-cmd-priv`: privilege, the dangerous path; on light, since 2026-10-11, sudo
+  reads the vuln label's own ink `#b70066`, so the two are one magenta). Intel is the one new hue, a pale
   UV lavender told apart from PicoCTF's purple by lightness and chroma (0.14 OKLab). Until 2026-09-28 intel
   wore PicoCTF's `#d96bff` and vuln VulnHub's `#ff5c5c`, byte-identical to their sidebar dots and badge
   chips. Known nearness, taken knowingly: intel sits 0.046 from the medium tier violet and 0.049 from the
@@ -1376,9 +1423,21 @@ Starlight has no shield). Icons via Starlight's `<Icon>`. Authored as `<Callout 
 One gold signal across the flag's states via the `--flag-gold` token (`#ffc23d` dark / `#C6A243` light):
 the body heading (gold, with a flag-SVG mask icon, on the `.task-title` span the heading wraps its words
 in, which has no colour of its own: its old Notion brown never showed and was deleted 2026-10-03) and the TOC entry
-(muted gold at rest, full gold on hover/current; non-flag TOC entries follow the active-color ladder
-below). The TOC treatment applies on both the desktop right column and the mobile dropdown (mobile added
-DECISIONS 2026-07-10). Flag headings have no dedicated class yet, so the CSS targets the slug ids
+(a quieter gold at rest, `--flag-gold-current` on hover and when current; non-flag TOC entries follow the
+active-color ladder below). The TOC treatment applies on both the desktop right column and the mobile dropdown (mobile added
+DECISIONS 2026-07-10).
+
+**Words and shapes read different golds (2026-10-11).** On ink `--flag-gold` is AA as text (12.39:1 on
+the page `#07090a`, model B); on paper it is 2.00:1 (page `#ece9e0`, model B), so there it paints SHAPES
+only: the heading's flag glyph, the TOC entry's glyph, and FlagCapture's frame, lock and glow. Small gold
+words read the AA golds, `--flag-gold-val` and `--flag-gold-val-root` (`--fc-val` inside FlagCapture),
+and the TOC's current flag entry `--flag-gold-current` (the ladder below); the two headings, 29px/700 and
+so large text against a 3:1 bar, read `--flag-gold-display` (`#a27500` light: 3.40:1 on the page, model
+B, 3.07:1 on the darkest grid dot, model C; it stays large text at every width, 24px/700 from 768px
+down). On ink every one of these equals the loot gold of its tier, so dark's words and headings render
+exactly as before. The glyph is one mask, `--flag-glyph` in `tokens.css`, read by the
+heading's `::before` and the TOC entries' `::before` alike, always filled with `--flag-gold`. Flag
+headings have no dedicated class yet, so the CSS targets the slug ids
 `#user-flag` / `#root-flag` (interim; a `.flag-title` from the pipeline is the clean hook). The same two
 slug ids are what the active-color ladder excludes, so flags keep gold instead of going cyan. See
 DECISIONS 2026-06-20.
@@ -1411,7 +1470,10 @@ Inline secrets blur, block secrets collapse: a secret running to many lines cann
 run. **Mode is derived from the slot, never guessed** (`Astro.slots.has('default')`); passing both or
 neither throws at build time rather than silently picking a branch. Block mode takes a `label` prop for its
 summary and carries `.toggle`, so it inherits the standard toggle card, the disclosure marker, ToggleAll's
-bulk expand, and the shared toggle-title face/weight. **Block mode has NO copy button on purpose:** the keys
+bulk expand, and the shared toggle-title face/weight. On paper the block's disclosure chevron sits at 0.8
+opacity rather than the shared 0.5 (2026-10-11): at half strength the light amber ink read 2.20:1 against
+the toggle card (`#f2ede0`, model B), under the 3:1 a control's only visual cue needs, and 0.8 reads
+3.92:1. Dark keeps 0.5 (3.70:1), as do generic toggles (3.26:1 light, 5.34:1 dark). **Block mode has NO copy button on purpose:** the keys
 it holds are truncated for publication (see the private-key truncation rule), so a copy control would hand
 over a broken key. This replaced the one-off `.spoiler-toggle` class, which existed only because the inline
 component could not hold a block secret; that class is retired and appears nowhere in `src/`.
@@ -1478,16 +1540,41 @@ See DECISIONS 2026-07-05 (inline) and 2026-07-25 (block mode + the shared amber)
 ### TOC active-entry color ladder
 The "On this page" entry the reader is currently on (`aria-current="true"`) takes the hue of the heading
 it points to, so the list mirrors the in-page hierarchy: the page title and every h2 lime
-(`--sl-color-text-accent`), h3 cyan (`--tp-cyan` / `--tp-cyan-ink`, the same tokens as the `###`
-heading), h4 and deeper the muted gray of the h4 heading (`--sl-color-gray-2`), and the two flags gold
-(above). Only the current entry changes colour. The ladder is written twice in `chrome.css` (`@layer
-chrome`, which outranks every Starlight layer), once per surface, and every rung is ours, so a current
-entry keeps its colour under the pointer:
+(`--sl-color-text-accent`, `--tp-lime-ink` on light), h3 cyan (`--tp-cyan` / `--tp-cyan-ink`, the same
+tokens as the `###` heading), h4 and deeper the muted gray of the h4 heading (`--sl-color-gray-2`), and
+the two flags gold (above). Only the current entry changes colour. The ladder is written twice in
+`chrome.css` (`@layer chrome`, which outranks every Starlight layer), once per surface, and every rung is
+ours, so a current entry keeps its colour under the pointer:
 - **Desktop column** reads level from Starlight's nesting (h3 nested under h2, h4 under h3).
 - **Mobile dropdown** (`<mobile-starlight-toc>`) nests under a different wrapper, so it matches the
   inline custom property Starlight writes on every entry: `style="--depth: N;"`, 0 for the title and h2,
   1 for h3, 2 and deeper for h4 and below (read from the built DOM at Starlight 0.41.10). Flags sit at
   depth 1 and are excluded from the h3 rule.
+
+**The light rungs, measured (2026-10-11, page `#ece9e0` or the white dropdown, model B).** The current
+h2 reads `--tp-lime-ink`, 5.50:1 on the page (4.96:1 on the darkest grid dot, model C) and 6.68:1 in the
+dropdown, where the accent had read 4.11:1 on the page. Light flags read `--flag-gold-val` at rest and
+`--flag-gold-current` when current or hovered, with none of dark's gray mix: 5.24 and 9.71:1 on the page
+(floors 4.73 and 8.75, model C), 6.37 and 11.78:1 in the dropdown, where the bright gold had read 2.00 to
+3.26:1. Against the gray rest state (5.78:1) the h2 (5.50) and h3 (5.22) current rungs sit a little under
+it, by hue rather than by failure; the flags read better current (9.71) than at rest (5.24).
+
+**The current flag is a clear step from the resting one (2026-10-11).** Every other entry changes hue
+when it becomes current, gray to lime or cyan; a flag stays gold, so only its shade can move, and it
+barely did: measured as the OKLab distance between the rest and current colours, 0.081 on dark (the 70%
+gray mix against the full gold) and 0.089 on light as shipped. Both now step 0.149. On dark the resting
+mix drops to 45% gold, 8.40:1 on the page `#07090a` and 7.47:1 on the dropdown `#17181c` (model B), and
+the current stays the full gold, 12.39 and 11.01:1. On light the resting gold stays and the current reads
+`--flag-gold-current`, the same hue taken down to OKLCH L 0.34 (`#4a3400`). Hover reads the current
+colour in both themes, as before.
+
+**Every flag entry leads with the flag glyph (2026-10-11)**, the shape its heading carries, in
+`--flag-gold` in both themes and constant across rest, hover and current, so colour stays the only state
+signal. It is the entry's `::before`, empty content and nothing announced, absolutely placed in the
+depth-1 indent so it adds no layout: 10px with its left edge 11px into the 24px desktop indent, 3px
+before the text, and 11px at 14px into the 32px dropdown indent. The anchors gain `position: relative`
+for it; the dropdown's check, a flex item, does not move. Measured on all three HackTheBox writeups: the
+text's left edge is unchanged and the glyph is pixel-identical in all three states.
 
 Until 2026-10-03 the current h2 had no rule of ours on desktop: it showed Starlight's own lime, and
 inside `starlight.core` Starlight's hover rule (`.right-sidebar-panel :where(a):hover`, white) outranks
@@ -1501,8 +1588,9 @@ two surfaces is Starlight's, untouched: an entry that is not current is gray-3 i
 (white on hover) and the text colour in the dropdown (no hover change). The dropdown marks its current
 entry with Starlight's check, which since 2026-10-04 wears the entry's colour on every rung (it was
 lime whatever the rung): Starlight draws it as the entry's `::after`, a box masked to a check and filled
-from `background-color`, and `chrome.css` sets that to `currentColor`. On light, a flag's check is the
-flag gold `#C6A243`, 2.43:1 on the white dropdown, as the flag's text already was. Focus rings follow the heading the entry
+from `background-color`, and `chrome.css` sets that to `currentColor`. On light a current flag's check
+follows its entry, `--flag-gold-current`: a state shape at 11.78:1 on the white dropdown (model B)
+against a 3:1 bar, where the bright gold had left both at 2.43:1. Focus rings follow the heading the entry
 points to (flags `--flag-gold-val`, h3 cyan, title, h2 and h4+ the lime default) on both surfaces.
 Which entry is current is `TocTracking.astro`'s job (§6 "Starlight Component Overrides"). See DECISIONS
 2026-06-29, 2026-07-10, 2026-07-11.
@@ -1513,7 +1601,12 @@ FlagCapture renders below them and never repeats the flag name OR its glyph (it 
 lock-to-check icon, never a flag/crown). It adds tiers on top of `--flag-gold`: `--flag-gold-root`
 (richer gold for ROOT, the only user-vs-root signal, color not glyph) and AA-grade value golds
 `--flag-gold-val` / `--flag-gold-val-root` for the flag TEXT (the bright loot gold is decorative and not
-text-AA on paper, so the value uses a deeper gold: light user 4.99:1, root 5.93:1; dark both >11:1). The
+text-AA on paper, so the value uses a deeper gold: light user 4.99:1, root 5.93:1; dark both >11:1).
+Inside the component the two read as `--fc-id` (the frame, the lock or check, the glow) and `--fc-val`
+(every word), and since 2026-10-11 every word means the LOCKED / CAPTURED label and the "Copied!" pill
+too: on paper the identity gold had read 1.95:1 (CAPTURED, user) to 3.56:1 (LOCKED, root) as the 11px
+label and 1.87 to 2.39:1 on the pill, and `--fc-val` reads 5.12 to 6.92:1 and 4.89 to 5.70:1 on the same
+surfaces (model B). Dark is unchanged, since there the two are one value. The
 frame matches the writeup Toggle width + 6px radius but sits a bit taller for presence; an icon-only copy
 button sits inside it (right, vertically centered) and shows a golden "Copied!" pill on copy. Capture
 moment is a warm gold glow pulse in BOTH themes (tuned per theme,
@@ -2215,7 +2308,11 @@ A browser that cannot parse the alt form drops that whole declaration, and the b
 that predate it (§3, Safari 16.4 and Firefox 114), so without the fallback they would lose the glyph
 instead of keeping it. Lightning CSS keeps both declarations in the build (checked 2026-09-28). The
 heading `#` and the toggle `▶` in `prose.css` follow this, and so do the arrows between the homepage's
-methodology phases; the look is unchanged, pixel for pixel.
+methodology phases; the look is unchanged, pixel for pixel. The toggle's marker is not the `▶` a reader
+sees, though: what renders is Starlight's own chevron (`markdown.css`), a 1.25rem box filled with
+`currentColor` and masked, and the `▶` is drawn inside it, hidden by the mask. Deleting the `▶` and its
+size still moved 1 to 14 of the chevron's edge pixels by up to 3 levels (measured 2026-10-11), so both
+stay.
 
 **A glyph written as text** sits in an `aria-hidden` span that holds the glyph alone, with the spaces
 around it left outside, so the words on either side are not run together. Inside a flex container (the
@@ -2360,3 +2457,11 @@ whole records.
 - An opaque header to hide the landing glow, or the glow clipped to the hero: rejected, the header stays translucent (owner) and a clip at the hero is a hard edge again. See DECISIONS 2026-10-04 · The landing glow holds its pools whole, and a landing keeps to its own pane on a desktop.
 - Search fields with the route kept hyphenated, without the wargame's name, without the one-digit next number, or with the login inside the level field, and a wider lead for the Bandit hub: rejected, each, measured on the built index, loses levels or hands the hub "bandit <word>" queries. See DECISIONS 2026-10-05 · Site search keeps no image as a field, and each wargame level carries level and login fields.
 - Image alt text in site search, indexed on its own through Pagefind's `data-pagefind-index-attrs`: rejected, the owner's call (2026-10-07); an alt text is what gave Forest its lead for "bloodhound" over Return, whose own text names the tool more often. See DECISIONS 2026-10-05 · Site search keeps no image as a field, and each wargame level carries level and login fields.
+- Accent-high (`#2f4d09`) for all small lime text on paper: rejected, the highlight words go near-black and AttackPath's done run sinks to its own caption's lightness; accent-high stays for lime text on a lime tint. See DECISIONS 2026-10-11 · One lime ink for small text on paper, and About's light inks clear its glows.
+- `#447000` or `#426d00` as the light lime ink: rejected, the first reads 4.35:1 on the darkest grid dot and the second sits 0.020 OKLab from `#3e6700`, a near-duplicate. See DECISIONS 2026-10-11 · One lime ink for small text on paper, and About's light inks clear its glows.
+- The small-text gold ink on the flag headings, the 70% gray mix on a light TOC flag at rest, and a gilded fill on the current flag entry: rejected. See DECISIONS 2026-10-11 · Flag golds: a display gold for the headings, the AA golds for small words, and the glyph in the TOC.
+- A cyan bar on a marked code line, or the line's own border kept beside Expressive Code's: rejected, cyan puts a second hue back on a lime-tinted line and already means a network command in code, and the line's border is what pushed the marked line's text 2px right. See DECISIONS 2026-10-11 · A marked code line shows one lime bar: Expressive Code's own, recoloured.
+- The root tier's ink as the light current flag entry, or a brighter current gold on dark: rejected, the first is an OKLab step of 0.046 from the resting gold, and past `#ffc23d` gold turns cream, near the white every other entry turns under the pointer. See DECISIONS 2026-10-11 · Flag golds: a display gold for the headings, the AA golds for small words, and the glyph in the TOC.
+- Light sudo kept inside the fixed anchor: rejected, the 5.4:1 that justified it described a background no frame paints; the anchor is the dark `#ff4d9d`. See DECISIONS 2026-10-11 · Sudo's light magenta is the vuln callout's ink, and the light command figures are re-measured.
+- The PasswordReveal block's chevron in the amber accent at full strength: rejected, it would be the one chevron not drawn in its own label's ink. See DECISIONS 2026-10-11 · The PasswordReveal block's chevron sits at 0.8 on paper.
+- Deleting the toggle marker's "▶ " content and its size: rejected, the glyph the mask hides still shades 1 to 14 of the chevron's edge pixels. See DECISIONS 2026-10-11 · The PasswordReveal block's chevron sits at 0.8 on paper.

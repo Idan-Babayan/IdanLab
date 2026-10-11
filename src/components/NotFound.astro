@@ -48,6 +48,17 @@
 		color: var(--tp-cyan-ink);
 		border-bottom-color: color-mix(in oklab, var(--tp-cyan-ink) 40%, transparent);
 	}
+	/* Light: the 58% mix reads 4.09:1 on the page as this 13.6px text, under AA; 66% reads 5.22:1
+	   (page #ece9e0, model B; 4.99:1 on the darkest grid dot, model C). The two lime marks read the
+	   lime ink, 5.50:1 on the same page (model B), where the accent is 4.11:1. Dark keeps 58% and the
+	   accent. */
+	html[data-theme='light'] .nf-crumb {
+		color: color-mix(in oklab, var(--sl-color-text) 66%, transparent);
+	}
+	html[data-theme='light'] .nf-hash,
+	html[data-theme='light'] .nf-decode {
+		color: var(--tp-lime-ink);
+	}
 </style>
 
 <script>

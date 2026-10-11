@@ -27,19 +27,24 @@
    astro.config.mjs / src/lib/ec-priv-command.mjs), and these theme-scoped rules colour each category.
 
    Palette designed in OKLCH (perceptual lightness / chroma / hue), measured against the rendered
-   code background (tokyo-night #1a1b26 on dark, one-light #fafafa on light):
+   code background: tokyo-night #1a1b26 on dark; on light the frame paints --ec-frm-edBg #e6dfd0
+   (chrome.css), not one-light's #fafafa, which the first light figures were taken against and no
+   frame shows:
      - LIGHTNESS is uniform per theme (dark L 0.745, light L 0.43), so the categories read at one
-       brightness. Every redesigned category clears WCAG 7:1 on its code bg (measured): dark
-       recon 7.56 / net 7.96 / inspect 7.45; light recon 7.72 / net 7.45 / inspect 7.88.
+       brightness. On dark every redesigned category clears WCAG 7:1 on #1a1b26 (measured): recon
+       7.56 / net 7.96 / inspect 7.45. On the light frame they clear AA, not 7:1: recon 6.08 / net
+       5.86 / inspect 4.59 (#e6dfd0, model B, measured).
      - HUE separates categories and stays clear of the theme's string / keyword / function token
-       hues: privilege magenta (sudo, kept exactly), recon gold (h95), network cyan (h200),
+       hues: privilege magenta (sudo), recon gold (h95), network cyan (h200),
        inspect warm-sand (h60, ~145 deg off the theme's cool neutral text so it reads as a tint).
      - CHROMA (not lightness) carries loud vs quiet: recon + network are vivid (high C); inspect
        is LOW C at the SAME L/contrast, so it stays calm without going dim. That is the fix for the
        previously near-invisible inspect color (it had been quieted by dropping CONTRAST instead).
-   Privilege/sudo COLOR is the fixed anchor and is untouched (it sits at ~5.5:1 dark / ~5.4:1 light,
-   just under the 7:1 the redesigned set meets, by design). Every recognized command also goes bold
-   (weight channel below), so a command pops by weight while color only signals category.
+   Privilege/sudo COLOR is the fixed anchor on dark (#ff4d9d, 5.53:1 on #1a1b26, model B). On light the
+   old #c41d6f read 4.22:1 on the warm frame, under AA, so light reads #b70066, the vuln callout's own
+   light ink, 4.94:1 (#e6dfd0, model B): one magenta on paper for privilege and the dangerous path.
+   Every recognized command also goes bold (weight channel below), so a command pops by weight while
+   color only signals category.
 
    WHAT EXPRESSIVE CODE ACTUALLY DOES (read from the build, 2026-10-03): it writes each token's two
    theme colours as inline CUSTOM PROPERTIES (style="--0:#9ECE6A;--1:#387138"), never as an inline
@@ -58,7 +63,7 @@ html[data-theme="dark"] .ec-cmd-priv span {
 }
 html[data-theme="light"] .ec-cmd-priv,
 html[data-theme="light"] .ec-cmd-priv span {
-  color: #c41d6f !important;
+  color: #b70066 !important;
 }
 /* Recon / enumeration: vivid gold, an "attention" signal (nmap, gobuster, ...). */
 html[data-theme="dark"] .ec-cmd-recon,
