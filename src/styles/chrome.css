@@ -3,9 +3,11 @@
    Layer order, not file order, decides precedence. */
 /* ── "On this page": the current entry wears its heading's colour ──────────────
    The entry the reader is on (aria-current) takes the hue of the heading it points to, so the list
-   echoes the in-page ladder: the page title and every h2 lime (--sl-color-text-accent), h3 cyan
-   (--tp-cyan, --tp-cyan-ink on light), h4 and deeper the muted gray of the h4 heading
-   (--sl-color-gray-2), and the two flags gold. Only the current entry changes colour. The same ladder
+   echoes the in-page ladder: the page title and every h2 lime (--sl-color-text-accent, --tp-lime-ink
+   on light), h3 cyan (--tp-cyan, --tp-cyan-ink on light), h4 and deeper the muted gray of the h4
+   heading (--sl-color-gray-2). The two flags are gold, each led by the flag glyph in --flag-gold: a
+   quieter gold at rest (a gray mix on dark, --flag-gold-val on light) and --flag-gold-current when
+   current or hovered. Only the current entry changes colour. The same ladder
    is written twice, for the desktop column and for the mobile dropdown, and every rung is ours: this
    layer outranks all of Starlight's, so a current entry keeps its colour under the pointer. That is
    why the current h2 has a rule too. It used to show Starlight's own lime, and inside starlight.core
@@ -18,18 +20,35 @@
    entry's own colour. */
 
 /* Flags, desktop: matched by their slug anchors (#user-flag / #root-flag; no .flag-title class exists
-   yet). A persistent muted gold makes the loot scannable at a glance; full gold on hover and when
-   current. */
+   yet). A muted gold at rest, which with the glyph keeps the loot scannable at a glance; the full
+   gold on hover and when current. At 70% gold the resting mix sat an OKLab step of only 0.081 from
+   the full gold, so the current flag barely showed; at 45% the step is 0.149. The resting word reads
+   8.40:1 on the page #07090a (model B). */
 @layer chrome {
 .right-sidebar-panel a[href="#user-flag"],
 .right-sidebar-panel a[href="#root-flag"] {
-  color: color-mix(in oklab, var(--flag-gold) 70%, var(--sl-color-gray-3));
+  color: color-mix(in oklab, var(--flag-gold) 45%, var(--sl-color-gray-3));
 }
 .right-sidebar-panel a[href="#user-flag"]:hover,
 .right-sidebar-panel a[href="#root-flag"]:hover,
 .right-sidebar-panel a[href="#user-flag"][aria-current="true"],
 .right-sidebar-panel a[href="#root-flag"][aria-current="true"] {
-  color: var(--flag-gold);
+  color: var(--flag-gold-current);
+}
+/* Light: the bright gold is 2.00:1 on the page as this 13px text. The word reads the AA gold at
+   full strength at rest, 5.24:1, with none of dark's gray mix (on paper that mix sank it into the
+   gray entries around it), and the deeper --flag-gold-current when current or hovered, 9.71:1 (page
+   #ece9e0, model B; floors 4.73 and 8.75 on the darkest grid dot, model C), an OKLab step of 0.149
+   from rest. Colour stays the only state change, as on every other entry. */
+:root[data-theme='light'] .right-sidebar-panel a[href="#user-flag"],
+:root[data-theme='light'] .right-sidebar-panel a[href="#root-flag"] {
+  color: var(--flag-gold-val);
+}
+:root[data-theme='light'] .right-sidebar-panel a[href="#user-flag"]:hover,
+:root[data-theme='light'] .right-sidebar-panel a[href="#root-flag"]:hover,
+:root[data-theme='light'] .right-sidebar-panel a[href="#user-flag"][aria-current="true"],
+:root[data-theme='light'] .right-sidebar-panel a[href="#root-flag"][aria-current="true"] {
+  color: var(--flag-gold-current);
 }
 
 /* Desktop reads heading level from Starlight's nesting (h3 under h2, h4 under h3), so depth is level.
@@ -71,15 +90,28 @@
    0.41.10, 2026-10-03; first verified at 0.39.2). If Starlight changes that format, update every
    selector below. Starlight's own mobile current style is white for the text, on hover and on focus
    too, so each rung here replaces it. Flags first: matched by href, so depth does not matter. */
+/* Dark, as on desktop: the resting word reads 7.47:1 on the dropdown #17181c (model B). */
 mobile-starlight-toc a[href="#user-flag"],
 mobile-starlight-toc a[href="#root-flag"] {
-  color: color-mix(in oklab, var(--flag-gold) 70%, var(--sl-color-gray-3));
+  color: color-mix(in oklab, var(--flag-gold) 45%, var(--sl-color-gray-3));
 }
 mobile-starlight-toc a[href="#user-flag"]:hover,
 mobile-starlight-toc a[href="#root-flag"]:hover,
 mobile-starlight-toc a[href="#user-flag"][aria-current="true"],
 mobile-starlight-toc a[href="#root-flag"][aria-current="true"] {
-  color: var(--flag-gold);
+  color: var(--flag-gold-current);
+}
+/* Light, as on desktop: 6.37:1 at rest and 11.78:1 current on the white dropdown (model B). The
+   current entry's check follows its colour: a state shape at 11.78:1 against a 3:1 bar. */
+:root[data-theme='light'] mobile-starlight-toc a[href="#user-flag"],
+:root[data-theme='light'] mobile-starlight-toc a[href="#root-flag"] {
+  color: var(--flag-gold-val);
+}
+:root[data-theme='light'] mobile-starlight-toc a[href="#user-flag"]:hover,
+:root[data-theme='light'] mobile-starlight-toc a[href="#root-flag"]:hover,
+:root[data-theme='light'] mobile-starlight-toc a[href="#user-flag"][aria-current="true"],
+:root[data-theme='light'] mobile-starlight-toc a[href="#root-flag"][aria-current="true"] {
+  color: var(--flag-gold-current);
 }
 
 /* The page title and h2 (--depth: 0): lime. Flags sit at depth 1, so the exclusions never fire here;
@@ -113,6 +145,45 @@ mobile-starlight-toc a[aria-current="true"]:not([style*="--depth: 0"]):not([styl
    gray h4. currentColor is the colour the rungs above give the entry, so the two always agree. */
 mobile-starlight-toc a[aria-current="true"]::after {
   background-color: currentColor;
+}
+
+/* The flag entries lead with the glyph their headings carry, in the identity gold in every state:
+   it marks the entry as a flag and never changes, so colour stays the only state signal.
+   Decorative: empty content, nothing announced, and no meaning the word does not carry (on paper
+   the bright gold is 2.00:1 against the page, model B). It hangs in the depth-1 indent and adds no
+   layout. */
+.right-sidebar-panel a[href="#user-flag"],
+.right-sidebar-panel a[href="#root-flag"],
+mobile-starlight-toc a[href="#user-flag"],
+mobile-starlight-toc a[href="#root-flag"] {
+  position: relative;
+}
+.right-sidebar-panel a[href="#user-flag"]::before,
+.right-sidebar-panel a[href="#root-flag"]::before,
+mobile-starlight-toc a[href="#user-flag"]::before,
+mobile-starlight-toc a[href="#root-flag"]::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: var(--flag-gold);
+  -webkit-mask: var(--flag-glyph) center / contain no-repeat;
+  mask: var(--flag-glyph) center / contain no-repeat;
+  pointer-events: none;
+}
+/* Desktop: a 10px glyph, its left edge 11px into the 24px depth-1 indent, 3px before the text. */
+.right-sidebar-panel a[href="#user-flag"]::before,
+.right-sidebar-panel a[href="#root-flag"]::before {
+  inset-inline-start: 0.6875rem;
+  width: 0.625rem;
+  height: 0.625rem;
+}
+/* Mobile dropdown: an 11px glyph, 14px into the 32px depth-1 indent. */
+mobile-starlight-toc a[href="#user-flag"]::before,
+mobile-starlight-toc a[href="#root-flag"]::before {
+  inset-inline-start: 0.875rem;
+  width: 0.6875rem;
+  height: 0.6875rem;
 }
 
 /* ── TOC focus rings echo the heading ladder ──────────────────────────────────

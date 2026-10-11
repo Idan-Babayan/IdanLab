@@ -245,6 +245,10 @@ html[data-theme="dark"] {
 
   --tp-cyan: #41efff;
   --tp-cyan-ink: #0b7e92;
+
+  /* The flag glyph as a mask. The flag headings' ::before and the TOC flag entries' ::before both
+     read it, so the shape is declared once. Paint it with background-color. */
+  --flag-glyph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z'/%3E%3C/svg%3E");
 }
 } /* @layer tokens */
 
@@ -256,15 +260,22 @@ html[data-theme="dark"] {
   --sl-color-accent: #b6ff3c;
   --sl-color-accent-high: #daff9e;
   --sl-color-text-accent: #b6ff3c;
-  /* Flag loot gold: one signal for the User Flag / Root Flag heading, reveal toggle, and TOC entry.
-     Theme-aware; AA in both themes (12.4:1 on ink, 4.85:1 on paper). */
+  /* Flag loot gold: the one gold signal for the flag heading, the TOC entry and FlagCapture. On ink it
+     is AA as text too: 12.39:1 on the page #07090a (model B). On paper it is 2.00:1 (page #ece9e0,
+     model B), so there it paints shapes only: the heading's glyph, the TOC entry's glyph, and
+     FlagCapture's frame, lock and glow. */
   --flag-gold: #ffc23d;
   /* FlagCapture tiers (see the FLAG CAPTURE block). --flag-gold-root is the richer "bigger prize" gold
-     for root; --flag-gold-val(-root) is the AA-grade gold used for the actual flag VALUE text. On dark
-     the bright loot gold already clears AA, so value == identity. All clear 4.5:1 on the captured row. */
+     for root. Gold WORDS read their own tokens: small gold text reads --flag-gold-val(-root), the AA
+     gold, and the flag headings read --flag-gold-display. On ink each equals the loot gold of its tier,
+     so dark renders the same either way. All clear 4.5:1 on the captured row. */
   --flag-gold-root: #ffcf63;
   --flag-gold-val: #ffc23d;
+  --flag-gold-display: #ffc23d;
   --flag-gold-val-root: #ffcf63;
+  /* The TOC's current flag entry, and its colour under the pointer. On ink it is the loot gold; the
+     resting entry steps back from it (chrome.css). */
+  --flag-gold-current: #ffc23d;
   /* PasswordReveal waypoint amber: ONE identity, split into an ACCENT and an INK, because a single value
      cannot serve both jobs on paper. Both modes of the component (the inline row and the block toggle)
      read the pair, so they cannot drift apart. Before 2026-07-26 the family was one value, also named
@@ -308,11 +319,25 @@ html[data-theme="dark"] {
   --sl-color-text-accent: #4d7c0f;
   --flag-gold: #C6A243;
   /* FlagCapture tiers, light. The bright loot gold (#C6A243) reads as decorative gold but is NOT AA as
-     text on paper, so the flag VALUE uses a deeper antique gold that clears 4.5:1 on the captured row
-     (user 5.1:1, root 6.1:1). Root identity + value are a notch deeper so root reads as the richer prize. */
+     text on paper (2.00:1 on the page #ece9e0, model B), so every small gold word uses the antique gold,
+     which clears 4.5:1 where it lands (model B): 5.24:1 on the page (the TOC entry at rest), 5.12:1 on
+     the captured row for user (root 6.05:1). Root identity + value are a notch deeper so root reads as
+     the richer prize. */
   --flag-gold-root: #B8862B;
   --flag-gold-val: #7a5a12;
   --flag-gold-val-root: #6b4e0e;
+  /* Gold for LARGE flag text: the User Flag and Root Flag headings (29px/700, large text, bar 3:1).
+     The dark gold's hue held (OKLCH h 82.4; 81.7 once rounded to 8 bits) at the light identity's
+     chroma (0.12), lightness dropped to 3.40:1 on the page #ece9e0 (model B) and 3.07:1 on the
+     darkest grid dot (model C). Small gold text reads --flag-gold-val. On ink every gold here is one
+     value. */
+  --flag-gold-display: #a27500;
+  /* The TOC's current flag entry, and its colour under the pointer. The entry rests in --flag-gold-val
+     (5.24:1); the root tier's ink it used to turn when current sat an OKLab step of only 0.046 from
+     that, so the current flag barely showed. The gold's hue held (OKLCH h 82.4), lightness dropped to
+     0.34: a step of 0.149 from rest, 9.71:1 on the page #ece9e0 (model B) and 8.75:1 on the darkest
+     grid dot (model C), 11.78:1 on the white dropdown (model B). */
+  --flag-gold-current: #4a3400;
   /* PasswordReveal waypoint amber, light. The accent keeps the established identity; only the INK
      moves, and only because #a86f04 fails AA as body-size text on every surface it lands on (measured
      3.21:1 on the PasswordReveal row, 3.64:1 on the toggle card, 3.50:1 on paper). The accent is
@@ -355,8 +380,14 @@ html[data-theme="dark"] {
   --sl-color-text: #1a1815;
   /* Decorative accent palette (NON-text only): vivid riso-bold hues for dots, fills, the heading
      marker, the h2 rule, the sidebar active bar, and panel accents. These read boldly on paper.
-     The darkened text inks (#4d7c0f / #08697a / #c41d6f) stay reserved for colored BODY text and
-     keep WCAG AA; these vivid tones never carry text. */
+     They carry no text a reader has to read: the one glyph they paint is the h2 "# " marker, which
+     is decorative and silent to a screen reader (2.24:1 on the page, model B, accepted). Coloured
+     TEXT on paper reads an ink measured where it lands (page #ece9e0, model B): cyan --tp-cyan-ink
+     (#08697a, 5.22:1); lime --tp-lime-ink (#3e6700, 5.50:1), or --sl-color-accent-high (#2f4d09)
+     when the text sits on a lime tint; gold --flag-gold-val (#7a5a12, 5.24:1), with
+     --flag-gold-display (#a27500, 3.40:1 against the 3:1 large-text bar) for the flag headings. The
+     accent #4d7c0f reads 4.11:1 there, under AA as small text, so it paints display type, rings,
+     bars and fills, never small text. */
   --tp-deco-lime: #6fae00;
   --tp-deco-cyan: #0a9ec2;
 }

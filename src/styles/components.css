@@ -14,7 +14,9 @@
 
 /* ── Flag loot system: User Flag / Root Flag read as one gold signal ───────────────────────────
    Two places share the gold: the body heading (below) and the "On this page" entry (chrome.css).
-   Both pull the theme-aware --flag-gold token.
+   The heading word reads --flag-gold-display: large text against a 3:1 bar, 3.40:1 on the page
+   #ece9e0 (model B) and 3.07:1 on the darkest grid dot (model C). The glyph, here and in the TOC,
+   reads --flag-gold through --flag-glyph. On dark they are one value.
 
    DEPENDENCY: the flag headings reuse .task-title, so there is no dedicated .flag-title yet. A
    .flag-title emitted by the content pipeline would be the clean hook; until then these target the
@@ -22,10 +24,10 @@
    rule covers both themes. */
 #user-flag .task-title,
 #root-flag .task-title {
-  color: var(--flag-gold);
+  color: var(--flag-gold-display);
 }
-/* Gold flag icon: the project's flag SVG as a mask, so background-color (the gold) fills the shape.
-   Mask, not an emoji, and not a glow. Body heading only. */
+/* Gold flag icon: the project's flag SVG as a mask (--flag-glyph, the shape the TOC entries carry
+   too), so background-color (the gold) fills the shape. Mask, not an emoji, and not a glow. */
 #user-flag .task-title::before,
 #root-flag .task-title::before {
   content: "";
@@ -35,8 +37,8 @@
   margin-right: 0.4em;
   vertical-align: -0.06em;
   background-color: var(--flag-gold);
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z'/%3E%3C/svg%3E") center / contain no-repeat;
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z'/%3E%3C/svg%3E") center / contain no-repeat;
+  -webkit-mask: var(--flag-glyph) center / contain no-repeat;
+  mask: var(--flag-glyph) center / contain no-repeat;
 }
 } /* @layer components */
 
@@ -857,8 +859,9 @@ html[data-theme="light"] .sl-markdown-content .cl {
    marks CAPTURED. Root vs user differs ONLY by the richer gold tier (color), never a
    glyph. The frame matches the writeup Toggle (full content width, same padding +
    6px radius) so it sits on the page like a toggle, not a chip; it keeps the gold
-   loot identity (gold border + faint gold surface). --fc-id is the identity gold
-   (frame, lock/check, label); --fc-val is the AA-grade gold for the flag VALUE text.
+   loot identity (gold border + faint gold surface). --fc-id is the identity gold for the
+   frame, the lock or check, and the glow; --fc-val is the AA gold for every word: the value,
+   the LOCKED or CAPTURED label, and the "Copied!" pill.
    Capture moment is a warm gold GLOW pulse in BOTH themes (tuned per theme). */
 .flagcap-user { --fc-id: var(--flag-gold);      --fc-val: var(--flag-gold-val); }
 .flagcap-root { --fc-id: var(--flag-gold-root); --fc-val: var(--flag-gold-val-root); }
@@ -976,7 +979,9 @@ html[data-theme="light"] .sl-markdown-content .cl {
   color: color-mix(in oklab, var(--fc-id) 88%, transparent);
 }
 
-/* Label: LOCKED -> CAPTURED (the leading glyph carries the check; no second check here). */
+/* Label: LOCKED -> CAPTURED (the leading glyph carries the check; no second check here). The words
+   read --fc-val: on paper the identity gold read 1.95:1 (CAPTURED, user) to 3.56:1 (LOCKED, root) as
+   this 11px label, and --fc-val reads 5.12 to 6.92:1 on the same rows (model B). One value on dark. */
 .flagcap-state {
   display: inline-flex;
   align-items: center;
@@ -984,10 +989,10 @@ html[data-theme="light"] .sl-markdown-content .cl {
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: color-mix(in oklab, var(--fc-id) 75%, var(--sl-color-gray-2));
+  color: color-mix(in oklab, var(--fc-val) 75%, var(--sl-color-gray-2));
 }
 .flagcap.is-captured .flagcap-state {
-  color: var(--fc-id);
+  color: var(--fc-val);
 }
 
 /* Copy: icon-only, INSIDE the frame (top-right, like the code-block copy button). Hidden until capture,
@@ -1041,7 +1046,8 @@ html[data-theme="light"] .sl-markdown-content .cl {
 }
 
 /* "Copied!" feedback pill: golden accent, like the code-block copy confirmation. Sits just left of the
-   copy icon, fades in while the copy button is in its is-copied state (~1.5s), then fades out. */
+   copy icon, fades in while the copy button is in its is-copied state (~1.5s), then fades out. Its
+   word reads --fc-val: light reads 4.89:1 user and 5.70:1 root, on the pill (model B). */
 .sl-markdown-content .flagcap .fc-copy-feedback {
   position: absolute;
   top: 0;
@@ -1056,7 +1062,7 @@ html[data-theme="light"] .sl-markdown-content .cl {
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.05em;
-  color: var(--fc-id);
+  color: var(--fc-val);
   background: color-mix(in oklab, var(--fc-id) 16%, var(--sl-color-bg));
   border: 1px solid color-mix(in oklab, var(--fc-id) 35%, transparent);
   border-radius: 6px;
