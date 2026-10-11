@@ -242,8 +242,18 @@ import '../styles/fonts.css';
     color-scheme: light;
     --ink: #ece9e0; --ink-2: #f7f5ee;
     --panel: rgba(0,0,0,.03); --panel-brd: rgba(0,0,0,.12);
-    --text: #12181a; --muted: #586460;
-    --lime: #4d7c0f; --cyan: #0b7e92; --magenta: #c41d6f;
+    --text: #12181a; --muted: #515c59;
+    --lime: #4d7c0f; --cyan: #08697a; --magenta: #c41d6f;
+    /* Lime TEXT on About, read as var(--lime-ink, var(--lime)): the eyebrow, the HUD's hover and
+       active states, and the pull quote's emphasis. The glows tint the paper under them, where the
+       accent reads 3.50 to 4.03:1 (model C), under AA. This is the theme pass's --tp-lime-ink, the
+       same value: 4.68:1 at its tightest, the HUD wordmark under the pointer on the blue glow
+       (model C; floor 4.55), and 4.86:1 behind the pull quote's "why" when the quote reaches the
+       bottom of the screen on the pink glow below 1200px, where it stops being large text (model C;
+       floor 4.77). --muted holds its hue and drops lightness until the HUD's "SECURITY NOTES" clears
+       AA on the blue glow (4.40 to 4.96:1, model C). --cyan is the theme pass's --tp-cyan-ink (3.92
+       to 5.22:1 on the page, model B). */
+    --lime-ink: #3e6700;
     --btn-primary-text: #f6f4ec;
     --glow-1: #7cc9ff; --glow-2: #a9dd6a; --glow-3: #ff9ec9;
   }
@@ -307,12 +317,12 @@ import '../styles/fonts.css';
      label/icon positions unchanged: only the invisible hit area grows, nothing reflows. */
   .hud-home { color: var(--text); text-decoration: none; transition: color .2s;
     padding-block: 3px; margin-block: -3px; }
-  .hud-home:hover { color: var(--lime); }
+  .hud-home:hover { color: var(--lime-ink, var(--lime)); }
   .hud-sub { color: var(--muted); }
   .hud-nav { display: flex; flex-wrap: wrap; gap: 1.4rem; align-items: center; }
   .hud-nav a { color: var(--muted); text-decoration: none; transition: color .2s;
     padding-block: 3px; margin-block: -3px; }
-  .hud-nav a:hover, .hud-nav a.active { color: var(--lime); }
+  .hud-nav a:hover, .hud-nav a.active { color: var(--lime-ink, var(--lime)); }
   .theme-toggle { background: none; border: none; cursor: pointer; color: var(--muted); display: inline-flex;
     align-items: center; justify-content: center; min-width: 24px; min-height: 24px; margin: -4px;
     padding: 0; transition: color .2s; }
@@ -340,7 +350,7 @@ import '../styles/fonts.css';
     filter: drop-shadow(0 10px 30px rgba(0,0,0,.4)); }
 
   .eyebrow { font-family: var(--mono); font-size: .8rem; letter-spacing: .35em; text-transform: uppercase;
-    color: var(--lime); margin-bottom: 1.3rem; display: flex; align-items: center; gap: .8rem; }
+    color: var(--lime-ink, var(--lime)); margin-bottom: 1.3rem; display: flex; align-items: center; gap: .8rem; }
   .eyebrow::before { content:""; width: 40px; height: 1px; background: var(--lime); display:inline-block; }
   /* The floor is the smaller of the authored 2.4rem and 12vw, the rule the homepage headline uses:
      12vw is 2.4rem evaluated at 320px, so it never binds at or above 320 (measured identical from
@@ -370,7 +380,7 @@ import '../styles/fonts.css';
   .pullquote { border-left: 3px solid var(--lime); padding: .6rem 0 .6rem 1.5rem; margin: 1.8rem 0;
     font-family: var(--display); font-weight: 600; font-size: clamp(1.15rem, 2vw, 1.5rem);
     line-height: 1.45; color: var(--text); max-width: 60ch; }
-  .pullquote em { color: var(--lime); font-style: italic; }
+  .pullquote em { color: var(--lime-ink, var(--lime)); font-style: italic; }
 
   /* SKILLS */
   .skill-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap: 1.1rem; }
