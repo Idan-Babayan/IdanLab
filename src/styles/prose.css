@@ -396,6 +396,13 @@ html[data-theme="light"] .sl-markdown-content details {
   --focus-ring: var(--tp-cyan-ink);
   border-bottom-color: color-mix(in oklab, var(--tp-cyan-ink) 40%, transparent);
 }
+/* The light rule above outranks the shared hover rule, so on paper a link never changed under the
+   pointer. Restore dark's cyan-to-lime move with the lime ink: 5.50:1 on the page #ece9e0
+   (model B; 4.96:1 on the darkest grid dot, model C). */
+:root[data-theme='light'] .sl-markdown-content a:not(:where(.not-content *)):hover {
+  color: var(--tp-lime-ink);
+  border-bottom-color: var(--tp-lime-ink);
+}
 } /* @layer prose */
 
 /* ── Lead blockquote (machine description sits here) ── */

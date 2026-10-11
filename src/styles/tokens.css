@@ -340,6 +340,15 @@ html[data-theme="dark"] {
      (under AA 4.5 for body text). #08697a clears 4.5:1 while staying on-brand teal, not dull.
      Light-only override; the dark --tp-cyan is unchanged. */
   --tp-cyan-ink: #08697a;
+  /* Lime TEXT on light surfaces: the current h2 in both TOCs, the 404 page's two marks, AttackPath's
+     done run and the prose link hover. Hue held from the accent (OKLCH h 131.6; 131.4 once rounded to
+     8 bits), lightness dropped until the per-pixel floor clears AA: 5.50:1 on the page #ece9e0
+     (model B), 4.96:1 on the darkest grid dot (model C), 6.68:1 on the white TOC dropdown (model B),
+     5.71:1 on the #f2ede0 panel (model C median). The accent #4d7c0f reads 4.11:1 on the page
+     (model B), so it never sets small text. Lime
+     text on a lime tint (the /secret/ chip) reads --sl-color-accent-high instead. About declares the
+     same value as its own --lime-ink. */
+  --tp-lime-ink: #3e6700;
   /* Editorial ink: a crisp near-black on warm paper. Starlight's default light text is a
      grayish slate (~#353841); a true near-black lifts the paper-and-ink contrast to a premium,
      intentional feel (about 15:1 on #ece9e0). Body text only; colored inks below are unchanged. */

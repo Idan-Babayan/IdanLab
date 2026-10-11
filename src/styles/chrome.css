@@ -38,6 +38,13 @@
 .right-sidebar-panel nav > ul > li > a[aria-current="true"]:not([href="#user-flag"]):not([href="#root-flag"]) {
   color: var(--sl-color-text-accent);
 }
+/* On paper the accent is 4.11:1 against the page as this 13px text, under AA, so light reads the
+   lime ink, 5.50:1 (page #ece9e0, model B; 4.96:1 on the darkest grid dot, model C). With the h3
+   cyan ink at 5.22:1, both current rungs sit a little under the gray rest state (5.78:1), by hue
+   rather than by failure. */
+:root[data-theme='light'] .right-sidebar-panel nav > ul > li > a[aria-current="true"]:not([href="#user-flag"]):not([href="#root-flag"]) {
+  color: var(--tp-lime-ink);
+}
 
 /* h3 (nested one level): cyan, matching the ### heading. Flags are also h3, so their anchors are
    excluded here (they own the gold rule above). */
@@ -80,6 +87,11 @@ mobile-starlight-toc a[href="#root-flag"][aria-current="true"] {
 mobile-starlight-toc a[aria-current="true"][style*="--depth: 0"]:not([href="#user-flag"]):not([href="#root-flag"]) {
   color: var(--sl-color-text-accent);
 }
+/* Light, as on desktop. On the white dropdown the accent passes (4.99:1), but the two surfaces
+   keep one ladder: 6.68:1 (model B). */
+:root[data-theme='light'] mobile-starlight-toc a[aria-current="true"][style*="--depth: 0"]:not([href="#user-flag"]):not([href="#root-flag"]) {
+  color: var(--tp-lime-ink);
+}
 
 /* h3 (--depth: 1): cyan. Flags are h3 too, so they are excluded and keep their gold. */
 mobile-starlight-toc a[aria-current="true"][style*="--depth: 1"]:not([href="#user-flag"]):not([href="#root-flag"]) {
@@ -110,8 +122,9 @@ mobile-starlight-toc a[aria-current="true"]::after {
    nesting/--depth for level) and NOT aria-current, so the ring is right whether or not the entry is the
    active one. Reuses the existing tokens (no new colors); the shared :where(a,...):focus-visible rule
    still does the drawing. h2 entries need no rule: the lime default already equals the green they take
-   when current (--sl-color-text-accent). h4+ entries sit deeper than the h3 chain below, so they are
-   unmatched and keep the lime default too. */
+   when current (--sl-color-text-accent). On light, the current entry's text reads --tp-lime-ink while
+   its ring keeps the accent, 4.11:1 against the page (model B), over the 3:1 a ring needs. h4+
+   entries sit deeper than the h3 chain below, so they are unmatched and keep the lime default too. */
 
 /* Flags (gold), desktop + mobile. Same slug anchors the gold color rules above use. Reads the AA-grade
    --flag-gold-val rather than the decorative --flag-gold: on dark the two are the SAME value (#ffc23d, the

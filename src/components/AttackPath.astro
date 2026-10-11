@@ -791,6 +791,11 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
   .ap-edge :global(b) { font-weight: 700; color: color-mix(in oklab, var(--sl-color-white) 72%, var(--ap-quiet)); }
   .ap-conn[data-state='done'] .ap-edge { color: color-mix(in oklab, var(--ap-accent) 62%, var(--sl-color-text)); }
   .ap-conn[data-state='done'] .ap-edge :global(b) { color: var(--ap-accent); }
+  /* Light only: on the #f2ede0 panel the accent reads 4.27:1 as this 9.68px bold run (model C
+     median), under AA. The lime ink reads 5.71:1 there (model C median) and stays lighter than the
+     caption's own text (OKLCH L 0.47 against 0.41); accent-high (L 0.38) would sink the run into it.
+     The goal's run keeps its gold ink. */
+  :global(html[data-theme='light']) .ap-conn[data-state='done']:not(.is-goal-conn) .ap-edge :global(b) { color: var(--tp-lime-ink); }
   .ap-conn.is-goal-conn[data-state='done'] .ap-edge :global(b) { color: var(--ap-gold-ink); }
 
   /* ── Runner: the gold spark that carries the eye from the old node to the new one ── */
