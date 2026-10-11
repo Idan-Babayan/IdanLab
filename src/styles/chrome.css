@@ -565,11 +565,22 @@ html[data-theme="light"] .expressive-code pre::-webkit-scrollbar-track { backgro
    .expressive-code. Do not color the code tokens here. */
 .expressive-code .ec-line.mark {
   background: color-mix(in oklab, var(--sl-color-accent) 10%, transparent);
-  border-inline-start: 2px solid var(--sl-color-accent);
 }
 :root[data-theme="light"] .expressive-code .ec-line.mark {
   background: color-mix(in oklab, var(--tp-deco-lime) 12%, transparent);
-  border-inline-start-color: var(--tp-deco-lime);
+}
+/* The bar is Expressive Code's own: the code cell's inline-start border (0.15rem), whose width EC
+   takes back out of the cell's padding so the marked line's text stays in line with the rest. Only
+   its colour changes here. A second border on the line itself used to sit beside EC's blue bar and
+   push the text 2px right. EC paints the bar its default blue whenever nothing recolours it
+   (Starlight's neutral marker colours apply only to Starlight's own default themes, and this site
+   sets its own), so recolour EC's bar and never add one: if an upgrade ever shows two bars again,
+   EC has moved its bar, and the rule below has to follow it. The accent clears the 3:1 a state
+   shape needs in both themes: 14.13:1 against the frame #1a1b26 and 10.95:1 against the tint
+   (dark), 3.76:1 against the frame #e6dfd0 and 3.45:1 against the tint (light; model B). The light
+   decorative lime would read 2.05:1 against the frame, so it stays in the tint. */
+.expressive-code .ec-line.mark .code {
+  border-inline-start-color: var(--sl-color-accent);
 }
 } /* @layer chrome */
 
