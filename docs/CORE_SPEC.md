@@ -479,7 +479,7 @@ The theme pass is organised into declared cascade layers, one module per layer, 
 - **Accents (dark):** lime `#b6ff3c`, cyan `#41efff`, magenta `#ff4d9d`.
 - **Accents (light, darkened for contrast):** lime `#4d7c0f`, cyan `#08697a`, magenta `#c41d6f`. The
   light block alone also declares `--lime-ink #3e6700`, the theme pass's `--tp-lime-ink`, for small lime
-  text (the eyebrow, the HUD's hover and active links, the pull quote's emphasis), read as
+  text (the eyebrow, the HUD's hovered links, the pull quote's emphasis), read as
   `var(--lime-ink, var(--lime))` so dark falls back to `--lime` and the homepage's dark-only copy of the
   block needs nothing. About's glows tint the paper under that text, where the accent read 3.50 to
   4.03:1; the lime ink reads 4.68:1 at its tightest (the HUD wordmark under the pointer on the blue glow,
@@ -686,9 +686,20 @@ token is an open ROADMAP item, not a bug.
   About's four practice cards hold at most two per row, `minmax(max(260px, 34%), 1fr)`: no card is
   narrower than just over a third of the row, so they split 2 + 2 from 584px and stack below it (the
   bare `minmax(260px, 1fr)` put three on the first row from 860px, 2026-09-30).
+  About's HUD reads WRITEUPS, CONTACT and the theme icon (owner, 2026-10-17). CONTACT jumps to the
+  closing contact card (`#contact`, the last section of `<main>`), which sits six phone screens down a
+  page that says it is looking for a first role: the click lands with "Let's connect." on screen
+  (smooth, instant under reduced motion) and the next Tab reaches the GitHub button. It replaced ABOUT,
+  which pointed at the one page that has this bar, so a click could only reload it. No HUD item is
+  marked current, and the bar stays one line down to 320px. The three top bars, the home HUD, About's
+  HUD and Starlight's header, are three designs today; bringing them into one family is open in ROADMAP.
 - Starlight: themed headings (Syne + lime `#` marker, silent to screen readers, §8 "Decoration says
   nothing to a screen reader"), lead blockquote, code frames,
-  Toggle, metadata badges, sidebar dots. (The `:::tip[Answer]` admonition is no longer used: zero
+  Toggle, metadata badges, sidebar dots, and screenshots with an edge (2026-10-17, `prose.css`): every
+  content image in the zoom wrapper takes a 1px hairline with square corners, the light code frame's
+  own edge and shadow on paper and Starlight's `--sl-color-hairline-light` on dark (1.70:1 on the page,
+  model B), where the dark-edged captures had met the page at 1.04 to 2.12:1 and the light-edged ones
+  the paper at 1.01 to 1.21:1. The white captures stay bright on dark: that is their own content. (The `:::tip[Answer]` admonition is no longer used: zero
   instances since `FlagCapture` and `PasswordReveal` took over, and its prose-layer tint and icon rules,
   which matched nothing, were deleted on 2026-10-03; see §7.)
 - Content-embedded (in `src/components/`): `PlatformIndex` (animated hero + a multi-select filter rail on the platform's own axis, difficulty or
@@ -752,7 +763,9 @@ token is an open ROADMAP item, not a bug.
   Platform / Category (PicoCTF, directory-derived) / OS / Environment chip row + a trailing neutral Difficulty
   chip whose filled pips take the level hue, under a writeup title;
   each nav chip is coloured via a single `--wm-c` per value, with a restrained glow (halo on dark,
-  hue-shadow on light); Difficulty magnitude is filled+growing pips; chips render as non-interactive
+  hue-shadow on light); every chip in the row strengthens its edge and glow under the pointer, the
+  Difficulty chip in its level's `--tx` since 2026-10-17 (owner: the row reacts as one, though no chip is
+  a link yet); Difficulty magnitude is filled+growing pips; chips render as non-interactive
   `<span>` today (the commented `<a>` + `data-astro-prefetch="false"` restore verbatim once the filter
   routes ship), `.not-content`; icons live in `badges/icons.ts` on a 14px grid; runtime-validates its
   union props. Colour model, icon sourcing, geometry and the light-mode AA palette are documented
@@ -1002,7 +1015,8 @@ its own arc).
   the description lifts from a 62% to a 68% text mix (4.87 or better in both themes for every hue; the
   lime rule had measured 4.49 dark and 4.32 light there). On the writeup row a category chip is a normal `--wm-c` chip in `--tx`; the
   Difficulty chip stays a neutral box whose FILLED pips take `--tx` (owner decision 2026-09-07, partly
-  superseding the achromatic pips of 2026-07-10). ALL is neutral (Starlight's gray-2, dark 9.34 and
+  superseding the achromatic pips of 2026-07-10); only under the pointer do its edge and glow take
+  `--tx` as well, at the nav chips' hover weights (owner, 2026-10-17). ALL is neutral (Starlight's gray-2, dark 9.34 and
   light 7.88 on its own fill) and carries no count: the hero owns the total.
 - **One glyph, one enumeration.** `badges/DifficultyPips.astro` is the only pips markup; the card and
   the writeup row both render it and `components.css` paints it (`.dpips`): filled pips read `--pips-c`
@@ -2465,3 +2479,7 @@ whole records.
 - Light sudo kept inside the fixed anchor: rejected, the 5.4:1 that justified it described a background no frame paints; the anchor is the dark `#ff4d9d`. See DECISIONS 2026-10-11 · Sudo's light magenta is the vuln callout's ink, and the light command figures are re-measured.
 - The PasswordReveal block's chevron in the amber accent at full strength: rejected, it would be the one chevron not drawn in its own label's ink. See DECISIONS 2026-10-11 · The PasswordReveal block's chevron sits at 0.8 on paper.
 - Deleting the toggle marker's "▶ " content and its size: rejected, the glyph the mask hides still shades 1 to 14 of the chevron's edge pixels. See DECISIONS 2026-10-11 · The PasswordReveal block's chevron sits at 0.8 on paper.
+- Rounded screenshots, a mat around them, `--sl-color-hairline` as their edge on dark, dimming the white captures on dark, and a "tap to enlarge" mark: rejected; the edge is the code frames' own, square, and the zoom adds 9 percent on a portrait phone. See DECISIONS 2026-10-17 · Screenshots take the code frames' edge, and the white captures keep their glare.
+- Taking the hover away from the static badge chips, or a neutral hover on the Difficulty chip: rejected, the row answers the pointer as one, each chip in its own colour. See DECISIONS 2026-10-17 · The difficulty chip answers the pointer in its level's colour.
+- ABOUT in About's own bar, as a link to the page or marked current without one: rejected, the first only reloads the page and the second is the one item in the bar that does nothing. See DECISIONS 2026-10-17 · About's top bar links Contact, not itself.
+- Home and About adopting the writeup header to unify the top bars, links in home's bar, search on home or About, and a GitHub mark on every bar: rejected, it takes the marketing pages' design with it and repeats home's hero buttons on the same screen. See DECISIONS 2026-10-17 · Home and About keep their own bars.
