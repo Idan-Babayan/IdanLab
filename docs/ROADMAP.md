@@ -104,6 +104,18 @@
   content with the default pager beneath it (2026-09-03).
 - [PRODUCT] Global `/writeups` index (path 3): reuse `WriteupCard` with `showPlatform` true for a
   mixed cross-platform grid (the card was built for this).
+- [DESIGN] **One family of top bars** (owner, 2026-10-17): not identical, but one site to an outside
+  reader. Today they are three designs (measured 2026-10-17): the brand is set three ways (home's mono
+  "IDAN.LAB // SECURITY NOTES", About's with a back arrow and as a link, Starlight's Syne "Idan.Lab"),
+  the bars are 51, 51 and 64px tall, the two HUDs sit in 1180 and 1100px columns while the header spans
+  the window, and the controls differ (none on home; two links and an icon toggle on About; search,
+  GitHub and a Dark/Light/Auto select on Starlight). The owner's constraints: home and About are the
+  face of the site and keep their design and its wow (a redesign of both is being weighed); no search
+  on them; "// SECURITY NOTES" stays; one theme icon and no mode words; no GitHub logo on every bar; and
+  a bar takes only the jobs its page does not already do (home's hero already holds both doors). Home
+  and About adopting Starlight's header was turned down. On the table instead: the 65 Starlight pages
+  put on the HUD (the lockup, SEARCH as a HUD word, one theme icon, no GitHub mark, a 52px glass bar
+  whose hairline carries the reading progress), CSS only in `chrome.css`.
 
 ## Later (parked)
 - [CONTENT] Revisit a scripted content-cleaning pass only if manual polish proves to not scale; deliberately deferred, not abandoned.

@@ -6,6 +6,116 @@
 
 ---
 
+### 2026-10-17 · Home and About keep their own bars
+- **Decision:** the home and About HUDs stay as they are: tracked mono capitals, "IDAN.LAB // SECURITY
+  NOTES", no search and no GitHub mark in the bar, and on About one theme icon with no mode words. Home's
+  bar holds no links: the hero directly under it holds Explore Writeups and About Me. Bringing the site's
+  three top bars into one family stays open in ROADMAP, on the condition that the marketing pages keep
+  their design.
+- **Why:** the three bars (home's HUD, About's HUD, Starlight's header) read as three sites (owner). The
+  first fix proposed had home and About adopt Starlight's header: its Syne wordmark, its 64px height and
+  full-width gutters, page links, a GitHub mark and the theme control. The owner turned it down. It
+  unified the bars by taking the marketing pages' design and their wow with it: it removed "// SECURITY
+  NOTES", which appears in those two bars and nowhere else, put a GitHub mark on every bar, and repeated
+  home's two hero buttons in its bar on the same screen. Home and About are the face of the site, and a
+  redesign of both is being weighed.
+- **Rejected:**
+  - Home and About adopting the writeup header, for the reasons above.
+  - Writeups and About links in home's bar: the hero right under it holds the same two doors, larger.
+  - Search on home or About.
+  - A GitHub mark on every bar: subtle beats blunt, and it stays where it means something, About's
+    contact card and home's closing button.
+  - The theme spelled out in words on the marketing pages: one icon.
+- **Known:** the direction on the table is the reverse, the 65 Starlight pages putting on the HUD
+  (ROADMAP). It is a proposal, not a decision.
+- **Status:** Adopted (owner, 2026-10-17): a record of what was turned down, with nothing built.
+
+### 2026-10-17 · About's top bar links Contact, not itself
+- **Decision:** About's HUD reads WRITEUPS, CONTACT and the theme icon (the owner's design). CONTACT is
+  `<a href="#contact">` and jumps to the closing contact card, which carries `id="contact"`. It replaces
+  ABOUT; no item in the bar is marked current, and the lime active rule went with it.
+- **Why:** the HUD exists only on About, so ABOUT linked the page to itself, and a click reloaded it where
+  it already was (the owner's report). The contact card, what a reader who is hiring comes for, sits six
+  phone screens down a page that says it is looking for a first role. One link answers both.
+- **Rejected:**
+  - ABOUT kept and marked current, with no `href` and `aria-current="page"`, built first the same day: it
+    made ABOUT the one item in the bar that does nothing (owner).
+  - ABOUT kept as a link with `aria-current="page"`, the pattern Starlight's sidebar uses: a click still
+    only reloads the page.
+  - CONTACT added beside ABOUT: the bar would keep the link that goes nowhere.
+- **Verified:** production build, green at 67 pages. Both themes at 1280, 375 and 320: the bar stays one
+  line and 51px tall, with 20px to spare at 320; a click lands with "Let's connect." on screen, after a
+  smooth scroll of about half a second, or at once under reduced motion; the next Tab reaches the card's
+  GitHub button.
+- **Status:** Adopted; committed to `dev` on 2026-10-17 as
+  `fix(about): the top bar's ABOUT becomes CONTACT, a jump to the card`.
+
+### 2026-10-17 · The difficulty chip answers the pointer in its level's colour
+- **Supersedes in part:** 2026-09-07 · Two taxonomy palettes: the landing pages re-base onto the WriteupMeta
+  chip model. Only "the Difficulty chip stays a neutral box" as it applies under the pointer: at rest it
+  stands.
+- **Supersedes in part:** 2026-07-10 · WriteupMeta revised: intentional per-axis color, restrained glow,
+  growing pips. Only "still neutral and hue-free" for the box under the pointer: at rest it stands.
+- **Decision:** under the pointer the Difficulty chip's edge moves from the text mix to its level's `--tx`
+  at the nav chips' hover weight (60%), and the nav chips' hover glow follows in the same hue,
+  `0 0 14px -2px` at 45% on dark and `0 4px 12px -4px` at 55% on paper (`components.css`). The transition
+  is the nav chips' and runs only without reduced motion. A click does nothing, as on every chip in the row.
+- **Why:** the owner's call: the row answers the pointer as one. Every nav chip strengthened its edge and
+  glow under the pointer, while the Difficulty chip, the one chip with no colour of its own at rest, did
+  nothing. It takes its level's colour, the hue its filled pips already carry.
+- **Rejected:**
+  - Taking the hover away from the static chips, so that none reacts until the filter routes ship: a
+    static chip that lights up can read as a working filter, but the owner kept the hover and made the row
+    consistent the other way.
+  - The platform chip as a link to its landing: it departs from 2026-07-11 · Metadata system: committing
+    to WriteupMeta, remark-plugin injection chosen (build deferred), chips non-clickable until filter
+    routes ship.
+  - A neutral hover (the edge brightened in the text mix, a white glow) and a glow-only one (the edge
+    brightened, the glow in `--tx`): rendered for all four levels in both themes, both barely registered
+    on dark.
+- **Known:** no chip in the row is a link yet, so every chip reacts to the pointer and none to a click, by
+  decision, until the filter routes ship (ROADMAP).
+- **Verified:** production build, green at 67 pages. Busqueda (Easy) and Forest (Medium), both themes: at
+  rest the chip is unchanged (the text mix at 35%, no shadow); under the pointer its border reads `--tx`
+  at 60% and its glow the nav chips' hover values in `--tx`; the cursor stays `auto`, the chip stays a
+  `<span>` with no tabindex, and a click goes nowhere. Hard and Insane, which no writeup has yet, were
+  rendered by relabelling a chip.
+- **Status:** Adopted; committed to `dev` on 2026-10-17 as
+  `fix(badges): the difficulty chip reacts to hover like the other chips`.
+
+### 2026-10-17 · Screenshots take the code frames' edge, and the white captures keep their glare
+- **Decision:** every content image in the zoom wrapper (`.sl-markdown-content
+  starlight-image-zoom-zoomable img`, 15 today, every one a screenshot) takes a 1px border with square
+  corners (`prose.css`, `@layer prose`). On paper it is the light code frame's own edge and shadow
+  (`rgba(60, 50, 30, 0.14)`, with `0 8px 24px -16px` and `0 1px 2px`); on dark, Starlight's
+  `--sl-color-hairline-light` (`#353841`).
+- **Why:** a screenshot is evidence pasted into the page, and nothing marked where one started or
+  stopped. Each theme lost a different set (the outermost pixels along each capture's full top and left
+  edges against the page beside them, median per capture, model B, measured 2026-10-17): on dark the 11
+  dark-edged captures met the page at 1.04 to 2.12:1, on paper the 4 light-edged ones at 1.01 to 1.21:1.
+  Borrowing the code frames' edge makes a screenshot and a code block one family of evidence.
+- **Rejected:**
+  - A small radius: a rounded screenshot would be the one rounded object in a column of square code
+    frames.
+  - A 6px mat in the code-frame panel colour: heavier, and on dark it nearly matched the captures' own
+    background.
+  - `--sl-color-hairline` on dark: 1.32:1 on the page, no more than the edges it would have to mark.
+  - Dimming the white captures on dark: their glare is their own content, and dimming them enough to
+    matter would darken the terminal text in the others too (owner).
+  - A "tap to enlarge" mark on the screenshots: on a portrait phone the zoom enlarges one by 9 percent
+    (343 to 375px wide), so the mark would promise what does not happen; pinch zoom already works on
+    every image (owner).
+- **Known:** the line marks an edge; it is not a 3:1 boundary, and nothing asks one of an image. It reads
+  1.70:1 on the dark page; on paper it sits darker than both sides, 1.25 to 1.27:1 against the page and
+  1.27 to 1.56:1 against the light-edged captures, with the shadow under it (model B). The enlarged copy,
+  outside `.sl-markdown-content`, shows the picture alone.
+- **Verified:** production build, green at 67 pages. All 15 images carry the border in both themes at
+  1280 and 375, none inside `.not-content`; widths unchanged (720px in the column, 343px on a phone), each
+  image under 2px taller and its picture 2px narrower (border-box). The zoom dialog's copy has no border,
+  and the source stays hidden while zoomed.
+- **Status:** Adopted; committed to `dev` on 2026-10-17 as
+  `fix(prose): writeup screenshots take the code frames' edge`.
+
 ### 2026-10-11 · A marked code line shows one lime bar: Expressive Code's own, recoloured
 - **Supersedes in part:** 2026-07-04 · Decisive-line focus highlighting for Expressive Code {n} markers.
   Only the bar's mechanism ("the lime lives only in the gutter (2px border-inline-start)") and the claim
@@ -1407,7 +1517,9 @@
   the keyboard ring all read the group's `--tx`, the words stay text-coloured, and the platform accent
   retreats to the hero, the name, the stat, the glow, the wargame card and the pagination, which is what
   stopped lime doing four jobs at once on HackTheBox. On the writeup row a category chip is a normal
-  `--wm-c` chip and the Difficulty chip stays a neutral box whose filled pips take the hue. The FOCUS
+  `--wm-c` chip and the Difficulty chip stays a neutral box whose filled pips take the hue
+  (**Partly superseded by:** 2026-10-17 · The difficulty chip answers the pointer in its level's colour.
+  Only under the pointer, where its edge and glow take the hue too; at rest it stands). The FOCUS
   SYSTEM follows the same rule: every rail pill rings in its own hue through `--focus-ring: var(--pill)`,
   a card rings in `var(--tx)`, the landing root defaults to the platform so the OverTheWire wargame card
   stops falling through to the site default, and the landing's prev/next links, which Starlight renders in
@@ -3942,6 +4054,9 @@ data URI rather than hashing.
   apply to the PIPS are stale: the filled pips now take the level hue from the difficulty arc (Easy sky,
   Medium violet, Hard magenta, Insane orange) through the shared `DifficultyPips` glyph, and unfilled pips are rings in the same colour so
   the denominator is visible on paper. The word, the box, the size, the weight and the growth rule stand.
+  **Partly superseded by:** 2026-10-17 · The difficulty chip answers the pointer in its level's colour.
+  Only "neutral and hue-free" for the box under the pointer, where its edge and glow take the level hue;
+  at rest the box stands.
 - **Layout:** the bottom border/divider is GONE; the block is a single flex row, tight under the title
   (`margin-top: 0.55rem`) with open space before the body (`margin-bottom: 2.1rem`).
 - **Status:** built clean (45 pages), verified both themes + the previously-broken Progressive chip now

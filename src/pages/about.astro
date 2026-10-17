@@ -61,7 +61,10 @@ import '../styles/fonts.css';
   <a class="hud-home" href="/"><span aria-hidden="true">◂</span> IDAN.LAB <span class="hud-sub"><span aria-hidden="true">//</span> SECURITY NOTES</span></a>
   <nav class="hud-nav">
     <a href="/hackthebox/">Writeups</a>
-    <a href="/about/" class="active">About</a>
+    <!-- Jumps to the closing contact card (#contact, the last section of <main>). The bar exists only on
+         this page, so the About link it replaced could only reload the page in place, and the card sits
+         six phone screens down a page that says it is looking for a first role. -->
+    <a href="#contact">Contact</a>
     <!-- Named for the theme it turns on, so aria-pressed (kept current by the script below) says
          whether that theme is on. -->
     <button class="theme-toggle" id="themeToggle" type="button" aria-label="Light theme" aria-pressed="false">
@@ -191,7 +194,7 @@ import '../styles/fonts.css';
 </section>
 
 <!-- CONTACT -->
-<section class="wrap footcta reveal">
+<section id="contact" class="wrap footcta reveal">
   <div class="sec-label" style="justify-content:center;"><span><span aria-hidden="true" data-pagefind-ignore>//</span> Contact</span></div>
   <h2>Let's <span class="accent">connect</span>.</h2>
   <p class="foot-sub">Hiring, collaborating, or just want to talk shop? My inbox is open, and so is my code. I'm always happy to meet others in the field.</p>
@@ -322,7 +325,7 @@ import '../styles/fonts.css';
   .hud-nav { display: flex; flex-wrap: wrap; gap: 1.4rem; align-items: center; }
   .hud-nav a { color: var(--muted); text-decoration: none; transition: color .2s;
     padding-block: 3px; margin-block: -3px; }
-  .hud-nav a:hover, .hud-nav a.active { color: var(--lime-ink, var(--lime)); }
+  .hud-nav a:hover { color: var(--lime-ink, var(--lime)); }
   .theme-toggle { background: none; border: none; cursor: pointer; color: var(--muted); display: inline-flex;
     align-items: center; justify-content: center; min-width: 24px; min-height: 24px; margin: -4px;
     padding: 0; transition: color .2s; }

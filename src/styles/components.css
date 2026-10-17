@@ -189,6 +189,21 @@
   padding: 0.32rem 0.7rem;
   --pips-c: var(--tx);
 }
+/* Hover: the chip answers the pointer as its neighbours do (owner, 2026-10-17). A nav chip strengthens
+   its own colour's edge and glow under the pointer; this one has no colour of its own at rest, so it
+   takes its level's, the hue its filled pips already carry: the edge moves from the text mix to --tx at
+   the nav chips' hover weight (60%), and their hover glow follows in the same hue. At rest the word and
+   the box stay hue-free, as above. A click does nothing, as on every chip in the row. */
+.writeup-meta .wm-diff-chip:hover {
+  border-color: color-mix(in oklab, var(--tx) 60%, transparent);
+  box-shadow: 0 0 14px -2px color-mix(in oklab, var(--tx) 45%, transparent);
+}
+:root[data-theme="light"] .writeup-meta .wm-diff-chip:hover {
+  box-shadow: 0 4px 12px -4px color-mix(in oklab, var(--tx) 55%, transparent);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .writeup-meta .wm-diff-chip { transition: border-color 0.15s ease, box-shadow 0.2s ease; }
+}
 
 /* ── DifficultyPips: the ordinal glyph (badges/DifficultyPips.astro) ───────────
    Painted here rather than in the component because two components render it: the writeup row
