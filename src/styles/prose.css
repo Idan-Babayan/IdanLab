@@ -451,3 +451,28 @@ html[data-theme="light"] .sl-markdown-content details {
   color: var(--tp-deco-lime);
 }
 } /* @layer prose */
+
+/* ── Screenshots: the code frames' edge ──
+   A screenshot is evidence pasted into the page, and nothing marked where one started or stopped. Each
+   theme lost a different set (the outermost pixels along each capture's top and left edges against the
+   page beside them, median per capture, model B, measured 2026-10-17 on all 15): on dark the eleven
+   dark-edged captures met the page at 1.04 to 2.12:1, on paper the four light-edged ones at 1.01 to
+   1.21:1. Light takes the light code frame's own hairline and shadow (chrome.css), so a screenshot and a
+   code block read as one family on paper: the line sits darker than both sides, 1.25 to 1.27:1 against
+   the paper and 1.27 to 1.56:1 against those four. Dark takes Starlight's --sl-color-hairline-light,
+   1.70:1 on the page; the plain --sl-color-hairline reads 1.32:1 there, no more than the edges it would
+   have to mark. Square corners, as the code frames have. Images are border-box, so the line sits inside
+   the image's own box: the width holds (720px in the column, 343px on a phone), the picture scales 2px
+   narrower and the image grows under 2px taller. Only the content images sit in the zoom wrapper, so
+   badge logos and the marketing pages never take the line, and the enlarged copy, outside
+   .sl-markdown-content, shows the picture alone. The white captures stay bright on dark: that is the
+   content's own white, and dimming it would dim the terminal text too. */
+@layer prose {
+.sl-markdown-content starlight-image-zoom-zoomable img {
+  border: 1px solid var(--sl-color-hairline-light);
+}
+:root[data-theme='light'] .sl-markdown-content starlight-image-zoom-zoomable img {
+  border-color: rgba(60, 50, 30, 0.14);
+  box-shadow: 0 8px 24px -16px rgba(60, 50, 30, 0.45), 0 1px 2px rgba(60, 50, 30, 0.06);
+}
+} /* @layer prose */
