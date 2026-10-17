@@ -22,6 +22,18 @@ const OG_IMAGE = 'https://idanlab.dev/og.jpg';
 const AUTHOR = 'Idan Babayan';
 const OG_ALT = 'Idan.Lab, a lab notebook of CTF writeups and security notes';
 
+// Identity links: the site, the GitHub profile and LinkedIn name one person, so a search for the
+// name joins them. The same block sits in about.astro; keep the two in sync. JSON.stringify output
+// goes through set:html, which is safe here because every value is a constant written above.
+const PROFILES = ['https://github.com/Idan-Babayan', 'https://www.linkedin.com/in/idanbabayan'];
+const PERSON = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: AUTHOR,
+  url: 'https://idanlab.dev',
+  sameAs: PROFILES,
+});
+
 // NO HTML COMMENTS IN <head>. They used to sit between the og: tags and one of
 // them contained a literal "<head>" in its prose. That is valid HTML and every
 // browser ignores it, but a scraper that regex-scans the head rather than really
@@ -44,6 +56,8 @@ const OG_ALT = 'Idan.Lab, a lab notebook of CTF writeups and security notes';
   <meta name="author" content={AUTHOR} />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="canonical" href={PAGE_URL} />
+  {PROFILES.map((href) => <link rel="me" href={href} />)}
+  <script type="application/ld+json" is:inline set:html={PERSON} />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Idan.Lab" />
   <meta property="og:locale" content="en_US" />

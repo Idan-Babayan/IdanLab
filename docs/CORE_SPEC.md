@@ -107,6 +107,14 @@
   template passes through verbatim, so a raw `&` in a title stays a bare ampersand: legal HTML5, but it
   stops a strict scraper mid-head. The landing page's title, description and URLs are frontmatter
   constants bound as `{TITLE}` and the like, so Astro escapes them on output.
+- **Identity links tie the site to the owner's profiles** (2026-10-17), so a search for the name joins
+  idanlab.dev, GitHub and LinkedIn. Both marketing pages carry a JSON-LD `Person` (`name` "Idan
+  Babayan", `url` https://idanlab.dev, `sameAs` the GitHub and LinkedIn profiles) and a
+  `<link rel="me">` to each profile, from one `PROFILES`/`PERSON` frontmatter block per page, kept in
+  sync by hand like the token block. The JSON-LD is a data block, not a script, so the CSP does not
+  touch it. Starlight pages add nothing: their GitHub social icon already renders `rel="me"`, and one
+  `Person` on the two pages that describe the owner is the whole claim. `README.md` names the owner in
+  full under "Reach out" with the same two links.
 
 ### Repository visibility and licensing
 

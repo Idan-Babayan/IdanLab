@@ -54,6 +54,8 @@ Running it locally:
 
 Questions, corrections, or just want to talk shop? I'm at **[contact@idanlab.dev](mailto:contact@idanlab.dev)**.
 
+I'm Idan Babayan, also on [GitHub](https://github.com/Idan-Babayan) and [LinkedIn](https://www.linkedin.com/in/idanbabayan).
+
 This place is always a work in progress, same as me. Things move, pages get rewritten, and the next box is always more interesting than the last.
 
 ## License

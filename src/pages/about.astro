@@ -10,6 +10,18 @@
 // no <link rel="preload"> on purpose. Firefox flagged the used font preloads as
 // "not used" and the preload only shortened first-load FOUT. Do not re-add them.
 import '../styles/fonts.css';
+
+// Identity links: the site, the GitHub profile and LinkedIn name one person, so a search for the
+// name joins them. The same block sits in index.astro; keep the two in sync. JSON.stringify output
+// goes through set:html, which is safe here because every value is a constant written above.
+const PROFILES = ['https://github.com/Idan-Babayan', 'https://www.linkedin.com/in/idanbabayan'];
+const PERSON = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: 'Idan Babayan',
+  url: 'https://idanlab.dev',
+  sameAs: PROFILES,
+});
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -21,6 +33,8 @@ import '../styles/fonts.css';
   <meta name="author" content="Idan Babayan" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="canonical" href="https://idanlab.dev/about/" />
+  {PROFILES.map((href) => <link rel="me" href={href} />)}
+  <script type="application/ld+json" is:inline set:html={PERSON} />
   <meta property="og:type" content="profile" />
   <meta property="og:site_name" content="Idan.Lab" />
   <meta property="og:locale" content="en_US" />
