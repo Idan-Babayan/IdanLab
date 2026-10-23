@@ -1,0 +1,42 @@
+---
+// src/components/ReadingProgress.astro
+//
+// The reading progress along the header's hairline (#tp-progress in chrome.css). Script only, rendered by
+// overrides/PageSidebar.astro on every Starlight page, as TocTracking is. It fills on writeups alone, and
+// the signal is the badge row every writeup carries (.writeup-meta, injected from frontmatter by
+// plugins/remark-inject-writeupmeta.mjs; no page opts out with `badges: false`): landings, wargame hubs
+// and the 404 keep the plain hairline. The whole page is measured, scrollTop over scrollHeight minus
+// clientHeight, and the line is scaled from the left with no transition, recomputed on scroll (passive,
+// batched into one animation frame), on resize, and whenever the content's height changes (a spoiler or
+// a toggle opening, ToggleAll).
+---
+
+<script>
+  const isWriteup = document.querySelector('.writeup-meta') !== null;
+
+  if (isWriteup) {
+    const line = document.createElement('div');
+    line.id = 'tp-progress';
+    line.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(line);
+
+    const page = document.documentElement;
+    let frame = 0;
+
+    const update = (): void => {
+      frame = 0;
+      const range = page.scrollHeight - page.clientHeight;
+      const progress = range > 0 ? Math.min(1, Math.max(0, page.scrollTop / range)) : 0;
+      line.style.transform = `scaleX(${progress})`;
+    };
+
+    const schedule = (): void => {
+      if (frame === 0) frame = window.requestAnimationFrame(update);
+    };
+
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+    new ResizeObserver(schedule).observe(document.body);
+    update();
+  }
+</script>

@@ -406,12 +406,23 @@ nav.sidebar summary {
    it pushed the longer names (HackTheBox, OverTheWire) onto a second line in the narrow mobile
    drawer, which read as clunky. Fullness comes from the row padding, not a larger glyph. */
 
-/* ── Reading-progress bar (the #tp-progress element is injected by the
-       small script added to astro.config.mjs head) ── */
+/* ── Reading progress: the hairline that fills as you read ──
+   Writeups only (landings, wargame hubs and the 404 keep the plain hairline): a 1px line laid over the
+   header's bottom border and scaled from the left as the page scrolls, the whole page measured. Where
+   the phone "On this page" strip shows, it runs along that strip's bottom edge instead, where reading
+   starts: --sl-mobile-toc-height is 3rem there and 0 everywhere else. ReadingProgress.astro creates
+   it and sets its scale, with no transition; it is decorative and aria-hidden. */
 #tp-progress {
-  position: fixed; top: 0; left: 0; height: 2px; width: 0; z-index: 1000;
+  position: fixed;
+  top: calc(var(--sl-nav-height) + var(--sl-mobile-toc-height) - 1px);
+  left: 0;
+  width: 100%;
+  height: 1px;
+  z-index: 1000;
+  pointer-events: none;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
   background: linear-gradient(90deg, var(--sl-color-accent), var(--tp-cyan));
-  transition: width .08s linear;
 }
 /* Light gets its own paper-appropriate duotone (lime-ink to cyan-ink). Dark is untouched and
    stays lime -> cyan. The thin bar is decorative, so these darkened tones can be vivid; the

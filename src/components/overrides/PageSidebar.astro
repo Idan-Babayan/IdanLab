@@ -11,9 +11,13 @@
 // Desktop only: the wrapper uses Starlight's own utilities (sl-hidden / lg:sl-block), so it is hidden
 // below the lg breakpoint where the right sidebar collapses into the mobile "On this page" dropdown.
 // Gated on `toc` so it only appears where the table-of-contents panel itself renders.
+//
+// Two script-only components ride along on every page: TocTracking, and ReadingProgress, the hairline
+// under the header that fills as a writeup is read.
 import Default from '@astrojs/starlight/components/PageSidebar.astro';
 import ToggleAll from '@components/ToggleAll.astro';
 import TocTracking from '@components/TocTracking.astro';
+import ReadingProgress from '@components/ReadingProgress.astro';
 ---
 
 <Default><slot /></Default>
@@ -25,3 +29,4 @@ import TocTracking from '@components/TocTracking.astro';
   )
 }
 <TocTracking />
+<ReadingProgress />

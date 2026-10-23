@@ -106,8 +106,8 @@ export default defineConfig({
         // same-origin crossorigin font preload served from its own preload cache, so it warned
         // "preloaded but not used" on every page even though both faces paint above the fold. The
         // preload only shortened first-load FOUT (no CLS or LCP effect here). Do not re-add font preloads.
-        // Reading-progress bar (styled by #tp-progress in chrome.css)
-        { tag: 'script', content: "window.addEventListener('DOMContentLoaded',function(){var b=document.createElement('div');b.id='tp-progress';document.body.appendChild(b);var u=function(){var h=document.documentElement,m=h.scrollHeight-h.clientHeight;b.style.width=(m>0?h.scrollTop/m*100:0)+'%';};document.addEventListener('scroll',u,{passive:true});window.addEventListener('resize',u);u();});" },
+        // The reading-progress hairline used to be an inline script here; it is now typed, in
+        // src/components/ReadingProgress.astro, rendered by the PageSidebar override.
       ],
       title: "Idan.Lab",
       customCss: [
