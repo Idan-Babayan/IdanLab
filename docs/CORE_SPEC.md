@@ -137,8 +137,9 @@
 
 ## 3. Tech Stack (pinned)
 
-Current as of the Astro 7 upgrade, 2026-08-29. Reasoning: DECISIONS 2026-08-29 · Astro 6 to 7 and
-Starlight 0.39 to 0.41, upgraded in phases against a byte-reproducible build.
+Current as of the Astro 7 upgrade, 2026-08-29, plus a lockfile-only security refresh on 2026-10-24.
+Reasoning for the upgrade: DECISIONS 2026-08-29 · Astro 6 to 7 and Starlight 0.39 to 0.41, upgraded
+in phases against a byte-reproducible build.
 
 **Declared in `package.json`.** The RANGE FORM is a decision, not a formatting choice; see below.
 
@@ -147,7 +148,7 @@ Starlight 0.39 to 0.41, upgraded in phases against a byte-reproducible build.
 | `astro` | `^7.2.9` | 7.2.9 | framework |
 | `@astrojs/starlight` | `^0.41.10` | 0.41.10 | docs theme |
 | `starlight-image-zoom` | `^0.15.0` | 0.15.0 | lightbox on content images |
-| `sharp` | `^0.35.4` | 0.35.4 | image pipeline behind `astro:assets` |
+| `sharp` | `^0.35.4` | 0.35.5 | image pipeline behind `astro:assets` |
 | `@astrojs/markdown-remark` | **`7.2.4` exact** | 7.2.4 | supplies `unified()` for `markdown.processor` |
 | `unist-util-visit` | `^5.1.0` | 5.1.0 | used directly by the custom remark plugins |
 | `acorn` | `^8.16.0` | 8.18.0 | used directly by the injector plugins |
@@ -155,7 +156,17 @@ Starlight 0.39 to 0.41, upgraded in phases against a byte-reproducible build.
 **Transitive, not declared, but load-bearing:** `@astrojs/mdx` 7.0.8, `astro-expressive-code` 0.44.1
 and `@expressive-code/core` 0.44.1 (themes `tokyo-night` dark / `one-light` light; the custom EC
 plugin `src/lib/ec-priv-command.mjs` tags command words by category, see §6), `pagefind` 1.5.2,
-`vite` 8.2.2.
+`vite` 8.2.4.
+
+**The vite hold lives only in the lockfile:** `astro` accepts `vite ^8.0.13`, vite 8.2.4 accepts
+`rolldown ~1.2.4` and Starlight accepts `astro-expressive-code ^0.44.0`, so a targeted
+`npm update vite` moves vite to 8.3.5 and Rolldown to 1.2.15, and a targeted
+`npm update astro-expressive-code` moves Expressive Code to 0.44.3. A bare `npm update`,
+`npm audit fix` or a regenerated lockfile moves nothing today: each reaches for a newer astro
+(7.4.x), whose `@astrojs/markdown-remark ^7.3.0` peer range excludes the exact 7.2.4 pin, and
+stops with ERESOLVE. That tripwire ends when the Astro upgrade turns the pin into a caret; from
+then on, an untargeted update can move all three without an error. Versions as the registry
+stood on 2026-10-24.
 
 ### Range form: one physical copy, shared with the consumer
 
@@ -188,7 +199,7 @@ vanish with no error.
 | Bundler | `rolldown` 1.2.6 | `rollup` |
 | JS transform | Oxc (native code inside Rolldown's bindings) | esbuild |
 | CSS minifier | `lightningcss` 1.33.0 | esbuild |
-| Build tool | `vite` 8.2.2 | vite 7 |
+| Build tool | `vite` 8.2.4 | vite 7 |
 
 `esbuild` 0.28.2 is still present, pulled by Vite for dependency pre-bundling only. It is no longer
 the minifier or the transformer.
@@ -199,8 +210,8 @@ emitting separate files. Lightning CSS resolves static `color-mix()` at build ti
 bytes depend on the build machine, see DECISIONS 2026-08-29 · Lightning CSS evaluates `color-mix()`
 at build time, so CSS bytes vary by build machine.
 
-**The browser floor, to re-read at each Vite major (recorded 2026-09-18).** `build.target`
-is not pinned, so the lowering target is Vite's default `baseline-widely-available`, which on Vite 8.2.2
+**The browser floor, to re-read at each Vite major (recorded 2026-09-18, re-read 2026-10-24).**
+`build.target` is not pinned, so the lowering target is Vite's default `baseline-widely-available`, which on Vite 8.2.4
 resolves to chrome111, edge111, firefox114, safari16.4 and ios16.4. Lightning CSS emits every width
 media query in range syntax against that target (`@media (width>=50rem)`, 21 of them in `common.css`,
 Starlight's own included, and zero legacy `min-width` forms). Range syntax parses in Chrome 104, Firefox
