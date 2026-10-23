@@ -239,6 +239,13 @@ const PERSON = JSON.stringify({
     border-bottom: 1px solid var(--panel-brd);
   }
   .hud-spacer { width: 80px; }
+  /* The masthead centred. Where the spacer shows, the two side slots are equal, so the lockup sits on
+     the bar's centre: SESSION ACTIVE is wider than the 80px spacer, which put the lockup 25.6px right
+     of centre at 768 to 1440 (measured 2026-10-18). Below 720px the spacer hides and the row keeps
+     its flex layout. */
+  @media (width > 720px) {
+    .hud { display: grid; grid-template-columns: 1fr auto 1fr; }
+  }
   .hud .live { display: flex; align-items: center; gap: .5rem; color: var(--text); }
   .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--lime);
          box-shadow: 0 0 10px var(--lime); animation: pulse 1.8s infinite; }
