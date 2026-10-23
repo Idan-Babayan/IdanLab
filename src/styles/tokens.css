@@ -309,6 +309,9 @@ html[data-theme="dark"] {
   --sl-color-bg-sidebar: #0a0e0f;
   --tp-glow-1: #41efff;
   --tp-glow-2: #b6ff3c;
+  /* The theme button (chrome.css) at rest: the marketing HUD's own --muted (About and home), so it
+     matches About's toggle. */
+  --tp-hud-muted: #79857f;
 }
 
 /* ── Accent + surfaces: LIGHT (warm paper, darkened accents) ── */
@@ -390,6 +393,8 @@ html[data-theme="dark"] {
      bars and fills, never small text. */
   --tp-deco-lime: #6fae00;
   --tp-deco-cyan: #0a9ec2;
+  /* The theme button at rest, paper: About's light --muted. */
+  --tp-hud-muted: #515c59;
 }
 } /* @layer tokens (dark + light surface tokens move atomically) */
 

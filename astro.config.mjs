@@ -135,6 +135,12 @@ export default defineConfig({
         // six og:image* tags and twitter:image/title/description (ten tags, CORE_SPEC §2). See
         // src/components/overrides/Head.astro.
         Head: './src/components/overrides/Head.astro',
+        // REPLACING ThemeSelect override, the exception CORE_SPEC "Starlight Component Overrides" allows
+        // when nothing additive can do the job (owner, 2026-10-18): Starlight's Dark/Light/Auto select
+        // becomes About's single-click toggle, in the header and in the phone menu. No Starlight plugin
+        // claims ThemeSelect (starlight-image-zoom claims MarkdownContent only). See
+        // src/components/overrides/ThemeSelect.astro.
+        ThemeSelect: './src/components/overrides/ThemeSelect.astro',
       },
       description: 'CTF Writeups, Machine Walkthroughs & Security Notes By Idan Babayan',
       social: [

@@ -631,6 +631,28 @@ a.site-title:hover {
   text-shadow: 0 0 8px color-mix(in oklab, var(--sl-color-accent) 45%, transparent);
 }
 
+/* The theme toggle (overrides/ThemeSelect.astro), About's own: the two 16px icons, the 24px hit area
+   held to the bar's line by a negative margin, muted at rest and lime under the pointer, the shared
+   ring for the keyboard. It shows the theme it turns on, the sun on dark and the moon on paper. */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  min-height: 24px;
+  margin: -4px;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--tp-hud-muted);
+  transition: color .2s;
+}
+.theme-toggle:hover { color: var(--sl-color-accent); }
+.theme-toggle .ico { width: 16px; height: 16px; }
+:root[data-theme='dark'] .theme-toggle .ico-moon,
+:root[data-theme='light'] .theme-toggle .ico-sun { display: none; }
+
 /* Secondary footer chrome: meta row (last updated / edit link) + prev/next eyebrow labels. */
 footer .meta,
 .pagination-links a {
