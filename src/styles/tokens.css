@@ -243,6 +243,13 @@ html[data-theme="dark"] {
   --blockquote-pad-y: 0.6em;
   --blockquote-pad-x: 1.05rem;
 
+  /* The header's name (chrome.css): its size, one less pixel on a phone, and how far its fade travels
+     toward --tp-name-to. 21px is midway between 18px and the 24px the name had as Starlight's desktop
+     h4 (owner, 2026-10-23), so a phone gets 20px, its old size there. A 100% fade ends on the old
+     gradient's lime. */
+  --tp-name-size: 21px;
+  --tp-name-fade: 75%;
+
   --tp-cyan: #41efff;
   --tp-cyan-ink: #0b7e92;
 
@@ -309,8 +316,12 @@ html[data-theme="dark"] {
   --sl-color-bg-sidebar: #0a0e0f;
   --tp-glow-1: #41efff;
   --tp-glow-2: #b6ff3c;
-  /* The theme button (chrome.css) at rest: the marketing HUD's own --muted (About and home), so it
-     matches About's toggle. */
+  /* The header (chrome.css): the name's fade runs from its start colour toward the lime the old
+     gradient ended on; the outlined search box's border; and the muted label colour of every word and
+     glyph in the bar, the marketing HUD's own --muted (About and home), so the two bars match. */
+  --tp-name-from: #e9f1ee;
+  --tp-name-to: #9fef00;
+  --tp-search-border: rgba(255, 255, 255, 0.16);
   --tp-hud-muted: #79857f;
 }
 
@@ -393,7 +404,12 @@ html[data-theme="dark"] {
      bars and fills, never small text. */
   --tp-deco-lime: #6fae00;
   --tp-deco-cyan: #0a9ec2;
-  /* The theme button at rest, paper: About's light --muted. */
+  /* The header, paper: the name starts on the editorial ink and fades toward the light h1 gradient's
+     green; the search border is the code frames' warm hairline, a step deeper; the muted label colour
+     is About's light --muted. */
+  --tp-name-from: var(--sl-color-text);
+  --tp-name-to: #62a011;
+  --tp-search-border: rgba(60, 50, 30, 0.26);
   --tp-hud-muted: #515c59;
 }
 } /* @layer tokens (dark + light surface tokens move atomically) */
