@@ -6,12 +6,153 @@
 
 ---
 
+### 2026-10-23 · The quiet bar: Starlight's header puts on the HUD
+- **Supersedes in part:** 2026-10-17 · Home and About keep their own bars. Only two claims: that bringing
+  the three bars into one family "stays open in ROADMAP", and the Known bullet's "It is a proposal, not a
+  decision". The Starlight side is decided here; home and About keep their bars, and the rest stands.
+- **Decision:** the header of the 65 Starlight pages takes the HUD's voice (`chrome.css`, its tokens in
+  `tokens.css`; CORE_SPEC §6 "Component inventory" carries the full state):
+  - **Height:** the HUD's at every width, `--sl-nav-height: calc(2rem + 0.72rem * 1.6 + 1px)`, 51.42px,
+    where Starlight's was 56px on a phone and 64px from 50rem.
+  - **Adaptive glass:** clear at the top of a page, only the hairline; the frost (`--sl-color-bg-nav`
+    under `blur(14px) saturate(1.25)`) fades in over the first 20px of scroll on a `::before` twice the
+    bar's height, masked back to it, driven by a scroll timeline. Fully frosted without scroll timelines
+    and under reduced motion; solid under reduced transparency and increased contrast. The phone "On this
+    page" strip wears the same.
+  - **The name:** Syne 700 at 21px, 20px on a phone, with a fade in place of the old full gradient: the
+    start colour for the first quarter, then 75% of the way to the lime. Flat without `color-mix`, the
+    system text colour under forced colours; hover and focus as before.
+  - **Every other word** in the HUD's tracked mono capitals and its `--muted`, here `--tp-hud-muted`,
+    with the accent under the pointer (the lime ink for text on paper).
+  - **Search:** Starlight's own button, dialog, shortcut and label, in Starlight's own place: from 50rem
+    its column starts at the article column's left edge, a 34px outlined box up to 320px wide that
+    shrinks with a narrower column and never overflows it. A phone shows the magnifier alone.
+  - **One rule mirrors the site's three-column layout** from 72rem on pages with a contents column (the
+    17rem nav, the panel's padding, and half of what the pane has to spare beside the 46rem column), so
+    the search lands on the article column there too. It repeats the contents column's 15rem, and both
+    places say they are coupled.
+  - **The right-hand end:** GitHub (16px, muted) then the theme button (2026-10-18 · The theme switch is
+    one button on every page, as on About), 1.4rem apart, no separator; on a phone both stay in the menu,
+    whose button becomes a quiet muted icon. The right-hand "On this page" column starts at the hairline.
+- **Why:** the three top bars read as three sites (owner, 2026-10-17), and home and About keep theirs, so
+  the 65 pages join them: one height, one hairline, one voice. The name sits midway between the first
+  brief's 18px and the 24px it had as Starlight's desktop h4 (owner, 2026-10-23), which leaves a phone on
+  its old 20px. The search sits where Starlight puts it so that its edge lines up with the text it
+  searches (owner, 2026-10-23). The site centres its own article column between a 17rem nav and a 15rem
+  contents column, which Starlight's template cannot know, so without the extra rule the box started left
+  of the column on every page with a contents column wider than 1296px: 40px from 1376px up, at 1440,
+  1600 and 1920 alike.
+- **Rejected:**
+  - "// SECURITY NOTES" in the bar on every page: too much across 67 pages; it stays on home and About
+    (owner).
+  - A ◂ before the name, tried live on 2026-10-18: on every page it tells the reader to go back home
+    (owner). A dot like home's session light in its place: turned down too (owner).
+  - The name in the HUD's mono capitals, also tried live: the name keeps Syne (owner).
+  - The search at the bar's right-hand end, beside GitHub, the first cut (2026-10-18): moved back to
+    Starlight's place, on the column it searches (owner, 2026-10-23).
+  - "Search writeups" as the label, through Starlight's UI-string override: the owner kept Starlight's
+    "Search" (2026-10-23), and the override went with it. Site search finds About and the hubs too.
+  - Starlight's own column template on pages with a contents column: 40px off the article column from
+    1376px (the owner's choice between the two, 2026-10-23, from a side-by-side at 1440).
+  - The name at 18px: moved midway to 21px (owner, 2026-10-23).
+- **Known:** the alignment rule is a hand copy of the three-column math and must change with the contents
+  column's 15rem. On the 404, which has no sidebar, Starlight puts the search right after the name, not
+  over the centred column (149px against 100px at 1280); at 800 that column starts under the name, so it
+  cannot line up there. Scroll timelines and their fallbacks were checked in headless Chrome, forced
+  colours under emulation; a real Windows contrast theme, Firefox and Safari were not tried (ROADMAP).
+- **Verified:** production builds, green at 67 pages; the commit's tree, built on its own, changes only
+  the shared stylesheet against its parent's. The bar is 51.42px at 320 to 1440 on writeups, landings,
+  hubs and the 404, as home's and About's HUDs are from 768 (home's is 69.84px on a phone, where its
+  masthead wraps). Frost opacity 0 at scroll 0, 0.25 at 5px, 0.5 at 10px and 1 from 20px; 1 throughout
+  under reduced motion; solid under reduced transparency and increased contrast; the name in the system
+  text colour under forced colours. The search's left edge is 0px from the article column at every width
+  from 1152 to 1920 on HackTheBox and PicoCTF writeups and the Bandit hub, and at 800, 1280 and 1440 on a
+  writeup and a landing in both themes, 320 by 34px, with nothing overlapping, wrapping or scrolling
+  sideways. Tab order: skip link, name, search, GitHub, theme; Ctrl K and ⌘K open search and Escape closes
+  it, and an Apple platform shows ⌘ in the chip. At 320 the bar is one line. A column forced narrower: at
+  245px the box follows it whole; at 125px the label ends in an ellipsis; at 65px the box clips its chips
+  and nothing leaves it.
+- **Status:** Adopted; committed to `dev` on 2026-10-23 as
+  `feat(header): the quiet bar, Starlight's header in the HUD's voice`.
+
+### 2026-10-18 · The theme switch is one button on every page, as on About
+- **Supersedes in part:** 2026-05-31 · Writeup theme pass is CSS-only. Only "the theme toggle for free" in
+  its Why: Starlight's theme control is the site's own button now. "No component forks" stands: the
+  override is the site's own small component on Starlight's documented override seam, and Starlight's
+  ThemeProvider, its stored key, search, nav, TOC and Expressive Code all stay Starlight's.
+- **Decision:** `src/components/overrides/ThemeSelect.astro` replaces Starlight's Dark/Light/Auto select
+  wherever Starlight renders it, the header and the phone menu's footer, with About's single-click
+  toggle: a real `<button type="button">` named "Light theme", `aria-pressed` true on paper, two 16px
+  icons showing the theme it turns on (the sun on dark, the moon on paper) in a 24px hit area, muted at
+  rest and lime under the pointer, with the shared focus ring. One document listener flips `data-theme`
+  on `<html>`, stores `light` or `dark` under `starlight-theme` in a try/catch, and keeps both copies'
+  `aria-pressed` in step. Starlight's ThemeProvider still sets the theme before first paint; with nothing
+  stored the page follows the system scheme live, and the first click makes the choice explicit. There is
+  no Auto any more.
+- **Why:** one click, as on About, instead of a three-way select (owner, 2026-10-18), so both surfaces
+  switch the theme the same way. Nothing additive turns a select into a button, which makes this the
+  exception CORE_SPEC's override rules allow; the owner approved it, and no Starlight plugin claims
+  ThemeSelect (starlight-image-zoom claims MarkdownContent only).
+- **Rejected:** Starlight's select restyled as an icon, an earlier experiment: still three choices behind
+  one glyph, where the owner wanted one click.
+- **Known:** a reader who chose Auto under the old select keeps an empty string, which reads as no choice:
+  the page follows the system scheme until the first click.
+- **Verified:** the commit's tree, built on its own, 67 pages; against its parent's build the 65 Starlight
+  pages change (the button's markup in two places, and its script) and the shared stylesheet, and home
+  and About do not. On a writeup: two buttons, both "Light theme", and no `starlight-theme-select` left;
+  Enter turns paper on, stores `light` and presses both; a reload keeps it; Space turns dark back on. On
+  the final build, in both themes: the choice holds from Forest to Busqueda to About and through a
+  reload; with nothing stored the page follows the system scheme as it changes, and stays put after a
+  click; at 320 the menu's button and GitHub sit on one line.
+- **Status:** Adopted; committed to `dev` on 2026-10-23 as
+  `feat(theme): one button switches the theme on every page, as on About`.
+
+### 2026-10-18 · The reading hairline fills on writeups only, from a typed component
+- **Decision:** the reading-progress bar becomes the header's hairline filling as a writeup is read: a
+  1px line over the header's bottom border (`top: calc(var(--sl-nav-height) +
+  var(--sl-mobile-toc-height) - 1px)`), scaled from the left with `transform: scaleX()`, the whole page
+  measured, no transition, `aria-hidden`, in its old colours (lime to cyan; `#4d7c0f` to `#0b7e92` on
+  paper). Where the phone "On this page" strip shows, it runs along the strip's bottom edge, where reading
+  starts. Writeups only: the signal is the badge row (`.writeup-meta`), which the build injects on every
+  writeup, so landings, hubs and the 404 keep the plain hairline. `src/components/ReadingProgress.astro`,
+  script only and typed, creates the line and sets its scale: a passive scroll listener batched through
+  `requestAnimationFrame`, recomputed on resize and whenever the page's height changes (a
+  `ResizeObserver` on `body`, so a spoiler or ToggleAll moves it). The PageSidebar override renders it
+  beside TocTracking.
+- **Why:** the owner picked the hairline carrying the reading progress as a detail to pursue
+  (2026-10-18). The old bar was a 2px strip along the top of the window on every Starlight page, a
+  landing included, sized by an untyped inline `head` script in `astro.config.mjs` that set its width,
+  with a transition.
+- **Known:** a writeup that sets `badges: false` would lose the line with its badge row; none does. The
+  `head` array now holds nothing.
+- **Verified:** the commit's tree, built on its own, 67 pages; against its parent's build the 65 Starlight
+  pages change (the inline `head` script goes and the component's script comes) and the shared
+  stylesheet. On a writeup the line sits at 50.42px at 1280, on the header's bottom border, and at
+  98.42px at 375, on the strip's, `aria-hidden`; a landing and the Bandit hub have none, and no page
+  carries the old script.
+- **Status:** Adopted; committed to `dev` on 2026-10-23 as
+  `feat(progress): the reading hairline fills on writeups only`.
+
+### 2026-10-18 · Home's masthead lockup sits on the bar's centre
+- **Decision:** above 720px home's HUD is a `1fr auto 1fr` grid (`index.astro`), so its two side slots are
+  equal and "IDAN.LAB // SECURITY NOTES" sits on the bar's centre. Below 720px, where the spacer hides,
+  the row keeps its flex layout.
+- **Why:** SESSION ACTIVE on the left is wider than the 80px spacer that balances it on the right, so the
+  lockup sat 25.57px right of the bar's centre at 768 to 1440 (the owner's brief, 2026-10-18).
+- **Verified:** the commit's tree, built on its own, 67 pages; against its parent's build only home's
+  stylesheet changes. The lockup sits 25.57px from the bar's centre before and -0.01px after, at 768, 1280
+  and 1440; at 375 it is unchanged (the flex row, 69.84px tall with the masthead wrapped).
+- **Status:** Adopted; committed to `dev` on 2026-10-23 as
+  `fix(home): the masthead lockup sits on the bar's centre`.
+
 ### 2026-10-17 · Home and About keep their own bars
 - **Decision:** the home and About HUDs stay as they are: tracked mono capitals, "IDAN.LAB // SECURITY
   NOTES", no search and no GitHub mark in the bar, and on About one theme icon with no mode words. Home's
   bar holds no links: the hero directly under it holds Explore Writeups and About Me. Bringing the site's
   three top bars into one family stays open in ROADMAP, on the condition that the marketing pages keep
-  their design.
+  their design (**Partly superseded by:** 2026-10-23 · The quiet bar: Starlight's header puts on the HUD:
+  the family is decided on the Starlight side, the marketing pages keeping their design, and the ROADMAP
+  item is gone).
 - **Why:** the three bars (home's HUD, About's HUD, Starlight's header) read as three sites (owner). The
   first fix proposed had home and About adopt Starlight's header: its Syne wordmark, its 64px height and
   full-width gutters, page links, a GitHub mark and the theme control. The owner turned it down. It
@@ -26,8 +167,9 @@
   - A GitHub mark on every bar: subtle beats blunt, and it stays where it means something, About's
     contact card and home's closing button.
   - The theme spelled out in words on the marketing pages: one icon.
-- **Known:** the direction on the table is the reverse, the 65 Starlight pages putting on the HUD
-  (ROADMAP). It is a proposal, not a decision.
+- **Known** (**Partly superseded by:** 2026-10-23 · The quiet bar: Starlight's header puts on the HUD,
+  which decided it)**:** the direction on the table is the reverse, the 65 Starlight pages putting on the
+  HUD (ROADMAP). It is a proposal, not a decision.
 - **Status:** Adopted (owner, 2026-10-17): a record of what was turned down, with nothing built.
 
 ### 2026-10-17 · About's top bar links Contact, not itself
@@ -4993,7 +5135,9 @@ automatically; no astro.config.mjs edit is needed per writeup.
 ### 2026-05-31 · Writeup theme pass is CSS-only
 - **Decision:** Bring Starlight writeups in line with the marketing pages purely by overriding
   Starlight design tokens + targeted CSS in `custom.css`. No component forks.
-- **Why:** Preserves search, nav, TOC, expressive-code, a11y, and the theme toggle for free.
+- **Why:** Preserves search, nav, TOC, expressive-code, a11y, and the theme toggle for free
+  (**Partly superseded by:** 2026-10-18 · The theme switch is one button on every page, as on About: the
+  theme toggle is the site's own button now, and the rest still comes from Starlight).
   Reading content stays calm (no tilt/scroll-reveal on body).
 - **Status:** Adopted.
 
