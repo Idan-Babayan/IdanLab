@@ -61,6 +61,10 @@
   resubmit, external link updates. All owner-side or other-chat work.
 - [CONTENT] Verify the ToggleAll few-pixel shift fix in real browsers (see Open bugs), then it can be
   considered closed.
+- [DESIGN] Confirm the quiet bar where headless Chrome cannot: a real Windows contrast theme (the name
+  falls back to the system text colour and the frost to system colours, checked so far under emulation
+  only), and Firefox and Safari, where a missing scroll timeline should leave the bar fully frosted from
+  the top. See DECISIONS 2026-10-23 · The quiet bar: Starlight's header puts on the HUD.
 - [ENG] WriteupMeta filter routes: `/platform`, `/os` and `/environment` do not exist, so the three
   navigational chips render as non-interactive `<span>` rather than `<a>`. When the routes land, restore
   the anchors kept commented in `WriteupMeta.astro` (they restore verbatim) and drop the temporary
@@ -104,20 +108,12 @@
   content with the default pager beneath it (2026-09-03).
 - [PRODUCT] Global `/writeups` index (path 3): reuse `WriteupCard` with `showPlatform` true for a
   mixed cross-platform grid (the card was built for this).
-- [DESIGN] **One family of top bars** (owner, 2026-10-17): not identical, but one site to an outside
-  reader. Today they are three designs (measured 2026-10-17): the brand is set three ways (home's mono
-  "IDAN.LAB // SECURITY NOTES", About's with a back arrow and as a link, Starlight's Syne "Idan.Lab"),
-  the bars are 51, 51 and 64px tall, the two HUDs sit in 1180 and 1100px columns while the header spans
-  the window, and the controls differ (none on home; two links and an icon toggle on About; search,
-  GitHub and a Dark/Light/Auto select on Starlight). The owner's constraints: home and About are the
-  face of the site and keep their design and its wow (a redesign of both is being weighed); no search
-  on them; "// SECURITY NOTES" stays; one theme icon and no mode words; no GitHub logo on every bar; and
-  a bar takes only the jobs its page does not already do (home's hero already holds both doors). Home
-  and About adopting Starlight's header was turned down. On the table instead: the 65 Starlight pages
-  put on the HUD (the lockup, SEARCH as a HUD word, one theme icon, no GitHub mark, a 52px glass bar
-  whose hairline carries the reading progress), CSS only in `chrome.css`.
 
 ## Later (parked)
+- [DESIGN] A redesign of home and About, the face of the site, is being weighed (owner, 2026-10-17):
+  the newest UI for the wow. Each keeps its own bar, and the Starlight bar follows the HUD (DECISIONS
+  2026-10-17 · Home and About keep their own bars; 2026-10-23 · The quiet bar: Starlight's header puts
+  on the HUD).
 - [CONTENT] Revisit a scripted content-cleaning pass only if manual polish proves to not scale; deliberately deferred, not abandoned.
 - [CONTENT] Surface topic tags as a browsable index (filter writeups by technique). DEFERRED by decision,
   not abandoned: a canonical tag taxonomy is drafted and parked as a spelling reference, but tags stay out

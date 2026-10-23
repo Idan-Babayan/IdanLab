@@ -265,17 +265,7 @@ body::after {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 } /* @layer chrome */
-/* The header wordmark half of the heading Syne rule, split from the prose half in Phase 2 slice A and
-   moved into the chrome layer in slice B, which is where it now sits. Its declarations are
-   byte-identical to the prose half above. It keeps its physical position so its source order against
-   the later a.site-title rule is unchanged. */
 @layer chrome {
-.site-title,
-a.site-title {
-  font-family: var(--tp-display);
-  letter-spacing: -0.01em;
-}
-
 /* ── Hero echo on the page title only (mirrors .hero h1 gradient text-fill) ──
    Verified against the live Starlight DOM: the writeup title is frontmatter-driven and
    renders as `h1#_top` OUTSIDE `.sl-markdown-content` (our writeups start the body at h2),
@@ -351,7 +341,9 @@ nav.sidebar details > ul > li {
      BOTH, in sync: text 13rem + 2*1rem padding = a 15rem panel that fits a 15rem container exactly. This
      also holds whether the fixed `.right-sidebar` sizes against the viewport or its container. Starlight
      sets `overflow-wrap: anywhere` on TOC links, so longer entries wrap to ~2 lines rather than clip.
-     13rem/15rem are analysis-based starting targets; nudge up if an entry wraps badly in a real browser. */
+     13rem/15rem are analysis-based starting targets; nudge up if an entry wraps badly in a real browser.
+     COUPLED: the quiet bar's header grid (below) repeats the 15rem to start the search at the article
+     column; change the two together. */
   .right-sidebar-panel .sl-container {
     width: 13rem;
   }
@@ -414,12 +406,23 @@ nav.sidebar summary {
    it pushed the longer names (HackTheBox, OverTheWire) onto a second line in the narrow mobile
    drawer, which read as clunky. Fullness comes from the row padding, not a larger glyph. */
 
-/* ── Reading-progress bar (the #tp-progress element is injected by the
-       small script added to astro.config.mjs head) ── */
+/* ── Reading progress: the hairline that fills as you read ──
+   Writeups only (landings, wargame hubs and the 404 keep the plain hairline): a 1px line laid over the
+   header's bottom border and scaled from the left as the page scrolls, the whole page measured. Where
+   the phone "On this page" strip shows, it runs along that strip's bottom edge instead, where reading
+   starts: --sl-mobile-toc-height is 3rem there and 0 everywhere else. ReadingProgress.astro creates
+   it and sets its scale, with no transition; it is decorative and aria-hidden. */
 #tp-progress {
-  position: fixed; top: 0; left: 0; height: 2px; width: 0; z-index: 1000;
+  position: fixed;
+  top: calc(var(--sl-nav-height) + var(--sl-mobile-toc-height) - 1px);
+  left: 0;
+  width: 100%;
+  height: 1px;
+  z-index: 1000;
+  pointer-events: none;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
   background: linear-gradient(90deg, var(--sl-color-accent), var(--tp-cyan));
-  transition: width .08s linear;
 }
 /* Light gets its own paper-appropriate duotone (lime-ink to cyan-ink). Dark is untouched and
    stays lime -> cyan. The thin bar is decorative, so these darkened tones can be vivid; the
@@ -593,42 +596,263 @@ html[data-theme="light"] .expressive-code pre::-webkit-scrollbar-track { backgro
 }
 } /* @layer chrome */
 
-/* ── Header + footer chrome: homepage HUD feel ──
-   Mono, uppercase, letter-spaced to mirror index.astro .hud / .footbar.
-   Targets only chrome (stable Starlight classes), never .sl-markdown-content body copy.
-   Colors use Starlight gray tokens so they stay legible and theme-aware in both modes. */
-
-/* Brand wordmark "Idan.Lab": aligned to the writeup article title (h1#_top) so the header
-   wordmark and the page title read as one Syne display type system. Same theme-aware lime
-   gradient text-fill as the h1 (dark: white -> #9fef00; light: #16280b -> #62a011). Weight 700
-   (lighter than the h1's 800, which reads heavy at header size); letter-spacing matches the h1.
-   The "." is part of the text node, so it takes the same gradient as every other glyph. Wins
-   over the earlier mono treatment via the same selector at later source order. */
+/* ── The quiet bar: Starlight's header in the HUD's voice (owner, 2026-10-18) ──
+   Home and About open on a heads-up display: a thin line of tracked mono capitals over a hairline. The
+   header on the other 65 pages now matches it: the HUD's height, the name in Syne, and the HUD's labels,
+   with the search at the article column's edge, where Starlight puts it, and GitHub and the theme at
+   the right-hand end. Everything here is CSS on Starlight's own markup except the theme button, the
+   one replacing override (src/components/overrides/ThemeSelect.astro). Only chrome is styled, never
+   .sl-markdown-content.
+   Phone values are the base and 50em overrides them, Starlight's own breakpoint and pattern. */
 @layer chrome {
+/* The bar is the HUD's height at every width: About's HUD is 1rem of padding above and below one line
+   of 0.72rem type at line-height 1.6, plus its 1px hairline (51.4px; home's is the same, and taller on
+   a phone only because its masthead wraps to two lines). So the hairline sits at one height on every
+   page. Starlight sizes the sidebar, the right column, the phone "On this page" strip, the menu button
+   and the anchor scroll padding from this one value, and TocTracking reads the header's own height. */
+:root { --sl-nav-height: calc(2rem + 0.72rem * 1.6 + 1px); }
+
+/* The right-hand "On this page" column starts at the bar's hairline. Starlight fixes it to the top of
+   the window and pads it down by the bar's height, so its left border ran up under the bar: hidden by
+   the old tint, a line through the clear bar (and through the search box on paper). Its content keeps
+   its place; only the border now stops at the hairline. */
+@media (min-width: 72rem) {
+  .right-sidebar {
+    top: var(--sl-nav-height);
+    padding-top: 0;
+    height: calc(100vh - var(--sl-nav-height));
+  }
+}
+
+/* Adaptive glass. At the top of a page the bar is clear, only its hairline, as the HUD is; the frost
+   (Starlight's nav tint, --sl-color-bg-nav, under a blur) fades in over the first 20px of scroll. It
+   lives on a layer behind the bar, not on the header, because backdrop-filter makes its element the
+   containing block of fixed descendants. The layer is twice the bar's height and masked back to it,
+   so the blur also samples what sits just under the bar and text softens as it nears the edge instead
+   of changing at the line; the mask stops at the hairline, which stays the header's own border. The
+   phone "On this page" strip wears the same. Fully frosted where scroll timelines are unsupported and
+   under reduced motion; solid under reduced transparency and under increased contrast. */
+header.header,
+mobile-starlight-toc nav {
+  background-color: transparent;
+  isolation: isolate;
+}
+header.header::before,
+mobile-starlight-toc nav::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 200%;
+  z-index: -1;
+  pointer-events: none;
+  background-color: var(--sl-color-bg-nav);
+  -webkit-backdrop-filter: blur(14px) saturate(1.25);
+  backdrop-filter: blur(14px) saturate(1.25);
+  -webkit-mask-image: linear-gradient(to bottom, #000 50%, transparent 50%);
+  mask-image: linear-gradient(to bottom, #000 50%, transparent 50%);
+}
+@keyframes tp-frost {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+/* Longhands on purpose: given the shorthand, the build's minifier folds animation-timeline into it,
+   and Chrome drops the whole declaration because the timeline is not settable through the
+   shorthand. Without a duration or a delay it has no shorthand to build. The resting opacity is 0:
+   on a page too short to scroll the timeline is inactive and the animation has no effect, and that
+   page never leaves scroll 0, so its bar stays clear. */
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    header.header::before,
+    mobile-starlight-toc nav::before {
+      opacity: 0;
+      animation-name: tp-frost;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: scroll(root);
+      animation-range: 0 20px;
+    }
+  }
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  header.header::before,
+  mobile-starlight-toc nav::before {
+    background-color: var(--sl-color-bg);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* The name: "Idan.Lab" in Syne 700 at --tp-name-size (a pixel less on a phone), with the page titles'
+   letter-spacing. A fade rather than the article title's full gradient (h1#_top keeps that): the start
+   colour holds for the first quarter of the word, then travels --tp-name-fade of the way toward
+   --tp-name-to. Without color-mix the name is the start colour, flat; under forced colours it is the
+   system text colour, so it never disappears. Hover and focus are unchanged: a lime underline and
+   glow under the pointer, the shared ring for the keyboard. */
 a.site-title {
   font-family: var(--tp-display);
+  font-size: calc(var(--tp-name-size) - 1px);
   font-weight: 700;
   letter-spacing: -0.01em;
-  background: linear-gradient(135deg, var(--sl-color-white), #9fef00);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--tp-name-from);
   border-bottom: 1px solid transparent;
   transition: color .15s, border-color .15s, text-shadow .15s;
 }
-:root[data-theme='light'] a.site-title {
-  /* Kept matched to the light h1#_top gradient (same dark-green-to-vivid sweep) so the header wordmark
-     and the page title stay one Syne type system. Front-loaded, so the short "IDAN.LAB" string still
-     transitions into the bright green by the end. */
-  background: linear-gradient(105deg, #16280b 0%, #4a7d0d 45%, #62a011 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+@media (min-width: 50em) {
+  a.site-title { font-size: var(--tp-name-size); }
+}
+@supports (color: color-mix(in oklab, red, blue)) {
+  a.site-title {
+    background: linear-gradient(90deg, var(--tp-name-from) 25%,
+      color-mix(in oklab, var(--tp-name-to) var(--tp-name-fade), var(--tp-name-from)));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}
+@media (forced-colors: active) {
+  a.site-title {
+    background: none;
+    -webkit-text-fill-color: currentColor;
+    color: CanvasText;
+  }
 }
 a.site-title:hover {
   color: var(--sl-color-accent);
   border-bottom-color: var(--sl-color-accent);
   text-shadow: 0 0 8px color-mix(in oklab, var(--sl-color-accent) 45%, transparent);
+}
+
+/* The right-hand end: GitHub, then the theme, 1.4rem apart as About's HUD nav is, with no separator.
+   The bar's own columns keep Starlight's gap: its grid template subtracts that gap to start the search
+   column at the article column's edge, so any other gap moves the search off it. */
+div.header .right-group,
+div.header .social-icons { gap: 1.4rem; }
+div.header .social-icons::after { content: none; }
+
+/* Pages with a contents column, from 72rem (owner, 2026-10-23). The site lays these out itself, with
+   a 15rem contents column and the article column centered in what is left (the three-column rules near
+   the top of this file), while Starlight's grid template assumes its own wider contents column: wider
+   than 1296px its search column started left of the article column, 40px from 1376px up. So the first
+   column here is the article column's left edge less the bar's padding and gap: the nav, the panel's
+   padding, and half of what the pane has to spare beside the 46rem column. COUPLED to that 15rem
+   (.right-sidebar-container): change the two together. */
+@media (min-width: 72rem) {
+  :root[data-has-sidebar][data-has-toc] div.header {
+    grid-template-columns:
+      minmax(calc(var(--sl-sidebar-width) + var(--sl-content-pad-x) - var(--sl-nav-pad-x) - var(--sl-nav-gap)
+        + max(0rem, (100% + 2 * var(--sl-nav-pad-x) - var(--sl-sidebar-width) - 15rem
+        - 2 * var(--sl-content-pad-x) - var(--sl-content-width)) / 2)), auto)
+      1fr auto;
+  }
+}
+
+/* Search, outlined, in Starlight's own place (owner, 2026-10-23): from 50em the bar's middle column
+   starts at the article column's edge, so the box lines up with the text below. Starlight's own
+   button, dialog, shortcut and Ctrl/Cmd script, restyled. A phone shows the magnifier alone, muted
+   like the bar's other glyphs; from 50em it is a 34px box up to 320px wide, with a hairline border,
+   Starlight's own label ("Search") in the HUD's tracked mono capitals and the key chips at its far
+   end. In a column narrower than 320px the box shrinks with it: the label gives way, cut with an
+   ellipsis, while the magnifier and the chips keep their size, and below about 100px the box clips
+   what is left, so nothing ever overflows; no width on this site comes near that. Text under the
+   pointer reads the lime ink on paper, where the accent is under AA as small text; the keyboard also
+   gets the shared ring. */
+site-search button[data-open-modal] { color: var(--tp-hud-muted); }
+@media (min-width: 50em) {
+  div.header > :nth-child(2) { min-width: 0; }
+  site-search button[data-open-modal] {
+    width: 100%;
+    min-width: 0;
+    max-width: 320px;
+    height: 34px;
+    overflow: hidden;
+    padding: 0 6px 0 10px;
+    gap: 0.5rem;
+    background-color: transparent;
+    border: 1px solid var(--tp-search-border);
+    border-radius: 6px;
+    font-family: var(--sl-font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--tp-hud-muted);
+  }
+  site-search button[data-open-modal] > svg { font-size: 14px; flex-shrink: 0; }
+  site-search button[data-open-modal] > span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  site-search button[data-open-modal] > kbd {
+    flex-shrink: 0;
+    margin-inline-start: auto;
+    gap: 3px;
+    padding: 0;
+    background-color: transparent;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  site-search button[data-open-modal] > kbd > kbd {
+    font-family: var(--sl-font-mono);
+    font-size: 9.5px;
+    line-height: 1;
+    padding: 2px 4px;
+    border: 1px solid var(--tp-search-border);
+    border-radius: 3px;
+  }
+}
+site-search button[data-open-modal]:hover,
+site-search button[data-open-modal]:focus-visible {
+  color: var(--sl-color-accent);
+  border-color: color-mix(in oklab, var(--sl-color-accent) 55%, transparent);
+}
+:root[data-theme='light'] site-search button[data-open-modal]:hover,
+:root[data-theme='light'] site-search button[data-open-modal]:focus-visible {
+  color: var(--tp-lime-ink);
+}
+
+/* GitHub: Starlight's social icon, wherever Starlight puts it (the bar, and the phone menu's footer),
+   at 16px in the muted label colour, lime under the pointer, the shared ring for the keyboard. */
+.social-icons a {
+  font-size: 16px;
+  color: var(--tp-hud-muted);
+}
+.social-icons a:hover { color: var(--sl-color-accent); }
+
+/* The theme toggle (overrides/ThemeSelect.astro), About's own: the two 16px icons, the 24px hit area
+   held to the bar's line by a negative margin, muted at rest and lime under the pointer, the shared
+   ring for the keyboard. It shows the theme it turns on, the sun on dark and the moon on paper. */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  min-height: 24px;
+  margin: -4px;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--tp-hud-muted);
+  transition: color .2s;
+}
+.theme-toggle:hover { color: var(--sl-color-accent); }
+.theme-toggle .ico { width: 16px; height: 16px; }
+:root[data-theme='dark'] .theme-toggle .ico-moon,
+:root[data-theme='light'] .theme-toggle .ico-sun { display: none; }
+
+/* The phone menu button: a quiet icon in the HUD's manner, muted like the bar's other glyphs, instead
+   of a solid disc; lime while the menu is open. */
+starlight-menu-button button {
+  background-color: transparent;
+  box-shadow: none;
+  color: var(--tp-hud-muted);
+}
+starlight-menu-button[aria-expanded='true'] button {
+  background-color: transparent;
+  color: var(--sl-color-accent);
 }
 
 /* Secondary footer chrome: meta row (last updated / edit link) + prev/next eyebrow labels. */

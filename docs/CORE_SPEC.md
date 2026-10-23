@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-10-05 (the landing hero's glow stays in its own pane on a desktop and shows no hard edge at any width; callouts are no longer unnamed landmarks; landing card titles sit one level under the page title; the mobile "On this page" check wears its entry's colour; site search keeps no image as a field and ranks each Bandit page first however it is typed, bar two routes and two logins that Pagefind cannot tell from other levels; on 2026-10-03, site search no longer indexes the flags and passwords the pages hide; the decode headlines give a screen reader the settled word; the current "On this page" entry keeps its colour under the pointer on desktop and mobile; Syne's fallback is one face per weight, so the headline no longer jumps when the font arrives; a captured flag's spent button and the toggle-all control announce the truth; reduced motion stops the marketing pages' smooth scroll; the pressed filter pill's focus ring stands apart; the secret terminal's dim labels reach AA; dead CSS deleted and stale counts refreshed; on 2026-10-02, tool output in the writeups no longer dates the runs; on 2026-10-01, decorative characters keep their look and say only what they mean, and a build guard checks part of it; About is in site search for its owner, not for the writeups' topics; the marketing pages gain a skip link, a main landmark and `color-scheme`, and About's theme toggle reports its state; the writeup badge row names each fact for a screen reader; on 2026-09-30, sidebar entries that name what each platform holds, and About's practice cards split 2 + 2).
+> Last updated: 2026-10-23 (Starlight's header is the quiet bar: the HUD's height, clear at the top and frosted once scrolled, the name in Syne at 21px, every other word in the HUD's mono capitals, the search in Starlight's own place on the article column's edge, GitHub and a one-click theme button at the right, the one replacing override; the reading hairline fills on writeups only, from a typed component; home's masthead lockup sits on the bar's centre; on 2026-10-17, writeup screenshots take the code frames' edge, the difficulty chip answers the pointer, About's bar links CONTACT, and identity links tie the site to the owner's profiles; on 2026-10-05, the landing hero's glow stays in its own pane on a desktop and shows no hard edge at any width; callouts are no longer unnamed landmarks; landing card titles sit one level under the page title; the mobile "On this page" check wears its entry's colour; site search keeps no image as a field and ranks each Bandit page first however it is typed, bar two routes and two logins that Pagefind cannot tell from other levels; on 2026-10-03, site search no longer indexes the flags and passwords the pages hide; the decode headlines give a screen reader the settled word; the current "On this page" entry keeps its colour under the pointer on desktop and mobile; Syne's fallback is one face per weight, so the headline no longer jumps when the font arrives; a captured flag's spent button and the toggle-all control announce the truth; reduced motion stops the marketing pages' smooth scroll; the pressed filter pill's focus ring stands apart; the secret terminal's dim labels reach AA; dead CSS deleted and stale counts refreshed; on 2026-10-02, tool output in the writeups no longer dates the runs; on 2026-10-01, decorative characters keep their look and say only what they mean, and a build guard checks part of it; About is in site search for its owner, not for the writeups' topics; the marketing pages gain a skip link, a main landmark and `color-scheme`, and About's theme toggle reports its state; the writeup badge row names each fact for a screen reader; on 2026-09-30, sidebar entries that name what each platform holds, and About's practice cards split 2 + 2).
 
 ---
 
@@ -93,7 +93,8 @@
 - **The static `head` array in `astro.config.mjs` is the WRONG seam for per-page tags.** It cannot vary
   per page, so a `twitter:title` declared there would pin one constant string over every writeup and
   contradict the per-page `og:title` Starlight already gets right. Per-page social tags belong in the
-  Head override; the `head` array stays for the genuinely constant (the reading-progress script).
+  Head override; the `head` array is for the genuinely constant, and holds nothing since 2026-10-18, when
+  the reading-progress script became a component (§6 "Signature effects").
 - **`og:image` is an ABSOLUTE URL on every surface** (`new URL('/og.jpg', Astro.site)` in the override,
   written out in full on the marketing pages), because crawlers do not resolve relative paths.
 - **The card is a static asset, not generated at build time.** One site-wide identity card, checked in
@@ -107,6 +108,14 @@
   template passes through verbatim, so a raw `&` in a title stays a bare ampersand: legal HTML5, but it
   stops a strict scraper mid-head. The landing page's title, description and URLs are frontmatter
   constants bound as `{TITLE}` and the like, so Astro escapes them on output.
+- **Identity links tie the site to the owner's profiles** (2026-10-17), so a search for the name joins
+  idanlab.dev, GitHub and LinkedIn. Both marketing pages carry a JSON-LD `Person` (`name` "Idan
+  Babayan", `url` https://idanlab.dev, `sameAs` the GitHub and LinkedIn profiles) and a
+  `<link rel="me">` to each profile, from one `PROFILES`/`PERSON` frontmatter block per page, kept in
+  sync by hand like the token block. The JSON-LD is a data block, not a script, so the CSP does not
+  touch it. Starlight pages add nothing: their GitHub social icon already renders `rel="me"`, and one
+  `Person` on the two pages that describe the owner is the whole claim. `README.md` names the owner in
+  full under "Reach out" with the same two links.
 
 ### Repository visibility and licensing
 
@@ -240,7 +249,7 @@ each Vite major; recorded, not pinned.
 
 ```
 C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Windows user profile path
-├─ astro.config.mjs                   # Starlight config: site, sidebar, customCss[layers.css, fonts.css, then the eight theme modules tokens/base/prose/chrome/components/pages/utilities/overrides, in that order], EC themes + pluginPrivCommand, reading-progress head script (no font preloads, see DECISIONS 2026-07-07), image-zoom, vite alias, components overrides (PageSidebar + MarkdownContent + Head), pagefind ranking weights for the search fields, markdown remarkPlugins (content-taxonomy validation guard, PasswordReveal import injection, WriteupMeta injection, recon-rail transform, search-field injection) + rehypePlugins (content image loading)
+├─ astro.config.mjs                   # Starlight config: site, sidebar, customCss[layers.css, fonts.css, then the eight theme modules tokens/base/prose/chrome/components/pages/utilities/overrides, in that order], EC themes + pluginPrivCommand, an empty head array (no font preloads, see DECISIONS 2026-07-07; the reading-progress script became a component 2026-10-18), image-zoom, vite alias, components overrides (PageSidebar + MarkdownContent + Head, and the replacing ThemeSelect), pagefind ranking weights for the search fields, markdown remarkPlugins (content-taxonomy validation guard, PasswordReveal import injection, WriteupMeta injection, recon-rail transform, search-field injection) + rehypePlugins (content image loading)
 ├─ src/
 │  ├─ content.config.ts               # docs collection (gatedDocsLoader, a wrapper that delegates to Starlight's docsLoader and then refuses any non-index file under the four platform directories that is not .mdx, so a .md writeup fails the content sync before any page builds, 2026-09-14; + docsSchema) + the writeup metadata schema (§7)
 │  ├─ pages/
@@ -259,6 +268,7 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 │  │  ├─ PasswordReveal.astro         # amber wargame secret waypoint, TWO modes derived from the slot: INLINE (prop: password) blur-to-reveal then copy-in-place, BLOCK (slot content + prop: label) collapses a multi-line secret as a <details class="toggle pwreveal-block">, no copy button. Both wear one amber (--pw-amber accent / --pw-amber-ink AA text ink / --pw-amber-rgb wash base). Deliberately distinct from FlagCapture (no gold, no decode animation); replaced the retired .spoiler-toggle class; no per-file import needed, see plugins/remark-inject-passwordreveal.mjs
 │  │  ├─ ToggleAll.astro              # Expand/Collapse-all control (vanilla TS, scroll-anchored); injected via PageSidebar override
 │  │  ├─ TocTracking.astro            # script only, no markup: which "On this page" entry is current (end zone, short-section takeover, click hold), written through Starlight's own setter; rendered by the PageSidebar override at every width, see §5 "Starlight Component Overrides"
+│  │  ├─ ReadingProgress.astro        # script only, typed: the reading hairline over the header's bottom border, writeups only (the badge row is the signal), scaled as the page scrolls; rendered by the PageSidebar override, see §6 "Signature effects"
 │  │  ├─ AttackPath.astro             # guided infographic for a LINEAR priv-esc chain (ascending escalating path, SVG connectors, Next-step progression, one-time gold flourish); data-driven from a nodes[] prop, scoped styles, not-content. See DECISIONS 2026-07-19
 │  │  ├─ Callout.astro                # icon-based tagged callout (recon/loot/intel/vuln/defense); .cl styles in components.css
 │  │  ├─ Principle.astro              # closing epigraph (aside.principle, prop: text): centered italic mono maxim + dinkus + PRINCIPLE label; no card/border/bg; .principle styles in components.css; HackTheBox writeups only, appended from frontmatter by overrides/MarkdownContent.astro
@@ -268,9 +278,10 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 │  │  ├─ SecretTerminal.astro         # from-scratch, zero-dependency vanilla-TS fake terminal; its `random` target list is built at build time from the docs collection, behind the same copied-from-Starlight draft filter PlatformIndex uses
 │  │  ├─ badges/                      # WriteupMeta.astro (the injected chip row), DifficultyPips.astro (the ONE ordinal pips glyph, shared with WriteupCard), icons.ts (icon registry + the category swatch)
 │  │  └─ overrides/
-│  │     ├─ PageSidebar.astro         # additive Starlight override: renders <Default/> then <ToggleAll/> at the bottom of the right TOC, then the script-only <TocTracking/> at every width
+│  │     ├─ PageSidebar.astro         # additive Starlight override: renders <Default/> then <ToggleAll/> at the bottom of the right TOC, then the script-only <TocTracking/> and <ReadingProgress/> at every width
 │  │     ├─ MarkdownContent.astro     # additive Starlight override: renders <Default/> with the <Principle> coda appended inside the content wrapper on HackTheBox writeups that set principle:; the default Footer and its pager follow unchanged
-│  │     └─ Head.astro                # additive Starlight override: renders <Default/> then appends only the social tags Starlight omits (author, og:image + secure_url/type/width/height/alt, twitter:title/description/image), per-page values read from frontmatter (see §2 "Social and SEO metadata")
+│  │     ├─ Head.astro                # additive Starlight override: renders <Default/> then appends only the social tags Starlight omits (author, og:image + secure_url/type/width/height/alt, twitter:title/description/image), per-page values read from frontmatter (see §2 "Social and SEO metadata")
+│  │     └─ ThemeSelect.astro         # REPLACING Starlight override, the one exception (owner, 2026-10-18): Starlight's Dark/Light/Auto select becomes About's one-click theme button, in the header and the phone menu (see §6 "Starlight Component Overrides")
 │  ├─ lib/
 │  │  ├─ ec-priv-command.mjs          # EC plugin: tags command words by category (priv/recon/net/inspect)
 │  │  └─ taxonomy.mjs                 # what a writeup's MIDDLE directory means per platform (difficulty tiers, the six picoCTF categories, PLATFORM_AXIS); dependency-free because Node (plugins/) and Vite (src/) both import it
@@ -280,7 +291,7 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 │     ├─ tokens.css                   # @layer tokens: every custom property (surfaces, accents, flag gold, the PasswordReveal amber pair, the prose/chrome type scale). Also owns the prose/chrome type token block (see §6)
 │     ├─ base.css                     # @layer base: the zero-specificity defaults under everything, today the shared focus ring alone
 │     ├─ prose.css                    # @layer prose: the reading surface inside .sl-markdown-content (type, rhythm, links, quotes, the raw <details> default)
-│     ├─ chrome.css                   # @layer chrome: header, sidebar, TOC, code frames, scrollbars, the three-column layout, light-mode depth
+│     ├─ chrome.css                   # @layer chrome: the header (the quiet bar, §6 "Component inventory"), the reading hairline, sidebar, TOC, code frames, scrollbars, the three-column layout, light-mode depth
 │     ├─ components.css               # @layer components: badges, toggles, callouts, the recon rail (a two-column grid plus the 12rem container query that stacks it when the callout is narrow, which page zoom on a phone does), FlagCapture, PasswordReveal, Principle, WriteupMeta
 │     ├─ pages.css                    # @layer pages: whole-page treatments (splash hero, platform index, the reveal state rules, the landing's 80rem content cap, and the sideways-scroll clip pairs: html:has(.pi-index) + body:has(.pi-index) and html:has(.hero) + body:has(.hero), both rules of each pair needed, see §6)
 │     ├─ utilities.css                # @layer utilities: single-purpose helpers that must sit above the named layers, today .sr-only (two rules: the hiding declarations scoped to .sl-markdown-content, and an UNSCOPED user-select:none that has to reach Starlight's .sr-only too, see §8 "Invisible to the eye is not invisible to the clipboard")
@@ -345,11 +356,16 @@ The theme pass is organised into declared cascade layers, one module per layer, 
 - **`overrides.css` is the only unlayered surface.** See §8 "The layer law" for what may live there.
 - **Theme behavior:** homepage is **dark-only** (identical on every device). About + all
   writeups support **light/dark**, synced via Starlight's `localStorage['starlight-theme']`
-  key + `data-theme` on `<html>` after an explicit light or dark choice. About **defaults to dark**
+  key + `data-theme` on `<html>` after an explicit light or dark choice. Both switch it with one
+  button: About's own, and on the Starlight pages the ThemeSelect override (2026-10-18, §6 "Starlight
+  Component Overrides"), which replaced Starlight's Dark/Light/Auto select, so there is no Auto choice
+  any more and a first click stores `light` or `dark`. About **defaults to dark**
   (light is opt-in), and deliberately so before any choice: a reader who has never touched a toggle,
-  or who picked Auto (Starlight stores an empty string for Auto), gets dark on About and the OS scheme
-  on a writeup, because About's bootstrap falls through to dark while Starlight's falls through to
-  `prefers-color-scheme` (measured 2026-09-13; recorded as intended 2026-09-18).
+  or who picked Auto under the old select (Starlight stored an empty string for it, which still reads as
+  no choice), gets dark on About and the OS scheme on a writeup, because About's bootstrap falls through
+  to dark while Starlight's falls through to `prefers-color-scheme` (measured 2026-09-13; recorded as
+  intended 2026-09-18). With nothing stored, a Starlight page follows the OS scheme live until the first
+  click.
   Both marketing pages declare `color-scheme` as Starlight does (2026-09-30): `dark` in the token
   block's `:root`, and `light` in About's light block, so the browser draws its own scrollbar and
   controls to match the page. Without it they followed the OS: on a light Windows the homepage wore a
@@ -672,7 +688,16 @@ token is an open ROADMAP item, not a bug.
 - **Decode/scramble** text animation on one headline keyword.
 - **Count-up** stats, **3D-tilt cards** with cursor-tracking glare, **magnetic buttons**.
 - **Scroll-reveal** (IntersectionObserver), film **grain** overlay, atmospheric **glows**.
-- **Reading-progress bar** (lime→cyan) on Starlight pages (injected via config `head`).
+- **The reading hairline** (2026-10-18): the header's hairline fills from the left as a writeup is read,
+  a 1px line over the header's bottom border scaled with `transform: scaleX()`, the whole page measured,
+  no transition, lime to cyan (`#4d7c0f` to `#0b7e92` on paper), `aria-hidden`; where the phone "On this
+  page" strip shows, it runs along the strip's bottom edge instead. Writeups only, the badge row
+  (`.writeup-meta`) being the signal, so landings, hubs and the 404 keep the plain hairline.
+  `ReadingProgress.astro`, script only and typed, creates it and is rendered by the PageSidebar override:
+  a passive scroll listener batched through `requestAnimationFrame`, recomputed on resize and on any
+  change of the page's height (a `ResizeObserver` on `body`, so a spoiler or ToggleAll moves it). It
+  replaced a 2px bar along the top of every Starlight page, sized by an inline `head` script. See DECISIONS
+  2026-10-18 · The reading hairline fills on writeups only, from a typed component.
 - All effects are **`prefers-reduced-motion` aware**. Reading content stays calm
   (NO tilt/scroll-reveal on writeup body text). That includes the marketing pages' smooth scroll since
   2026-10-03: each page's reduced-motion block names `html, *`, because the smooth rule names `html`
@@ -691,8 +716,50 @@ token is an open ROADMAP item, not a bug.
   page that says it is looking for a first role: the click lands with "Let's connect." on screen
   (smooth, instant under reduced motion) and the next Tab reaches the GitHub button. It replaced ABOUT,
   which pointed at the one page that has this bar, so a click could only reload it. No HUD item is
-  marked current, and the bar stays one line down to 320px. The three top bars, the home HUD, About's
-  HUD and Starlight's header, are three designs today; bringing them into one family is open in ROADMAP.
+  marked current, and the bar stays one line down to 320px. Home's masthead lockup sits on the bar's
+  centre: above 720px the HUD is a `1fr auto 1fr` grid (the lockup had sat 25.57px right of centre at 768
+  to 1440, SESSION ACTIVE being wider than the 80px spacer; DECISIONS 2026-10-18 · Home's masthead lockup
+  sits on the bar's centre); below that the spacer hides and the row keeps its flex layout. The three top bars are one family since 2026-10-23: home and About keep their HUDs, and
+  Starlight's header puts on the HUD (next bullet).
+- **Starlight's header is the quiet bar** (2026-10-18; the name's size and the search's place
+  2026-10-23; `chrome.css`, its tokens in `tokens.css`), the HUD's voice on the 65 Starlight pages:
+  - **Height:** the HUD's at every width, `--sl-nav-height: calc(2rem + 0.72rem * 1.6 + 1px)`, 51.42px
+    (Starlight's was 56px on a phone and 64px from 50rem), so the hairline sits at one height site-wide.
+    Starlight sizes the sidebar, the right column, the phone strip, the menu button and the anchor scroll
+    padding from it.
+  - **Adaptive glass:** clear at scroll 0, only the hairline, as the HUD is. The frost,
+    `--sl-color-bg-nav` under `blur(14px) saturate(1.25)`, fades in over the first 20px of scroll on a
+    `::before` twice the bar's height and masked back to it, driven by `animation-timeline: scroll(root)`
+    (longhands only: the build's minifier folds a timeline into the `animation` shorthand, and Chrome
+    drops the declaration). Its resting opacity is 0, so a page too short to scroll (the 404) keeps a
+    clear bar. Fully frosted where scroll timelines are missing and under reduced motion; solid
+    `--sl-color-bg` under reduced transparency and increased contrast. The phone "On this page" strip
+    wears the same.
+  - **The name:** "Idan.Lab" in Syne 700 at `--tp-name-size`, 21px, and 20px on a phone (it was 24px
+    and 20px as Starlight's h4), with a fade: the start colour holds for the first quarter, then travels
+    75% of the way to `--tp-name-to` (`#e9f1ee` to `#9fef00` on dark, the editorial ink to `#62a011` on
+    paper). Without `color-mix` the name is the start colour, flat; under forced colours, the system text
+    colour. `h1#_top` keeps the full gradient.
+  - **Every other word** is JetBrains Mono at 0.72rem, uppercase, tracked .12em, in `--tp-hud-muted`,
+    the HUD's own `--muted` (`#79857f` on dark, `#515c59` on paper), and the accent under the pointer;
+    text on paper reads the lime ink there.
+  - **Search** is Starlight's own button, dialog, shortcut and label ("Search"), in Starlight's own
+    place: from 50rem its column starts at the article column's left edge. A 34px box up to 320px wide,
+    outlined in 1px `--tp-search-border`, radius 6px, the 14px magnifier, the label in the bar's capitals
+    and the key chips at its far end; in a narrower column it shrinks with it, the label giving way with
+    an ellipsis, and below about 100px it clips its own contents. A phone shows the magnifier alone.
+    From 72rem, on pages with a contents column, the bar's first column is sized from the site's own
+    three-column layout, because Starlight's template assumes its wider contents column and left the box
+    40px short of the article column from 1376px; that rule repeats the contents column's 15rem, and the
+    two are marked as coupled. The bar keeps Starlight's column gap, which both templates subtract. On
+    the 404, which has no sidebar, the search sits right after the name.
+  - **The right-hand end:** GitHub (16px, muted) then the theme button ("Starlight Component Overrides"
+    below), 1.4rem apart, no separator. On a phone both live in the menu, whose button is a quiet muted
+    icon, lime while the menu is open.
+  - **The right-hand "On this page" column** starts at the bar's hairline from 72rem, so its border no
+    longer runs up through the clear bar.
+  - Tab order: skip link, name, search, GitHub, theme. See DECISIONS 2026-10-23 · The quiet bar:
+    Starlight's header puts on the HUD.
 - Starlight: themed headings (Syne + lime `#` marker, silent to screen readers, §8 "Decoration says
   nothing to a screen reader"), lead blockquote, code frames,
   Toggle, metadata badges, sidebar dots, and screenshots with an edge (2026-10-17, `prose.css`): every
@@ -790,17 +857,29 @@ token is an open ROADMAP item, not a bug.
   34-page Bandit migration), 2026-07-17 (the three badge entries plus the testbed-drop entry) and 2026-07-10.
 - Chrome (Starlight override): `ToggleAll` (Expand/Collapse-all control) auto-injected into the right
   "On this page" sidebar by `overrides/PageSidebar.astro` (renders `<Default/>` then the control), which
-  also renders the script-only `TocTracking` at every width (see "Starlight Component Overrides" below).
+  also renders the script-only `TocTracking` and `ReadingProgress` at every width (see "Starlight
+  Component Overrides" below).
 
 ### Starlight Component Overrides
-- **There are THREE, in `src/components/overrides/`:** `PageSidebar.astro` (renders the default "On
-  this page" TOC then appends `ToggleAll` and the script-only `TocTracking`), `MarkdownContent.astro`
+- **There are FOUR, in `src/components/overrides/`: three additive and one replacing.**
+  `PageSidebar.astro` (renders the default "On this page" TOC then appends `ToggleAll`, and the
+  script-only `TocTracking` and `ReadingProgress`), `MarkdownContent.astro`
   (renders the default content wrapper with the `Principle` coda appended inside it on HackTheBox
   writeups that set `principle:`; the default Footer and its Prev/Next pager follow unchanged), and
   `Head.astro` (appends only the Open Graph and Twitter Card tags Starlight omits, see §2 "Social and SEO
   metadata").
   `MarkdownContent` replaced a `Footer` override on 2026-09-03 (that seam suppressed the pager beneath
-  the coda, see DECISIONS 2026-09-03) and is the newest of the three.
+  the coda, see DECISIONS 2026-09-03) and is the newest of the additive three.
+- **`ThemeSelect.astro` is the one REPLACING override** (owner, 2026-10-18): Starlight's Dark/Light/Auto
+  select becomes About's single-click toggle wherever Starlight renders it, the header and the phone
+  menu's footer. It is a real `<button type="button">` named "Light theme", with `aria-pressed` true on
+  paper and two 16px icons showing the theme it turns on (the sun on dark, the moon on paper). A click,
+  Enter or Space flips `data-theme` on `<html>` and stores `light` or `dark` under `starlight-theme`, in a
+  try/catch; one document listener serves both copies and keeps their `aria-pressed` in step. Starlight's
+  ThemeProvider still sets the theme before first paint, and with nothing stored the page follows the
+  system scheme live. It imports nothing from Starlight. It is the exception the rules at the end of
+  this section allow: nothing additive turns a select into a button, and the owner approved it. See
+  DECISIONS 2026-10-18 · The theme switch is one button on every page, as on About.
 - **Every override imports from the documented `@astrojs/starlight/components/*` entrypoints and
   none reaches into Starlight internals.** That is the constraint that keeps an override additive
   rather than a fork: a deep import into an internal path would bind to a private module that
@@ -831,7 +910,8 @@ token is an open ROADMAP item, not a bug.
   - **Standing check: adding an entry to `components:` requires checking every Starlight plugin for a
     claim on that same component,** and chaining through the plugin's override when one exists. The check
     is PER COMPONENT, not per plugin: `PageSidebar` and `Head` are unclaimed, which is why the two earlier
-    overrides were safe and the third was not. No build guard is possible or planned, because a plugin's
+    overrides were safe and the third was not. `ThemeSelect` is unclaimed too (checked 2026-10-18).
+    No build guard is possible or planned, because a plugin's
     claims live inside its own hook and nothing exposes the overrides it WOULD have taken.
   - See DECISIONS 2026-09-03 · A component override in `astro.config.mjs` silently disables a Starlight
     plugin's override of the same component.
@@ -1208,7 +1288,8 @@ what is kept was measured at 100% or on the device (2026-09-19, Chrome 149 on th
   four 306.8px columns, centered by Starlight's own `margin-inline: auto`, instead of stretching to
   seven columns at 2560 with the hero logo 2100px from the platform name. The token rather than a
   `max-width` on `.sl-container`, because Starlight's header sizes its title column from it and the
-  search box then sits at the content column's edge, as on a writeup. Writeups keep 46rem.
+  search box then sits at the content column's edge, as on a writeup (where, from 72rem, the quiet bar's
+  own rule sizes that column from the same token). Writeups keep 46rem.
 - **The writeup card's description is clamped to two lines at every width**, by design (`.wc-desc`,
   `-webkit-line-clamp: 2`): cards in a row stay one height and the card is a teaser. Recorded with the
   numbers (2026-09-18): descriptions run 93 to 165 characters and the clamp shows 50 to 92 of them
@@ -1312,7 +1393,7 @@ Light is art-directed on its own terms (dark is unchanged). All rules scoped to
 - **Texture not glow:** a faint warm technical dot-grid behind content (`body::before`), replacing
   the old bottom atmosphere wash. Static, low contrast, prefers-reduced-motion safe.
 - **Decorative accent palette (NON-text):** vivid `--pf-accent-2`-style trio for dots, fills,
-  the `#` marker, the h2 rule, the sidebar active bar, panel accents. Reading-progress bar light
+  the `#` marker, the h2 rule, the sidebar active bar, panel accents. The reading hairline's light
   gradient: `#4d7c0f` to `#0b7e92`.
 - **Text inks, measured where they land (2026-10-11):** coloured TEXT on paper reads an ink, never the
   accent. Cyan reads `--tp-cyan-ink` (`#08697a`, 5.22:1 on the page `#ece9e0`, model B). Lime reads
@@ -2421,7 +2502,7 @@ in `DECISIONS.md` under the entry named on each line. One rejection per line, un
 whole records.
 
 - Upgrading dependencies outside a stable checkpoint, and hand-bumping versions: rejected. See DECISIONS 2026-05-31 · Stay on current package versions (no upgrade).
-- Forking or rebuilding any Starlight component: rejected. See DECISIONS 2026-05-31 · Writeup theme pass is CSS-only.
+- Forking or rebuilding any Starlight component: rejected; the one component replaced rather than wrapped is ThemeSelect, an approved exception. See DECISIONS 2026-05-31 · Writeup theme pass is CSS-only, and 2026-10-18 · The theme switch is one button on every page, as on About.
 - Emoji sidebar markers: rejected. See DECISIONS 2026-05-31 · Sidebar markers: CSS colored dots, not emojis.
 - Em dashes in site copy: rejected. See DECISIONS (earlier) · No em dashes in site copy.
 - The blue / cyan / violet / orange writeup badge palette: rejected. See DECISIONS 2026-06-01 · Canonical platform palette: lime / red / purple / amber.
@@ -2483,3 +2564,6 @@ whole records.
 - Taking the hover away from the static badge chips, or a neutral hover on the Difficulty chip: rejected, the row answers the pointer as one, each chip in its own colour. See DECISIONS 2026-10-17 · The difficulty chip answers the pointer in its level's colour.
 - ABOUT in About's own bar, as a link to the page or marked current without one: rejected, the first only reloads the page and the second is the one item in the bar that does nothing. See DECISIONS 2026-10-17 · About's top bar links Contact, not itself.
 - Home and About adopting the writeup header to unify the top bars, links in home's bar, search on home or About, and a GitHub mark on every bar: rejected, it takes the marketing pages' design with it and repeats home's hero buttons on the same screen. See DECISIONS 2026-10-17 · Home and About keep their own bars.
+- "// SECURITY NOTES" in the Starlight bar, a ◂ or a dot before its name, and the name in the HUD's mono capitals: rejected, the tag stays on home and About, the bar does not send the reader home on every page, and the name keeps Syne. See DECISIONS 2026-10-23 · The quiet bar: Starlight's header puts on the HUD.
+- The search at the bar's right-hand end, a "Search writeups" label, and Starlight's own column template on pages with a contents column: rejected, the box sits on the article column's edge under Starlight's own label. See DECISIONS 2026-10-23 · The quiet bar: Starlight's header puts on the HUD.
+- Starlight's theme select restyled as an icon: rejected, one click switches the theme, as on About. See DECISIONS 2026-10-18 · The theme switch is one button on every page, as on About.
