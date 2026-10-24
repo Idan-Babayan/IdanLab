@@ -6,6 +6,70 @@
 
 ---
 
+### 2026-10-25 · The bar's glass thins and frosts over, and what sits on it turns full contrast
+- **Supersedes in part:** 2026-10-23 · The quiet bar: Starlight's header puts on the HUD. Only the glass's
+  values and its fade (`blur(14px) saturate(1.25)` fading in over 20px, in its "Adaptive glass" bullet),
+  and the muted colour at rest of the bar's words and glyphs (its "Every other word" and "The right-hand
+  end" bullets). The height, the name, the search's place, the layout and the fallbacks stand.
+- **Supersedes in part:** 2026-10-24 · The phone "On this page" is the Quiet strip. Only the strip's name
+  on paper in the lime ink, cyan ink and deep gold, and its label in the muted grey: on paper the name is
+  the ink whichever entry is current, and the label is the ink in both themes. The name's rungs on dark,
+  the panel and its figures stand.
+- **Supersedes in part:** 2026-10-18 · The theme switch is one button on every page, as on About. Only
+  "muted at rest" for the copy in the bar, which now rests in the ink; the copy in the phone menu's
+  footer stays muted.
+- **Decision** (CORE_SPEC §6 "Component inventory" carries the full state):
+  - **The glass:** the tint, `--sl-color-bg-nav`, the page colour at 70% on dark and 66% on paper, under
+    `blur(22px) saturate(170%)`, reached over the first 36px of scroll. It frosts over: tint, blur and
+    saturation grow together from nothing (`tp-frost-over`) instead of a finished frost fading in with
+    opacity. Each value is one token in `tokens.css`: `--tp-glass-alpha` (themed), `--tp-glass-blur`,
+    `--tp-glass-saturate`, `--tp-glass-ramp`. Still the `::before` twice the bar's height, still
+    `animation-timeline: scroll(root)`, now with `animation-range: 0 var(--tp-glass-ramp)`; full strength
+    without scroll timelines and under reduced motion, solid under reduced transparency and increased
+    contrast, and the phone strip wears the same.
+  - **On the glass, full contrast:** everything on it except the name reads `--tp-hud-ink` at rest, the
+    name's start colour (`#e9f1ee` on dark, the editorial ink on paper): the search box's magnifier, label
+    and key chips; GitHub and the theme button at every width; the phone's magnifier and menu button; the
+    strip's label and chevron. The strip's current-section name keeps its rung on dark and is the ink on
+    paper. Hover, focus and the open states keep the accent. `--tp-hud-muted` is left to what lies off the
+    glass: the phone menu's footer and the strip panel's numbers.
+- **Why:** the owner tuned the glass to these values (2026-10-24). The thinner tint lets a screenshot under
+  the bar show through: modelled before any change, the muted grey fell from 2.75 to 2.02:1 over pure white
+  on dark and from 3.58 to 2.47:1 over pure black on paper. Offered a thicker tint to hold 3:1, the owner
+  kept the glass and raised the foreground instead (2026-10-24). GitHub and the theme were first left
+  muted as sitting over the right column, which holds only from 72rem: on a writeup from 800px to about
+  1100px the article column lies under them, where muted they measured 2.08 and 2.43:1 on dark and 2.56
+  and 2.89:1 on paper. Offered ink below 72rem only, the owner chose ink at every width (2026-10-25).
+- **Rejected:**
+  - A thicker tint, 80% on dark and 73% on paper, the lowest that held the grey at 3:1 (owner, 2026-10-24).
+  - Ink for GitHub and the theme below 72rem only, muted over the right column above it (owner,
+    2026-10-25).
+  - GitHub and the theme left muted, at 2.1 to 2.9:1 between 800 and 1100px (owner, 2026-10-25).
+- **Known:** the name keeps its fade, a logotype: its start reads 6.39:1 or more over the worst areas, and
+  its lime end on paper is held to no text bar. On dark the flag's gold is the tightest rung, 4.59:1 over
+  pure white. The source writes `-webkit-backdrop-filter`, but the build's minifier drops it (lightningcss
+  does the same with targets that count no Safari), so Safari before 18 shows the tint without the frost.
+  Headless Chrome drew page content under the glass sharp at device scale 2 with desktop metrics, so desktop
+  shots and figures were taken at scale 1. The scrolling itself, a high-DPI desktop screen and the iPhone
+  are unchecked (ROADMAP).
+- **Verified:** production builds, green at 67 pages; Busqueda behind `astro preview` in headless Chrome.
+  The computed glass, header and strip alike, at 390, 1000 and 1280 in both themes: transparent and
+  unfiltered at scroll 0, 35% (33% on paper) with `blur(11px) saturate(1.35)` at 18px, 70% and 66% with
+  `blur(22px) saturate(1.7)` past 36px. At scroll 0 the bar's pixels match the old opacity-0 layer's
+  exactly. Reduced motion and a simulated missing timeline give full strength from the top, reduced
+  transparency and increased contrast the solid page colour; Firefox 157 has no scroll timeline and shows
+  full strength. A theme switch at full strength retints the glass at once. Contrast against the lowest
+  rendered pixel under each element (model C), over a pure white area on dark and a pure black one on
+  paper, the article column's width, full width for GitHub and the theme: text in the ink 6.15:1 or more,
+  icons 6.23:1 or more, at 390, 800, 1000, 1024, 1100, 1280 and 1440. The strip's name on dark: lime 6.11,
+  cyan 5.28, the flag's gold 4.59 (gray-2, for depths the TOC never reaches, 4.19); on paper the coloured
+  inks would have read 2.20 to 4.09. Over the real worst screenshots: 6.23:1 and up over busqueda-1 (a
+  white page) on dark, 6.39:1 and up over busqueda-4 (a terminal) on paper. Under the pointer GitHub and
+  the theme turn lime on dark and the accent on paper, the search the lime ink on paper; the phone menu's
+  footer copies stay muted.
+- **Status:** Adopted; committed to `dev` on 2026-10-25 as
+  `feat(header): the glass thins and frosts over, and what sits on it turns full contrast`.
+
 ### 2026-10-24 · The phone "On this page" is the Quiet strip
 - **Supersedes in part:** 2026-07-10 · Mobile TOC parity: gold flag entries + cyan current-h3 (CSS-only,
   additive). Only the check in its "Behavior preserved" bullet, which since 2026-10-04 wore the entry's
@@ -13,7 +77,10 @@
   the depth model stand.
 - **Decision:** Starlight's own `<mobile-starlight-toc>`, restyled in `chrome.css` below 72rem (CORE_SPEC §6
   carries the full state):
-  - **The strip** is 38px (`--sl-mobile-toc-height: 2.375rem`; Starlight's was 48px), which also moves the
+  - **The strip** (**Partly superseded by:** 2026-10-25 · The bar's glass thins and frosts over, and what
+    sits on it turns full contrast: on paper the name is the ink whichever entry is current, not the lime
+    ink, cyan ink or deep gold, and the label is the ink in both themes, not the muted grey) is 38px
+    (`--sl-mobile-toc-height: 2.375rem`; Starlight's was 48px), which also moves the
     content's offset, the anchor scroll padding and the reading hairline (88.42px on a phone, from 98.42).
     It names the current entry on the left in its rung of the TOC ladder (lime title and h2, cyan h3, gold
     flag, gray-2 deeper; on paper the lime ink, cyan ink and deep gold), colour only, through `:has()` on
@@ -227,16 +294,22 @@
   `tokens.css`; CORE_SPEC §6 "Component inventory" carries the full state):
   - **Height:** the HUD's at every width, `--sl-nav-height: calc(2rem + 0.72rem * 1.6 + 1px)`, 51.42px,
     where Starlight's was 56px on a phone and 64px from 50rem.
-  - **Adaptive glass:** clear at the top of a page, only the hairline; the frost (`--sl-color-bg-nav`
-    under `blur(14px) saturate(1.25)`) fades in over the first 20px of scroll on a `::before` twice the
+  - **Adaptive glass** (**Partly superseded by:** 2026-10-25 · The bar's glass thins and frosts over, and
+    what sits on it turns full contrast: the tint is now 70% on dark and 66% on paper under
+    `blur(22px) saturate(170%)`, and tint, blur and saturation grow together over 36px instead of a
+    finished frost fading in over 20px)**:** clear at the top of a page, only the hairline; the frost
+    (`--sl-color-bg-nav` under `blur(14px) saturate(1.25)`) fades in over the first 20px of scroll on a
+    `::before` twice the
     bar's height, masked back to it, driven by a scroll timeline. Fully frosted without scroll timelines
     and under reduced motion; solid under reduced transparency and increased contrast. The phone "On this
     page" strip wears the same.
   - **The name:** Syne 700 at 21px, 20px on a phone, with a fade in place of the old full gradient: the
     start colour for the first quarter, then 75% of the way to the lime. Flat without `color-mix`, the
     system text colour under forced colours; hover and focus as before.
-  - **Every other word** in the HUD's tracked mono capitals and its `--muted`, here `--tp-hud-muted`,
-    with the accent under the pointer (the lime ink for text on paper).
+  - **Every other word** (**Partly superseded by:** 2026-10-25 · The bar's glass thins and frosts over,
+    and what sits on it turns full contrast: at rest it reads `--tp-hud-ink`, not the muted grey) in the
+    HUD's tracked mono capitals and its `--muted`, here `--tp-hud-muted`, with the accent under the
+    pointer (the lime ink for text on paper).
   - **Search:** Starlight's own button, dialog, shortcut and label, in Starlight's own place: from 50rem
     its column starts at the article column's left edge, a 34px outlined box up to 320px wide that
     shrinks with a narrower column and never overflows it. A phone shows the magnifier alone.
@@ -244,9 +317,12 @@
     17rem nav, the panel's padding, and half of what the pane has to spare beside the 46rem column), so
     the search lands on the article column there too. It repeats the contents column's 15rem, and both
     places say they are coupled.
-  - **The right-hand end:** GitHub (16px, muted) then the theme button (2026-10-18 · The theme switch is
-    one button on every page, as on About), 1.4rem apart, no separator; on a phone both stay in the menu,
-    whose button becomes a quiet muted icon. The right-hand "On this page" column starts at the hairline.
+  - **The right-hand end** (**Partly superseded by:** 2026-10-25 · The bar's glass thins and frosts over,
+    and what sits on it turns full contrast: GitHub, the theme button and the phone's menu button rest in
+    `--tp-hud-ink`, not muted)**:** GitHub (16px, muted) then the theme button (2026-10-18 · The theme
+    switch is one button on every page, as on About), 1.4rem apart, no separator; on a phone both stay in
+    the menu, whose button becomes a quiet muted icon. The right-hand "On this page" column starts at the
+    hairline.
 - **Why:** the three top bars read as three sites (owner, 2026-10-17), and home and About keep theirs, so
   the 65 pages join them: one height, one hairline, one voice. The name sits midway between the first
   brief's 18px and the 24px it had as Starlight's desktop h4 (owner, 2026-10-23), which leaves a phone on
@@ -297,7 +373,9 @@
   wherever Starlight renders it, the header and the phone menu's footer, with About's single-click
   toggle: a real `<button type="button">` named "Light theme", `aria-pressed` true on paper, two 16px
   icons showing the theme it turns on (the sun on dark, the moon on paper) in a 24px hit area, muted at
-  rest and lime under the pointer, with the shared focus ring. One document listener flips `data-theme`
+  rest (**Partly superseded by:** 2026-10-25 · The bar's glass thins and frosts over, and what sits on it
+  turns full contrast: the copy in the bar rests in `--tp-hud-ink`; the menu footer's stays muted) and
+  lime under the pointer, with the shared focus ring. One document listener flips `data-theme`
   on `<html>`, stores `light` or `dark` under `starlight-theme` in a try/catch, and keeps both copies'
   `aria-pressed` in step. Starlight's ThemeProvider still sets the theme before first paint; with nothing
   stored the page follows the system scheme live, and the first click makes the choice explicit. There is

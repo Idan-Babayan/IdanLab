@@ -71,6 +71,12 @@
   checked by replaying its probe in Chrome, never on the device (CORE_SPEC §6, "The strip above it on
   iOS"). If the page still shows there, record the iOS version and the tab layout before changing
   anything.
+  **The glass's frost-over ramp (2026-10-25), in a real Chrome and on the iPhone:** the computed states
+  are measured, the scrolling is not. Scrolling a writeup slowly from the top, the bar and the phone
+  strip stay clear at 0, are visibly half frosted around 18px and full by 36px, with no step or flicker
+  between; scrolling back, they clear again; a fling past 36px lands frosted; a page too short to scroll
+  (the 404) stays clear. On a high-DPI desktop screen the article under the bar is blurred, not sharp
+  (headless Chrome at device scale 2 drew it sharp; at scale 1 and on its phone runs it blurred).
 - [ENG] WriteupMeta filter routes: `/platform`, `/os` and `/environment` do not exist, so the three
   navigational chips render as non-interactive `<span>` rather than `<a>`. When the routes land, restore
   the anchors kept commented in `WriteupMeta.astro` (they restore verbatim) and drop the temporary
