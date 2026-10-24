@@ -6,6 +6,152 @@
 
 ---
 
+### 2026-10-24 · The phone "On this page" is the Quiet strip
+- **Supersedes in part:** 2026-07-10 · Mobile TOC parity: gold flag entries + cyan current-h3 (CSS-only,
+  additive). Only the check in its "Behavior preserved" bullet, which since 2026-10-04 wore the entry's
+  colour: on the phone panel the current entry carries a rail and a wash instead. The colour parity and
+  the depth model stand.
+- **Decision:** Starlight's own `<mobile-starlight-toc>`, restyled in `chrome.css` below 72rem (CORE_SPEC §6
+  carries the full state):
+  - **The strip** is 38px (`--sl-mobile-toc-height: 2.375rem`; Starlight's was 48px), which also moves the
+    content's offset, the anchor scroll padding and the reading hairline (88.42px on a phone, from 98.42).
+    It names the current entry on the left in its rung of the TOC ladder (lime title and h2, cyan h3, gold
+    flag, gray-2 deeper; on paper the lime ink, cyan ink and deep gold), colour only, through `:has()` on
+    the current link. Starlight's "On this page" stays, on the right, as one of the bar's HUD words at the
+    bar's 0.72rem (the mockup drew it at 0.62rem), before a chevron that points down and turns up while
+    the panel is open. The label is lime while the panel is open, and under a hovering pointer only where
+    the pointer hovers (`hover: hover`). No bordered pill: the whole strip stays the button, and it stays
+    put while the page scrolls.
+  - **The panel** lies on the page colour, as the desktop column does: each h2 numbered from 00 (the page
+    title) in the HUD's muted capitals, silent to a screen reader; h3s indented on a guide line in the
+    sidebar's nesting colour; at rest the title and h2 in the text colour and deeper entries gray-2; the
+    current entry on a 2px rail and a 6% wash of its own colour, where Starlight drew a check. The flag
+    glyph sits 3px before its word, between the guide line and the text.
+- **Why:** the owner found Starlight's default "an awful way to show the TOC" and asked for a full redesign
+  (2026-10-24). It started from a mismatch: the strip read "On this page > Recon" in plain white, black on
+  paper, while Recon is green in the TOC. Offered colouring that label alone, the Quiet strip and a Section
+  rail, the owner picked the Quiet strip, and kept it in place while reading. The panel moves onto the page
+  colour because the desktop column lies there, so the ladder's measured figures hold on both surfaces.
+  6% is the wash paper allows: at 9% the cyan ink fell to 4.61:1, at 6% it reads 4.81:1 (model B).
+- **Rejected:**
+  - A Section rail: the hairline split into one segment per section, with the current section's number in
+    the strip (owner, 2026-10-24).
+  - Colouring Starlight's label alone, the owner's first question (colour only, no glyph): it fixed the
+    mismatch and kept the component the owner wanted gone (owner, 2026-10-24).
+  - A strip that slides away as the page scrolls down and returns on the way up (owner, 2026-10-24).
+- **Known:** Firefox before 121 has no `:has()`, so the strip's name keeps Starlight's white there.
+  Starlight fills the name when its script runs at idle, so for a moment after load the strip shows only
+  its label, as Starlight's own strip did. An engine that cannot parse the numbers' empty alternative text
+  takes the plain declaration and can read "01" before an entry, as with the heading markers (CORE_SPEC
+  §8). The label reaches the accessibility tree in capitals, like the bar's other HUD words.
+- **Verified:** production builds, green at 67 pages. Chrome for Android on the emulator (Chrome 149, 411px
+  wide): the strip 38px, the hairline at 88.4px; real taps open and close the panel and turn the chevron,
+  and a jump to Recon lands its heading 24.2px under the strip; the name's colour equals the current
+  entry's for an h2, an h3 and a flag in both themes. A tap that closed the panel had left the label lime
+  under a stuck `:hover`; gated on `hover: hover` it returns to muted, and a mouse at 700px still lights it
+  (headless Chrome). All twelve links of Busqueda's open panel reach the accessibility tree by their names
+  alone, no number and no glyph. From computed colours, model B: at rest 16.89 and 11.28:1 on dark, 14.59
+  and 9.67:1 on paper; the muted words 5.20 and 5.72:1; current rows on their wash 11.43:1 and up on dark,
+  and 5.07 (lime ink), 4.81 (cyan ink) and 8.78:1 (gold) on paper. At 360px a long name ends in an
+  ellipsis 12px clear of the label, and 67 pages at 360px (dark) and 411px (light) scroll nothing
+  sideways.
+- **Status:** Adopted; committed to `dev` on 2026-10-24 as
+  `feat(toc): the phone "On this page" is the Quiet strip`.
+
+### 2026-10-24 · Safari's strip above the bar takes the bar's colour
+- **Decision:** two changes in `chrome.css`, so that Safari on iOS 26 paints the strip under the status bar
+  and the address pill in the page colour instead of showing the page scrolling there:
+  - **The film grain lies in two layers, edge to edge:** `body::after` from the bar's hairline down
+    (`inset: calc(var(--sl-nav-height) - 1px) 0 0 0`) and `header.header::after` over the bar, one texture
+    (`--tp-grain`). The noise falls differently, by at most 6 of 255 a pixel, and is the same on average.
+  - **The bar carries a 1% wash of `--sl-color-bg`** as its own background, which moves it on screen by one
+    level of 255 at most. The frost stays on the bar's `::before`.
+- **Why:** on an iPhone 17 Pro the owner saw the page scrolling in the strip above the bar (2026-10-24).
+  Safari 26 ignores `theme-color` and colours that strip from the page's fixed elements (WebKit's
+  `LocalFrameView::fixedContainerEdges`): it hit-tests the middle of the top edge 4px in, ignoring
+  `pointer-events`, counts a pseudo-element as its host element, and walks up to the first fixed or sticky
+  ancestor. The full-screen grain, a `body::after` above everything, made that test meet `<body>`, which
+  is not fixed, so Safari found no bar. Once the test meets the bar, Safari takes the bar's own background
+  colour, blending one under 75% opacity over the page colour, and samples pixels when there is none; the
+  bar was transparent. A `backdrop-filter` on the bar itself makes Safari report several colours, so the
+  frost stays on the `::before`, which Safari counts as the bar but whose style it never reads.
+- **Rejected:**
+  - The grain as a real element over the whole screen: Safari would meet it as a fixed container, nearly
+    transparent with `pointer-events: none`, and only a retry WebKit added in April 2025 looks past such a
+    container, and only while its opacity stays under 0.1.
+  - The grain left off the bar: a seam where the texture stops.
+  - An opaque bar: it loses the clear top of 2026-10-23 · The quiet bar: Starlight's header puts on the HUD.
+- **Known:** not yet seen on an iPhone (ROADMAP). The fix rests on WebKit's source, read again from its main
+  branch on 2026-10-24, and on replaying the probe in Chrome. The bottom edge is unchanged: its probe still
+  meets `<body>`. Anything full-screen added later must keep off the bar's top edge, or the strip shows the
+  page again. The quiet bar's clear top holds on screen: the wash is one level of 255.
+- **Verified:** production build, both themes: the replayed top probe meets the header, whose background is
+  the 1% wash (Chrome for Android computes `oklab(... / 0.01)` for it too), and the bottom probe meets
+  `<body>`. Pixel comparisons before and after: the grain moved by at most 6 of 255 a pixel and not on
+  average, the bar by one level of 255 at most.
+- **Status:** Adopted; committed to `dev` on 2026-10-24 as
+  `fix(header): Safari's strip above the bar takes the bar's colour`.
+
+### 2026-10-24 · The browser's own colour follows the theme
+- **Decision:** every page carries `<meta name="theme-color">` from `src/components/ThemeColor.astro`, the
+  page colour of the theme shown (`#07090a` on dark, `#ece9e0` on paper), kept in step by an inline
+  `MutationObserver` on `html[data-theme]`, which Starlight's ThemeProvider, About's bootstrap and both
+  theme buttons write. The Head override renders it on the 65 Starlight pages, and home and About render it
+  in their own heads; home has no `data-theme` and stays dark.
+- **Why:** the owner asked for Android's status bar to follow the theme (2026-10-24). Without the meta,
+  Chrome for Android on a phone in light mode painted its own white status bar and toolbar above the dark
+  theme.
+- **Not used:** two metas keyed to `prefers-color-scheme`. They follow the phone's scheme, not the theme the
+  site shows, which the theme button can set against it.
+- **Known:** Chrome ignores `theme-color` while the phone is in dark mode and keeps its own dark bar
+  (`#0d0e12`), above paper too; nothing a page sets reaches it. Safari 26 ignores `theme-color` altogether
+  (2026-10-24 · Safari's strip above the bar takes the bar's colour). The watcher is one more distinct
+  inline script, 19 in all, so the CSP keeps `'unsafe-inline'` (CORE_SPEC §2).
+- **Verified:** Android emulator, Chrome 149, production build. Phone in light mode: the status bar and
+  toolbar read `#ece9e0` on paper and `#07090a` on dark, with the toolbar shown and scrolled away, and a
+  tap on the menu's theme button changes them at once. Phone in dark mode: `#0d0e12` on both themes. The
+  meta follows the toggle on writeups and About; home stays dark.
+- **Status:** Adopted; committed to `dev` on 2026-10-24 as
+  `feat(head): the browser's own colour follows the theme`.
+
+### 2026-10-24 · The bar keeps its phone padding against the image-zoom plugin until Starlight 0.42
+- **Decision:** one rule joins the `overrides.css` tail, unlayered and `!important`: below 50rem, on pages
+  with the menu, `header.header` keeps Starlight's own phone padding,
+  `calc(var(--sl-nav-gap) + var(--sl-nav-pad-x) + var(--sl-menu-button-size))`. The tail grows from 13
+  rules to 14. Delete the rule with the move to Starlight 0.42, which brings the plugin's fix.
+- **Why:** `starlight-image-zoom` 0.15.0 writes `padding-inline-end` on `<header>` as an inline style when a
+  zoom opens, and on close leaves `var(--sl-nav-pad-x)`, Starlight's value from 50rem. Below 50rem
+  Starlight keeps the bar's right end clear of the fixed menu button, so after any zoom the search icon
+  slid 48px right onto the menu icon until the next page load (Chrome for Android, 2026-10-24). Only
+  `!important` outranks an inline style, and `!important` inside a layer would reverse the layer order, so
+  the rule goes to the tail (CORE_SPEC §8 "The layer law").
+- **Rejected:** the plugin's 0.16.2, which fixes this (its #83) but requires Starlight 0.42, an upgrade not
+  decided (CORE_SPEC §3 "Upgrade path").
+- **Known:** while a zoom is open the rule also outranks the plugin's scrollbar compensation. Phones scroll
+  with overlay scrollbars, so that is 0px there; a desktop window narrower than 50rem with a classic
+  scrollbar can see the bar shift by the scrollbar's width under the zoom's backdrop.
+- **Verified:** Chrome for Android on the emulator, production build: the plugin writes its inline padding
+  on open (`calc(var(--sl-nav-pad-x) + 0px)`) and on close (`var(--sl-nav-pad-x)`), and the computed
+  padding stays 64px throughout, the search icon at x 315 and the menu icon at x 363, apart.
+- **Status:** Adopted; committed to `dev` on 2026-10-24 as
+  `fix(header): the bar keeps its phone padding after an image zoom`.
+
+### 2026-10-24 · Page titles balance their lines, and the search's key chips hide where nothing hovers
+- **Decision:** two small rules in `chrome.css`, both picked by the owner on 2026-10-24 from the phone
+  pass's polish list: `text-wrap: balance` on the page title (`h1#_top`), and, from 50em where nothing can
+  hover (`any-hover: none`), no Ctrl K or ⌘K chips in the search box.
+- **Why:** at 360px "Bandit 12 → 13" broke as "Bandit 12 →" over "13", and "Rust fixme 3" as "Rust fixme"
+  over "3"; balanced, a number keeps its word. A touch screen has no Ctrl or Cmd to press, and the box
+  shows from 50em, which tablets and phones held sideways reach.
+- **Known:** Chrome 114, Safari 17.5 and Firefox 121 balance; older engines wrap as before. A tablet with a
+  keyboard and no pointer loses the chips though Ctrl K works there; one with a trackpad hovers and keeps
+  them.
+- **Verified:** Chrome for Android on the emulator: at 360px "Bandit" over "12 → 13" and "Rust" over
+  "fixme 3"; held sideways (914px, `any-hover: none`) the box reads "Search" with no chips. With a mouse
+  at 1280px the chips show (headless Chrome).
+- **Status:** Adopted; committed to `dev` on 2026-10-24 as
+  `fix(phone): page titles balance, and touch screens lose the key chips`.
+
 ### 2026-10-24 · zod 4.5.1 to 4.6.7 by a lockfile-only refresh, checked with a negative frontmatter probe
 - **Decision:** clear GHSA-mrhx-c7xc-m3w5 (memory exhaustion while validating oversized arrays, patched in
   4.6.6) with a targeted `npm update zod`, as its own run and its own merge. It moves exactly one lockfile
@@ -4217,6 +4363,10 @@ data URI rather than hashing.
   included, so a current entry keeps its colour under the pointer; since 2026-10-04 the check takes the
   entry's colour, `background-color: currentColor` on the same `::after`, by the owner's call. Both shipped
   as `fix(toc): the current section keeps its colour under the pointer, on desktop and mobile alike`.
+  **Partly superseded by:** 2026-10-24 · The phone "On this page" is the Quiet strip. Stale: the check,
+  both "untouched" and its colour since 2026-10-04. On the phone panel Starlight's check is gone
+  (`content: none` on its `::after`), and the current entry carries a 2px rail and a 6% wash in its own
+  colour. The colour rules and the depth model stand.
 - **Verification:** both themes, real mobile viewport (375px), computed styles + screenshots. Dark: flags
   muted→full gold, current h3 `#41efff`, current h2 stays white, checkmark intact. Light: current h3
   `#08697a`, flags `#C6A243`/muted, checkmark bg = light accent. Desktop right column unchanged (flag

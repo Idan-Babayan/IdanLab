@@ -65,6 +65,12 @@
   falls back to the system text colour and the frost to system colours, checked so far under emulation
   only), and Firefox and Safari, where a missing scroll timeline should leave the bar fully frosted from
   the top. See DECISIONS 2026-10-23 · The quiet bar: Starlight's header puts on the HUD.
+  **On the owner's iPhone (iOS 26 Safari), first:** scrolled down a writeup, the strip under the status
+  bar and the address pill should now be the page colour, with no page showing above the bar, in both
+  themes and in the Top, Bottom and Compact tab layouts. Fixed 2026-10-24 from WebKit's own source and
+  checked by replaying its probe in Chrome, never on the device (CORE_SPEC §6, "The strip above it on
+  iOS"). If the page still shows there, record the iOS version and the tab layout before changing
+  anything.
 - [ENG] WriteupMeta filter routes: `/platform`, `/os` and `/environment` do not exist, so the three
   navigational chips render as non-interactive `<span>` rather than `<a>`. When the routes land, restore
   the anchors kept commented in `WriteupMeta.astro` (they restore verbatim) and drop the temporary
