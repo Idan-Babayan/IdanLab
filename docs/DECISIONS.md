@@ -24,8 +24,8 @@
   zero image cache reuse in both builds and no new warnings. `package.json` stayed byte-identical, 356 of
   356 registry signatures verified, `npm audit` no longer lists zod, and the dev-server smoke test was
   clean.
-- **Status:** Adopted. `93e599e` and this entry are on dev with a green Cloudflare check, and they ship
-  with the next merge to main.
+- **Status:** Adopted + shipped. `93e599e` and this entry were merged to main as `a9e4395` on 2026-10-24,
+  with Cloudflare checks green on dev and main.
 
 ### 2026-10-24 · Dependabot alerts cleared by a lockfile-only refresh, vite held at 8.2.4
 - **Decision:** clear the 18 open Dependabot alerts, all in transitive packages, without touching
