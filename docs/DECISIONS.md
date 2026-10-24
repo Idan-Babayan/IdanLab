@@ -6,6 +6,27 @@
 
 ---
 
+### 2026-10-24 · zod 4.5.1 to 4.6.7 by a lockfile-only refresh, checked with a negative frontmatter probe
+- **Decision:** clear GHSA-mrhx-c7xc-m3w5 (memory exhaustion while validating oversized arrays, patched in
+  4.6.6) with a targeted `npm update zod`, as its own run and its own merge. It moves exactly one lockfile
+  entry, zod 4.5.1 to 4.6.7 (`93e599e`), and leaves `package.json` untouched. 4.6.7 is 4.6.6's code with
+  only the version number changed (diffed), so the newest release in astro's `^4.3.6` range is also the
+  patched one.
+- **Threat model:** zod only validates self-authored frontmatter and config at build time, so the advisory
+  cannot be reached here. The run still needed care because zod is load-bearing: the strict enums in
+  `src/content.config.ts` are the first line of frontmatter validation.
+- **Why a negative probe on top of the byte comparison:** an identical `dist/` proves that valid
+  frontmatter still parses the same; it cannot prove that invalid frontmatter still fails. A throwaway
+  `src/content/docs/zz-zod-probe.mdx` with `os: linux` and `badges: "no"` failed the build, naming both
+  fields, on 4.5.1 and again on 4.6.7. It was then deleted, and a rebuild reproduced the candidate
+  manifest exactly.
+- **Verified against a cold baseline, byte for byte:** 210 of 210 files in `dist/` were identical, with
+  zero image cache reuse in both builds and no new warnings. `package.json` stayed byte-identical, 356 of
+  356 registry signatures verified, `npm audit` no longer lists zod, and the dev-server smoke test was
+  clean.
+- **Status:** Adopted. `93e599e` and this entry are on dev with a green Cloudflare check, and they ship
+  with the next merge to main.
+
 ### 2026-10-24 · Dependabot alerts cleared by a lockfile-only refresh, vite held at 8.2.4
 - **Decision:** clear the 18 open Dependabot alerts, all in transitive packages, without touching
   `package.json`. One lockfile-only commit (`3629bde`) moves 33 entries, each to an exact version. undici

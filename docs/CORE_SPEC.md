@@ -157,7 +157,8 @@ DECISIONS 2026-10-24 · Dependabot alerts cleared by a lockfile-only refresh, vi
 **Transitive, not declared, but load-bearing:** `@astrojs/mdx` 7.0.8, `astro-expressive-code` 0.44.1
 and `@expressive-code/core` 0.44.1 (themes `tokyo-night` dark / `one-light` light; the custom EC
 plugin `src/lib/ec-priv-command.mjs` tags command words by category, see §6), `pagefind` 1.5.2,
-`vite` 8.2.4.
+`vite` 8.2.4, `zod` 4.6.7 (the strict frontmatter enums in `src/content.config.ts` run on it;
+DECISIONS 2026-10-24 · zod 4.5.1 to 4.6.7 by a lockfile-only refresh, checked with a negative frontmatter probe).
 
 **The vite hold lives only in the lockfile:** `astro` accepts `vite ^8.0.13`, vite 8.2.4 accepts
 `rolldown ~1.2.4` and Starlight accepts `astro-expressive-code ^0.44.0`, so a targeted
@@ -265,6 +266,10 @@ each Vite major; recorded, not pinned.
   0.15.0 accepts any Starlight from 0.41 up, but 0.16.x shipped alongside Starlight 0.42 and its
   current release requires it. Whether and when to make that move is not decided; see
   DECISIONS 2026-10-24 · Dependabot alerts cleared by a lockfile-only refresh, vite held at 8.2.4.
+- After a zod change, rerun the negative frontmatter probe as well as the byte comparison: an identical
+  build proves valid frontmatter still parses the same, not that invalid frontmatter still fails. The
+  probe and its expected failure are in
+  DECISIONS 2026-10-24 · zod 4.5.1 to 4.6.7 by a lockfile-only refresh, checked with a negative frontmatter probe.
 
 ## 4. Repository Map
 
