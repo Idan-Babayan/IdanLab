@@ -254,15 +254,26 @@ body::before {
    opacity is set HERE, beside the light atmosphere block, rather than with the base grain rule below
    (both land on .035 today). This note used to sit at the end of the prose module, where the Phase 3
    split had carried it because it trails its subject instead of leading it. */
-:root[data-theme='light'] body::after { opacity: .035; }
+:root[data-theme='light'] body::after,
+:root[data-theme='light'] header.header::after { opacity: .035; }
 
 /* ── Film grain (mirrors the index.astro / about.astro fractalNoise overlay) ──
    Fixed full-screen texture, non-interactive. Very low opacity so chrome and
-   reading stay legible in both themes. */
+   reading stay legible in both themes. Two layers lie edge to edge, this one from the bar's hairline
+   down and the bar's own above it (header.header::after, in the quiet bar block): the same texture,
+   the noise only falling differently, by no more than 6 of 255 a pixel. The split is for Safari on iOS
+   26, which paints the strip above a fixed header (under the status bar and the address pill) in the
+   background colour of the fixed element it hit-tests 4px below the top edge, and counts a
+   pseudo-element as its host element: one body::after over the whole screen made that test meet
+   <body>, so Safari found no bar and showed the page scrolling up above it (WebKit's
+   LocalFrameView::fixedContainerEdges). Keep anything full-screen off the bar's top edge. */
+:root {
+  --tp-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
 body::after {
   content: "";
-  position: fixed; inset: 0; pointer-events: none; z-index: 9999; opacity: .035;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  position: fixed; inset: calc(var(--sl-nav-height) - 1px) 0 0 0; pointer-events: none; z-index: 9999; opacity: .035;
+  background-image: var(--tp-grain);
 }
 } /* @layer chrome */
 @layer chrome {
@@ -636,6 +647,23 @@ header.header,
 mobile-starlight-toc nav {
   background-color: transparent;
   isolation: isolate;
+}
+/* Safari's cue (the film grain block says why): on iOS 26 the strip above the bar, under the status bar
+   and the address pill, takes the bar's own background colour, blended over the page colour when it is
+   mostly clear, and shows the page scrolling there when the bar has none. A 1% wash of the page colour
+   is a colour Safari can read, so the strip is the page colour, and on screen it moves the bar by one
+   level of 255 at most. The frost stays on the layer behind: a backdrop-filter on the bar itself makes
+   Safari give up on one colour. */
+header.header { background-color: color-mix(in oklab, var(--sl-color-bg) 1%, transparent); }
+/* The bar's share of the film grain: the same texture over the bar and everything in it, edge to edge
+   with the page's layer, which starts at the hairline. */
+header.header::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: .035;
+  background-image: var(--tp-grain);
 }
 header.header::before,
 mobile-starlight-toc nav::before {
