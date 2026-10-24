@@ -563,13 +563,17 @@ nav.sidebar summary {
    Writeups only (landings, wargame hubs and the 404 keep the plain hairline): a 1px line laid over the
    header's bottom border and scaled from the left as the page scrolls, the whole page measured. Where
    the phone "On this page" strip shows, it runs along that strip's bottom edge instead, where reading
-   starts: --sl-mobile-toc-height is 3rem there and 0 everywhere else. ReadingProgress.astro creates
-   it and sets its scale, with no transition; it is decorative and aria-hidden. */
+   starts: --sl-mobile-toc-height is the strip's 2.375rem there (the Quiet strip, near the top of this
+   file) and 0 everywhere else. It spans what the strip spans:
+   from 50rem the strip starts past the sidebar (Starlight's --sl-content-inline-start), and a full-width
+   line crossed the sidebar's first entry there (a phone held sideways, 914px, 2026-10-24); from 72rem it
+   lies on the bar's own border, which runs the full width. ReadingProgress.astro creates it and sets its
+   scale, with no transition; it is decorative and aria-hidden. */
 #tp-progress {
   position: fixed;
   top: calc(var(--sl-nav-height) + var(--sl-mobile-toc-height) - 1px);
-  left: 0;
-  width: 100%;
+  left: var(--sl-content-inline-start, 0rem);
+  right: 0;
   height: 1px;
   z-index: 1000;
   pointer-events: none;
@@ -582,6 +586,15 @@ nav.sidebar summary {
    :root[data-theme='light'] + #id selector outranks the base rule only in light. */
 :root[data-theme='light'] #tp-progress {
   background: linear-gradient(90deg, #4d7c0f, #0b7e92);
+}
+/* The phone menu covers the page, and the line goes with it. Its z-index lifts it over the bar's
+   border, which also put it over the open menu, across the first entry. Starlight marks <body> with
+   data-mobile-menu-expanded while the menu is open; on close the line is back where the reader left. */
+[data-mobile-menu-expanded] #tp-progress {
+  visibility: hidden;
+}
+@media (min-width: 72rem) {
+  #tp-progress { left: 0; }
 }
 
 /* ── Code blocks: a touch more presence (syntax colors stay from your EC themes) ── */
