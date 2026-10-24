@@ -424,7 +424,11 @@ body::after {
    renders as `h1#_top` OUTSIDE `.sl-markdown-content` (our writeups start the body at h2),
    so that is the correct, stable hook (it is also the TOC "Overview"/back-to-top anchor).
    Also given the Syne display face so it truly echoes the hero. h2/h3/h4 stay solid. */
+/* Balanced lines when a title wraps, so a number keeps its word: at 360px "Bandit 12 → 13" broke as
+   "Bandit 12 →" over "13" and "Rust fixme 3" as "Rust fixme" over "3" (owner, 2026-10-24). Chrome 114,
+   Safari 17.5 and Firefox 121 balance; older engines wrap as before. */
 h1#_top {
+  text-wrap: balance;
   font-family: var(--tp-display);
   font-weight: 800;
   letter-spacing: -0.01em;
@@ -985,6 +989,12 @@ site-search button[data-open-modal] { color: var(--tp-hud-muted); }
     border: 1px solid var(--tp-search-border);
     border-radius: 3px;
   }
+}
+/* A screen with only touch has no Ctrl or Cmd to press: the key chips go where nothing can hover
+   (tablets, and phones held sideways, where the box shows from 50em). A tablet with a trackpad hovers
+   and keeps them; one with a keyboard alone loses them though Ctrl K would work (owner, 2026-10-24). */
+@media (min-width: 50em) and (any-hover: none) {
+  site-search button[data-open-modal] > kbd { display: none; }
 }
 site-search button[data-open-modal]:hover,
 site-search button[data-open-modal]:focus-visible {
