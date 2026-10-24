@@ -139,7 +139,8 @@
 
 Current as of the Astro 7 upgrade, 2026-08-29, plus a lockfile-only security refresh on 2026-10-24.
 Reasoning for the upgrade: DECISIONS 2026-08-29 · Astro 6 to 7 and Starlight 0.39 to 0.41, upgraded
-in phases against a byte-reproducible build.
+in phases against a byte-reproducible build. Reasoning for the refresh:
+DECISIONS 2026-10-24 · Dependabot alerts cleared by a lockfile-only refresh, vite held at 8.2.4.
 
 **Declared in `package.json`.** The RANGE FORM is a decision, not a formatting choice; see below.
 
@@ -156,7 +157,8 @@ in phases against a byte-reproducible build.
 **Transitive, not declared, but load-bearing:** `@astrojs/mdx` 7.0.8, `astro-expressive-code` 0.44.1
 and `@expressive-code/core` 0.44.1 (themes `tokyo-night` dark / `one-light` light; the custom EC
 plugin `src/lib/ec-priv-command.mjs` tags command words by category, see §6), `pagefind` 1.5.2,
-`vite` 8.2.4.
+`vite` 8.2.4, `zod` 4.6.7 (the strict frontmatter enums in `src/content.config.ts` run on it;
+DECISIONS 2026-10-24 · zod 4.5.1 to 4.6.7 by a lockfile-only refresh, checked with a negative frontmatter probe).
 
 **The vite hold lives only in the lockfile:** `astro` accepts `vite ^8.0.13`, vite 8.2.4 accepts
 `rolldown ~1.2.4` and Starlight accepts `astro-expressive-code ^0.44.0`, so a targeted
@@ -255,6 +257,19 @@ each Vite major; recorded, not pinned.
   lime bar with its text in line with the lines around it. The bar is EC's own border, recoloured by
   `chrome.css` (§6 "Code-block command highlighting"); a second bar means EC moved it, and the rule has
   to follow it rather than draw a bar of its own.
+- **Starlight 0.41 gates the Astro security fix (measured 2026-10-24).** astro from 7.3.3 up, which the
+  two October 2026 astro advisories need, requires `@astrojs/markdown-remark ^7.3.0`, and Starlight
+  0.41 cannot follow with one copy. Its `@astrojs/mdx ^7.0.5` tops out at 7.0.8, which pins
+  markdown-remark at exactly 7.2.4, so MDX would run on a nested 7.2.4 while `unified()` comes from the
+  root 7.3 copy: the two-instance state this section forbids. `@astrojs/mdx` 8.x takes markdown-remark
+  as a `^7.3.0` peer and arrives with Starlight 0.42 (`@astrojs/mdx ^8.0.0`). `starlight-image-zoom`
+  0.15.0 accepts any Starlight from 0.41 up, but 0.16.x shipped alongside Starlight 0.42 and its
+  current release requires it. Whether and when to make that move is not decided; see
+  DECISIONS 2026-10-24 · Dependabot alerts cleared by a lockfile-only refresh, vite held at 8.2.4.
+- After a zod change, rerun the negative frontmatter probe as well as the byte comparison: an identical
+  build proves valid frontmatter still parses the same, not that invalid frontmatter still fails. The
+  probe and its expected failure are in
+  DECISIONS 2026-10-24 · zod 4.5.1 to 4.6.7 by a lockfile-only refresh, checked with a negative frontmatter probe.
 
 ## 4. Repository Map
 

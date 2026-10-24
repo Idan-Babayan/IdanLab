@@ -6,6 +6,73 @@
 
 ---
 
+### 2026-10-24 · zod 4.5.1 to 4.6.7 by a lockfile-only refresh, checked with a negative frontmatter probe
+- **Decision:** clear GHSA-mrhx-c7xc-m3w5 (memory exhaustion while validating oversized arrays, patched in
+  4.6.6) with a targeted `npm update zod`, as its own run and its own merge. It moves exactly one lockfile
+  entry, zod 4.5.1 to 4.6.7 (`93e599e`), and leaves `package.json` untouched. 4.6.7 is 4.6.6's code with
+  only the version number changed (diffed), so the newest release in astro's `^4.3.6` range is also the
+  patched one.
+- **Threat model:** zod only validates self-authored frontmatter and config at build time, so the advisory
+  cannot be reached here. The run still needed care because zod is load-bearing: the strict enums in
+  `src/content.config.ts` are the first line of frontmatter validation.
+- **Why a negative probe on top of the byte comparison:** an identical `dist/` proves that valid
+  frontmatter still parses the same; it cannot prove that invalid frontmatter still fails. A throwaway
+  `src/content/docs/zz-zod-probe.mdx` with `os: linux` and `badges: "no"` failed the build, naming both
+  fields, on 4.5.1 and again on 4.6.7. It was then deleted, and a rebuild reproduced the candidate
+  manifest exactly.
+- **Verified against a cold baseline, byte for byte:** 210 of 210 files in `dist/` were identical, with
+  zero image cache reuse in both builds and no new warnings. `package.json` stayed byte-identical, 356 of
+  356 registry signatures verified, `npm audit` no longer lists zod, and the dev-server smoke test was
+  clean.
+- **Status:** Adopted. `93e599e` and this entry are on dev with a green Cloudflare check, and they ship
+  with the next merge to main.
+
+### 2026-10-24 · Dependabot alerts cleared by a lockfile-only refresh, vite held at 8.2.4
+- **Decision:** clear the 18 open Dependabot alerts, all in transitive packages, without touching
+  `package.json`. One lockfile-only commit (`3629bde`) moves 33 entries, each to an exact version. undici
+  8.10.0 to 8.12.3 (11 alerts), vite 8.2.2 to 8.2.4 (3), devalue 5.9.2 to 5.9.4 (1) and source-map-js
+  1.2.1 to 1.2.2 (1) close sixteen alerts on merge. postcss-selector-parser 6.1.4 to 6.1.5 is the real fix
+  for #32, dismissed below. Two packages `npm audit` had already flagged move with them: sharp 0.35.4 to
+  0.35.5 with its 26 `@img/*` platform packages, and smol-toml 1.8.0 to 1.9.1.
+- **Threat model unchanged from 2026-08-01 · Thirteen Dependabot alerts triaged and deliberately
+  deferred:** nothing here is reachable through the published site (static, no server, self-authored
+  content). The one live surface was vite's dev server, which runs on the owner's machine during
+  `npm run dev`.
+- **Why vite is held at the 8.2.4 patch:** `npm update vite` takes 8.3.5, which needs Rolldown ~1.2.14, so
+  the bundler would move from 1.2.6 to 1.2.15, a change the fix does not need. The hold comes from
+  `npm install vite@8.2.4` followed by `npm uninstall vite`: `package.json` carried `vite ^8.2.4` between
+  the two commands and ended byte-identical (hash-checked). The hold lives only in the lockfile; CORE_SPEC
+  §3 records what moves it and what cannot.
+- **The exact `@astrojs/markdown-remark` pin is a tripwire (measured on copies):** a bare `npm update`,
+  `npm audit fix` and a regenerated lockfile each stop with ERESOLVE and change nothing, because each
+  reaches for astro 7.4.x, whose `^7.3.0` peer range excludes 7.2.4. Targeted updates work
+  (`npm update vite`, `npm update astro-expressive-code`, `npm update zod`). The tripwire ends when the
+  pin becomes a caret: with a simulated caret, a bare `npm update` moved vite, Rolldown and Expressive
+  Code without an error.
+- **#32 (postcss-selector-parser) dismissed as inaccurate:** 6.1.5 is the maintainers' backport of the
+  7.1.6 fix (its changelog cites GHSA-rj75-hqrm-r3gf), but the advisory still lists only < 7.1.6. The
+  other route, Expressive Code 0.44.3 (which takes postcss-selector-parser to 7.1.7), was two days old and
+  would have been an Expressive Code upgrade.
+- **#30 (http-cache-semantics) dismissed as vulnerable code not used:** no patched release exists (4.3.0
+  leaves the max-stale handling untouched, diffed), and astro reaches the package only from
+  `assets/build/remote.js`, to cache remote images this site does not have.
+- **Verified against a cold baseline, byte for byte (the 2026-08-29 method, run as fail-closed gates):**
+  both builds started from `npm ci`, which also empties Astro's image cache in `node_modules/.astro`. All
+  210 files in `dist/` were identical, and all 15 images were re-encoded by the new sharp with zero cache
+  reuse. There were no new warnings, and `package.json` stayed byte-identical. Exactly the 33 expected
+  lockfile entries changed, each from the npm registry with an integrity hash, and 356 of 356 registry
+  signatures verified. The Linux sharp binaries are present in the Windows-written lockfile. The dev
+  server served pages and `astro:assets` images and still refused a file outside `server.fs.allow`.
+  Identical images were predicted before the run: libwebp, libpng, mozjpeg and lcms are the same versions
+  in sharp-libvips 1.3.3 and 1.3.4.
+- **Found along the way, not decided here:** zod 4.5.1 picked up GHSA-mrhx-c7xc-m3w5 after the triage and
+  gets its own run. On Starlight 0.41, any astro from 7.3.3 up, which the two October 2026 astro
+  advisories need, leaves two copies of `@astrojs/markdown-remark`, so that upgrade is a Starlight 0.42
+  upgrade. The facts are in CORE_SPEC §3 "Upgrade path".
+- **Status:** Adopted + shipped. `3629bde` (lockfile) and `5a77f1b` (CORE_SPEC §3) were merged to main as
+  `a860308` on 2026-10-24. Cloudflare checks were green on dev and main, Dependabot closed sixteen alerts,
+  and #30 and #32 were dismissed.
+
 ### 2026-10-23 · The quiet bar: Starlight's header puts on the HUD
 - **Supersedes in part:** 2026-10-17 · Home and About keep their own bars. Only two claims: that bringing
   the three bars into one family "stays open in ROADMAP", and the Known bullet's "It is a proposal, not a
