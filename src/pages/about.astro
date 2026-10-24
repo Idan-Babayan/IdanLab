@@ -10,6 +10,7 @@
 // no <link rel="preload"> on purpose. Firefox flagged the used font preloads as
 // "not used" and the preload only shortened first-load FOUT. Do not re-add them.
 import '../styles/fonts.css';
+import ThemeColor from '@components/ThemeColor.astro';
 
 // Identity links: the site, the GitHub profile and LinkedIn name one person, so a search for the
 // name joins them. The same block sits in index.astro; keep the two in sync. JSON.stringify output
@@ -59,6 +60,7 @@ const PERSON = JSON.stringify({
       document.documentElement.dataset.theme = stored === 'light' ? 'light' : 'dark';
     })();
   </script>
+  <ThemeColor />
 </head>
 <body>
 

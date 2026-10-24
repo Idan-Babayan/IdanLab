@@ -10,15 +10,18 @@
 # enforcement blocks nothing). There is NO reporting endpoint (report-to / report-uri) by
 # design; violations surface in browser devtools.
 #
-# script-src note (important): the production build emits 20 distinct inline scripts, not
+# script-src note (important): the production build emits 19 distinct inline scripts, not
 # one (counted by SHA-256 over every inline script body in the deployable pages of dist,
-# 2026-10-03; 21 on 2026-09-13, 18 when this note was written). Besides our reading-progress
-# bar, Starlight injects its own inline scripts (theme provider, mobile-menu toggle, sidebar/TOC
-# persistence, updatePickers, Expressive Code), About carries its theme bootstrap, and the
+# 2026-10-24, parsed as HTML so script text inside an attribute such as a code block's copy
+# button is not counted; 20 on 2026-10-03, 21 on 2026-09-13, 18 when this note was written).
+# Besides our reading-progress bar, Starlight injects its own inline scripts (theme provider,
+# mobile-menu toggle, sidebar/TOC persistence, updatePickers, Expressive Code), every page
+# carries the theme-color watcher (ThemeColor.astro), About carries its theme bootstrap, and the
 # writeup and landing components carry theirs. The homepage's and About's effects ship as
 # script files since 2026-10-02. A hash in script-src makes browsers ignore 'unsafe-inline', so a
-# single progress-script hash would block the other 19. We therefore keep 'unsafe-inline' in script-src.
-# The stable progress-script hash is sha256-zbeMm3179IyQub695L7lMzB1ygPiSe0lSSrMfkEOwpc=
+# single progress-script hash would block the other 18. We therefore keep 'unsafe-inline' in script-src.
+# The progress script is a bundled module since 2026-10-23, so its hash moves with the bundle:
+# sha256-s2kQrBSZYyupZNIDaPA1sLmKH1x5aU4zXsso4ex+akk= on 2026-10-24
 # (recompute the full set from dist to drop unsafe-inline later; see DECISIONS.md).
 #
 # 'wasm-unsafe-eval' is REQUIRED, not optional: Starlight's search (Pagefind) instantiates a

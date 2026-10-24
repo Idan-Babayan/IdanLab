@@ -7,6 +7,7 @@
 // no <link rel="preload"> on purpose. Firefox flagged the used font preloads as
 // "not used" and the preload only shortened first-load FOUT. Do not re-add them.
 import '../styles/fonts.css';
+import ThemeColor from '@components/ThemeColor.astro';
 
 // Head strings live here, not inline in the markup, so Astro escapes them on output. Literal HTML
 // written in an .astro template passes through VERBATIM: the title's "&" stayed a bare ampersand,
@@ -51,6 +52,7 @@ const PERSON = JSON.stringify({
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <ThemeColor />
   <title>{TITLE}</title>
   <meta name="description" content={DESCRIPTION} />
   <meta name="author" content={AUTHOR} />
