@@ -15,9 +15,10 @@
    `a[aria-current]`, so the current h2 turned white on hover while h3 and the flags held (measured
    rgb(182,255,60) to rgb(255,255,255)). The heading rules share these tokens: if a heading colour
    changes, change it here too. Which entry is current is TocTracking.astro's job, not this file's.
-   Entries that are not current keep Starlight's colours: gray-3, white on hover, in the desktop
-   column; the text colour in the dropdown, which also marks its current entry with a check in the
-   entry's own colour. */
+   Entries that are not current keep Starlight's colours in the desktop column: gray-3, white on hover.
+   On a phone the strip names the current entry in the same colour, and its panel (the Quiet strip,
+   below) reads h2 entries in the text colour and deeper ones in gray-2, marking the current entry with
+   a rail and a faint wash of its own colour where Starlight drew a check. */
 
 /* Flags, desktop: matched by their slug anchors (#user-flag / #root-flag; no .flag-title class exists
    yet). A muted gold at rest, which with the glyph keeps the loot scannable at a glance; the full
@@ -89,8 +90,18 @@
    title and h2, 1 for h3, 2 and deeper for h4 and below (read from the built DOM at Starlight
    0.41.10, 2026-10-03; first verified at 0.39.2). If Starlight changes that format, update every
    selector below. Starlight's own mobile current style is white for the text, on hover and on focus
-   too, so each rung here replaces it. Flags first: matched by href, so depth does not matter. */
-/* Dark, as on desktop: the resting word reads 7.47:1 on the dropdown #17181c (model B). */
+   too, so each rung here replaces it. The panel sits on the page colour (the Quiet strip, below), so
+   the figures here are the desktop column's. Resting entries first, then the flags: matched by href,
+   so depth does not matter, and at the resting rules' weight, so coming after them they win. */
+/* At rest the page title and h2 read the text colour, deeper entries gray-2, so an h3 reads as the
+   level below: 16.89 and 11.28:1 on dark, 14.59 and 9.67:1 on paper (model B). */
+mobile-starlight-toc a[style*="--depth: 0"] {
+  color: var(--sl-color-text);
+}
+mobile-starlight-toc a:not([style*="--depth: 0"]) {
+  color: var(--sl-color-gray-2);
+}
+/* Dark, as on desktop: the resting word reads 8.40:1 on the page #07090a (model B). */
 mobile-starlight-toc a[href="#user-flag"],
 mobile-starlight-toc a[href="#root-flag"] {
   color: color-mix(in oklab, var(--flag-gold) 45%, var(--sl-color-gray-3));
@@ -101,8 +112,8 @@ mobile-starlight-toc a[href="#user-flag"][aria-current="true"],
 mobile-starlight-toc a[href="#root-flag"][aria-current="true"] {
   color: var(--flag-gold-current);
 }
-/* Light, as on desktop: 6.37:1 at rest and 11.78:1 current on the white dropdown (model B). The
-   current entry's check follows its colour: a state shape at 11.78:1 against a 3:1 bar. */
+/* Light, as on desktop: 5.24:1 at rest and 9.71:1 current on the paper (model B). The current entry's
+   rail follows its colour: a state shape at 9.71:1 against a 3:1 bar. */
 :root[data-theme='light'] mobile-starlight-toc a[href="#user-flag"],
 :root[data-theme='light'] mobile-starlight-toc a[href="#root-flag"] {
   color: var(--flag-gold-val);
@@ -119,8 +130,7 @@ mobile-starlight-toc a[href="#root-flag"][aria-current="true"] {
 mobile-starlight-toc a[aria-current="true"][style*="--depth: 0"]:not([href="#user-flag"]):not([href="#root-flag"]) {
   color: var(--sl-color-text-accent);
 }
-/* Light, as on desktop. On the white dropdown the accent passes (4.99:1), but the two surfaces
-   keep one ladder: 6.68:1 (model B). */
+/* Light, as on desktop: the accent is 4.11:1 on the paper, the lime ink 5.50:1 (model B). */
 :root[data-theme='light'] mobile-starlight-toc a[aria-current="true"][style*="--depth: 0"]:not([href="#user-flag"]):not([href="#root-flag"]) {
   color: var(--tp-lime-ink);
 }
@@ -139,12 +149,17 @@ mobile-starlight-toc a[aria-current="true"]:not([style*="--depth: 0"]):not([styl
   color: var(--sl-color-gray-2);
 }
 
-/* The dropdown's check mark on the current entry wears the entry's colour too (owner, 2026-10-04).
-   Starlight draws it as the entry's ::after, an empty box masked to a check and filled from
-   background-color, which it sets to --sl-color-text-accent: lime beside a cyan h3, a gold flag or a
-   gray h4. currentColor is the colour the rungs above give the entry, so the two always agree. */
+/* The current entry: a 2px rail and a 6% wash in its own colour, where Starlight drew a check (its
+   ::after, which wore the entry's colour from 2026-10-04 until the Quiet strip replaced it, owner,
+   2026-10-24). currentColor is the colour the rungs above give the entry, so rail, wash and word
+   always agree. 6% is set by paper: on a 9% wash the cyan word fell to 4.61:1, on 6% it reads 4.81:1
+   (lime 5.07, the flag's gold 8.78; 11.43:1 and up on dark, model B). */
+mobile-starlight-toc a[aria-current="true"] {
+  background-color: color-mix(in oklab, currentColor 6%, transparent);
+  box-shadow: inset 2px 0 0 currentColor;
+}
 mobile-starlight-toc a[aria-current="true"]::after {
-  background-color: currentColor;
+  content: none;
 }
 
 /* The flag entries lead with the glyph their headings carry, in the identity gold in every state:
@@ -178,12 +193,139 @@ mobile-starlight-toc a[href="#root-flag"]::before {
   width: 0.625rem;
   height: 0.625rem;
 }
-/* Mobile dropdown: an 11px glyph, 14px into the 32px depth-1 indent. */
+/* Phone panel: an 11px glyph, 3px before the word, between the h3 guide line and the text. */
 mobile-starlight-toc a[href="#user-flag"]::before,
 mobile-starlight-toc a[href="#root-flag"]::before {
-  inset-inline-start: 0.875rem;
+  inset-inline-start: calc(var(--toc-number) + var(--toc-step) - 0.875rem);
   width: 0.6875rem;
   height: 0.6875rem;
+}
+
+/* ── The phone "On this page": the Quiet strip (owner, 2026-10-24) ────────────
+   Starlight's own component, in the bar's voice. The strip names the current entry on the left, in
+   its rung of the ladder above, and keeps Starlight's "On this page" on the right as one of the bar's
+   HUD words, before a chevron that points down and turns up while the panel is open; no bordered pill.
+   38px where Starlight's was 48: --sl-mobile-toc-height also sizes the content's offset, the anchor
+   scroll padding and the panel's height, and TocTracking and the reading hairline read it. The panel
+   lies on the page colour, as the desktop column does: each h2 numbered in the HUD's muted capitals
+   from 00 (the page title), h3s indented on a guide line in the sidebar's nesting colour, the current
+   entry on a rail. The muted words and numbers read 5.20:1 on dark and 5.72:1 on paper (model B).
+   Without :has() (Firefox before 121) the strip's name keeps Starlight's white. */
+@media (width < 72rem) {
+  :root[data-has-toc] { --sl-mobile-toc-height: 2.375rem; }
+}
+mobile-starlight-toc summary {
+  gap: 0.75rem;
+  padding-block: 0;
+}
+mobile-starlight-toc .display-current {
+  order: 1;
+  flex: 1 1 auto;
+  min-width: 0;
+  font-weight: 600;
+}
+mobile-starlight-toc:has(a[aria-current="true"][style*="--depth: 0"]) .display-current {
+  color: var(--sl-color-text-accent);
+}
+:root[data-theme='light'] mobile-starlight-toc:has(a[aria-current="true"][style*="--depth: 0"]) .display-current {
+  color: var(--tp-lime-ink);
+}
+mobile-starlight-toc:has(a[aria-current="true"][style*="--depth: 1"]:not([href="#user-flag"], [href="#root-flag"])) .display-current {
+  color: var(--tp-cyan);
+}
+:root[data-theme='light'] mobile-starlight-toc:has(a[aria-current="true"][style*="--depth: 1"]:not([href="#user-flag"], [href="#root-flag"])) .display-current {
+  color: var(--tp-cyan-ink);
+}
+mobile-starlight-toc:has(a[aria-current="true"]:not([style*="--depth: 0"], [style*="--depth: 1"])) .display-current {
+  color: var(--sl-color-gray-2);
+}
+mobile-starlight-toc:has(a[aria-current="true"]:is([href="#user-flag"], [href="#root-flag"])) .display-current {
+  color: var(--flag-gold-current);
+}
+mobile-starlight-toc .toggle {
+  order: 2;
+  margin-inline-start: auto;
+  gap: 0.35rem;
+  padding: 0;
+  border: 0;
+  background-color: transparent;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--tp-hud-muted);
+}
+mobile-starlight-toc details[open] .toggle {
+  color: var(--sl-color-accent);
+}
+:root[data-theme='light'] mobile-starlight-toc details[open] .toggle {
+  color: var(--tp-lime-ink);
+}
+/* Hover only where the pointer hovers: a tap leaves :hover on the label, which held a closed strip in its
+   open colour until the next tap elsewhere (Chrome for Android, 2026-10-24). */
+@media (hover: hover) {
+  mobile-starlight-toc details .toggle:hover {
+    color: var(--sl-color-accent);
+  }
+  :root[data-theme='light'] mobile-starlight-toc details .toggle:hover {
+    color: var(--tp-lime-ink);
+  }
+}
+mobile-starlight-toc .caret {
+  transform: rotate(90deg);
+}
+mobile-starlight-toc details[open] .caret {
+  transform: rotate(-90deg);
+}
+mobile-starlight-toc .dropdown {
+  --toc-number: 3rem;
+  --toc-step: 1.4rem;
+  counter-reset: tp-toc -1;
+  margin-top: 0;
+  border: 0;
+  border-bottom: 1px solid var(--sl-color-hairline-shade);
+  padding-block: 0.4rem 0.7rem;
+  background-color: var(--sl-color-bg);
+  box-shadow: 0 28px 48px -28px rgb(0 0 0 / 0.75);
+}
+:root[data-theme='light'] mobile-starlight-toc .dropdown {
+  box-shadow: 0 24px 40px -26px rgb(60 50 30 / 0.45);
+}
+mobile-starlight-toc .dropdown a {
+  position: relative;
+  border-top: 0;
+  padding-block: 0.6rem;
+  padding-inline: calc(var(--toc-number) + var(--toc-step) * var(--depth)) 1rem;
+}
+/* The numbers say nothing to a screen reader: the plain declaration first is the fallback for the
+   build's older targets, which cannot parse the empty alternative text (prose.css, the toggle marker). */
+mobile-starlight-toc .dropdown a[style*="--depth: 0"]::before {
+  counter-increment: tp-toc;
+  content: counter(tp-toc, decimal-leading-zero);
+  content: counter(tp-toc, decimal-leading-zero) / "";
+  position: absolute;
+  inset-inline-start: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  color: var(--tp-hud-muted);
+}
+mobile-starlight-toc .dropdown a[aria-current="true"][style*="--depth: 0"]::before {
+  color: inherit;
+}
+mobile-starlight-toc .dropdown ul ul {
+  position: relative;
+}
+mobile-starlight-toc .dropdown ul ul::before {
+  content: "";
+  position: absolute;
+  inset-block: 0.35rem;
+  inset-inline-start: calc(var(--toc-number) + 0.3rem);
+  width: 1px;
+  background-color: rgba(255, 255, 255, 0.14);
+}
+:root[data-theme='light'] mobile-starlight-toc .dropdown ul ul::before {
+  background-color: rgba(0, 0, 0, 0.14);
 }
 
 /* ── TOC focus rings echo the heading ladder ──────────────────────────────────
