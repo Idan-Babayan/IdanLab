@@ -85,12 +85,6 @@
   `--tp-frost` (CORE_SPEC §6, "Adaptive glass"); headless Chrome showed no change, and it never had the
   fault. If iOS still loses the glass after a switch, record the iOS version, then restart the frost
   animation from the theme button's click handler: clear `animation-name`, restore it on the next frame.
-- [ENG] **The glass investigation (2026-10-25), in progress.** The owner reports the frost still clears
-  after a theme switch and after a return to Safari. A TEMPORARY readout, `?glassdebug` on any Starlight
-  page (`src/components/GlassDebug.astro` and `glass-debug.ts`, mounted in the Head override), shows the
-  two frost layers' computed values and animations, the page's state and the events around a failure;
-  `?glassdebug=quiet` reads only on events. Delete both files and the Head override's line once the
-  cause is found.
 - [ENG] WriteupMeta filter routes: `/platform`, `/os` and `/environment` do not exist, so the three
   navigational chips render as non-interactive `<span>` rather than `<a>`. When the routes land, restore
   the anchors kept commented in `WriteupMeta.astro` (they restore verbatim) and drop the temporary
