@@ -1107,6 +1107,17 @@ html[data-theme="light"] .sl-markdown-content .cl {
   opacity: 0;
   transition: opacity 0.15s ease;
 }
+/* Below 50rem the pill takes the label's row instead of the middle. A HackTheBox flag wraps to two lines
+   in a frame narrower than about 430px, and the middle is then where its first line ends: on a 411px
+   phone the pill covered seven characters of the flag just copied, on Return and on Forest (Chrome for
+   Android, 2026-10-24). The label fades while the pill shows, so the row is free. */
+@media (width < 50rem) {
+  .sl-markdown-content .flagcap .fc-copy-feedback {
+    top: auto;
+    bottom: 0.6rem;
+    margin: 0;
+  }
+}
 
 /* The real flag, always in the DOM for screen readers, visually hidden; plus the polite capture
    announcement.

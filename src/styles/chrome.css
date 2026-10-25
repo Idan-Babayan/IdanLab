@@ -15,9 +15,10 @@
    `a[aria-current]`, so the current h2 turned white on hover while h3 and the flags held (measured
    rgb(182,255,60) to rgb(255,255,255)). The heading rules share these tokens: if a heading colour
    changes, change it here too. Which entry is current is TocTracking.astro's job, not this file's.
-   Entries that are not current keep Starlight's colours: gray-3, white on hover, in the desktop
-   column; the text colour in the dropdown, which also marks its current entry with a check in the
-   entry's own colour. */
+   Entries that are not current keep Starlight's colours in the desktop column: gray-3, white on hover.
+   On a phone the strip names the current entry in the same colour, and its panel (the Quiet strip,
+   below) reads h2 entries in the text colour and deeper ones in gray-2, marking the current entry with
+   a rail and a faint wash of its own colour where Starlight drew a check. */
 
 /* Flags, desktop: matched by their slug anchors (#user-flag / #root-flag; no .flag-title class exists
    yet). A muted gold at rest, which with the glyph keeps the loot scannable at a glance; the full
@@ -89,8 +90,18 @@
    title and h2, 1 for h3, 2 and deeper for h4 and below (read from the built DOM at Starlight
    0.41.10, 2026-10-03; first verified at 0.39.2). If Starlight changes that format, update every
    selector below. Starlight's own mobile current style is white for the text, on hover and on focus
-   too, so each rung here replaces it. Flags first: matched by href, so depth does not matter. */
-/* Dark, as on desktop: the resting word reads 7.47:1 on the dropdown #17181c (model B). */
+   too, so each rung here replaces it. The panel sits on the page colour (the Quiet strip, below), so
+   the figures here are the desktop column's. Resting entries first, then the flags: matched by href,
+   so depth does not matter, and at the resting rules' weight, so coming after them they win. */
+/* At rest the page title and h2 read the text colour, deeper entries gray-2, so an h3 reads as the
+   level below: 16.89 and 11.28:1 on dark, 14.59 and 9.67:1 on paper (model B). */
+mobile-starlight-toc a[style*="--depth: 0"] {
+  color: var(--sl-color-text);
+}
+mobile-starlight-toc a:not([style*="--depth: 0"]) {
+  color: var(--sl-color-gray-2);
+}
+/* Dark, as on desktop: the resting word reads 8.40:1 on the page #07090a (model B). */
 mobile-starlight-toc a[href="#user-flag"],
 mobile-starlight-toc a[href="#root-flag"] {
   color: color-mix(in oklab, var(--flag-gold) 45%, var(--sl-color-gray-3));
@@ -101,8 +112,8 @@ mobile-starlight-toc a[href="#user-flag"][aria-current="true"],
 mobile-starlight-toc a[href="#root-flag"][aria-current="true"] {
   color: var(--flag-gold-current);
 }
-/* Light, as on desktop: 6.37:1 at rest and 11.78:1 current on the white dropdown (model B). The
-   current entry's check follows its colour: a state shape at 11.78:1 against a 3:1 bar. */
+/* Light, as on desktop: 5.24:1 at rest and 9.71:1 current on the paper (model B). The current entry's
+   rail follows its colour: a state shape at 9.71:1 against a 3:1 bar. */
 :root[data-theme='light'] mobile-starlight-toc a[href="#user-flag"],
 :root[data-theme='light'] mobile-starlight-toc a[href="#root-flag"] {
   color: var(--flag-gold-val);
@@ -119,8 +130,7 @@ mobile-starlight-toc a[href="#root-flag"][aria-current="true"] {
 mobile-starlight-toc a[aria-current="true"][style*="--depth: 0"]:not([href="#user-flag"]):not([href="#root-flag"]) {
   color: var(--sl-color-text-accent);
 }
-/* Light, as on desktop. On the white dropdown the accent passes (4.99:1), but the two surfaces
-   keep one ladder: 6.68:1 (model B). */
+/* Light, as on desktop: the accent is 4.11:1 on the paper, the lime ink 5.50:1 (model B). */
 :root[data-theme='light'] mobile-starlight-toc a[aria-current="true"][style*="--depth: 0"]:not([href="#user-flag"]):not([href="#root-flag"]) {
   color: var(--tp-lime-ink);
 }
@@ -139,12 +149,17 @@ mobile-starlight-toc a[aria-current="true"]:not([style*="--depth: 0"]):not([styl
   color: var(--sl-color-gray-2);
 }
 
-/* The dropdown's check mark on the current entry wears the entry's colour too (owner, 2026-10-04).
-   Starlight draws it as the entry's ::after, an empty box masked to a check and filled from
-   background-color, which it sets to --sl-color-text-accent: lime beside a cyan h3, a gold flag or a
-   gray h4. currentColor is the colour the rungs above give the entry, so the two always agree. */
+/* The current entry: a 2px rail and a 6% wash in its own colour, where Starlight drew a check (its
+   ::after, which wore the entry's colour from 2026-10-04 until the Quiet strip replaced it, owner,
+   2026-10-24). currentColor is the colour the rungs above give the entry, so rail, wash and word
+   always agree. 6% is set by paper: on a 9% wash the cyan word fell to 4.61:1, on 6% it reads 4.81:1
+   (lime 5.07, the flag's gold 8.78; 11.43:1 and up on dark, model B). */
+mobile-starlight-toc a[aria-current="true"] {
+  background-color: color-mix(in oklab, currentColor 6%, transparent);
+  box-shadow: inset 2px 0 0 currentColor;
+}
 mobile-starlight-toc a[aria-current="true"]::after {
-  background-color: currentColor;
+  content: none;
 }
 
 /* The flag entries lead with the glyph their headings carry, in the identity gold in every state:
@@ -178,12 +193,145 @@ mobile-starlight-toc a[href="#root-flag"]::before {
   width: 0.625rem;
   height: 0.625rem;
 }
-/* Mobile dropdown: an 11px glyph, 14px into the 32px depth-1 indent. */
+/* Phone panel: an 11px glyph, 3px before the word, between the h3 guide line and the text. */
 mobile-starlight-toc a[href="#user-flag"]::before,
 mobile-starlight-toc a[href="#root-flag"]::before {
-  inset-inline-start: 0.875rem;
+  inset-inline-start: calc(var(--toc-number) + var(--toc-step) - 0.875rem);
   width: 0.6875rem;
   height: 0.6875rem;
+}
+
+/* ── The phone "On this page": the Quiet strip (owner, 2026-10-24) ────────────
+   Starlight's own component, in the bar's voice. The strip names the current entry on the left, in
+   its rung of the ladder above on dark and in the ink on paper, and keeps Starlight's "On this page"
+   on the right as one of the bar's HUD words, before a chevron that points down and turns up while the
+   panel is open; no bordered pill. 38px where Starlight's was 48: --sl-mobile-toc-height also sizes
+   the content's offset, the anchor scroll padding and the panel's height, and TocTracking and the
+   reading hairline read it. The panel lies on the page colour, as the desktop column does: each h2
+   numbered in the HUD's muted capitals from 00 (the page title), h3s indented on a guide line in the
+   sidebar's nesting colour, the current entry on a rail. The muted numbers read 5.20:1 on dark and
+   5.72:1 on paper (model B).
+   The strip itself lies on the glass over the article column, so its words are full contrast (owner,
+   2026-10-24): the label and the chevron read --tp-hud-ink, and the name keeps its rung on dark only.
+   Over a pure white area under the glass on dark, the lowest rendered pixel under each word gives: the
+   label 6.43:1, lime 6.11, cyan 5.28 and the flag's gold 4.59 (gray-2, for depths the TOC never
+   reaches, 4.19). Over a pure black one on paper the ink gives 6.15:1, where the coloured inks fell to
+   2.32 (lime), 2.20 (cyan) and 4.09 (the deep gold). Without :has() (Firefox before 121) the strip's
+   name keeps Starlight's white. */
+@media (width < 72rem) {
+  :root[data-has-toc] { --sl-mobile-toc-height: 2.375rem; }
+}
+mobile-starlight-toc summary {
+  gap: 0.75rem;
+  padding-block: 0;
+}
+mobile-starlight-toc .display-current {
+  order: 1;
+  flex: 1 1 auto;
+  min-width: 0;
+  font-weight: 600;
+}
+mobile-starlight-toc:has(a[aria-current="true"][style*="--depth: 0"]) .display-current {
+  color: var(--sl-color-text-accent);
+}
+mobile-starlight-toc:has(a[aria-current="true"][style*="--depth: 1"]:not([href="#user-flag"], [href="#root-flag"])) .display-current {
+  color: var(--tp-cyan);
+}
+mobile-starlight-toc:has(a[aria-current="true"]:not([style*="--depth: 0"], [style*="--depth: 1"])) .display-current {
+  color: var(--sl-color-gray-2);
+}
+mobile-starlight-toc:has(a[aria-current="true"]:is([href="#user-flag"], [href="#root-flag"])) .display-current {
+  color: var(--flag-gold-current);
+}
+/* Paper: the ink, whichever entry is current. At the h3 rung's weight and the heaviest of the others,
+   so coming after them it wins. */
+:root[data-theme='light'] mobile-starlight-toc:has(a[aria-current="true"]) .display-current {
+  color: var(--tp-hud-ink);
+}
+mobile-starlight-toc .toggle {
+  order: 2;
+  margin-inline-start: auto;
+  gap: 0.35rem;
+  padding: 0;
+  border: 0;
+  background-color: transparent;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--tp-hud-ink);
+}
+mobile-starlight-toc details[open] .toggle {
+  color: var(--sl-color-accent);
+}
+:root[data-theme='light'] mobile-starlight-toc details[open] .toggle {
+  color: var(--tp-lime-ink);
+}
+/* Hover only where the pointer hovers: a tap leaves :hover on the label, which held a closed strip in its
+   open colour until the next tap elsewhere (Chrome for Android, 2026-10-24). */
+@media (hover: hover) {
+  mobile-starlight-toc details .toggle:hover {
+    color: var(--sl-color-accent);
+  }
+  :root[data-theme='light'] mobile-starlight-toc details .toggle:hover {
+    color: var(--tp-lime-ink);
+  }
+}
+mobile-starlight-toc .caret {
+  transform: rotate(90deg);
+}
+mobile-starlight-toc details[open] .caret {
+  transform: rotate(-90deg);
+}
+mobile-starlight-toc .dropdown {
+  --toc-number: 3rem;
+  --toc-step: 1.4rem;
+  counter-reset: tp-toc -1;
+  margin-top: 0;
+  border: 0;
+  border-bottom: 1px solid var(--sl-color-hairline-shade);
+  padding-block: 0.4rem 0.7rem;
+  background-color: var(--sl-color-bg);
+  box-shadow: 0 28px 48px -28px rgb(0 0 0 / 0.75);
+}
+:root[data-theme='light'] mobile-starlight-toc .dropdown {
+  box-shadow: 0 24px 40px -26px rgb(60 50 30 / 0.45);
+}
+mobile-starlight-toc .dropdown a {
+  position: relative;
+  border-top: 0;
+  padding-block: 0.6rem;
+  padding-inline: calc(var(--toc-number) + var(--toc-step) * var(--depth)) 1rem;
+}
+/* The numbers say nothing to a screen reader: the plain declaration first is the fallback for the
+   build's older targets, which cannot parse the empty alternative text (prose.css, the toggle marker). */
+mobile-starlight-toc .dropdown a[style*="--depth: 0"]::before {
+  counter-increment: tp-toc;
+  content: counter(tp-toc, decimal-leading-zero);
+  content: counter(tp-toc, decimal-leading-zero) / "";
+  position: absolute;
+  inset-inline-start: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  color: var(--tp-hud-muted);
+}
+mobile-starlight-toc .dropdown a[aria-current="true"][style*="--depth: 0"]::before {
+  color: inherit;
+}
+mobile-starlight-toc .dropdown ul ul {
+  position: relative;
+}
+mobile-starlight-toc .dropdown ul ul::before {
+  content: "";
+  position: absolute;
+  inset-block: 0.35rem;
+  inset-inline-start: calc(var(--toc-number) + 0.3rem);
+  width: 1px;
+  background-color: rgba(255, 255, 255, 0.14);
+}
+:root[data-theme='light'] mobile-starlight-toc .dropdown ul ul::before {
+  background-color: rgba(0, 0, 0, 0.14);
 }
 
 /* ── TOC focus rings echo the heading ladder ──────────────────────────────────
@@ -254,15 +402,26 @@ body::before {
    opacity is set HERE, beside the light atmosphere block, rather than with the base grain rule below
    (both land on .035 today). This note used to sit at the end of the prose module, where the Phase 3
    split had carried it because it trails its subject instead of leading it. */
-:root[data-theme='light'] body::after { opacity: .035; }
+:root[data-theme='light'] body::after,
+:root[data-theme='light'] header.header::after { opacity: .035; }
 
 /* ── Film grain (mirrors the index.astro / about.astro fractalNoise overlay) ──
    Fixed full-screen texture, non-interactive. Very low opacity so chrome and
-   reading stay legible in both themes. */
+   reading stay legible in both themes. Two layers lie edge to edge, this one from the bar's hairline
+   down and the bar's own above it (header.header::after, in the quiet bar block): the same texture,
+   the noise only falling differently, by no more than 6 of 255 a pixel. The split is for Safari on iOS
+   26, which paints the strip above a fixed header (under the status bar and the address pill) in the
+   background colour of the fixed element it hit-tests 4px below the top edge, and counts a
+   pseudo-element as its host element: one body::after over the whole screen made that test meet
+   <body>, so Safari found no bar and showed the page scrolling up above it (WebKit's
+   LocalFrameView::fixedContainerEdges). Keep anything full-screen off the bar's top edge. */
+:root {
+  --tp-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
 body::after {
   content: "";
-  position: fixed; inset: 0; pointer-events: none; z-index: 9999; opacity: .035;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  position: fixed; inset: calc(var(--sl-nav-height) - 1px) 0 0 0; pointer-events: none; z-index: 9999; opacity: .035;
+  background-image: var(--tp-grain);
 }
 } /* @layer chrome */
 @layer chrome {
@@ -271,7 +430,11 @@ body::after {
    renders as `h1#_top` OUTSIDE `.sl-markdown-content` (our writeups start the body at h2),
    so that is the correct, stable hook (it is also the TOC "Overview"/back-to-top anchor).
    Also given the Syne display face so it truly echoes the hero. h2/h3/h4 stay solid. */
+/* Balanced lines when a title wraps, so a number keeps its word: at 360px "Bandit 12 → 13" broke as
+   "Bandit 12 →" over "13" and "Rust fixme 3" as "Rust fixme" over "3" (owner, 2026-10-24). Chrome 114,
+   Safari 17.5 and Firefox 121 balance; older engines wrap as before. */
 h1#_top {
+  text-wrap: balance;
   font-family: var(--tp-display);
   font-weight: 800;
   letter-spacing: -0.01em;
@@ -410,13 +573,17 @@ nav.sidebar summary {
    Writeups only (landings, wargame hubs and the 404 keep the plain hairline): a 1px line laid over the
    header's bottom border and scaled from the left as the page scrolls, the whole page measured. Where
    the phone "On this page" strip shows, it runs along that strip's bottom edge instead, where reading
-   starts: --sl-mobile-toc-height is 3rem there and 0 everywhere else. ReadingProgress.astro creates
-   it and sets its scale, with no transition; it is decorative and aria-hidden. */
+   starts: --sl-mobile-toc-height is the strip's 2.375rem there (the Quiet strip, near the top of this
+   file) and 0 everywhere else. It spans what the strip spans:
+   from 50rem the strip starts past the sidebar (Starlight's --sl-content-inline-start), and a full-width
+   line crossed the sidebar's first entry there (a phone held sideways, 914px, 2026-10-24); from 72rem it
+   lies on the bar's own border, which runs the full width. ReadingProgress.astro creates it and sets its
+   scale, with no transition; it is decorative and aria-hidden. */
 #tp-progress {
   position: fixed;
   top: calc(var(--sl-nav-height) + var(--sl-mobile-toc-height) - 1px);
-  left: 0;
-  width: 100%;
+  left: var(--sl-content-inline-start, 0rem);
+  right: 0;
   height: 1px;
   z-index: 1000;
   pointer-events: none;
@@ -429,6 +596,15 @@ nav.sidebar summary {
    :root[data-theme='light'] + #id selector outranks the base rule only in light. */
 :root[data-theme='light'] #tp-progress {
   background: linear-gradient(90deg, #4d7c0f, #0b7e92);
+}
+/* The phone menu covers the page, and the line goes with it. Its z-index lifts it over the bar's
+   border, which also put it over the open menu, across the first entry. Starlight marks <body> with
+   data-mobile-menu-expanded while the menu is open; on close the line is back where the reader left. */
+[data-mobile-menu-expanded] #tp-progress {
+  visibility: hidden;
+}
+@media (min-width: 72rem) {
+  #tp-progress { left: 0; }
 }
 
 /* ── Code blocks: a touch more presence (syntax colors stay from your EC themes) ── */
@@ -624,18 +800,38 @@ html[data-theme="light"] .expressive-code pre::-webkit-scrollbar-track { backgro
   }
 }
 
-/* Adaptive glass. At the top of a page the bar is clear, only its hairline, as the HUD is; the frost
-   (Starlight's nav tint, --sl-color-bg-nav, under a blur) fades in over the first 20px of scroll. It
-   lives on a layer behind the bar, not on the header, because backdrop-filter makes its element the
-   containing block of fixed descendants. The layer is twice the bar's height and masked back to it,
-   so the blur also samples what sits just under the bar and text softens as it nears the edge instead
-   of changing at the line; the mask stops at the hairline, which stays the header's own border. The
-   phone "On this page" strip wears the same. Fully frosted where scroll timelines are unsupported and
-   under reduced motion; solid under reduced transparency and under increased contrast. */
+/* Adaptive glass. At the top of a page the bar is clear, only its hairline, as the HUD is; over the
+   first 36px of scroll it frosts over: the tint (Starlight's nav tint, --sl-color-bg-nav, the page
+   colour at 70% on dark and 66% on paper), a 22px blur and 170% saturation grow together from nothing,
+   rather than a finished frost fading in (owner, 2026-10-24). Each value is one token (tokens.css, "The
+   bar's glass"). The frost lives on a layer behind the bar, not on the header, because backdrop-filter
+   makes its element the containing block of fixed descendants. The layer is twice the bar's height and
+   masked back to it, so the blur also samples what sits just under the bar and text softens as it
+   nears the edge instead of changing at the line; the mask stops at the hairline, which stays the
+   header's own border. The phone "On this page" strip wears the same. At full strength where scroll
+   timelines are unsupported and under reduced motion; solid under reduced transparency and under
+   increased contrast. */
 header.header,
 mobile-starlight-toc nav {
   background-color: transparent;
   isolation: isolate;
+}
+/* Safari's cue (the film grain block says why): on iOS 26 the strip above the bar, under the status bar
+   and the address pill, takes the bar's own background colour, blended over the page colour when it is
+   mostly clear, and shows the page scrolling there when the bar has none. A 1% wash of the page colour
+   is a colour Safari can read, so the strip is the page colour, and on screen it moves the bar by one
+   level of 255 at most. The frost stays on the layer behind: a backdrop-filter on the bar itself makes
+   Safari give up on one colour. */
+header.header { background-color: color-mix(in oklab, var(--sl-color-bg) 1%, transparent); }
+/* The bar's share of the film grain: the same texture over the bar and everything in it, edge to edge
+   with the page's layer, which starts at the hairline. */
+header.header::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: .035;
+  background-image: var(--tp-grain);
 }
 header.header::before,
 mobile-starlight-toc nav::before {
@@ -646,30 +842,40 @@ mobile-starlight-toc nav::before {
   z-index: -1;
   pointer-events: none;
   background-color: var(--sl-color-bg-nav);
-  -webkit-backdrop-filter: blur(14px) saturate(1.25);
-  backdrop-filter: blur(14px) saturate(1.25);
+  -webkit-backdrop-filter: blur(var(--tp-glass-blur)) saturate(var(--tp-glass-saturate));
+  backdrop-filter: blur(var(--tp-glass-blur)) saturate(var(--tp-glass-saturate));
   -webkit-mask-image: linear-gradient(to bottom, #000 50%, transparent 50%);
   mask-image: linear-gradient(to bottom, #000 50%, transparent 50%);
 }
-@keyframes tp-frost {
-  from { opacity: 0; }
-  to { opacity: 1; }
+@keyframes tp-frost-over {
+  from {
+    background-color: transparent;
+    -webkit-backdrop-filter: blur(0px) saturate(100%);
+    backdrop-filter: blur(0px) saturate(100%);
+  }
+  to {
+    background-color: var(--sl-color-bg-nav);
+    -webkit-backdrop-filter: blur(var(--tp-glass-blur)) saturate(var(--tp-glass-saturate));
+    backdrop-filter: blur(var(--tp-glass-blur)) saturate(var(--tp-glass-saturate));
+  }
 }
 /* Longhands on purpose: given the shorthand, the build's minifier folds animation-timeline into it,
    and Chrome drops the whole declaration because the timeline is not settable through the
-   shorthand. Without a duration or a delay it has no shorthand to build. The resting opacity is 0:
-   on a page too short to scroll the timeline is inactive and the animation has no effect, and that
-   page never leaves scroll 0, so its bar stays clear. */
+   shorthand. Without a duration or a delay it has no shorthand to build. The resting state is scroll
+   0's, clear and unfiltered: on a page too short to scroll the timeline is inactive and the animation
+   has no effect, and that page never leaves scroll 0, so its bar stays clear. */
 @supports (animation-timeline: scroll()) {
   @media (prefers-reduced-motion: no-preference) {
     header.header::before,
     mobile-starlight-toc nav::before {
-      opacity: 0;
-      animation-name: tp-frost;
+      background-color: transparent;
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+      animation-name: tp-frost-over;
       animation-timing-function: linear;
       animation-fill-mode: both;
       animation-timeline: scroll(root);
-      animation-range: 0 20px;
+      animation-range: 0 var(--tp-glass-ramp);
     }
   }
 }
@@ -680,7 +886,6 @@ mobile-starlight-toc nav::before {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
     animation: none;
-    opacity: 1;
   }
 }
 
@@ -750,15 +955,19 @@ div.header .social-icons::after { content: none; }
 
 /* Search, outlined, in Starlight's own place (owner, 2026-10-23): from 50em the bar's middle column
    starts at the article column's edge, so the box lines up with the text below. Starlight's own
-   button, dialog, shortcut and Ctrl/Cmd script, restyled. A phone shows the magnifier alone, muted
-   like the bar's other glyphs; from 50em it is a 34px box up to 320px wide, with a hairline border,
-   Starlight's own label ("Search") in the HUD's tracked mono capitals and the key chips at its far
-   end. In a column narrower than 320px the box shrinks with it: the label gives way, cut with an
-   ellipsis, while the magnifier and the chips keep their size, and below about 100px the box clips
-   what is left, so nothing ever overflows; no width on this site comes near that. Text under the
-   pointer reads the lime ink on paper, where the accent is under AA as small text; the keyboard also
-   gets the shared ring. */
-site-search button[data-open-modal] { color: var(--tp-hud-muted); }
+   button, dialog, shortcut and Ctrl/Cmd script, restyled. A phone shows the magnifier alone; from 50em
+   it is a 34px box up to 320px wide, with a hairline border, Starlight's own label ("Search") in the
+   HUD's tracked mono capitals and the key chips at its far end. In a column narrower than 320px the
+   box shrinks with it: the label gives way, cut with an ellipsis, while the magnifier and the chips
+   keep their size, and below about 100px the box clips what is left, so nothing ever overflows; no
+   width on this site comes near that. Text under the pointer reads the lime ink on paper, where the
+   accent is under AA as small text; the keyboard also gets the shared ring.
+   At rest it reads --tp-hud-ink, full contrast, not the bar's muted grey (owner, 2026-10-24): at every
+   width it sits over the article column, so under the thin glass its backdrop can be a screenshot. A
+   white one on dark, or a black terminal on paper, left the muted grey at about 2 and 2.5:1. Over a
+   pure white area (dark) or a pure black one (paper) under the glass, against the lowest rendered pixel
+   under each, the label and the key chips read 6.23:1 or more and the magnifier 6.39:1 or more. */
+site-search button[data-open-modal] { color: var(--tp-hud-ink); }
 @media (min-width: 50em) {
   div.header > :nth-child(2) { min-width: 0; }
   site-search button[data-open-modal] {
@@ -776,7 +985,7 @@ site-search button[data-open-modal] { color: var(--tp-hud-muted); }
     font-size: 0.72rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--tp-hud-muted);
+    color: var(--tp-hud-ink);
   }
   site-search button[data-open-modal] > svg { font-size: 14px; flex-shrink: 0; }
   site-search button[data-open-modal] > span {
@@ -803,6 +1012,12 @@ site-search button[data-open-modal] { color: var(--tp-hud-muted); }
     border-radius: 3px;
   }
 }
+/* A screen with only touch has no Ctrl or Cmd to press: the key chips go where nothing can hover
+   (tablets, and phones held sideways, where the box shows from 50em). A tablet with a trackpad hovers
+   and keeps them; one with a keyboard alone loses them though Ctrl K would work (owner, 2026-10-24). */
+@media (min-width: 50em) and (any-hover: none) {
+  site-search button[data-open-modal] > kbd { display: none; }
+}
 site-search button[data-open-modal]:hover,
 site-search button[data-open-modal]:focus-visible {
   color: var(--sl-color-accent);
@@ -814,7 +1029,8 @@ site-search button[data-open-modal]:focus-visible {
 }
 
 /* GitHub: Starlight's social icon, wherever Starlight puts it (the bar, and the phone menu's footer),
-   at 16px in the muted label colour, lime under the pointer, the shared ring for the keyboard. */
+   at 16px in the muted label colour, lime under the pointer, the shared ring for the keyboard. In the
+   bar it reads the ink at rest (after the theme toggle, below). */
 .social-icons a {
   font-size: 16px;
   color: var(--tp-hud-muted);
@@ -843,12 +1059,21 @@ site-search button[data-open-modal]:focus-visible {
 :root[data-theme='dark'] .theme-toggle .ico-moon,
 :root[data-theme='light'] .theme-toggle .ico-sun { display: none; }
 
-/* The phone menu button: a quiet icon in the HUD's manner, muted like the bar's other glyphs, instead
-   of a solid disc; lime while the menu is open. */
+/* In the bar, GitHub and the theme read --tp-hud-ink at rest, as the search does, at every width
+   (owner, 2026-10-25). Below 72rem a writeup has no right column, so the article column lies under
+   them up to about 1100px, and muted they fell to 2.08 and 2.43:1 on dark over a white area, 2.56 and
+   2.89:1 on paper over a black one. Lime under the pointer still: the hover rules above outweigh this.
+   In the phone menu's footer, on the menu's own opaque panel, they stay muted. */
+header .social-icons a,
+header .theme-toggle { color: var(--tp-hud-ink); }
+
+/* The phone menu button: a quiet icon in the HUD's manner instead of a solid disc; lime while the menu
+   is open. At rest it reads --tp-hud-ink, as the phone's magnifier does: on a phone the whole bar sits
+   over the article column. */
 starlight-menu-button button {
   background-color: transparent;
   box-shadow: none;
-  color: var(--tp-hud-muted);
+  color: var(--tp-hud-ink);
 }
 starlight-menu-button[aria-expanded='true'] button {
   background-color: transparent;

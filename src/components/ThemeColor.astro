@@ -1,0 +1,33 @@
+---
+// src/components/ThemeColor.astro
+//
+// The browser's own colour around the page follows the theme the page shows. Chrome for Android paints
+// its status bar and toolbar from theme-color, which the site did not set, so on a phone in light mode
+// Chrome's white bar sat above the dark theme. With it, that phone shows the page colour in both themes,
+// toolbar scrolled away or not. A phone in dark mode is out of reach: Chrome ignores theme-color there and
+// keeps its own dark bar, above paper too (Android emulator, Chrome 149, 2026-10-24). The value is the
+// page colour: #07090a on dark and #ece9e0 on paper (--sl-color-bg in tokens.css, --ink on home and
+// About); change them together.
+//
+// Rendered in every <head>: the Starlight pages through overrides/Head.astro, home and About in their
+// own. The meta starts dark, the site's default. The script watches html[data-theme], which Starlight's
+// ThemeProvider and About's bootstrap set before first paint and both theme buttons flip, so it never
+// repeats how the theme is chosen; on home, which has no data-theme, the colour stays dark. Inline, so
+// the colour is right before first paint (the CSP keeps 'unsafe-inline' in script-src, see
+// public/_headers). Safari 26 ignores theme-color: its strip above the bar takes the bar's own
+// background (chrome.css).
+---
+
+<meta name="theme-color" content="#07090a" />
+<script is:inline>
+  (() => {
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (!meta) return;
+    const root = document.documentElement;
+    const sync = () => {
+      meta.setAttribute('content', root.dataset.theme === 'light' ? '#ece9e0' : '#07090a');
+    };
+    sync();
+    new MutationObserver(sync).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+  })();
+</script>

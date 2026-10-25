@@ -145,3 +145,18 @@ html[data-theme="light"] .ec-cmd-inspect span {
    Its evidence comment is deleted with it rather than migrated, and deliberately so: every contrast
    figure in it was measured against bare paper for a surface that carries the hero wash, so the
    numbers it asserted were never true of the element it named. See DECISIONS. */
+
+/* The bar keeps room for the phone menu button after an image zoom.
+   UNLAYERED AND !important ON PURPOSE: it has to outrank an inline style. starlight-image-zoom 0.15.0
+   writes padding-inline-end on <header> as an inline style when a zoom opens, and on close leaves
+   var(--sl-nav-pad-x) there, Starlight's value from 50rem. Below 50rem, on pages with the menu,
+   Starlight keeps the bar's right end clear of the fixed menu button (PageFrame.astro), so after any
+   zoom the search icon slid 48px right and sat on the menu icon until the next page load (Chrome for
+   Android, 2026-10-24). This is Starlight's own value. Phones scroll with overlay scrollbars, so the
+   plugin's scrollbar compensation, which this also outranks while a zoom is open, is 0px there. The
+   plugin fixes it in 0.16.2 (its #83), which needs Starlight 0.42: delete this rule with that upgrade. */
+@media (width < 50rem) {
+  :root[data-has-sidebar] header.header {
+    padding-inline-end: calc(var(--sl-nav-gap) + var(--sl-nav-pad-x) + var(--sl-menu-button-size)) !important;
+  }
+}

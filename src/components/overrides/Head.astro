@@ -2,7 +2,8 @@
 // src/components/overrides/Head.astro
 //
 // Additive override of Starlight's Head (approved pattern, alongside PageSidebar and MarkdownContent).
-// Renders <Default /> untouched, then appends ONLY the social tags Starlight does not emit.
+// Renders <Default /> untouched, then appends ONLY what Starlight does not emit: the social tags below,
+// and the theme colour (ThemeColor.astro, shared with home and About).
 //
 // Starlight (0.41.10 today, 0.40 when this was written) already emits, per page: og:title, og:type,
 // og:url, og:locale, og:description, og:site_name and twitter:card. Re-declaring any of those here
@@ -17,6 +18,7 @@
 // og:image is absolute because crawlers do not resolve relative paths. new URL() against Astro.site
 // (astro.config.mjs `site`) is what makes it absolute without hardcoding the origin twice.
 import Default from '@astrojs/starlight/components/Head.astro';
+import ThemeColor from '@components/ThemeColor.astro';
 
 const { entry, siteTitle } = Astro.locals.starlightRoute;
 const SITE_DESCRIPTION =
@@ -44,3 +46,4 @@ const OG_ALT = 'Idan.Lab, a lab notebook of CTF writeups and security notes';
 <meta name="twitter:title" content={title} />
 <meta name="twitter:description" content={description} />
 <meta name="twitter:image" content={image} />
+<ThemeColor />

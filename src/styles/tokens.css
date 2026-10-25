@@ -312,17 +312,24 @@ html[data-theme="dark"] {
   --pw-amber-ink: #ffc23d;
   --pw-amber-rgb: 245, 158, 11;
   --sl-color-bg: #07090a;
-  --sl-color-bg-nav: color-mix(in oklab, #07090a 78%, transparent);
+  /* The bar's tint: the page colour at the glass's opacity (--tp-glass-alpha, below). */
+  --sl-color-bg-nav: color-mix(in oklab, #07090a calc(var(--tp-glass-alpha) * 100%), transparent);
   --sl-color-bg-sidebar: #0a0e0f;
   --tp-glow-1: #41efff;
   --tp-glow-2: #b6ff3c;
   /* The header (chrome.css): the name's fade runs from its start colour toward the lime the old
-     gradient ended on; the outlined search box's border; and the muted label colour of every word and
-     glyph in the bar, the marketing HUD's own --muted (About and home), so the two bars match. */
+     gradient ended on; the outlined search box's border; and the muted label colour, the marketing
+     HUD's own --muted (About and home), now for what lies off the bar's glass (the phone menu's footer,
+     the strip panel's numbers). */
   --tp-name-from: #e9f1ee;
   --tp-name-to: #9fef00;
   --tp-search-border: rgba(255, 255, 255, 0.16);
   --tp-hud-muted: #79857f;
+  /* The full-contrast ink for every word and glyph on the glass but the name, in the bar and the phone
+     strip (owner, 2026-10-24): a screenshot under the thin glass can be their backdrop. The name's start
+     colour, so #e9f1ee on dark and the editorial ink on paper. Declared once; it follows the theme
+     through --tp-name-from. */
+  --tp-hud-ink: var(--tp-name-from);
 }
 
 /* ── Accent + surfaces: LIGHT (warm paper, darkened accents) ── */
@@ -360,7 +367,7 @@ html[data-theme="dark"] {
   --pw-amber: #a86f04;
   --pw-amber-ink: #7c5000;
   --sl-color-bg: #ece9e0;
-  --sl-color-bg-nav: color-mix(in oklab, #ece9e0 80%, transparent);
+  --sl-color-bg-nav: color-mix(in oklab, #ece9e0 calc(var(--tp-glass-alpha) * 100%), transparent);
   --sl-color-bg-sidebar: #f1eee5;
   /* Warm structural divider (single source of truth). Starlight's light hairline tokens all fall
      back to --sl-color-gray-6 (hsl(224 20% 94%), a cool near-white) which is nearly invisible on the
@@ -413,6 +420,22 @@ html[data-theme="dark"] {
   --tp-hud-muted: #515c59;
 }
 } /* @layer tokens (dark + light surface tokens move atomically) */
+
+/* ── The bar's glass: the dials (chrome.css, "Adaptive glass"; owner, 2026-10-24) ──
+   One line each. The tint's opacity, which --sl-color-bg-nav reads (70% of the page colour on dark,
+   66% on paper); the frost's blur and saturation; and the ramp, the scroll distance over which tint,
+   blur and saturation grow together from clear to full strength. */
+@layer tokens {
+:root {
+  --tp-glass-alpha: 0.70;
+  --tp-glass-blur: 22px;
+  --tp-glass-saturate: 170%;
+  --tp-glass-ramp: 36px;
+}
+:root[data-theme='light'] {
+  --tp-glass-alpha: 0.66;
+}
+} /* @layer tokens */
 
 /* ── Sidebar: trim the rail width so it gives the content column more room ──
    Starlight's default --sl-sidebar-width (18.75rem) reads wide once the rows are taller;
