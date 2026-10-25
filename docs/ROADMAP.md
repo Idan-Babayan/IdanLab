@@ -77,6 +77,14 @@
   between; scrolling back, they clear again; a fling past 36px lands frosted; a page too short to scroll
   (the 404) stays clear. On a high-DPI desktop screen the article under the bar is blurred, not sharp
   (headless Chrome at device scale 2 drew it sharp; at scale 1 and on its phone runs it blurred).
+  **The theme switch on the glass (2026-10-25), on the iPhone and an Android phone first, then desktop
+  Chrome, Safari and Firefox:** on a writeup, switch the theme several times at the top and scrolled
+  down. After every switch, with no reload, the bar and the phone strip must be clear at the top and
+  frosted once scrolled; under reduced motion always frosted, under reduced transparency and increased
+  contrast solid, and in Firefox (no scroll timeline) always frosted. The ramp now animates only
+  `--tp-frost` (CORE_SPEC §6, "Adaptive glass"); headless Chrome showed no change, and it never had the
+  fault. If iOS still loses the glass after a switch, record the iOS version, then restart the frost
+  animation from the theme button's click handler: clear `animation-name`, restore it on the next frame.
 - [ENG] WriteupMeta filter routes: `/platform`, `/os` and `/environment` do not exist, so the three
   navigational chips render as non-interactive `<span>` rather than `<a>`. When the routes land, restore
   the anchors kept commented in `WriteupMeta.astro` (they restore verbatim) and drop the temporary

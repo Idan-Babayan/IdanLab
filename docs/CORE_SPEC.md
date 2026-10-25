@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-10-25 (the bar's glass is thinner and stronger and frosts over in 36px, its values tokens; everything on the glass but the name reads full contrast, so a screenshot under the bar no longer drowns the search, the icons or the phone strip; on 2026-10-24, the phone "On this page" is the Quiet strip: 38px, the current entry named in its heading's colour, the panel numbered on the page colour with a rail on the current entry; page titles balance their lines; the search box's key chips hide where nothing can hover; Chrome for Android's status bar takes the theme's page colour on a phone in light mode; on a phone: on iOS Safari the strip above the bar is the page colour, not the page scrolling, the bar now giving Safari a colour and the film grain lying off its top edge; the reading hairline hides under the open menu and, beside the sidebar from 50rem, spans only the strip; the bar keeps its room for the menu button after an image zoom; the flag's "Copied!" pill takes the label's row, clear of a wrapped flag; on 2026-10-23, Starlight's header is the quiet bar: the HUD's height, clear at the top and frosted once scrolled, the name in Syne at 21px, every other word in the HUD's mono capitals, the search in Starlight's own place on the article column's edge, GitHub and a one-click theme button at the right, the one replacing override; the reading hairline fills on writeups only, from a typed component; home's masthead lockup sits on the bar's centre; on 2026-10-17, writeup screenshots take the code frames' edge, the difficulty chip answers the pointer, About's bar links CONTACT, and identity links tie the site to the owner's profiles; on 2026-10-05, the landing hero's glow stays in its own pane on a desktop and shows no hard edge at any width; callouts are no longer unnamed landmarks; landing card titles sit one level under the page title; the mobile "On this page" check wears its entry's colour; site search keeps no image as a field and ranks each Bandit page first however it is typed, bar two routes and two logins that Pagefind cannot tell from other levels; on 2026-10-03, site search no longer indexes the flags and passwords the pages hide; the decode headlines give a screen reader the settled word; the current "On this page" entry keeps its colour under the pointer on desktop and mobile; Syne's fallback is one face per weight, so the headline no longer jumps when the font arrives; a captured flag's spent button and the toggle-all control announce the truth; reduced motion stops the marketing pages' smooth scroll; the pressed filter pill's focus ring stands apart; the secret terminal's dim labels reach AA; dead CSS deleted and stale counts refreshed; on 2026-10-02, tool output in the writeups no longer dates the runs; on 2026-10-01, decorative characters keep their look and say only what they mean, and a build guard checks part of it; About is in site search for its owner, not for the writeups' topics; the marketing pages gain a skip link, a main landmark and `color-scheme`, and About's theme toggle reports its state; the writeup badge row names each fact for a screen reader; on 2026-09-30, sidebar entries that name what each platform holds, and About's practice cards split 2 + 2).
+> Last updated: 2026-10-25 (the glass's ramp animates one number, `--tp-frost`, so no theme value sits in its keyframes, where WebKit had left the glass transparent after a theme switch on iOS; the bar's glass is thinner and stronger and frosts over in 36px, its values tokens; everything on the glass but the name reads full contrast, so a screenshot under the bar no longer drowns the search, the icons or the phone strip; on 2026-10-24, the phone "On this page" is the Quiet strip: 38px, the current entry named in its heading's colour, the panel numbered on the page colour with a rail on the current entry; page titles balance their lines; the search box's key chips hide where nothing can hover; Chrome for Android's status bar takes the theme's page colour on a phone in light mode; on a phone: on iOS Safari the strip above the bar is the page colour, not the page scrolling, the bar now giving Safari a colour and the film grain lying off its top edge; the reading hairline hides under the open menu and, beside the sidebar from 50rem, spans only the strip; the bar keeps its room for the menu button after an image zoom; the flag's "Copied!" pill takes the label's row, clear of a wrapped flag; on 2026-10-23, Starlight's header is the quiet bar: the HUD's height, clear at the top and frosted once scrolled, the name in Syne at 21px, every other word in the HUD's mono capitals, the search in Starlight's own place on the article column's edge, GitHub and a one-click theme button at the right, the one replacing override; the reading hairline fills on writeups only, from a typed component; home's masthead lockup sits on the bar's centre; on 2026-10-17, writeup screenshots take the code frames' edge, the difficulty chip answers the pointer, About's bar links CONTACT, and identity links tie the site to the owner's profiles; on 2026-10-05, the landing hero's glow stays in its own pane on a desktop and shows no hard edge at any width; callouts are no longer unnamed landmarks; landing card titles sit one level under the page title; the mobile "On this page" check wears its entry's colour; site search keeps no image as a field and ranks each Bandit page first however it is typed, bar two routes and two logins that Pagefind cannot tell from other levels; on 2026-10-03, site search no longer indexes the flags and passwords the pages hide; the decode headlines give a screen reader the settled word; the current "On this page" entry keeps its colour under the pointer on desktop and mobile; Syne's fallback is one face per weight, so the headline no longer jumps when the font arrives; a captured flag's spent button and the toggle-all control announce the truth; reduced motion stops the marketing pages' smooth scroll; the pressed filter pill's focus ring stands apart; the secret terminal's dim labels reach AA; dead CSS deleted and stale counts refreshed; on 2026-10-02, tool output in the writeups no longer dates the runs; on 2026-10-01, decorative characters keep their look and say only what they mean, and a build guard checks part of it; About is in site search for its owner, not for the writeups' topics; the marketing pages gain a skip link, a main landmark and `color-scheme`, and About's theme toggle reports its state; the writeup badge row names each fact for a screen reader; on 2026-09-30, sidebar entries that name what each platform holds, and About's practice cards split 2 + 2).
 
 ---
 
@@ -763,23 +763,38 @@ token is an open ROADMAP item, not a bug.
     (Starlight's was 56px on a phone and 64px from 50rem), so the hairline sits at one height site-wide.
     Starlight sizes the sidebar, the right column, the phone strip, the menu button and the anchor scroll
     padding from it.
-  - **Adaptive glass** (values owner, 2026-10-24): clear at scroll 0, only the hairline, as the HUD is.
-    Over the first 36px of scroll it frosts over (`tp-frost-over`): the tint, `--sl-color-bg-nav`, the
-    page colour at 70% on dark and 66% on paper, a `blur(22px)` and `saturate(170%)` grow together from
-    nothing, so at 18px the bar is at half (35% or 33%, `blur(11px) saturate(1.35)`). Until 2026-10-24
-    a finished frost (78% and 80%, `blur(14px) saturate(1.25)`) faded in over 20px. Each value is one
-    token in `tokens.css`: `--tp-glass-alpha` (themed), `--tp-glass-blur`, `--tp-glass-saturate`,
-    `--tp-glass-ramp`. On a `::before` twice the bar's height and masked back to it, driven by
-    `animation-timeline: scroll(root)` and `animation-range: 0 var(--tp-glass-ramp)` (longhands only:
-    the build's minifier folds a timeline into the `animation` shorthand, and Chrome drops the
-    declaration). Its resting state is scroll 0's, clear and unfiltered, so a page too short to scroll
-    (the 404) keeps a clear bar; at scroll 0 the bar's pixels match the old opacity-0 layer's exactly.
-    At full strength from the top where scroll timelines are missing (Firefox 157, measured) and under
-    reduced motion; solid `--sl-color-bg` under reduced transparency and increased contrast. The phone
-    "On this page" strip wears the same. The keyframes read the tint through `var()`, so switching the
-    theme mid-page retints the glass at once. The source writes `-webkit-backdrop-filter` beside the
-    standard property, but the built CSS carries only the standard one (the minifier drops the prefix),
-    so Safari before 18 shows the tint without the frost.
+  - **Adaptive glass** (values owner, 2026-10-24; the ramp's mechanism 2026-10-25): clear at scroll 0,
+    only the hairline, as the HUD is. Over the first 36px of scroll it frosts over: the tint,
+    `--sl-color-bg-nav`, the page colour at 70% on dark and 66% on paper, a `blur(22px)` and
+    `saturate(170%)` grow together from nothing, so at 18px the bar is at half (35% or 33%,
+    `blur(11px) saturate(1.35)`). Until 2026-10-24 a finished frost (78% and 80%,
+    `blur(14px) saturate(1.25)`) faded in over 20px. Each value is one token in `tokens.css`:
+    `--tp-glass-alpha` (themed), `--tp-glass-blur`, `--tp-glass-saturate`, `--tp-glass-ramp`. On a
+    `::before` twice the bar's height and masked back to it. **The ramp animates one number**
+    (2026-10-25): `--tp-frost`, registered by `@property` (`<number>`, not inherited, initial 1), runs
+    from 0 to 1 in `@keyframes tp-frost`, driven by `animation-timeline: scroll(root)` and
+    `animation-range: 0 var(--tp-glass-ramp)` (longhands only: the build's minifier folds a timeline
+    into the `animation` shorthand, and Chrome drops the declaration). The `::before`'s own declarations
+    scale the tokens by it: the tint is `--sl-color-bg-nav` mixed with `transparent` at `--tp-frost`
+    times 100%, the blur `--tp-glass-blur` times it, and the saturation runs from 100% to
+    `--tp-glass-saturate`. No theme value sits in the keyframes, so a theme switch leaves them nothing
+    to re-resolve. The keyframes they replaced (`tp-frost-over`) read the tint through `var()`, which
+    WebKit does not re-resolve when `data-theme` changes: on the owner's iPhone a theme switch left the
+    bar fully transparent until a reload. Checked in headless Chrome, where a switch always retinted the
+    glass; not yet on the iPhone (ROADMAP). The `::before` declares `--tp-frost: 1`, full strength,
+    wherever the ramp does not run: without scroll timelines (as in Firefox 157, which showed full
+    strength from the top before this change; the path is checked in Chrome with the timeline block
+    removed, Firefox itself pending, ROADMAP), under reduced motion, and in an engine without
+    `@property`. Where it runs, the strength rests at 0, scroll 0's, so a page too short to scroll keeps
+    a clear bar: its timeline is inactive and the animation has no effect, and a full-strength rest
+    would leave it frosted for good. That is the 404 and `/secret` (except on a phone held sideways),
+    and as the screen grows the VulnHub landing (1280x800), the OverTheWire landing (1440x900), the
+    HackTheBox landing and six Bandit levels (1920x1080) and nearly every Bandit level (2560x1440;
+    measured 2026-10-25). Their clear rest computes as `blur(0px) saturate(1)` under a tint of alpha 0
+    rather than `none`, and draws the same pixels. Solid `--sl-color-bg` under reduced transparency and
+    increased contrast. The phone "On this page" strip wears the same. The source writes
+    `-webkit-backdrop-filter` beside the standard property, but the built CSS carries only the standard
+    one (the minifier drops the prefix), so Safari before 18 shows the tint without the frost.
   - **On the glass, full contrast** (owner, 2026-10-24 and 2026-10-25): the thinner tint lets a
     screenshot show through, and the muted grey fell to about 2:1 over a white one on dark and 2.5:1 over
     a black terminal on paper. So everything on the glass except the name reads `--tp-hud-ink` at rest,
