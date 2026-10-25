@@ -833,6 +833,18 @@ header.header::after {
   opacity: .035;
   background-image: var(--tp-grain);
 }
+/* The frost's strength, --tp-frost, from 0 (clear) to 1 (full), is the one number the ramp animates.
+   The tint and the blur are their tokens scaled by it and the saturation runs from 100% to its token,
+   so the three grow together, and the theme's values never enter @keyframes (owner, 2026-10-25):
+   WebKit does not re-resolve a var() inside keyframes when data-theme changes, and with the tint there
+   a theme switch on iOS left the bar fully transparent until a reload. Registered as a number so it
+   interpolates; also declared at 1 below, so an engine without @property draws the full frost, not
+   nothing. */
+@property --tp-frost {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
 header.header::before,
 mobile-starlight-toc nav::before {
   content: "";
@@ -841,37 +853,31 @@ mobile-starlight-toc nav::before {
   height: 200%;
   z-index: -1;
   pointer-events: none;
-  background-color: var(--sl-color-bg-nav);
-  -webkit-backdrop-filter: blur(var(--tp-glass-blur)) saturate(var(--tp-glass-saturate));
-  backdrop-filter: blur(var(--tp-glass-blur)) saturate(var(--tp-glass-saturate));
+  --tp-frost: 1;
+  background-color: color-mix(in oklab, var(--sl-color-bg-nav) calc(var(--tp-frost) * 100%), transparent);
+  -webkit-backdrop-filter: blur(calc(var(--tp-glass-blur) * var(--tp-frost)))
+    saturate(calc(100% + (var(--tp-glass-saturate) - 100%) * var(--tp-frost)));
+  backdrop-filter: blur(calc(var(--tp-glass-blur) * var(--tp-frost)))
+    saturate(calc(100% + (var(--tp-glass-saturate) - 100%) * var(--tp-frost)));
   -webkit-mask-image: linear-gradient(to bottom, #000 50%, transparent 50%);
   mask-image: linear-gradient(to bottom, #000 50%, transparent 50%);
 }
-@keyframes tp-frost-over {
-  from {
-    background-color: transparent;
-    -webkit-backdrop-filter: blur(0px) saturate(100%);
-    backdrop-filter: blur(0px) saturate(100%);
-  }
-  to {
-    background-color: var(--sl-color-bg-nav);
-    -webkit-backdrop-filter: blur(var(--tp-glass-blur)) saturate(var(--tp-glass-saturate));
-    backdrop-filter: blur(var(--tp-glass-blur)) saturate(var(--tp-glass-saturate));
-  }
+@keyframes tp-frost {
+  from { --tp-frost: 0; }
+  to { --tp-frost: 1; }
 }
 /* Longhands on purpose: given the shorthand, the build's minifier folds animation-timeline into it,
    and Chrome drops the whole declaration because the timeline is not settable through the
-   shorthand. Without a duration or a delay it has no shorthand to build. The resting state is scroll
-   0's, clear and unfiltered: on a page too short to scroll the timeline is inactive and the animation
-   has no effect, and that page never leaves scroll 0, so its bar stays clear. */
+   shorthand. Without a duration or a delay it has no shorthand to build. The resting strength is 0,
+   scroll 0's: on a page too short to scroll the timeline is inactive and the animation has no
+   effect, so that page, which never leaves scroll 0, keeps a clear bar, where a full-strength rest
+   would frost it for good. That is the 404, and on a large screen a landing or a short Bandit level. */
 @supports (animation-timeline: scroll()) {
   @media (prefers-reduced-motion: no-preference) {
     header.header::before,
     mobile-starlight-toc nav::before {
-      background-color: transparent;
-      -webkit-backdrop-filter: none;
-      backdrop-filter: none;
-      animation-name: tp-frost-over;
+      --tp-frost: 0;
+      animation-name: tp-frost;
       animation-timing-function: linear;
       animation-fill-mode: both;
       animation-timeline: scroll(root);
@@ -879,6 +885,8 @@ mobile-starlight-toc nav::before {
     }
   }
 }
+/* Solid. The ramp moves only --tp-frost, so these win over it while it runs; it is stopped anyway,
+   since nothing here reads it. */
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
   header.header::before,
   mobile-starlight-toc nav::before {
