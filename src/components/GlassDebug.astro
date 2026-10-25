@@ -1,0 +1,15 @@
+---
+// src/components/GlassDebug.astro
+//
+// TEMPORARY (2026-10-25): the ?glassdebug readout for the investigation into the bar's glass, which
+// clears after a theme switch or a return to Safari. Rendered by the Head override on every Starlight
+// page, it renders nothing and loads nothing more unless the URL carries ?glassdebug; then it loads
+// glass-debug.ts, which draws the panel. Delete both files and the line in the Head override when the
+// investigation is done.
+---
+
+<script>
+  if (new URLSearchParams(window.location.search).has('glassdebug')) {
+    void import('./glass-debug').then((debug) => debug.start());
+  }
+</script>

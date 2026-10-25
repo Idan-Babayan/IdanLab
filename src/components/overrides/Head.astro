@@ -17,8 +17,13 @@
 //
 // og:image is absolute because crawlers do not resolve relative paths. new URL() against Astro.site
 // (astro.config.mjs `site`) is what makes it absolute without hardcoding the origin twice.
+//
+// GlassDebug is TEMPORARY (2026-10-25): the ?glassdebug readout for the glass investigation, here because
+// every Starlight page renders this override. It emits only a module script, which does nothing without
+// that parameter. Remove it with the investigation.
 import Default from '@astrojs/starlight/components/Head.astro';
 import ThemeColor from '@components/ThemeColor.astro';
+import GlassDebug from '@components/GlassDebug.astro';
 
 const { entry, siteTitle } = Astro.locals.starlightRoute;
 const SITE_DESCRIPTION =
@@ -47,3 +52,4 @@ const OG_ALT = 'Idan.Lab, a lab notebook of CTF writeups and security notes';
 <meta name="twitter:description" content={description} />
 <meta name="twitter:image" content={image} />
 <ThemeColor />
+<GlassDebug />
