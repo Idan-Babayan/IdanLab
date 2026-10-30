@@ -944,6 +944,19 @@ div.header .right-group,
 div.header .social-icons { gap: 1.4rem; }
 div.header .social-icons::after { content: none; }
 
+/* The splash pages, the 404 and /secret, have no sidebar, so below 50em they have no menu either, and
+   the menu's footer is where every other page keeps the theme button on a phone. There the right-hand
+   end stays in the bar below 50em too, with the theme button alone in the menu button's place: the
+   search packs beside it at the bar's gap, as it packs beside the menu button elsewhere, and GitHub
+   waits for 50em, where Starlight shows it. The button keeps the bar's ink and its 24px hit area. */
+:root:not([data-has-sidebar]) div.header .right-group { display: flex; }
+:root:not([data-has-sidebar]) div.header .social-icons { display: none; }
+:root:not([data-has-sidebar]) div.header > :nth-child(2) { margin-inline-start: auto; }
+@media (min-width: 50em) {
+  :root:not([data-has-sidebar]) div.header .social-icons { display: flex; }
+  :root:not([data-has-sidebar]) div.header > :nth-child(2) { margin-inline-start: 0; }
+}
+
 /* Pages with a contents column, from 72rem (owner, 2026-10-23). The site lays these out itself, with
    a 15rem contents column and the article column centered in what is left (the three-column rules near
    the top of this file), while Starlight's grid template assumes its own wider contents column: wider
