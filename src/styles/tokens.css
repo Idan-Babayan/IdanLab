@@ -377,9 +377,15 @@ html[data-theme="dark"] {
      not a colored accent. Fed to --sl-color-hairline it fixes every structural hairline at once (content-to-TOC
      separator, the line under the writeup title, section rules, the markdown --- hr, and the
      TOC/ToggleAll divider) and is reused for the content Toggle border below. Light only; the dark
-     hairline (~#262831) is untouched. */
+     hairline (~#262831) is untouched.
+     --sl-color-hairline-shade reads it too (owner, 2026-10-30), so the bar, the sidebar and the right
+     column share one edge: Starlight draws the bar's bottom line and the desktop sidebar's edge in that
+     token, and below 72rem the phone "On this page" strip's bottom line and its open panel's edge. It was
+     gray-6, lighter than the page and 1.05:1 against it; the divider reads 1.49:1 (model B). The reading
+     hairline still fills on top of the line it lies on. On dark the shade stays Starlight's #17181c. */
   --tp-divider: #c6c0b4;
   --sl-color-hairline: var(--tp-divider);
+  --sl-color-hairline-shade: var(--tp-divider);
   --tp-glow-1: #7cc9ff;
   --tp-glow-2: #a9dd6a;
   /* Darker cyan-ink for paper: the previous #0b7e92 left prose links and h3 at ~3.9:1
@@ -434,6 +440,17 @@ html[data-theme="dark"] {
 }
 :root[data-theme='light'] {
   --tp-glass-alpha: 0.66;
+}
+} /* @layer tokens */
+
+/* ── The sidebar's fill: the dial (chrome.css, "Sidebar: the bar's material at rest"; owner, 2026-10-30) ──
+   One line. How much of its own colour, --sl-color-bg-sidebar, the desktop sidebar lays over the page
+   from 50rem: 0%, none, as the bar lays none at rest, so the page's glow runs under the bar and the
+   sidebar alike and the sidebar's hairline is its edge. Raise it to bring a fill back. Below 50rem the
+   same pane is the phone menu, which keeps Starlight's solid panel whatever this says. */
+@layer tokens {
+:root {
+  --tp-sidebar-fill: 0%;
 }
 } /* @layer tokens */
 
