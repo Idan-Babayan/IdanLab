@@ -867,6 +867,13 @@ token is an open ROADMAP item, not a bug.
     the magnifier. All of it is scoped to `:root:not([data-has-sidebar])`, so no other page changes.
   - **The right-hand "On this page" column** starts at the bar's hairline from 72rem, so its border no
     longer runs up through the clear bar.
+  - **The hairline on paper is the warm divider** (owner, 2026-10-30): `--sl-color-hairline-shade`, the
+    token Starlight draws the bar's bottom line and the desktop sidebar's edge in, reads `--tp-divider`
+    (#c6c0b4) on paper, so the bar, the sidebar and the right column share one edge colour. It was
+    gray-6, #edeef3, lighter than the page and 1.05:1 against it; the divider reads 1.49:1 (model B).
+    Below 72rem the phone strip's bottom line and its open panel's edge are drawn in the same token and
+    took it too. The reading hairline still fills on top of it: at device scale 1 the line is one row,
+    and where the fill runs no divider pixel shows above or below it. Dark keeps Starlight's #17181c.
   - **The browser's own colour** (2026-10-24): every page carries `<meta name="theme-color">` from
     `ThemeColor.astro`, the page colour of the theme shown (`#07090a` on dark, `#ece9e0` on paper), kept
     in step by an inline watcher of `html[data-theme]`, which Starlight's ThemeProvider, About's
@@ -1325,7 +1332,9 @@ full-page pixels change only in the header band, the glow's own area and the sid
 is the one side effect, measured in headless and in a windowed Chrome: the sidebar's text on a landing
 drew with subpixel antialiasing only while the glow ran under it, and now draws grayscale, as it does
 on the Bandit hub. See DECISIONS 2026-10-04 · The landing glow holds its pools whole, and a landing
-keeps to its own pane on a desktop.
+keeps to its own pane on a desktop. Since the sidebar went clear (2026-10-30, §6 "Sidebar (chrome)") the
+cut at its border shows: the hero glow stops at the sidebar's hairline as it stops at the bar's, framed
+by the two lines, and the owner kept it so (2026-10-30).
 
 **No sideways scroll on a landing (2026-09-07).** The hero glow (`.pi-glow`) is MEANT to spill past its
 box, and it is the only element that overflows the viewport: since 2026-10-04 by half the hero's width
@@ -1568,6 +1577,28 @@ Light is art-directed on its own terms (dark is unchanged). All rules scoped to
 Taller rows via larger block padding + line-height on `nav.sidebar a, nav.sidebar summary`
 (fuller rail, better touch targets; no `<li>` margins, so the active pill / nesting guide / dots
 stay aligned). Width trimmed via `--sl-sidebar-width: 17rem` (from Starlight's 18.75rem).
+
+**The bar's material at rest (owner, 2026-10-30).** From 50rem the sidebar lays no fill of its own: the
+pane's background is `--sl-color-bg-sidebar` mixed with `transparent` at `--tp-sidebar-fill`, a dial in
+`tokens.css` set to 0%, the one line that brings a fill back. So at the top of a writeup the page's glow
+runs across the bar and the sidebar with no edge but the hairlines, and on paper the dot grid runs under
+the sidebar too. Its right hairline is the edge, as the bar's is (on paper the warm divider, §6
+"Starlight's header is the quiet bar"). No `backdrop-filter`: nothing scrolls under it. Its scrollbar's
+track is clear and the thumb is the page's: a long list overflows the pane (every Bandit page at
+1280x800), and the page's track drew a 16px strip down its edge. Paper's raised look went with the fill;
+the paper edge and inset shadow written on `nav.sidebar` never painted, the nav being 0px tall around its
+fixed pane, and were deleted with it. It stays clear under reduced transparency and increased contrast,
+where the bar turns solid: what shows through is the page's own background, the article's too, and
+nothing moves under it. Below 50rem the same pane is the phone menu, which keeps Starlight's solid panel
+(#17181c, white on paper); every rule here sits inside the 50rem query.
+Measured at the top of Busqueda, where the glow under the sidebar is strongest, against the lowest
+rendered pixel under each entry, grain and dots included (model C, at 1280 and 800): on dark the group
+labels read 18.19:1 or more (the About row, on the cyan glow), the links 10.90 and the current page 10.20
+on its fill, where the solid fill gave 18.55, 10.52 and 9.65; on paper the labels 12.94, the links 8.56
+and the current page 6.13, where it gave 14.82, 9.84 and 6.87. The platform focus rings on paper read
+3.67 to 4.33:1 on the page, and 2.96 where one crosses an open group's guide line (the rings' comment in
+`chrome.css`). On the landings the hero glow is still clipped to its pane, so it stops at the sidebar's
+hairline as at the bar's (§6 "A landing keeps to its own pane on a desktop").
 
 ### Platform-index duotone
 On the platform index each platform reads as its color (lead) plus a universal cyan secondary
