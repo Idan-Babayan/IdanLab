@@ -389,7 +389,10 @@ The theme pass is organised into declared cascade layers, one module per layer, 
   key + `data-theme` on `<html>` after an explicit light or dark choice. Both switch it with one
   button: About's own, and on the Starlight pages the ThemeSelect override (2026-10-18, §6 "Starlight
   Component Overrides"), which replaced Starlight's Dark/Light/Auto select, so there is no Auto choice
-  any more and a first click stores `light` or `dark`. About **defaults to dark**
+  any more and a first click stores `light` or `dark`. On a Starlight page the button sits in the bar
+  from 50rem and in the phone menu's footer below it; the two splash pages, the 404 and `/secret`, have
+  no sidebar and so no menu, and keep it in the bar at every width (2026-10-30, §6 "Starlight's header
+  is the quiet bar"). About **defaults to dark**
   (light is opt-in), and deliberately so before any choice: a reader who has never touched a toggle,
   or who picked Auto under the old select (Starlight stored an empty string for it, which still reads as
   no choice), gets dark on About and the OS scheme on a writeup, because About's bootstrap falls through
@@ -708,6 +711,9 @@ That predates the token system and is correct a11y.
 intentional and should stay: it is a fake terminal's command line, where the conventional focus indicator
 is the caret (`caret-color: var(--t-lime)`), not a box around the input. It is the only interactive
 element in that terminal and it is auto-focused. Nowhere else on the site is a focus indicator removed.
+Its pointer target is 25.3px tall (2026-10-30): one line of 0.86rem at line-height 1.55 is 21.3px, under
+WCAG 2.2's 24px, so 2px of transparent block padding grows the box and an equal negative margin keeps its
+line, the prompt and the terminal's height where they were, the way About's HUD grows its controls.
 
 **Scope:** the `src/styles/` modules theme Starlight CONTENT pages only. The two standalone marketing pages carry
 their own equivalent inline rings (`var(--lime)` + per-card `var(--accent)`); folding them into the same
@@ -852,7 +858,13 @@ token is an open ROADMAP item, not a bug.
     lines, and the search's key chips hide where nothing hovers.
   - **The right-hand end:** GitHub (16px, in the ink) then the theme button ("Starlight Component
     Overrides" below), 1.4rem apart, no separator. On a phone both live in the menu's footer, muted on
-    its opaque panel, and the menu button is a quiet icon in the ink, lime while the menu is open.
+    its opaque panel, and the menu button is a quiet icon in the ink, lime while the menu is open. The
+    splash pages, the 404 and `/secret`, have no sidebar and so no menu (2026-10-30): there the bar keeps
+    its right-hand end below 50rem too, with the theme button alone, in the ink and its 24px hit area,
+    in the menu button's place. The magnifier packs beside it at the bar's gap, as it packs beside the
+    menu button elsewhere (`margin-inline-start: auto` on the search column, below 50rem only), and GitHub
+    shows from 50rem, where Starlight shows it. At 320px the bar keeps 128px free between the name and
+    the magnifier. All of it is scoped to `:root:not([data-has-sidebar])`, so no other page changes.
   - **The right-hand "On this page" column** starts at the bar's hairline from 72rem, so its border no
     longer runs up through the clear bar.
   - **The browser's own colour** (2026-10-24): every page carries `<meta name="theme-color">` from
@@ -865,7 +877,8 @@ token is an open ROADMAP item, not a bug.
     sets reaches that bar. Measured on the Android emulator (Chrome 149) in all four combinations of phone
     and site theme. Safari 26 ignores it (the strip above the bar, above). See DECISIONS 2026-10-24 · The
     browser's own colour follows the theme.
-  - Tab order: skip link, name, search, GitHub, theme. See DECISIONS 2026-10-23 · The quiet bar:
+  - Tab order: skip link, name, search, GitHub, theme; on a splash page below 50rem, skip link, name,
+    search, theme. See DECISIONS 2026-10-23 · The quiet bar:
     Starlight's header puts on the HUD.
 - **The phone "On this page" is the Quiet strip** (owner, 2026-10-24; `chrome.css`): Starlight's own
   `<mobile-starlight-toc>`, restyled in CSS, below 72rem.
