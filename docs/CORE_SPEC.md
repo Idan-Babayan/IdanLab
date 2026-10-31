@@ -1788,13 +1788,16 @@ no signature decode/scramble animation. Layout: a `PASSWORD` label, the value bl
 as plain text with no border/background/hover affordance of its own, then ONE control on the right, the
 ONLY interactive element in the row: it starts as an eye + "Reveal" and swaps in place to a copy icon +
 "Copy" on click (single slot, so there is no layout shift). A second click copies and briefly shows
-"Copied" before reverting. No native `title` tooltip (tried, then dropped for looking bad); the
-accessible name lives entirely in `aria-label`. Real `<button>`; reveal/copy are announced via a VISUALLY
+"Copied" before reverting, only once the clipboard has taken the value; a refused copy shows "Failed"
+instead (2026-10-31). No native `title` tooltip (tried, then dropped for looking bad); the
+accessible name lives entirely in `aria-label`. Real `<button>`, first in the DOM and drawn on the right
+by `order: 1`, so a screen reader meets it before the value; reveal/copy are announced via a VISUALLY
 HIDDEN `aria-live` region (`.pw-live.sr-only`, screen-reader-only, no visible "Password
 revealed"/"Password copied" text). Only the button reads as interactive: the container (`.pwreveal`), the
-label, and the value are all `user-select: none` (copying is the only way to take the value, matching
-FlagCapture's captured-value pattern), and the container/value both get `cursor: default` with no `:hover`
-change to filter/cursor/color. The row itself IS a passive amber card (not a neutral hairline frame):
+label, and the unrevealed value are `user-select: none`, which keeps a blurred value off the clipboard;
+the revealed value is selectable, so a refused copy is not a dead end. The container and the unrevealed
+value get `cursor: default`, with no `:hover` change to filter/cursor/color. The row itself IS a passive
+amber card (not a neutral hairline frame):
 `--pw-amber-rgb` washes/borders (dark 0.08 fill / 0.4 border, light 0.14 fill / 0.55
 border, stronger and more golden), the same values the retired spoiler class used. The button text/icon
 reads the ink `--pw-amber-ink` (`#ffc23d` dark / `#7c5000` light), with a `--pw-amber-rgb` border/hover
@@ -1888,7 +1891,9 @@ too: on paper the identity gold had read 1.95:1 (CAPTURED, user) to 3.56:1 (LOCK
 label and 1.87 to 2.39:1 on the pill, and `--fc-val` reads 5.12 to 6.92:1 and 4.89 to 5.70:1 on the same
 surfaces (model B). Dark is unchanged, since there the two are one value. The
 frame matches the writeup Toggle width + 6px radius but sits a bit taller for presence; an icon-only copy
-button sits inside it (right, vertically centered) and shows a golden "Copied!" pill on copy, beside it.
+button sits inside it (right, vertically centered) and shows a golden "Copied!" pill on copy, beside it,
+only once the clipboard has taken the flag; a refused copy shows "Failed" in the pill, and the captured
+value is selectable, so the reader can still take it by hand (2026-10-31).
 Below 50rem the pill takes the LOCKED / CAPTURED label's row instead (the label fades while it shows): a
 HackTheBox flag wraps in a frame narrower than about 430px, and the middle is then where its first line
 ends, so the pill covered seven characters of the flag just copied on a 411px phone (2026-10-24). Capture
