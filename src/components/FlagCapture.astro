@@ -191,32 +191,54 @@ const noun = isRoot ? 'root flag' : 'user flag';
     const copy = root.querySelector('.flagcap-copy') as HTMLButtonElement | null;
     if (!copy) return;
     const path = copy.querySelector('.fc-copy-path') as SVGPathElement | null;
+    const pill = root.querySelector('.fc-copy-feedback') as HTMLElement | null;
+    const live = root.querySelector('.flagcap-live') as HTMLElement | null;
+    const pillCopied = pill?.textContent ?? 'Copied!';
+    const noun = root.classList.contains('flagcap-root') ? 'root flag' : 'user flag';
     let revertId = 0;
 
     copy.addEventListener('click', () => {
       const flag = (root.querySelector('.flagcap-real')?.textContent ?? '').trim();
-      const write = navigator.clipboard?.writeText(flag);
-      if (write && typeof write.catch === 'function') {
-        write.catch(() => legacyCopy(flag));
-      } else {
-        legacyCopy(flag);
-      }
-      copy.classList.add('is-copied');
-      root.classList.add('is-copy-active'); // reveals the "Copied!" pill, hides the CAPTURED label
-      if (path) path.setAttribute('d', CHECK_PATH); // copy icon -> check
-      copy.setAttribute('aria-label', 'Copied');
-      window.clearTimeout(revertId);
-      revertId = window.setTimeout(() => {
-        copy.classList.remove('is-copied');
-        root.classList.remove('is-copy-active');
-        if (path) path.setAttribute('d', COPY_PATH);
-        copy.setAttribute('aria-label', 'Copy flag');
-      }, 1500);
+      // The confirmation waits for the clipboard's answer, so "Copied!" is never shown for a copy that
+      // did not happen. A refusal says "Failed" in the same pill, one character shorter, so it never
+      // covers more of the flag than "Copied!" does, and keeps the copy icon. The captured value is
+      // selectable, so the reader can still take it by hand. The pill's word is set here and left alone
+      // on revert, so a fading "Failed" never flashes back to "Copied!".
+      copyText(flag).then((copied) => {
+        copy.classList.toggle('is-copied', copied);
+        root.classList.add('is-copy-active'); // reveals the pill, hides the CAPTURED label
+        if (pill) pill.textContent = copied ? pillCopied : 'Failed';
+        if (path) path.setAttribute('d', copied ? CHECK_PATH : COPY_PATH); // copy icon -> check on success
+        copy.setAttribute('aria-label', copied ? 'Copied' : 'Copy failed');
+        if (!copied && live) live.textContent = `Copy failed, select the ${noun} by hand`;
+        window.clearTimeout(revertId);
+        revertId = window.setTimeout(() => {
+          copy.classList.remove('is-copied');
+          root.classList.remove('is-copy-active');
+          if (path) path.setAttribute('d', COPY_PATH);
+          copy.setAttribute('aria-label', 'Copy flag');
+        }, 1500);
+      });
     });
   }
 
-  // Fallback for non-secure contexts where navigator.clipboard is unavailable.
-  function legacyCopy(text: string): void {
+  // Settles only once the clipboard has answered. The async API first; if it is missing or refuses
+  // (no permission, a document without focus), the legacy route gets its turn.
+  async function copyText(text: string): Promise<boolean> {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch (_e) {
+      /* refused: fall through to the legacy route */
+    }
+    return legacyCopy(text);
+  }
+
+  // Fallback for non-secure contexts where navigator.clipboard is unavailable, and for a refused write.
+  // True only when the copy really happened: execCommand answers false when the browser refuses it.
+  function legacyCopy(text: string): boolean {
     const ta = document.createElement('textarea');
     ta.value = text;
     ta.style.position = 'fixed';
@@ -224,12 +246,14 @@ const noun = isRoot ? 'root flag' : 'user flag';
     document.body.appendChild(ta);
     ta.focus();
     ta.select();
+    let copied = false;
     try {
-      document.execCommand('copy');
+      copied = document.execCommand('copy');
     } catch (_e) {
-      /* no-op: clipboard simply unavailable */
+      /* clipboard simply unavailable: copied stays false */
     }
     ta.remove();
+    return copied;
   }
 
   function init(): void {

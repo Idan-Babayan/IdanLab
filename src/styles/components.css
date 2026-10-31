@@ -1009,6 +1009,14 @@ html[data-theme="light"] .sl-markdown-content .cl {
 .sl-markdown-content .flagcap:not(.is-captured) .flagcap-value {
   color: color-mix(in oklab, var(--fc-id) 88%, transparent);
 }
+/* Captured, the value is selectable. It sits inside the spent decrypt button, where a pointer starts no
+   selection, so a clipboard that refuses the copy button was a dead end. Locked, the cyphertext stays
+   as it is, and the real flag in .flagcap-real stays user-select: none (see below). */
+.sl-markdown-content .flagcap.is-captured .flagcap-value {
+  user-select: text;
+  -webkit-user-select: text;
+  cursor: text;
+}
 
 /* Label: LOCKED -> CAPTURED (the leading glyph carries the check; no second check here). The words
    read --fc-val: on paper the identity gold read 1.95:1 (CAPTURED, user) to 3.56:1 (LOCKED, root) as
@@ -1077,8 +1085,9 @@ html[data-theme="light"] .sl-markdown-content .cl {
 }
 
 /* "Copied!" feedback pill: golden accent, like the code-block copy confirmation. Sits just left of the
-   copy icon, fades in while the copy button is in its is-copied state (~1.5s), then fades out. Its
-   word reads --fc-val: light reads 4.89:1 user and 5.70:1 root, on the pill (model B). */
+   copy icon, fades in for ~1.5s once the clipboard has answered, then fades out; a refused copy shows
+   "Failed" in it instead. Its word reads --fc-val: light reads 4.89:1 user and 5.70:1 root, on the
+   pill (model B). */
 .sl-markdown-content .flagcap .fc-copy-feedback {
   position: absolute;
   top: 0;
