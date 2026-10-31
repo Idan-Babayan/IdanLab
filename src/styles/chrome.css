@@ -398,6 +398,42 @@ body::before {
   background-repeat: repeat, no-repeat;
   background-position: 0 0, center top;
 }
+/* The light moves with the page on a desktop (owner, 2026-10-31). From 50rem, on pages with a sidebar,
+   the top-left glow leaves the fixed layer for the page's own background: at scroll 0 it sits where it
+   did, at the same size and colour, and it scrolls away with the article. Below it soft glows run down
+   the left edge for the page's full height, lime and cyan in turn at the corner glows' own strengths
+   (10% and 11%), so light passes under the sidebar and the bar's left end as the article moves. The
+   top-right lime and the low glow stay fixed. Each glow in the series is a 420 by 280px ellipse centred
+   40px off the left edge and gone by 262px, before the article's text (288px from 800 to 1151px wide,
+   296 up to 1280, further right above). They sit 560px apart and fade over 202px either side of their
+   centres, so part of one is always under the sidebar, and 1400px of scroll (600 to 2000) moves them by
+   half a step. The first sits at 350px, clear of the top-left glow; the one before it ends above the
+   page. Paper has no top-left glow and takes the same series in its own glow colours at its top glow's
+   12%. Normal scrolling: no fixed layer, no script. Phones keep the fixed layer whole, having no sidebar
+   for the light to pass under. COUPLED: the dark override repeats the base rule's top-right and low
+   glows, and the page takes its top-left one; change them together. */
+@media (min-width: 50rem) {
+  :root[data-has-sidebar]:not([data-theme='light']) body::before {
+    background:
+      radial-gradient(55vw 280px at 92% -90px, color-mix(in oklab, var(--tp-glow-2) 10%, transparent), transparent 72%),
+      radial-gradient(80vw 360px at 60% 118%, color-mix(in oklab, var(--tp-glow-1) 9%, transparent), color-mix(in oklab, var(--tp-glow-2) 6%, transparent) 55%, transparent 80%);
+  }
+  :root[data-has-sidebar] body {
+    background-image:
+      radial-gradient(60vw 300px at 16% -70px, color-mix(in oklab, var(--tp-glow-1) 11%, transparent), transparent 72%),
+      radial-gradient(420px 280px at -40px 350px, color-mix(in oklab, var(--tp-glow-2) 10%, transparent), transparent 72%),
+      radial-gradient(420px 280px at -40px 910px, color-mix(in oklab, var(--tp-glow-1) 11%, transparent), transparent 72%);
+    background-size: auto, 300px 1120px, 300px 1120px;
+    background-repeat: no-repeat, repeat-y, repeat-y;
+  }
+  :root[data-theme='light'][data-has-sidebar] body {
+    background-image:
+      radial-gradient(420px 280px at -40px 350px, color-mix(in oklab, var(--tp-glow-2) 12%, transparent), transparent 72%),
+      radial-gradient(420px 280px at -40px 910px, color-mix(in oklab, var(--tp-glow-1) 12%, transparent), transparent 72%);
+    background-size: 300px 1120px;
+    background-repeat: repeat-y;
+  }
+}
 /* Grain reads far less on pale paper than on ink: lift it just enough to add tooth. The light grain
    opacity is set HERE, beside the light atmosphere block, rather than with the base grain rule below
    (both land on .035 today). This note used to sit at the end of the prose module, where the Phase 3
@@ -456,21 +492,6 @@ h1#_top {
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-}
-} /* @layer chrome */
-
-/* ── Sidebar: the bar's material at rest (owner, 2026-10-30) ──
-   From 50rem the sidebar is a fixed pane beside the article. Its own solid colour cut the page's glow
-   off at its edge while the clear bar above it showed the glow; now it lays only --tp-sidebar-fill of
-   that colour over the page (tokens.css, 0%: none), and its right hairline is the edge, as the bar's
-   is (on paper the warm divider, tokens.css). No backdrop-filter: nothing scrolls under it. Its
-   scrollbar track goes clear with it (Scrollbars, below). Below 50rem the same pane is the phone menu,
-   which keeps Starlight's solid panel: nothing here reaches it. */
-@layer chrome {
-@media (min-width: 50rem) {
-  .sidebar-pane {
-    background-color: color-mix(in oklab, var(--sl-color-bg-sidebar) var(--tp-sidebar-fill), transparent);
-  }
 }
 } /* @layer chrome */
 
@@ -748,10 +769,10 @@ html[data-theme="light"] ::-webkit-scrollbar-thumb:hover { background-color: #9d
 html[data-theme="light"] .expressive-code pre { scrollbar-color: #b3a88f #e8e2d3; }
 html[data-theme="light"] .expressive-code pre::-webkit-scrollbar-track { background: #e8e2d3; }
 
-/* The desktop sidebar has no fill of its own (Sidebar: the bar's material at rest), so its track is
-   clear and only the page's thumb shows: a long list, every Bandit page at 1280x800, would otherwise
-   lay a 16px strip of track down its edge. The thumbs repeat the page's, above. Below 50rem the pane
-   is the phone menu, on its own solid panel, and keeps the page's track. */
+/* The desktop sidebar wears the bar's tint (the quiet bar block, "Adaptive glass"), clear at the top of
+   the page, so its track is clear too and only the page's thumb shows: a long list, every Bandit page
+   at 1280x800, would otherwise lay a 16px strip of track down its edge. The thumbs repeat the page's,
+   above. Below 50rem the pane is the phone menu, on its own solid panel, and keeps the page's track. */
 @media (min-width: 50rem) {
   html[data-theme="dark"] .sidebar-pane { scrollbar-color: #2e3440 transparent; }
   html[data-theme="light"] .sidebar-pane { scrollbar-color: #b3a88f transparent; }
@@ -817,16 +838,19 @@ html[data-theme="light"] .expressive-code pre::-webkit-scrollbar-track { backgro
 }
 
 /* Adaptive glass. At the top of a page the bar is clear, only its hairline, as the HUD is; over the
-   first 36px of scroll it frosts over: the tint (Starlight's nav tint, --sl-color-bg-nav, the page
-   colour at 70% on dark and 66% on paper), a 22px blur and 170% saturation grow together from nothing,
-   rather than a finished frost fading in (owner, 2026-10-24). Each value is one token (tokens.css, "The
-   bar's glass"). The frost lives on a layer behind the bar, not on the header, because backdrop-filter
-   makes its element the containing block of fixed descendants. The layer is twice the bar's height and
-   masked back to it, so the blur also samples what sits just under the bar and text softens as it
-   nears the edge instead of changing at the line; the mask stops at the hairline, which stays the
-   header's own border. The phone "On this page" strip wears the same. At full strength where scroll
-   timelines are unsupported and under reduced motion; solid under reduced transparency and under
-   increased contrast. */
+   first 36px of scroll it frosts over: the tint (the page colour, --tp-glass-rgb, at 70% on dark and
+   66% on paper), a 22px blur and 170% saturation grow together from nothing, rather than a finished
+   frost fading in (owner, 2026-10-24). Each value is one token (tokens.css, "The bar's glass"). The
+   frost lives on a layer behind the bar, not on the header, because backdrop-filter makes its element
+   the containing block of fixed descendants. The layer is twice the bar's height and masked back to
+   it, so the blur also samples what sits just under the bar and text softens as it nears the edge
+   instead of changing at the line; the mask stops at the hairline, which stays the header's own
+   border. The phone "On this page" strip wears the same. From 50rem the sidebar, and from 72rem the
+   right-hand column, wear the tint alone, with no blur: nothing scrolls under them, and the light
+   under them is soft already (owner, 2026-10-31). So the bar and both columns read as one surface at
+   every scroll position. At full strength where scroll timelines are unsupported and under reduced
+   motion; solid in the page colour under reduced transparency and under increased contrast, the
+   columns too, their hairlines carrying the edges. */
 header.header,
 mobile-starlight-toc nav {
   background-color: transparent;
@@ -855,7 +879,9 @@ header.header::after {
    WebKit does not re-resolve a var() inside keyframes when data-theme changes, and with the tint there
    a theme switch on iOS left the bar fully transparent until a reload. Registered as a number so it
    interpolates; also declared at 1 below, so an engine without @property draws the full frost, not
-   nothing. */
+   nothing. Not inherited: each surface that wears the glass runs the ramp itself, on the same scroll
+   timeline over the same range, so all of them hold one value at every scroll position while nothing
+   else on the page inherits an animated number (owner, 2026-10-31). */
 @property --tp-frost {
   syntax: '<number>';
   inherits: false;
@@ -870,13 +896,27 @@ mobile-starlight-toc nav::before {
   z-index: -1;
   pointer-events: none;
   --tp-frost: 1;
-  background-color: color-mix(in oklab, var(--sl-color-bg-nav) calc(var(--tp-frost) * 100%), transparent);
+  background-color: rgb(var(--tp-glass-rgb) / calc(var(--tp-glass-alpha) * var(--tp-frost)));
   -webkit-backdrop-filter: blur(calc(var(--tp-glass-blur) * var(--tp-frost)))
     saturate(calc(100% + (var(--tp-glass-saturate) - 100%) * var(--tp-frost)));
   backdrop-filter: blur(calc(var(--tp-glass-blur) * var(--tp-frost)))
     saturate(calc(100% + (var(--tp-glass-saturate) - 100%) * var(--tp-frost)));
   -webkit-mask-image: linear-gradient(to bottom, #000 50%, transparent 50%);
   mask-image: linear-gradient(to bottom, #000 50%, transparent 50%);
+}
+/* The side columns: the bar's tint and nothing else. Below 50rem the sidebar's pane is the phone menu,
+   which keeps Starlight's solid panel, and below 72rem the right-hand column is not shown. */
+@media (min-width: 50rem) {
+  .sidebar-pane {
+    --tp-frost: 1;
+    background-color: rgb(var(--tp-glass-rgb) / calc(var(--tp-glass-alpha) * var(--tp-frost)));
+  }
+}
+@media (min-width: 72rem) {
+  .right-sidebar {
+    --tp-frost: 1;
+    background-color: rgb(var(--tp-glass-rgb) / calc(var(--tp-glass-alpha) * var(--tp-frost)));
+  }
 }
 @keyframes tp-frost {
   from { --tp-frost: 0; }
@@ -900,9 +940,21 @@ mobile-starlight-toc nav::before {
       animation-range: 0 var(--tp-glass-ramp);
     }
   }
+  @media (prefers-reduced-motion: no-preference) and (min-width: 50rem) {
+    .sidebar-pane,
+    .right-sidebar {
+      --tp-frost: 0;
+      animation-name: tp-frost;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: scroll(root);
+      animation-range: 0 var(--tp-glass-ramp);
+    }
+  }
 }
 /* Solid. The ramp moves only --tp-frost, so these win over it while it runs; it is stopped anyway,
-   since nothing here reads it. */
+   since nothing here reads it. The columns take the page colour as the bar does, so the three stay one
+   surface (owner, 2026-10-31). */
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
   header.header::before,
   mobile-starlight-toc nav::before {
@@ -910,6 +962,18 @@ mobile-starlight-toc nav::before {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
     animation: none;
+  }
+  @media (min-width: 50rem) {
+    .sidebar-pane {
+      background-color: var(--sl-color-bg);
+      animation: none;
+    }
+  }
+  @media (min-width: 72rem) {
+    .right-sidebar {
+      background-color: var(--sl-color-bg);
+      animation: none;
+    }
   }
 }
 
@@ -1162,12 +1226,15 @@ ul.top-level > li:nth-child(5) > details > summary .group-label::before  { backg
    ring stays legible there (the pale-on-pale case). About (nth-child 1) is not a platform, so it keeps
    the lime default. Positional like the dots: if the sidebar is reordered, update these too.
    All four are literals, each matching its platform's --pf-accent in pages.css. A ring is non-text, so
-   3:1 is its bar. From 50rem the rail is the page itself, the sidebar laying no fill since 2026-10-30:
-   OverTheWire's light #797100 reads 4.14:1 against the page #ece9e0 (model A) and 3.68:1 on the painted
-   pixels beside its summary, the dot grid included, where the old #f1eee5 rail gave 4.34 and 4.15;
-   VulnHub's reads 3.69, HackTheBox's 3.67 and PicoCTF's 4.33 (DPR 2). Where an open group's guide line
-   starts under its summary the ring crosses it, 2.96:1 against that 1px line for HackTheBox (3.08 on
-   the old rail). Below 50rem the rail is the phone menu's white panel, 5.03:1 (model A). OverTheWire read
+   3:1 is its bar. From 50rem the rail is the page itself under the bar's tint, clear at the top of the
+   page and 66% of the paper once scrolled, with the light moving under it (2026-10-31). At the top,
+   OverTheWire's light #797100 reads 4.14:1 against the page #ece9e0 (model A) and 3.63:1 on the painted
+   pixels beside its summary, the dot grid and the first lime glow included; VulnHub's reads 3.69,
+   HackTheBox's 3.67 and PicoCTF's 4.33; under the full tint, with a glow centred on the groups, they
+   read 3.91 to 4.64 (DPR 2). The old #f1eee5 rail gave OverTheWire 4.34 and 4.15. Where an open group's
+   guide line starts under its summary the ring crosses it, 2.95:1 against that 1px line for HackTheBox
+   (3.08 on the old rail). Below 50rem the rail is the phone menu's white panel, 5.03:1 (model A).
+   OverTheWire read
    the shared --otw-amber until 2026-09-28, when the platform moved to Canary yellow and the amber
    stayed with PasswordReveal. There is no root-level token holding VulnHub red, PicoCTF purple or
    Canary yellow, and HackTheBox's hex coincides with --sl-color-accent without being the same thing,

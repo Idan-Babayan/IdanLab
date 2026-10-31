@@ -137,8 +137,8 @@ body:has(.pi-index) { overflow-x: clip; }
 
 /* A landing keeps to its own pane on a desktop. From 50rem, Starlight's breakpoint for the sidebar,
    the page is three regions: the header across the top (translucent on purpose), the sidebar (opaque
-   until 2026-10-30, clear since, framed by its hairline as the bar is), and the pane beside it, where
-   the landing lives. The hero glow spills past the hero by design, and
+   until 2026-10-30, since 2026-10-31 wearing the bar's glass, clear at the top and framed by its
+   hairline as the bar is), and the pane beside it, where the landing lives. The hero glow spills past the hero by design, and
    nothing stopped it at the pane's edge, so it ran up under the header and across the sidebar's
    column, and the translucent header showed it there as a lit band with hard edges (at 1536: from
    24px down and from 150px in, over the sidebar's 272px column) on the three landings whose heroes
