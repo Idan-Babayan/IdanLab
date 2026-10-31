@@ -761,8 +761,10 @@ html[data-theme="light"] .sl-markdown-content .cl {
    A wargame password is a waypoint, not a trophy: amber (the waypoint and spoiler identity), never
    the gold flag tokens, and NO decode scramble (reserved for FlagCapture, so the flag vs password
    distinction reads). The row is a passive amber card: only .pw-action is interactive. The label and
-   value are NON-selectable (copy is the only way to take the value, like FlagCapture), and the value
-   is spoiler-blurred until Reveal is clicked (never on hover). Amber comes from the shared identity
+   the UNREVEALED value are non-selectable, which is load bearing: it keeps a blurred value out of a
+   plain Ctrl+A then copy (the reasoning at .flagcap-real below). The REVEALED value is selectable, so
+   a clipboard that refuses the Copy button is not a dead end. The value is spoiler-blurred until
+   Reveal is clicked (never on hover). Amber comes from the shared identity
    tokens --pw-amber (accent, #ffc23d dark / #a86f04 light), --pw-amber-ink (the AA text ink, #ffc23d
    dark / #7c5000 light) and --pw-amber-rgb (the #f59e0b wash base), which BLOCK mode reads too, so the
    two modes cannot drift apart. The button LABEL is body-size text and reads the ink; its border and
@@ -832,6 +834,9 @@ html[data-theme="light"] .sl-markdown-content .cl {
 }
 .sl-markdown-content .pwreveal.is-revealed .pw-value {
   filter: none;
+  user-select: text;
+  -webkit-user-select: text;
+  cursor: text;
 }
 .sl-markdown-content .pwreveal .pw-action {
   display: inline-flex;
@@ -866,6 +871,9 @@ html[data-theme="light"] .sl-markdown-content .cl {
    it is the control's identity, and it already clears the 3:1 a non-text indicator needs. The shared
    :where(...button...):focus-visible rule draws it, outline following the button's 6px radius. */
 .sl-markdown-content .pwreveal .pw-action { --focus-ring: var(--pw-amber); }
+/* Drawn last, read first: the button precedes .pw-secret in the DOM, so a screen reader is offered the
+   reveal before it meets the value, and `order` puts it back on the right without moving a pixel. */
+.sl-markdown-content .pwreveal .pw-action { order: 1; }
 .sl-markdown-content .pwreveal .pw-action-ico { width: 15px; height: 15px; flex: none; }
 } /* @layer components */
 @layer components {
