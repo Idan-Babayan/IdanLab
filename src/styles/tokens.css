@@ -313,9 +313,10 @@ html[data-theme="dark"] {
   --pw-amber-rgb: 245, 158, 11;
   --sl-color-bg: #07090a;
   /* The glass's tint is the page colour, kept here as channels so a strength can be its alpha: the
-     bar, the phone strip and, from 50rem, both side columns lay it at --tp-glass-alpha (below) times
-     their frost (chrome.css, "Adaptive glass"). --sl-color-bg-nav, Starlight's name for the bar's
-     tint, is the same colour at full strength. */
+     bar, the phone strip and, from 72rem, the right-hand column lay it at --tp-glass-alpha (below)
+     times their frost, and from 50rem the sidebar at --tp-sidebar-alpha (chrome.css, "Adaptive
+     glass"). --sl-color-bg-nav, Starlight's name for the bar's tint, is the same colour at full
+     strength. */
   --tp-glass-rgb: 7 9 10;
   --sl-color-bg-nav: rgb(var(--tp-glass-rgb) / var(--tp-glass-alpha));
   --tp-glow-1: #41efff;
@@ -432,18 +433,21 @@ html[data-theme="dark"] {
 
 /* ── The bar's glass: the dials (chrome.css, "Adaptive glass"; owner, 2026-10-24) ──
    One line each. The tint's opacity at full strength, the alpha --tp-glass-rgb takes in the bar, the
-   phone strip and the side columns (70% of the page colour on dark, 66% on paper); the frost's blur
-   and saturation, the bar's and the strip's only; and the ramp, the scroll distance over which tint,
-   blur and saturation grow together from clear to full strength. */
+   phone strip and the right-hand column (70% of the page colour on dark, 66% on paper), and in the
+   sidebar, a little denser (82% and 80%; owner, 2026-10-31); the frost's blur and saturation, the
+   bar's and the strip's only; and the ramp, the scroll distance over which tint, blur and saturation
+   grow together from clear to full strength. */
 @layer tokens {
 :root {
   --tp-glass-alpha: 0.70;
+  --tp-sidebar-alpha: 0.82;
   --tp-glass-blur: 22px;
   --tp-glass-saturate: 170%;
   --tp-glass-ramp: 36px;
 }
 :root[data-theme='light'] {
   --tp-glass-alpha: 0.66;
+  --tp-sidebar-alpha: 0.80;
 }
 } /* @layer tokens */
 
