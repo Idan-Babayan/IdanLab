@@ -269,6 +269,12 @@ each Vite major; recorded, not pinned.
   move also retires the image-zoom rule at the end of `overrides.css` (§8 "The layer law"). Whether and
   when to make that move is not decided; see
   DECISIONS 2026-10-24 · Dependabot alerts cleared by a lockfile-only refresh, vite held at 8.2.4.
+- **On the move to Starlight 0.42**, `data-mobile-menu-expanded` leaves `<body>`, and the release notes
+  migrate `[data-mobile-menu-expanded] header` to `body:has(sl-sidebar-pane:popover-open) header`. The
+  hairline's `[data-mobile-menu-expanded] #tp-progress` in `chrome.css` must not take that shape: a
+  `:has()` on `<body>` with another subject restyles the whole page on every table-of-contents change
+  (§8 "`:has()` on `<html>` or `<body>` only as the subject"). Keep `<body>` the subject, with a custom
+  property the line reads, as `pages.css` does with `--pf-landing-accent`.
 - After a zod change, rerun the negative frontmatter probe as well as the byte comparison: an identical
   build proves valid frontmatter still parses the same, not that invalid frontmatter still fails. The
   probe and its expected failure are in
@@ -278,7 +284,7 @@ each Vite major; recorded, not pinned.
 
 ```
 C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Windows user profile path
-├─ astro.config.mjs                   # Starlight config: site, sidebar, customCss[layers.css, fonts.css, then the eight theme modules tokens/base/prose/chrome/components/pages/utilities/overrides, in that order], EC themes + pluginPrivCommand, an empty head array (no font preloads, see DECISIONS 2026-07-07; the reading-progress script became a component 2026-10-18), image-zoom, vite alias, components overrides (PageSidebar + MarkdownContent + Head, and the replacing ThemeSelect), pagefind ranking weights for the search fields, markdown remarkPlugins (content-taxonomy validation guard, PasswordReveal import injection, WriteupMeta injection, recon-rail transform, search-field injection) + rehypePlugins (content image loading)
+├─ astro.config.mjs                   # Starlight config: site, sidebar, customCss[layers.css, fonts.css, then the eight theme modules tokens/base/prose/chrome/components/pages/utilities/overrides, in that order], EC themes + pluginPrivCommand, an empty head array (no font preloads, see DECISIONS 2026-07-07; the reading-progress script became a component 2026-10-18), image-zoom, vite alias, components overrides (PageSidebar + MarkdownContent + Head, and the replacing ThemeSelect), pagefind ranking weights for the search fields, markdown remarkPlugins (content-taxonomy validation guard, PasswordReveal import injection, WriteupMeta injection, recon-rail transform, search-field injection) + rehypePlugins (content image loading, inline-chip grouping)
 ├─ src/
 │  ├─ content.config.ts               # docs collection (gatedDocsLoader, a wrapper that delegates to Starlight's docsLoader and then refuses any non-index file under the four platform directories that is not .mdx, so a .md writeup fails the content sync before any page builds, 2026-09-14; + docsSchema) + the writeup metadata schema (§7)
 │  ├─ pages/
@@ -313,6 +319,7 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 │  │     ├─ Head.astro                # additive Starlight override: renders <Default/> then appends only what Starlight omits: the social tags (author, og:image + secure_url/type/width/height/alt, twitter:title/description/image), per-page values read from frontmatter (see §2 "Social and SEO metadata"), and <ThemeColor/>
 │  │     └─ ThemeSelect.astro         # REPLACING Starlight override, the one exception (owner, 2026-10-18): Starlight's Dark/Light/Auto select becomes About's one-click theme button, in the header and the phone menu (see §6 "Starlight Component Overrides")
 │  ├─ lib/
+│  │  ├─ chip-units.mjs               # the inline-chip grouping rule, one module and two callers: groupChips (the rehype plugin) and groupLabelHtml (Toggle.astro's set:html label); imported by Node (plugins/) and Vite (src/), its only import unist-util-visit
 │  │  ├─ ec-priv-command.mjs          # EC plugin: tags command words by category (priv/recon/net/inspect)
 │  │  └─ taxonomy.mjs                 # what a writeup's MIDDLE directory means per platform (difficulty tiers, the six picoCTF categories, PLATFORM_AXIS); dependency-free because Node (plugins/) and Vite (src/) both import it
 │  └─ styles/                         # the theme pass, split into cascade-layer modules (see §5 "The layer contract")
@@ -320,14 +327,15 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 │     ├─ fonts.css                    # self-hosted @font-face (subset WOFF2: Syne, JetBrains Mono, Geist) + metric-matched fallbacks for each (Syne's one face per weight, plus a glyph fallback for what Syne's subset lacks); loaded via customCss and imported by the marketing pages. The one module with no layer statement. Ships as its own /_astro/ stylesheet since 2026-10-03 (see §6 "Fonts")
 │     ├─ tokens.css                   # @layer tokens: every custom property (surfaces, accents, flag gold, the PasswordReveal amber pair, the prose/chrome type scale). Also owns the prose/chrome type token block (see §6)
 │     ├─ base.css                     # @layer base: the zero-specificity defaults under everything, today the shared focus ring alone
-│     ├─ prose.css                    # @layer prose: the reading surface inside .sl-markdown-content (type, rhythm, links, quotes, the raw <details> default)
+│     ├─ prose.css                    # @layer prose: the reading surface inside .sl-markdown-content (type, rhythm, links, quotes, the raw <details> default, the inline-code chip and its .chip-unit groups)
 │     ├─ chrome.css                   # @layer chrome: the header (the quiet bar, §6 "Component inventory"), the reading hairline, sidebar, TOC, code frames, scrollbars, the three-column layout, light-mode depth
 │     ├─ components.css               # @layer components: badges, toggles, callouts, the recon rail (a two-column grid plus the 12rem container query that stacks it when the callout is narrow, which page zoom on a phone does), FlagCapture, PasswordReveal, Principle, WriteupMeta
-│     ├─ pages.css                    # @layer pages: whole-page treatments (splash hero, platform index, the reveal state rules, the landing's 80rem content cap, and the sideways-scroll clip pairs: html:has(.pi-index) + body:has(.pi-index) and html:has(.hero) + body:has(.hero), both rules of each pair needed, see §6)
+│     ├─ pages.css                    # @layer pages: whole-page treatments (splash hero, platform index, the reveal state rules, the landing's 80rem content cap, and the sideways-scroll clip pairs: html:has(.pi-index) + body:has(.pi-index) and html:has(.hero) + body:has(.hero), both rules of each pair needed, see §6; every :has() on <html> or <body> has it as the subject, see §8)
 │     ├─ utilities.css                # @layer utilities: single-purpose helpers that must sit above the named layers, today .sr-only (two rules: the hiding declarations scoped to .sl-markdown-content, and an UNSCOPED user-select:none that has to reach Starlight's .sr-only too, see §8 "Invisible to the eye is not invisible to the clipboard")
 │     └─ overrides.css                # THE ONLY UNLAYERED SURFACE. The 14-rule tail, each rule carrying an evidence comment naming what it beats (see §8 "The layer law")
 ├─ plugins/
 │  ├─ rehype-content-image-loading.mjs # rehype: sets loading/decoding on content <img> (first eager, rest lazy); wired via astro.config markdown.rehypePlugins
+│  ├─ rehype-group-inline-chips.mjs   # rehype: wraps each inline-code chip and the characters glued to it in span.chip-unit (§7 "Build-time plugins")
 │  ├─ remark-inject-passwordreveal.mjs # remark: injects the PasswordReveal import (§7 "Build-time plugins")
 │  ├─ remark-inject-writeupmeta.mjs   # remark: injects the WriteupMeta badge row (§7 "Build-time plugins")
 │  ├─ remark-transform-recon-rail.mjs  # remark: builds the recon findings rail (§7 "Build-time plugins")
@@ -389,7 +397,10 @@ The theme pass is organised into declared cascade layers, one module per layer, 
   key + `data-theme` on `<html>` after an explicit light or dark choice. Both switch it with one
   button: About's own, and on the Starlight pages the ThemeSelect override (2026-10-18, §6 "Starlight
   Component Overrides"), which replaced Starlight's Dark/Light/Auto select, so there is no Auto choice
-  any more and a first click stores `light` or `dark`. About **defaults to dark**
+  any more and a first click stores `light` or `dark`. On a Starlight page the button sits in the bar
+  from 50rem and in the phone menu's footer below it; the two splash pages, the 404 and `/secret`, have
+  no sidebar and so no menu, and keep it in the bar at every width (2026-10-30, §6 "Starlight's header
+  is the quiet bar"). About **defaults to dark**
   (light is opt-in), and deliberately so before any choice: a reader who has never touched a toggle,
   or who picked Auto under the old select (Starlight stored an empty string for it, which still reads as
   no choice), gets dark on About and the OS scheme on a writeup, because About's bootstrap falls through
@@ -655,7 +666,7 @@ ring echoes what the element is rather than inventing an identity. Everything el
 | In-prose links | `--tp-cyan` / `--tp-cyan-ink` |
 | `WriteupMeta` chips | `--wm-c` (live: the chips render on every writeup) |
 | Filter rail pills (`.pi-pill`) | `--pill` (its own hue: the group hue, or the neutral on ALL; 2026-09-07). On the PRESSED pill the ring sits 4px out (`outline-offset`), so 2px of page separates it from the 2px pressed ring; at the shared 2px the two touched and read as one 4px band, 1.01:1 between them (2026-10-03) |
-| Landing pagination (`.pagination-links a` on a page carrying `.pi-index`) | `--pf-accent` (the platform, lifted onto the footer container by `:has()` in `pages.css`; writeup pages keep the site default; 2026-09-07) |
+| Landing pagination (`.pagination-links a` on a page carrying `.pi-index`) | `--pf-accent` (the platform, lifted onto `<body>` as `--pf-landing-accent` by a subject `:has()` in `pages.css` and read back by the footer container, 2026-11-01; writeup pages keep the site default; 2026-09-07) |
 | Anything else inside `.pi-index` (the wargame card) | `--accent` (the platform, set on the landing root; 2026-09-07) |
 
 **Light flag gold is the one contrast carve-out.** The decorative `--flag-gold` (`#C6A243`) rings at only
@@ -708,6 +719,9 @@ That predates the token system and is correct a11y.
 intentional and should stay: it is a fake terminal's command line, where the conventional focus indicator
 is the caret (`caret-color: var(--t-lime)`), not a box around the input. It is the only interactive
 element in that terminal and it is auto-focused. Nowhere else on the site is a focus indicator removed.
+Its pointer target is 25.3px tall (2026-10-30): one line of 0.86rem at line-height 1.55 is 21.3px, under
+WCAG 2.2's 24px, so 2px of transparent block padding grows the box and an equal negative margin keeps its
+line, the prompt and the terminal's height where they were, the way About's HUD grows its controls.
 
 **Scope:** the `src/styles/` modules theme Starlight CONTENT pages only. The two standalone marketing pages carry
 their own equivalent inline rings (`var(--lime)` + per-card `var(--accent)`); folding them into the same
@@ -733,7 +747,25 @@ token is an open ROADMAP item, not a bug.
   a passive scroll listener batched through `requestAnimationFrame`, recomputed on resize and on any
   change of the page's height (a `ResizeObserver` on `body`, so a spoiler or ToggleAll moves it). It
   replaced a 2px bar along the top of every Starlight page, sized by an inline `head` script. See DECISIONS
-  2026-10-18 · The reading hairline fills on writeups only, from a typed component.
+  2026-10-18 · The reading hairline fills on writeups only, from a typed component. **No frame writes
+  an attribute** (2026-11-01): the scale is a paused animation's time, not the line's inline style.
+  Chrome restyled the whole page when an attribute that a `:has()` argument names changed anywhere in
+  it: the phone strip's rules in `chrome.css` name `style`, `href` and `aria-current`, and Starlight's
+  list rule in `style/markdown.css` carried the restyle to the whole page through `<body>`, where
+  `pages.css` then anchored `:has()` rules (§8 "`:has()` on `<html>` or `<body>` only as the
+  subject"), so the inline transform written on every frame did that on every scrolled frame, 1,056
+  elements on Busqueda. A `data-*` attribute, `aria-label` or `title` costs one element or none; with
+  the strip's five rules deleted in the page an inline-style write touched 1 element, with Starlight's
+  rule deleted 67, and since the same day, with `pages.css` keeping `<body>` the subject, 5 (traced in
+  headless Chrome). Scrolling Busqueda top to bottom at 1440x900, 24px a frame: 0.4ms of style a frame
+  against 6.6 to 7.5 before, and with the CPU slowed four times 10 to 12 long animation frames against
+  261, each one left the table of contents changing its current entry; the `pages.css` change took
+  those to none in an untraced run (§8).
+  Anything a script moves every frame goes through an animation's time or inside a shadow root, never
+  through the page's own attributes or inline styles. The line fills exactly as before (the same
+  computed scale at 0, 25, 50 and 100% at 1440 and 375, and the bar pixel-identical at 1440); on a
+  phone (375, DPR 2) the animated line moves the anti-aliasing of the menu button's icon ends, 52
+  pixels by up to 42 levels of 255, and its own pixels by 2 at most, nothing that shows.
 - All effects are **`prefers-reduced-motion` aware**. Reading content stays calm
   (NO tilt/scroll-reveal on writeup body text). That includes the marketing pages' smooth scroll since
   2026-10-03: each page's reduced-motion block names `html, *`, because the smooth rule names `html`
@@ -764,8 +796,8 @@ token is an open ROADMAP item, not a bug.
     Starlight sizes the sidebar, the right column, the phone strip, the menu button and the anchor scroll
     padding from it.
   - **Adaptive glass** (values owner, 2026-10-24; the ramp's mechanism 2026-10-25): clear at scroll 0,
-    only the hairline, as the HUD is. Over the first 36px of scroll it frosts over: the tint,
-    `--sl-color-bg-nav`, the page colour at 70% on dark and 66% on paper, a `blur(22px)` and
+    only the hairline, as the HUD is. Over the first 36px of scroll it frosts over: the tint, the page
+    colour (`--tp-glass-rgb`, its channels) at 70% on dark and 66% on paper, a `blur(22px)` and
     `saturate(170%)` grow together from nothing, so at 18px the bar is at half (35% or 33%,
     `blur(11px) saturate(1.35)`). Until 2026-10-24 a finished frost (78% and 80%,
     `blur(14px) saturate(1.25)`) faded in over 20px. Each value is one token in `tokens.css`:
@@ -775,10 +807,11 @@ token is an open ROADMAP item, not a bug.
     from 0 to 1 in `@keyframes tp-frost`, driven by `animation-timeline: scroll(root)` and
     `animation-range: 0 var(--tp-glass-ramp)` (longhands only: the build's minifier folds a timeline
     into the `animation` shorthand, and Chrome drops the declaration). The `::before`'s own declarations
-    scale the tokens by it: the tint is `--sl-color-bg-nav` mixed with `transparent` at `--tp-frost`
-    times 100%, the blur `--tp-glass-blur` times it, and the saturation runs from 100% to
-    `--tp-glass-saturate`. No theme value sits in the keyframes, so a theme switch leaves them nothing
-    to re-resolve. The keyframes they replaced (`tp-frost-over`) read the tint through `var()`, which
+    scale the tokens by it: the tint is `rgb(var(--tp-glass-rgb) / calc(var(--tp-glass-alpha) *
+    var(--tp-frost)))` (2026-10-31; until then `--sl-color-bg-nav` mixed with `transparent`, the same
+    colour, and `--sl-color-bg-nav` is now that tint at full strength), the blur `--tp-glass-blur` times
+    it, and the saturation runs from 100% to `--tp-glass-saturate`. No theme value sits in the
+    keyframes, so a theme switch leaves them nothing to re-resolve. The keyframes they replaced (`tp-frost-over`) read the tint through `var()`, which
     WebKit does not re-resolve when `data-theme` changes: on the owner's iPhone a theme switch or a
     return to Safari left the bar fully transparent until a reload. With this ramp the glass holds
     through both (owner, on the iPhone, 2026-10-25, beside production still on the old ramp and still
@@ -793,9 +826,21 @@ token is an open ROADMAP item, not a bug.
     (1920x1080) and nearly every Bandit level (2560x1440; measured 2026-10-25). Their clear rest
     computes as `blur(0px) saturate(1)` under a tint of alpha 0 rather than `none`, and draws the same
     pixels. Solid `--sl-color-bg` under reduced transparency and increased contrast. The phone "On this
-    page" strip wears the same. The source writes `-webkit-backdrop-filter` beside the standard
-    property, but the built CSS carries only the standard one (the minifier drops the prefix), so Safari
-    before 18 shows the tint without the frost.
+    page" strip wears the same. **The side columns wear the tint** (owner, 2026-10-31): from 50rem the
+    sidebar's pane and from 72rem the right-hand column take the same tint with no blur or saturation,
+    nothing scrolling under them, the sidebar's a little denser at full strength (82% and 80%,
+    `--tp-sidebar-alpha`; owner, 2026-10-31), so the bar and both columns are clear together at the top
+    and frost together. Each of the four surfaces (the bar's and the strip's `::before`, the pane, the
+    right column) runs the ramp itself, with the same keyframes, timeline and range, so `--tp-frost`
+    stays non-inherited and nothing else on the page inherits an animated number, and each rests at 1
+    where the ramp does not run. Measured in headless Chrome on the built site: at 1440 the bar and both
+    columns read 0, 0.5 and 1 at 0, 18 and 36px of scroll in both themes (2026-11-01: the bar and the
+    right column at alpha 0.35 and 0.70 on dark, the sidebar at 0.41 and 0.82; 0.33, 0.66 and 0.40, 0.80
+    on paper), and at 1024 the strip matches them. Under reduced transparency and increased contrast
+    the columns go solid in the page colour with the bar, their hairlines carrying the edges; under
+    reduced motion all three are at full strength from the top. The source writes
+    `-webkit-backdrop-filter` beside the standard property, but the built CSS carries only the standard
+    one (the minifier drops the prefix), so Safari before 18 shows the tint without the frost.
   - **On the glass, full contrast** (owner, 2026-10-24 and 2026-10-25): the thinner tint lets a
     screenshot show through, and the muted grey fell to about 2:1 over a white one on dark and 2.5:1 over
     a black terminal on paper. So everything on the glass except the name reads `--tp-hud-ink` at rest,
@@ -852,9 +897,22 @@ token is an open ROADMAP item, not a bug.
     lines, and the search's key chips hide where nothing hovers.
   - **The right-hand end:** GitHub (16px, in the ink) then the theme button ("Starlight Component
     Overrides" below), 1.4rem apart, no separator. On a phone both live in the menu's footer, muted on
-    its opaque panel, and the menu button is a quiet icon in the ink, lime while the menu is open.
+    its opaque panel, and the menu button is a quiet icon in the ink, lime while the menu is open. The
+    splash pages, the 404 and `/secret`, have no sidebar and so no menu (2026-10-30): there the bar keeps
+    its right-hand end below 50rem too, with the theme button alone, in the ink and its 24px hit area,
+    in the menu button's place. The magnifier packs beside it at the bar's gap, as it packs beside the
+    menu button elsewhere (`margin-inline-start: auto` on the search column, below 50rem only), and GitHub
+    shows from 50rem, where Starlight shows it. At 320px the bar keeps 128px free between the name and
+    the magnifier. All of it is scoped to `:root:not([data-has-sidebar])`, so no other page changes.
   - **The right-hand "On this page" column** starts at the bar's hairline from 72rem, so its border no
     longer runs up through the clear bar.
+  - **The hairline on paper is the warm divider** (owner, 2026-10-30): `--sl-color-hairline-shade`, the
+    token Starlight draws the bar's bottom line and the desktop sidebar's edge in, reads `--tp-divider`
+    (#c6c0b4) on paper, so the bar, the sidebar and the right column share one edge colour. It was
+    gray-6, #edeef3, lighter than the page and 1.05:1 against it; the divider reads 1.49:1 (model B).
+    Below 72rem the phone strip's bottom line and its open panel's edge are drawn in the same token and
+    took it too. The reading hairline still fills on top of it: at device scale 1 the line is one row,
+    and where the fill runs no divider pixel shows above or below it. Dark keeps Starlight's #17181c.
   - **The browser's own colour** (2026-10-24): every page carries `<meta name="theme-color">` from
     `ThemeColor.astro`, the page colour of the theme shown (`#07090a` on dark, `#ece9e0` on paper), kept
     in step by an inline watcher of `html[data-theme]`, which Starlight's ThemeProvider, About's
@@ -865,7 +923,8 @@ token is an open ROADMAP item, not a bug.
     sets reaches that bar. Measured on the Android emulator (Chrome 149) in all four combinations of phone
     and site theme. Safari 26 ignores it (the strip above the bar, above). See DECISIONS 2026-10-24 · The
     browser's own colour follows the theme.
-  - Tab order: skip link, name, search, GitHub, theme. See DECISIONS 2026-10-23 · The quiet bar:
+  - Tab order: skip link, name, search, GitHub, theme; on a splash page below 50rem, skip link, name,
+    search, theme. See DECISIONS 2026-10-23 · The quiet bar:
     Starlight's header puts on the HUD.
 - **The phone "On this page" is the Quiet strip** (owner, 2026-10-24; `chrome.css`): Starlight's own
   `<mobile-starlight-toc>`, restyled in CSS, below 72rem.
@@ -1312,7 +1371,9 @@ full-page pixels change only in the header band, the glow's own area and the sid
 is the one side effect, measured in headless and in a windowed Chrome: the sidebar's text on a landing
 drew with subpixel antialiasing only while the glow ran under it, and now draws grayscale, as it does
 on the Bandit hub. See DECISIONS 2026-10-04 · The landing glow holds its pools whole, and a landing
-keeps to its own pane on a desktop.
+keeps to its own pane on a desktop. Since the sidebar went clear (2026-10-30, §6 "Sidebar (chrome)") the
+cut at its border shows: the hero glow stops at the sidebar's hairline as it stops at the bar's, framed
+by the two lines, and the owner kept it so (2026-10-30).
 
 **No sideways scroll on a landing (2026-09-07).** The hero glow (`.pi-glow`) is MEANT to spill past its
 box, and it is the only element that overflows the viewport: since 2026-10-04 by half the hero's width
@@ -1556,6 +1617,44 @@ Taller rows via larger block padding + line-height on `nav.sidebar a, nav.sideba
 (fuller rail, better touch targets; no `<li>` margins, so the active pill / nesting guide / dots
 stay aligned). Width trimmed via `--sl-sidebar-width: 17rem` (from Starlight's 18.75rem).
 
+**The bar's glass, without the frost (owner, 2026-10-30 and 2026-10-31).** From 50rem the sidebar wears
+the bar's tint and nothing else, and from 72rem so does the right-hand column: clear at the top of a
+page, so the page's glow runs across the bar and the sidebar with no edge but the hairlines, then
+frosting over the first 36px of scroll with the bar (§6 "Starlight's header is the quiet bar",
+"Adaptive glass"): the right-hand column to the bar's 70% of the page colour on dark and 66% on paper,
+the sidebar a little denser, 82% and 80% (`--tp-sidebar-alpha`; owner, 2026-10-31). No
+`backdrop-filter`: nothing scrolls under them, and the light under them is soft already. Their
+hairlines are the edges, as the bar's is (on paper the warm divider). On 2026-10-30 the sidebar lost its
+own fill (`--tp-sidebar-fill`, 0%, a dial for a day); the tint replaced it, and the
+`--sl-color-bg-sidebar` declarations (#0a0e0f, #f1eee5) went as dead in effect, since the tint, or the
+solid page colour, always wins on the pane. Under reduced transparency and increased contrast the bar
+and both columns go solid in the page colour. The sidebar's scrollbar track is clear and the thumb is
+the page's: a long list overflows the pane (every Bandit page at 1280x800), and the page's track drew a
+16px strip down its edge. The paper edge and inset shadow once written on `nav.sidebar` never painted,
+the nav being 0px tall around its fixed pane, and were deleted on 2026-10-30. Below 50rem the same pane
+is the phone menu, which keeps Starlight's solid panel (#17181c, white on paper); every rule here sits
+inside the 50rem query, and the sidebar's changes leave phones and the phone menu pixel-identical (both
+themes, 2026-10-31 and 2026-11-01).
+
+**The light moves with the page (owner, 2026-10-31).** The sidebar's backdrop used to be fixed: the
+top-left glow sat in the fixed `body::before`, so a clear sidebar never changed as the article
+scrolled. From 50rem, on pages with a sidebar, that glow is part of the page's own background
+(`body`, normal scrolling, no fixed layer and no script): at scroll 0 it sits where it did, at the same
+size, and it scrolls away with the article. It and the low glow, which stays fixed, burn at half their
+old strength, 5.5% and 4.5% fading to 3%, so the page is calmer (owner, 2026-10-31); the top-right lime
+stays fixed and whole. Paper has neither and keeps its fixed layer whole, the dot grid and the top-centre
+lime at 12%, as phones do (computed values unchanged at 375 in both themes). For a day soft glows also
+ran down the left edge for the page's whole height, lime and cyan in turn, 560px apart; they are gone.
+
+Sidebar text against the lowest rendered pixel under each entry, grain and dots included (model C,
+Busqueda at 1440x900, 2026-11-01): at the top, tint 0, the group labels read 19.14:1 on dark, the links
+10.90 and the current page 10.20 on its fill, and 19.19, 10.90 and 10.20 under the full tint, from 36px
+of scroll; on paper 12.94, 8.56 and 6.13 at the top and 14.00, 9.24 and 6.53 under the full tint. The
+paper focus rings read 3.67 to 4.33:1 at the top and 3.93 to 4.66 under the full tint, and 2.96 where
+HackTheBox's crosses its open group's guide line (DPR 2; the rings' comment in `chrome.css`). On the
+landings the hero glow is still clipped to its pane, so it stops at the sidebar's hairline as at the
+bar's (§6 "A landing keeps to its own pane on a desktop").
+
 ### Platform-index duotone
 On the platform index each platform reads as its color (lead) plus a universal cyan secondary
 (`--pf-accent-2`: `#41efff` dark, `#08697a` light): hero glow is a platform+cyan duotone, the stat
@@ -1744,13 +1843,16 @@ no signature decode/scramble animation. Layout: a `PASSWORD` label, the value bl
 as plain text with no border/background/hover affordance of its own, then ONE control on the right, the
 ONLY interactive element in the row: it starts as an eye + "Reveal" and swaps in place to a copy icon +
 "Copy" on click (single slot, so there is no layout shift). A second click copies and briefly shows
-"Copied" before reverting. No native `title` tooltip (tried, then dropped for looking bad); the
-accessible name lives entirely in `aria-label`. Real `<button>`; reveal/copy are announced via a VISUALLY
+"Copied" before reverting, only once the clipboard has taken the value; a refused copy shows "Failed"
+instead (2026-10-31). No native `title` tooltip (tried, then dropped for looking bad); the
+accessible name lives entirely in `aria-label`. Real `<button>`, first in the DOM and drawn on the right
+by `order: 1`, so a screen reader meets it before the value; reveal/copy are announced via a VISUALLY
 HIDDEN `aria-live` region (`.pw-live.sr-only`, screen-reader-only, no visible "Password
 revealed"/"Password copied" text). Only the button reads as interactive: the container (`.pwreveal`), the
-label, and the value are all `user-select: none` (copying is the only way to take the value, matching
-FlagCapture's captured-value pattern), and the container/value both get `cursor: default` with no `:hover`
-change to filter/cursor/color. The row itself IS a passive amber card (not a neutral hairline frame):
+label, and the unrevealed value are `user-select: none`, which keeps a blurred value off the clipboard;
+the revealed value is selectable, so a refused copy is not a dead end. The container and the unrevealed
+value get `cursor: default`, with no `:hover` change to filter/cursor/color. The row itself IS a passive
+amber card (not a neutral hairline frame):
 `--pw-amber-rgb` washes/borders (dark 0.08 fill / 0.4 border, light 0.14 fill / 0.55
 border, stronger and more golden), the same values the retired spoiler class used. The button text/icon
 reads the ink `--pw-amber-ink` (`#ffc23d` dark / `#7c5000` light), with a `--pw-amber-rgb` border/hover
@@ -1844,7 +1946,9 @@ too: on paper the identity gold had read 1.95:1 (CAPTURED, user) to 3.56:1 (LOCK
 label and 1.87 to 2.39:1 on the pill, and `--fc-val` reads 5.12 to 6.92:1 and 4.89 to 5.70:1 on the same
 surfaces (model B). Dark is unchanged, since there the two are one value. The
 frame matches the writeup Toggle width + 6px radius but sits a bit taller for presence; an icon-only copy
-button sits inside it (right, vertically centered) and shows a golden "Copied!" pill on copy, beside it.
+button sits inside it (right, vertically centered) and shows a golden "Copied!" pill on copy, beside it,
+only once the clipboard has taken the flag; a refused copy shows "Failed" in the pill, and the captured
+value is selectable, so the reader can still take it by hand (2026-10-31).
 Below 50rem the pill takes the LOCKED / CAPTURED label's row instead (the label fades while it shows): a
 HackTheBox flag wraps in a frame narrower than about 430px, and the middle is then where its first line
 ends, so the pill covered seven characters of the flag just copied on a 411px phone (2026-10-24). Capture
@@ -1942,6 +2046,36 @@ guard: a probe file named with a leading underscore builds green while the guard
 which reads as a passing test of a dead guard. It produced exactly that false negative during the
 Astro 7 upgrade verification. Any probe of the guard must use a filename that does not start with an
 underscore.
+
+Two rehype passes run after the remark plugins. `rehype-content-image-loading.mjs` sets loading and
+decoding on each content `<img>`; the other groups the inline-code chips:
+
+- **`rehype-group-inline-chips.mjs`** (built 2026-09-24, merged 2026-11-01) wraps each inline-code chip,
+  together with every character glued to it, in `<span class="chip-unit">`, which `prose.css` makes an
+  atomic inline-block capped at its column: a chip never splits across two lines unless its group is
+  longer than the line, and then it wraps inside the group with its punctuation still attached. The rule
+  lives in `src/lib/chip-units.mjs`. A chip is inline `<code>` (hast, or MDX JSX `code`) outside `pre`,
+  or a hand-written `.port-label`. Glue is every character except breakable whitespace (U+0020, U+0009,
+  U+000A, U+000C, U+000D, U+200B), so punctuation, curly quotes, slashes, hyphens and the no-break
+  spaces all glue. From the chip a group extends over glued text (a text node is split at its first
+  breakable whitespace), takes a phrasing element WHOLE when the edge touching the group is glue, and
+  climbs out of an inline ancestor whose edge it reaches when the glue continues outside; it stops at
+  breakable whitespace, a hard boundary (`br`, `img`, `input`, any capitalized component, any MDX
+  expression, any non-phrasing element) or the edge of the block. **The invariant:** the character just
+  before a group, and the one just after it, is breakable whitespace, a hard boundary or nothing, so no
+  group edge ever falls between two glued characters. **Never grouped:** anything in `pre`, the recon
+  rail's `dt` (the grid track measures its chip), any `.not-content` subtree, and the markdown children of
+  every capitalized component except the prose containers `Callout`, `Toggle` and `Steps` (`Steps`
+  because two Bandit pages carry chips in its list items). It is REHYPE because it has to see the tree
+  after every remark transform, including the rail's `dd`, which the remark-stage plugins never see; its
+  order against the image pass does not matter. The wrapper is a `span` because Starlight's
+  `markdown.css` flow-spacing sibling rule exempts `span`. Measured 2026-11-01: 533 groups on 56 pages,
+  and every page's HTML byte-identical to the build without the pass once the wrappers are stripped.
+  **Toggle labels** reach the page through `set:html`, so the plugin never sees them. `Toggle.astro` runs
+  the same module's `groupLabelHtml` over the label string first. It supports exactly the markup labels
+  use (text, character references and a bare `<code>`) and fails the build on anything else, naming the
+  file and the label. See DECISIONS 2026-11-01 · An inline-code chip splits only when its group is
+  longer than the line.
 
 **One guard runs after the build instead of over the source.** `validate-decorative-glyphs.mjs` is an
 integration, listed after `starlight()` in `astro.config.mjs` `integrations`, whose `astro:build:done`
@@ -2060,6 +2194,9 @@ against any build directory.
   theme-tuned, deliberately distinct from the sharp code blocks);
   inside a colored callout it instead harmonizes with that callout's accent (reads `--acc` / `--cl-ink`,
   generic per type); see DECISIONS 2026-06-29.
+  A chip never splits across two lines unless its group (the chip plus the characters glued to it) is
+  longer than the line: `plugins/rehype-group-inline-chips.mjs` wraps each group in `.chip-unit` at
+  build time (§7 "Build-time plugins"). `.chip-unit` is generated, never hand-authored.
 - **Bold inside a callout is INK, not weight.** `<strong>` in a `.cl` drops to weight 400 and takes
   `--cl-emph`, the callout's own hue leaned into the body text colour, so emphasis reads as "this belongs to
   this callout" rather than as a shout. Per theme, and the percentages deliberately differ: dark mixes
@@ -2427,6 +2564,41 @@ are load-bearing against unlayered CSS, and flattening them buys tidiness at the
 layer contract just made legible. Unit conversions are likewise deferred to the retune (see the unit rule
 in `layers.css`).
 
+### `:has()` on `<html>` or `<body>` only as the subject
+
+**Never write `body:has(x) y` or `html:has(x) y`**: a `:has()` placed on the root or on `<body>` keeps that
+element as the rule's subject (2026-11-01). Chrome keeps one invalidation set for every `:has()` outside a
+subject compound, and Starlight's list rule in `style/markdown.css` (`:is(ol, ul):has(> li > …) > li >
+:is(…)`, unchanged through 0.42.8) leaves that set nothing to key on, so it invalidates whole subtrees: an
+element that anchors such a `:has()` is restyled with everything under it whenever Chrome walks up to it.
+Chrome walks for a write to any attribute a `:has()` argument names, anywhere on the page (the phone
+strip's rules in `chrome.css` name `style`, `href` and `aria-current`), for any element added or removed
+(the `:not()` inside Starlight's `:has()` makes every insertion count), and for a `textContent` rewrite,
+which `<mobile-starlight-toc>` makes on every change of the current entry, at every width, shown or hidden.
+Until 2026-11-01 `pages.css` keyed its landing rules as `body:has(.pi-index…) x`, so `<body>` was that
+anchor and each of those changes restyled the whole page: a table-of-contents change touched 1,056 of
+Busqueda's elements (1,067 on a phone), 5 to 6ms and 42 to 50ms with the CPU slowed four times, and a
+scroll of the page at 4x had 11 long animation frames at 1440 and 17 to 19 at 375, one per change. The
+landing rules now lift the accent onto `<body>` as the subject (`--pf-landing-accent`, which
+`.pagination-links` reads) and key the title and the hero panel on Starlight's ContentPanels. They render
+identically (the four landings, the 404, Busqueda and Bandit 12-13, both themes, 1440 and 375: every
+element's box and the values the rules set), and a TOC change touches 8 elements (68 on a phone, the
+strip's own subtree), 0.5ms (1.8 for the phone's strip) and 4 to 8ms at 4x, with no long animation frame
+left in an untraced 4x scroll at either width (headless Chrome 156, isolated builds of HEAD and of HEAD
+with the change).
+
+- **What is left, measured and accepted.** A subject `:has()` with a descendant argument on `<html>` or
+  `<body>` (the `overflow-x: clip` pairs, the 80rem cap) spreads nothing, but it puts every element on
+  Chrome's walk, and each walk recalculates `<html>` and `<body>` and repeats their whole-page searches:
+  about 0.5ms a change and 3 to 5ms at 4x, measured by taking them away as well. Moving them off
+  `:has()`, and the multiplier itself, which is Starlight's, are ROADMAP's "Open bugs".
+- **Probe it with the stylesheet rewritten before the page loads, never by deleting rules through the
+  CSSOM.** Chrome's `:has()` flags on an element outlive the rule that set them: on HEAD, the 11 old
+  `body:has()` rules deleted in the page still left an inline-style write on `#tp-progress` restyling
+  1,056 elements, where the build without them restyles 5.
+- **Starlight 0.42 suggests the wrong shape**: its release notes migrate `[data-mobile-menu-expanded]
+  header` to `body:has(sl-sidebar-pane:popover-open) header`. See §3 "Upgrade path".
+
 ### The context law
 
 **A font-relative length resolves against the element it is declared on. If its purpose is to size,
@@ -2720,3 +2892,6 @@ whole records.
 - For Safari's strip above the bar: the film grain as one element over the whole screen, the grain left off the bar, and an opaque bar: rejected, the grain lies in two layers and the bar carries a 1% wash. See DECISIONS 2026-10-24 · Safari's strip above the bar takes the bar's colour.
 - Two `theme-color` metas keyed to `prefers-color-scheme`: rejected, they follow the phone's scheme, not the theme the site shows. See DECISIONS 2026-10-24 · The browser's own colour follows the theme.
 - A thicker glass tint (80% on dark, 73% on paper) to keep the bar's muted grey at 3:1, and GitHub and the theme left muted or inked only below 72rem: rejected, the glass stays thin and everything on it but the name reads the ink at every width. See DECISIONS 2026-10-25 · The bar's glass thins and frosts over, and what sits on it turns full contrast.
+- `--tp-frost` set once on `:root` for everything to inherit, or written there by a scroll script: rejected (owner, 2026-10-31); each surface that wears the glass runs the same scroll-timeline ramp itself, so nothing inherits an animated value and no script runs. §6 "Starlight's header is the quiet bar", "Adaptive glass", carries the readings.
+- A series of glows repeating down the page's left edge, under the sidebar: shipped and removed the same day (owner, 2026-10-31), for a calmer page. §6 "Sidebar (chrome)".
+- The sidebar lit by the article's coloured blocks beside it (callouts, quote boxes, flags and images, each in its own colour): built and turned down before it shipped (owner, 2026-11-01); it lagged the scroll, broke under fast scrolling and does not fit the site's design, and the sidebar keeps its plain tint. See DECISIONS 2026-11-01 · The sidebar keeps its plain tint: no light from the content.

@@ -3,16 +3,25 @@
 //
 // In MDX files, code fences inside this component's slot are fully
 // processed by Astro so syntax highlighting should work correctly.
+//
+// The label reaches the page through set:html, so the rehype chip pass never sees its chips.
+// groupLabelHtml applies the same rule to the string first (src/lib/chip-units.mjs): each <code>
+// chip, with every character glued to it, lands in a .chip-unit. It supports exactly the markup the
+// labels use (text, character references and a bare <code>) and fails the build on anything else,
+// naming the file.
+import { groupLabelHtml } from '../lib/chip-units.mjs';
 
 interface Props {
   label: string;        // accepts plain text or HTML string
   class?: string;       // optional extra class for a variant; layered on top of .toggle
 }
 const { label, class: className } = Astro.props;
+const where: string = Astro.locals.starlightRoute?.entry?.filePath ?? Astro.url.pathname;
+const summary: string = groupLabelHtml(label, where);
 ---
 
 <details class:list={['toggle', className]}>
-  <summary set:html={label}></summary>
+  <summary set:html={summary}></summary>
   <div class="toggle-body">
     <slot />
   </div>

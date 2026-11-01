@@ -312,9 +312,13 @@ html[data-theme="dark"] {
   --pw-amber-ink: #ffc23d;
   --pw-amber-rgb: 245, 158, 11;
   --sl-color-bg: #07090a;
-  /* The bar's tint: the page colour at the glass's opacity (--tp-glass-alpha, below). */
-  --sl-color-bg-nav: color-mix(in oklab, #07090a calc(var(--tp-glass-alpha) * 100%), transparent);
-  --sl-color-bg-sidebar: #0a0e0f;
+  /* The glass's tint is the page colour, kept here as channels so a strength can be its alpha: the
+     bar, the phone strip and, from 72rem, the right-hand column lay it at --tp-glass-alpha (below)
+     times their frost, and from 50rem the sidebar at --tp-sidebar-alpha (chrome.css, "Adaptive
+     glass"). --sl-color-bg-nav, Starlight's name for the bar's tint, is the same colour at full
+     strength. */
+  --tp-glass-rgb: 7 9 10;
+  --sl-color-bg-nav: rgb(var(--tp-glass-rgb) / var(--tp-glass-alpha));
   --tp-glow-1: #41efff;
   --tp-glow-2: #b6ff3c;
   /* The header (chrome.css): the name's fade runs from its start colour toward the lime the old
@@ -367,8 +371,8 @@ html[data-theme="dark"] {
   --pw-amber: #a86f04;
   --pw-amber-ink: #7c5000;
   --sl-color-bg: #ece9e0;
-  --sl-color-bg-nav: color-mix(in oklab, #ece9e0 calc(var(--tp-glass-alpha) * 100%), transparent);
-  --sl-color-bg-sidebar: #f1eee5;
+  --tp-glass-rgb: 236 233 224;
+  --sl-color-bg-nav: rgb(var(--tp-glass-rgb) / var(--tp-glass-alpha));
   /* Warm structural divider (single source of truth). Starlight's light hairline tokens all fall
      back to --sl-color-gray-6 (hsl(224 20% 94%), a cool near-white) which is nearly invisible on the
      warm paper bg and the wrong temperature for it. This warm greige is the paper hue dropped in
@@ -377,9 +381,15 @@ html[data-theme="dark"] {
      not a colored accent. Fed to --sl-color-hairline it fixes every structural hairline at once (content-to-TOC
      separator, the line under the writeup title, section rules, the markdown --- hr, and the
      TOC/ToggleAll divider) and is reused for the content Toggle border below. Light only; the dark
-     hairline (~#262831) is untouched. */
+     hairline (~#262831) is untouched.
+     --sl-color-hairline-shade reads it too (owner, 2026-10-30), so the bar, the sidebar and the right
+     column share one edge: Starlight draws the bar's bottom line and the desktop sidebar's edge in that
+     token, and below 72rem the phone "On this page" strip's bottom line and its open panel's edge. It was
+     gray-6, lighter than the page and 1.05:1 against it; the divider reads 1.49:1 (model B). The reading
+     hairline still fills on top of the line it lies on. On dark the shade stays Starlight's #17181c. */
   --tp-divider: #c6c0b4;
   --sl-color-hairline: var(--tp-divider);
+  --sl-color-hairline-shade: var(--tp-divider);
   --tp-glow-1: #7cc9ff;
   --tp-glow-2: #a9dd6a;
   /* Darker cyan-ink for paper: the previous #0b7e92 left prose links and h3 at ~3.9:1
@@ -422,18 +432,22 @@ html[data-theme="dark"] {
 } /* @layer tokens (dark + light surface tokens move atomically) */
 
 /* ── The bar's glass: the dials (chrome.css, "Adaptive glass"; owner, 2026-10-24) ──
-   One line each. The tint's opacity, which --sl-color-bg-nav reads (70% of the page colour on dark,
-   66% on paper); the frost's blur and saturation; and the ramp, the scroll distance over which tint,
-   blur and saturation grow together from clear to full strength. */
+   One line each. The tint's opacity at full strength, the alpha --tp-glass-rgb takes in the bar, the
+   phone strip and the right-hand column (70% of the page colour on dark, 66% on paper), and in the
+   sidebar, a little denser (82% and 80%; owner, 2026-10-31); the frost's blur and saturation, the
+   bar's and the strip's only; and the ramp, the scroll distance over which tint, blur and saturation
+   grow together from clear to full strength. */
 @layer tokens {
 :root {
   --tp-glass-alpha: 0.70;
+  --tp-sidebar-alpha: 0.82;
   --tp-glass-blur: 22px;
   --tp-glass-saturate: 170%;
   --tp-glass-ramp: 36px;
 }
 :root[data-theme='light'] {
   --tp-glass-alpha: 0.66;
+  --tp-sidebar-alpha: 0.80;
 }
 } /* @layer tokens */
 

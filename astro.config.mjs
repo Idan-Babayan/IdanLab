@@ -5,6 +5,7 @@ import starlightImageZoom from 'starlight-image-zoom';
 import path from 'path';
 import { pluginPrivCommand } from './src/lib/ec-priv-command.mjs';
 import rehypeContentImageLoading from './plugins/rehype-content-image-loading.mjs';
+import rehypeGroupInlineChips from './plugins/rehype-group-inline-chips.mjs';
 import remarkInjectPasswordReveal from './plugins/remark-inject-passwordreveal.mjs';
 import remarkInjectWriteupMeta from './plugins/remark-inject-writeupmeta.mjs';
 import remarkValidateContentTaxonomy from './plugins/remark-validate-content-taxonomy.mjs';
@@ -60,10 +61,17 @@ export default defineConfig({
   // OverTheWire wargame level and a `wargame` field on each hub, weighted by pagefind.ranking below.
   // After the guard for the same reason; it only appends, so its place among the generators does not
   // matter.
+  // rehypeGroupInlineChips: wraps each inline-code chip, with every character glued to it, in
+  // <span class="chip-unit">, so a chip only splits across lines when its group is longer than the
+  // line (the rule is src/lib/chip-units.mjs, shared with Toggle.astro's label). REHYPE, not remark,
+  // because it must see the tree after every remark transform, including the recon rail's <dd>, which
+  // the remark-stage plugins deliberately never see. Its order against rehypeContentImageLoading does
+  // not matter: that pass only sets loading and decoding on each <img> in document order, and grouping
+  // neither reorders nodes nor reads an image's attributes.
   markdown: {
     processor: unified({
       remarkPlugins: [remarkValidateContentTaxonomy, remarkInjectPasswordReveal, remarkInjectWriteupMeta, remarkTransformReconRail, remarkInjectSearchMeta],
-      rehypePlugins: [rehypeContentImageLoading],
+      rehypePlugins: [rehypeContentImageLoading, rehypeGroupInlineChips],
     }),
   },
 

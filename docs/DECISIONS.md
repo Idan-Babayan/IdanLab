@@ -6,6 +6,128 @@
 
 ---
 
+### 2026-11-01 · An inline-code chip splits only when its group is longer than the line
+- **Decision:** at build time each inline-code chip, with every character glued to it, is wrapped in
+  `span.chip-unit`, an `inline-block` capped at its column (`max-width: 100%`, `baseline-source:
+  first`, `overflow-wrap: anywhere`, `text-wrap: balance`): a chip stays on one line whenever its group
+  fits, and a group longer than the line wraps inside itself with its punctuation attached. That
+  emulates `wrap-inside: avoid`, which neither Chrome nor Firefox supports. The rule is
+  `src/lib/chip-units.mjs`, run over every page by `plugins/rehype-group-inline-chips.mjs` and over
+  Toggle labels by `Toggle.astro` (CORE_SPEC §7). Built and verified on 2026-09-24 on its own
+  branch; merged onto `dev` on 2026-11-01, where the Toggle `flag` variant it also handled had gone.
+- **Why:** a browser breaks a line at any space inside a chip or after a hyphen, which is how
+  `DOMAIN ADMINS@HTB.LOCAL` ended a line with DOMAIN: 13 unnecessary splits at 1280, 17 at 375 and
+  40 at 320 across 65 pages (2026-09-24).
+- **Rejected:**
+  - `white-space: nowrap` on chips: long chips overflow on phones (Forest's NTLM pair scrolled the
+    page 324px sideways at 320).
+  - `inline-block` on the chip alone: a browser may break on either side of it, stranding `(` and
+    `,` (Bandit 6-7 went from 0 to 46 of 141 widths).
+  - `nowrap` under a 24-character threshold: a number tied to the 14px chip and the 202px callout
+    column at 320, and every long chip still split.
+  - That threshold plus `inline-block` for long chips: those rendered 29.14px tall against 23.34px, a
+    comma still fell to the next line, and at a 20px default text a 19-character chip overflowed by
+    20.5px.
+- **Known:** six long tokens are longer than their line at narrow widths and still wrap, inside their
+  group; `text-wrap: balance` does not even out breaks inside a token.
+- **Verified:** 2026-09-24: 544 groups on 57 pages; no unnecessary split at 1280, 375 or 320; no
+  defect in sweeps from 320 to 1440; no sideways scroll; chip heights unchanged; every page's HTML
+  byte-identical to the baseline once the wrappers are stripped; copied text identical; Firefox 156
+  clean. 2026-11-01, on the merge: build green at 67 pages; only the shared stylesheet (the two rules,
+  +247 bytes) and 56 pages change, each byte-identical to the build without the pass once its wrappers
+  (533 in all) are stripped; on every page at 320, 375 and 1280, no sideways scroll, chips split across
+  lines down from 37, 18 and 9 to 3, 2 and 0, each a group longer than its line, and the copied text
+  unchanged wherever a chip is.
+- **Status:** Adopted; committed to `dev` on 2026-11-01 as
+  `feat(prose): an inline-code chip splits only when its group is longer than the line`.
+
+### 2026-11-01 · `:has()` on `<html>` or `<body>` keeps that element as the subject
+- **Supersedes in part:** 2026-09-07 · Two taxonomy palettes: the landing pages re-base onto the
+  WriteupMeta chip model. Only how the landing's prev/next links reach the platform, by pairing each
+  platform token with `body:has(.pi-index.pf-<platform>) .pagination-links`: `<body>` is now the
+  subject and carries `--pf-landing-accent`, which `.pagination-links` reads. The links still ring in
+  the platform, and the rest of that entry stands.
+- **Decision:** a `:has()` on `<html>` or `<body>` keeps that element as the rule's subject: never
+  `body:has(x) y` or `html:has(x) y` (CORE_SPEC §8 carries the rule and the mechanism). `pages.css`'s
+  landing rules follow it: the platform accent goes onto `<body>` as `--pf-landing-accent`, which
+  `.pagination-links` reads (a writeup keeps the site's default ring), and the hidden title and the hero
+  panel key on Starlight's ContentPanels.
+- **Why:** Chrome keeps one invalidation set for every `:has()` outside a subject compound, and
+  Starlight's list rule leaves it nothing to key on, so an element anchoring such a `:has()` is
+  restyled with everything under it whenever Chrome walks up to it: for a write to an attribute a
+  `:has()` argument names, for any element added or removed, and for the phone strip's label rewrite
+  on every table-of-contents change. With `pages.css` anchoring on `<body>`, every TOC change
+  restyled the whole page: 1,056 elements on Busqueda, 42 to 50ms with the CPU slowed four times, 11
+  long animation frames in a 4x scroll at 1440 and 17 to 19 at 375.
+- **Rejected:**
+  - Re-anchoring the rules on `.main-pane`: the smallest edit, but a change inside the article still
+    restyles 865 elements.
+  - Moving only the phone strip's colours off `:has()`: the strip's label rewrite still walks, so the
+    11 long frames stay.
+  - Patching Starlight's CSS, which edits Starlight; upgrading, since 0.42.8 ships the same rule.
+  - Taking the subject clip pairs and the 80rem cap off `:has()` too: about 0.5ms a change, parked in
+    ROADMAP.
+- **Known:** deleting a rule through the CSSOM is no probe for an anchor: Chrome's `:has()` flags
+  outlive the rule, which is how an earlier probe read `pages.css` as no cause. Starlight 0.42's
+  release notes suggest the shape this rules out (CORE_SPEC §3). The issue for withastro/starlight is
+  drafted, not filed.
+- **Verified:** isolated builds with and without the change, green at 67 pages; the four landings,
+  the 404, Busqueda and Bandit 12-13 render identically in both themes at 1440 and 375, every
+  element's box and the values the rules set. A TOC change touches 8 elements (68 for the phone
+  strip), 4 to 8ms at 4x; an inline-style write on `#tp-progress` touches 5 instead of 1,056; an
+  untraced 4x scroll has no long animation frame at either width (headless Chrome 156).
+- **Status:** Adopted; committed to `dev` on 2026-11-01 as
+  `perf(pages): the landing rules keep :has() on <body> as the subject`.
+
+### 2026-11-01 · The sidebar keeps its plain tint: no light from the content
+- **Decision:** the sidebar is its tint and nothing else; nothing in the article lights it. The light from
+  the content, built from the owner's brief of 2026-10-31 and never committed, is removed whole. On a
+  writeup, from 50rem, a coloured block lit the sidebar beside it: callouts and asides in the colour of
+  their edge, the lead and quote boxes in lime, the flag headings and the flag and password reveals in
+  gold, and an image in its average colour, read once from a 16px copy on a canvas, light only (nothing
+  when darker than the page, a grey or white one at half strength). Each glow was a band level with its
+  block, entering at the sidebar's edge and fading toward the left, at 12% of its colour on dark and 8%
+  on paper (`--tp-sidebar-light`, and `--tp-sidebar-light-neutral` at half). `ReadingProgress.astro`
+  placed them: an IntersectionObserver kept the blocks in view, and four bands in a shadow root moved by
+  `transform` on the writeup's scroll handler, fading in and out over 300ms. The code, its two tokens and
+  every rule that served it are gone. The rest of that brief stands (CORE_SPEC §6 "Sidebar (chrome)"):
+  the series of glows down the left edge stays removed, dark's top-left and low glows burn at half
+  strength, and the sidebar keeps its own denser tint, `--tp-sidebar-alpha`, 0.82 on dark and 0.80 on
+  paper. So does the reading hairline's fix, found while measuring the light's cost: its scale is a
+  paused animation's time, so the line no longer restyles the page on every scrolled frame (CORE_SPEC §6
+  "Signature effects").
+- **Why** (owner, 2026-11-01): scrolling felt delayed, the light felt unnatural, it broke under fast
+  scrolling, and it does not fit the site's design. The lag and the breaking come with the approach:
+  Chrome scrolls the page off the main thread, but the bands were placed by script from the last scroll
+  position the main thread had seen, so a band trails its block, the more the faster the page moves; and
+  an IntersectionObserver reports a block in view only after the frame that shows it, so each glow
+  arrived after its block and then took 300ms to fade in.
+- **Rejected:**
+  - The light from the content, for the reasons above (owner, 2026-11-01).
+  - Within it, while it was built (owner, 2026-10-31): an image casting its literal average colour. Every
+    screenshot averages to a grey, so on paper a terminal would have laid a grey shadow; the light took
+    only averages lighter than the page.
+  - The series of glows repeating down the page's left edge (owner, 2026-10-31): committed to `dev` and
+    removed the same day, for a calmer page. CORE_SPEC's Rejected and settled carries it.
+- **Known:** the measurements made before it was turned down missed what the owner saw. Headless Chrome
+  scrolled Busqueda by script, `scrollBy` in each animation frame, on the main thread, where a band cannot
+  trail its block: they found no long frame at full speed and nothing of the lag. Anything a script places
+  as the page scrolls needs a real wheel, trackpad or touch scroll to be judged.
+- **Verified:** the feat tree, built on its own, green at 67 pages with the decorative-character guard
+  clean; its output carries none of the light (no layer, no tokens, no band code) and differs from the
+  hairline fix's build in the shared stylesheet alone. In headless Chrome at 1440, in both themes, five
+  frames of Busqueda (the top, a callout, a quote box, a screenshot, 600px down) match the build with the
+  light pixel for pixel outside what the light drew (its bands in the sidebar, and beside the quote box a
+  faint trace in the bar's frost, 4 levels of 255 at most), and match it whole where it drew nothing. The
+  hairline's computed scale at 0, 25, 50 and 100% is the one before the fix, at 1440 and 375. Scrolling
+  Busqueda top to bottom at 1440x900, 24px a frame: no long animation frame at full speed, and 11 or 12
+  with the CPU slowed four times, each one the table of contents changing its current entry. No page
+  carries a light layer; phones and the phone menu (375, both themes) are pixel-identical to the hairline
+  fix's build.
+- **Status:** Adopted (owner, 2026-11-01): a record of what was turned down. The light was never
+  committed; the rest of the brief is committed to `dev` as `feat(sidebar): calmer glows and a denser
+  sidebar`, after `perf(reading-progress): the hairline fills through an animation's time`.
+
 ### 2026-10-25 · The bar's glass thins and frosts over, and what sits on it turns full contrast
 - **Supersedes in part:** 2026-10-23 · The quiet bar: Starlight's header puts on the HUD. Only the glass's
   values and its fade (`blur(14px) saturate(1.25)` fading in over 20px, in its "Adaptive glass" bullet),
@@ -1957,7 +2079,10 @@
   a card rings in `var(--tx)`, the landing root defaults to the platform so the OverTheWire wargame card
   stops falling through to the site default, and the landing's prev/next links, which Starlight renders in
   the footer outside the landing's subtree, are reached by pairing each platform token with
-  `body:has(.pi-index.pf-<platform>) .pagination-links` so a page with no landing matches nothing.
+  `body:has(.pi-index.pf-<platform>) .pagination-links` so a page with no landing matches nothing
+  (**Partly superseded by:** 2026-11-01 · `:has()` on `<html>` or `<body>` keeps that element as the
+  subject. Only the pairing: `<body>` is now the subject and carries `--pf-landing-accent`, which
+  `.pagination-links` reads; the links still ring in the platform).
   ALL is neutral; the rail is MULTI-SELECT (owner
   decision, same day, replacing a single-select first cut): group pills are independent `aria-pressed`
   toggles, any number may be pressed, a card shows on a match with ANY pressed value, a pressed pill

@@ -46,27 +46,39 @@ html[data-theme="light"] .hero h1 {
    /writeups grid colors each card with no extra wiring. Darkened variants on paper
    keep contrast (the same darkened family the WriteupMeta platform chips read; the
    legacy .platform-* badge inks this note used to cite were retired with that family). */
-/* The second selector of each pair lifts the platform onto the landing's prev/next pagination
-   container, which sits in Starlight's footer OUTSIDE the .pi-index subtree and so inherits nothing
-   from it. :has() keys it on the landing root's own .pf-* class, so a page with no .pi-index (every
-   writeup) matches nothing, and the sidebar is never in the selector. It exists for the focus ring
-   rule after the ink block (2026-09-07). */
-.pf-hackthebox,
-body:has(.pi-index.pf-hackthebox)  .pagination-links { --pf-accent: #b6ff3c; }
-.pf-vulnhub,
-body:has(.pi-index.pf-vulnhub)     .pagination-links { --pf-accent: #ff5c5c; }
-.pf-picoctf,
-body:has(.pi-index.pf-picoctf)     .pagination-links { --pf-accent: #d96bff; }
-.pf-overthewire,
-body:has(.pi-index.pf-overthewire) .pagination-links { --pf-accent: #f2e300; }
-:root[data-theme='light'] .pf-hackthebox,
-:root[data-theme='light'] body:has(.pi-index.pf-hackthebox)  .pagination-links { --pf-accent: #4d7c0f; }
-:root[data-theme='light'] .pf-vulnhub,
-:root[data-theme='light'] body:has(.pi-index.pf-vulnhub)     .pagination-links { --pf-accent: #d12f2f; }
-:root[data-theme='light'] .pf-picoctf,
-:root[data-theme='light'] body:has(.pi-index.pf-picoctf)     .pagination-links { --pf-accent: #8b3dc4; }
-:root[data-theme='light'] .pf-overthewire,
-:root[data-theme='light'] body:has(.pi-index.pf-overthewire) .pagination-links { --pf-accent: #797100; }
+.pf-hackthebox  { --pf-accent: #b6ff3c; }
+.pf-vulnhub     { --pf-accent: #ff5c5c; }
+.pf-picoctf     { --pf-accent: #d96bff; }
+.pf-overthewire { --pf-accent: #f2e300; }
+:root[data-theme='light'] .pf-hackthebox  { --pf-accent: #4d7c0f; }
+:root[data-theme='light'] .pf-vulnhub     { --pf-accent: #d12f2f; }
+:root[data-theme='light'] .pf-picoctf     { --pf-accent: #8b3dc4; }
+:root[data-theme='light'] .pf-overthewire { --pf-accent: #797100; }
+
+/* The same accent lifted onto <body> on a landing, as --pf-landing-accent (the literals above, once
+   more), for the landing's prev/next pagination container, which sits in Starlight's footer OUTSIDE
+   the .pi-index subtree and so inherits nothing from it. :has() keys it on the landing root's own .pf-*
+   class, so a page with no .pi-index (every writeup) defines nothing, and nothing but the pagination
+   reads it, so the sidebar never sees the platform. It exists for the focus ring rule after the ink
+   block (2026-09-07).
+   <body> is the :has()'s SUBJECT on purpose, here and in every rule below. Until 2026-11-01 these
+   read `body:has(...) .pagination-links`, with another element as the subject, and that made <body>
+   an anchor Chrome restyles as a whole subtree: Chrome keeps one invalidation set for every :has()
+   outside a subject, and Starlight's list rule (style/markdown.css) leaves it with nothing to key on.
+   Every change Chrome checks against a :has() then restyled the whole page: each table-of-contents
+   change (1,061 elements on Busqueda, 52 to 79ms with the CPU slowed four times), any element added or
+   removed, any inline-style write. With <body> as the subject such a change recalculates <body> alone,
+   and a TOC change touches 8 elements (68 on a phone, the strip's own). Never key a rule here on
+   `body:has(...) x` or `html:has(...) x` (CORE_SPEC §8, ":has() on <html> or <body> only as the
+   subject"). */
+body:has(.pi-index.pf-hackthebox)  { --pf-landing-accent: #b6ff3c; }
+body:has(.pi-index.pf-vulnhub)     { --pf-landing-accent: #ff5c5c; }
+body:has(.pi-index.pf-picoctf)     { --pf-landing-accent: #d96bff; }
+body:has(.pi-index.pf-overthewire) { --pf-landing-accent: #f2e300; }
+:root[data-theme='light'] body:has(.pi-index.pf-hackthebox)  { --pf-landing-accent: #4d7c0f; }
+:root[data-theme='light'] body:has(.pi-index.pf-vulnhub)     { --pf-landing-accent: #d12f2f; }
+:root[data-theme='light'] body:has(.pi-index.pf-picoctf)     { --pf-landing-accent: #8b3dc4; }
+:root[data-theme='light'] body:has(.pi-index.pf-overthewire) { --pf-landing-accent: #797100; }
 
 /* Per-platform TEXT INK, the accent/ink split the waypoint amber already established
    (--pw-amber / --pw-amber-ink, see tokens.css). The accent is consumed by large display type
@@ -98,13 +110,19 @@ body:has(.pi-index.pf-overthewire) .pagination-links { --pf-accent: #f2e300; }
 :root[data-theme='light'] .pf-picoctf     { --pf-ink: #7f30b7; }  /* 4.86 -> 5.75, oklch(0.490 0.202 307.02) */
 :root[data-theme='light'] .pf-overthewire { --pf-ink: #615b00; }  /* 5.76 on bare paper (A, like the three above); 5.62 to 5.70 on the eyebrow's real backdrop (B, measured 2026-09-28), oklch(0.462 0.098 105.17), chroma clamped */
 
-/* The landing's prev/next links ring in the platform (owner decision 2026-09-07): the :has() pairs
-   above put --pf-accent on that container on landing pages only. A ring is non-text (3:1) and every
+/* The landing's prev/next links ring in the platform (owner decision 2026-09-07): the container takes
+   the accent lifted onto <body> above, on landing pages only. A ring is non-text (3:1) and every
    platform accent clears it on the page: dark 6.59 (VulnHub) to 16.49 (HackTheBox); light 4.11 lime,
    4.16 red, 4.86 purple and 4.14 Canary, and 3.71 / 3.76 / 4.38 / 3.74 under a dot of the light grid
    (the amber Canary replaced on 2026-09-28 read 3.50, and 3.16 under a dot).
-   Writeup pages carry no .pi-index and keep the site default ring. */
-body:has(.pi-index) .pagination-links { --focus-ring: var(--pf-accent); }
+   Writeup pages carry no .pi-index, so --pf-landing-accent is undefined there: --pf-accent stays unset
+   on the container, as it always was, and the ring is the site default. COUPLED with tokens.css: the
+   fallback repeats the default ring's value, var(--sl-color-text-accent), since a custom property
+   cannot fall back to the value it would have inherited. */
+.pagination-links {
+  --pf-accent: var(--pf-landing-accent);
+  --focus-ring: var(--pf-landing-accent, var(--sl-color-text-accent));
+}
 
 /* No sideways scroll on a landing. The hero glow (.pi-glow) is MEANT to spill past its box and fade
    out beyond the screen edge, and nothing clipped that spill. Measured on the built pages at 1280 and
@@ -136,8 +154,9 @@ html:has(.pi-index) { overflow-x: clip; }
 body:has(.pi-index) { overflow-x: clip; }
 
 /* A landing keeps to its own pane on a desktop. From 50rem, Starlight's breakpoint for the sidebar,
-   the page is three regions: the header across the top (translucent on purpose), the opaque sidebar,
-   and the pane beside it, where the landing lives. The hero glow spills past the hero by design, and
+   the page is three regions: the header across the top (translucent on purpose), the sidebar (opaque
+   until 2026-10-30, since 2026-10-31 wearing the bar's glass, clear at the top and framed by its
+   hairline as the bar is), and the pane beside it, where the landing lives. The hero glow spills past the hero by design, and
    nothing stopped it at the pane's edge, so it ran up under the header and across the sidebar's
    column, and the translucent header showed it there as a lit band with hard edges (at 1536: from
    24px down and from 150px in, over the sidebar's 272px column) on the three landings whose heroes
@@ -185,8 +204,11 @@ body:has(.hero) { overflow-x: clip; }
 }
 
 /* These pages render their own visual hero, so hide Starlight's frontmatter-driven
-   page title (kept for the browser tab + SEO) to avoid a duplicate heading. */
-body:has(.pi-index) h1#_top {
+   page title (kept for the browser tab + SEO) to avoid a duplicate heading. Keyed on the title's own
+   ContentPanel, the one just before the panel that holds the landing, never on <body> (the accent
+   block above says why): that panel holds only the title, so what Chrome restyles there is a few
+   elements. */
+.content-panel:has(+ .content-panel .pi-index) h1#_top {
   display: none;
 }
 /* ── Platform intro/landing pages: wide, immersive, capped at 80rem ───────────
@@ -212,15 +234,17 @@ body:has(.pi-index) {
 }
 
 /* The hero panel is the SECOND ContentPanel (the first holds the hidden PageTitle; Starlight renders a
-   title panel + a markdown panel, and .pi-index lives in the markdown one). Two intro-only resets on it
-   so the full-bleed hero starts flush at the top and reads immersive:
+   title panel + a markdown panel, and .pi-index lives in the markdown one), so the rule keys on the
+   panel that holds .pi-index, with :has() on the panel itself as the subject (the accent block above
+   says why not <body>). Two intro-only resets on it so the full-bleed hero starts flush at the top and
+   reads immersive:
    1. border-top: none - the hidden title above otherwise leaves Starlight's ContentPanel divider as a
       stray line across the top of an index page. Writeups keep their under-title line (no .pi-index).
    2. padding-top: 0 - remove Starlight's default 1.5rem top padding on this panel so the hero background
       reaches the top edge instead of sitting below a small dark band.
    Both themes; scoped to intro pages, so writeups/home/About are untouched. Only this panel's TOP is
    affected, so the side gutters and the full-width behavior above are unchanged. */
-body:has(.pi-index) .content-panel + .content-panel {
+.content-panel:has(.pi-index) {
   border-top: none;
   padding-top: 0;
 }

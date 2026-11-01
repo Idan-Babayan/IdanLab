@@ -83,6 +83,15 @@
   every switch, with no reload, the bar and the phone strip must be clear at the top and frosted once
   scrolled; under reduced motion always frosted, under reduced transparency and increased contrast
   solid, and in Firefox (no scroll timeline) always frosted.
+  **The columns' glass, the hairline's animation and the paper lines (2026-10-30 to 2026-11-01), in
+  Firefox and Safari:** at the top of a writeup the glow runs under the bar and the sidebar with only the
+  hairlines between them; scrolling, the bar, the sidebar and the right-hand column frost together (in
+  Firefox, with no scroll timelines, all three fully tinted from the top) while dark's top-left glow
+  scrolls away with the article; the reading hairline still fills, now through a paused animation's
+  time; on paper the bar's line, the sidebar's edge and the right column's edge are one warm colour; on
+  a Bandit page at 1280x800 the sidebar's scrollbar shows its thumb and no track (Safari reads the
+  `::-webkit-scrollbar-track` rule, never run in WebKit here). Checked in headless Chrome only
+  (CORE_SPEC §6, "Sidebar (chrome)").
 - [ENG] WriteupMeta filter routes: `/platform`, `/os` and `/environment` do not exist, so the three
   navigational chips render as non-interactive `<span>` rather than `<a>`. When the routes land, restore
   the anchors kept commented in `WriteupMeta.astro` (they restore verbatim) and drop the temporary
@@ -195,6 +204,19 @@
     diamond asset carries (a `data-credit` attribute on the svg root since 2026-09-07, CORE_SPEC §7).
 
 ## Open bugs / known issues
+
+- [ENG] **Starlight's list rule turns Chrome's `:has()` invalidation into whole-subtree restyles**
+  (upstream; CORE_SPEC §8 "`:has()` on `<html>` or `<body>` only as the subject"). The site's side is
+  fixed (2026-11-01: `pages.css` keeps `<body>` the subject, and a table-of-contents change touches 8
+  elements where it touched 1,056). Still open, all measured, none urgent:
+  - An issue for withastro/starlight is drafted with a standalone repro, NOT filed. The owner files it;
+    the template wants a reproduction on the latest Starlight, which was not built.
+  - The subject `:has()` clip pairs and the 80rem cap on `<html>` and `<body>` still cost each such change
+    about 0.5ms (3 to 5ms with the CPU slowed four times). They could move to CSS scoped to those five
+    pages some other way (Starlight's per-page `head` frontmatter, for one).
+  - The phone strip's rung colours could move off `:has()` onto an attribute TocTracking writes, so a
+    `style`, `href` or `aria-current` write would not walk at all. On its own this fixes nothing: the
+    strip's label rewrite walks regardless.
 
 - [DESIGN] **The `46ch` Principle cap is the third instance of the context law and is deliberately NOT
   fixed** (CORE_SPEC section 8, DECISIONS 2026-07-27). `.sl-markdown-content .principle` declares

@@ -37,6 +37,40 @@ html[data-theme="light"] :not(pre) > code {
 }
 } /* @layer prose */
 
+/* Chip groups: an inline-code chip never splits across two lines unless its group is longer than the
+   line. plugins/rehype-group-inline-chips.mjs (and Toggle.astro, for its label) wraps each chip, with
+   every character glued to it, in a .chip-unit; the rule and its invariant live in
+   src/lib/chip-units.mjs. A group's edges always fall on breakable whitespace, so making it atomic
+   cannot strand a `(` or a `,` the way an atomic chip on its own did, and inside it ordinary line
+   breaking keeps the punctuation attached. The chip itself stays the inline element styled above, so
+   its pill and the prose line boxes are exactly what they were.
+   - inline-block makes the group atomic: it stays whole whenever it fits on a line.
+   - max-width: 100% caps it at its column, so a group longer than the line wraps inside itself instead
+     of overflowing.
+   - baseline-source: first aligns a group that wraps on its FIRST line with the text around it. Without
+     it, a list item or rail row that starts with a long chip puts its bullet or port chip beside the
+     group's LAST line. Chrome 111+ and Firefox 115+; Safari keeps last-line alignment in that rare case.
+   - overflow-wrap: anywhere keeps each chip's min-content no larger than before, so the rail's
+     minmax(0, 1fr) column never overflows and no rail exclusion is needed, and it lets a single token
+     longer than the line break. It is set on code as well because Starlight's reset puts break-word on
+     code directly, which would otherwise win inside the group.
+   - text-wrap: balance only matters once a group wraps: it evens the lines instead of leaving one word
+     dangling. By spec it never changes a line count, and it does nothing to a one-line group.
+   No length, width or font value appears here: the browser measures (CORE_SPEC section 8, "Prefer
+   computed relationships to declared ones"). Nothing animates, so prefers-reduced-motion is unaffected. */
+@layer prose {
+.sl-markdown-content .chip-unit:not(:where(.not-content *)) {
+  display: inline-block;
+  max-width: 100%;
+  baseline-source: first;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+.sl-markdown-content .chip-unit:not(:where(.not-content *)) code {
+  overflow-wrap: anywhere;
+}
+} /* @layer prose */
+
 
 /* ── Toggle / details blocks ─────────────────── */
 
