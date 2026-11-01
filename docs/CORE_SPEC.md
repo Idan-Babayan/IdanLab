@@ -284,7 +284,7 @@ each Vite major; recorded, not pinned.
 
 ```
 C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Windows user profile path
-├─ astro.config.mjs                   # Starlight config: site, sidebar, customCss[layers.css, fonts.css, then the eight theme modules tokens/base/prose/chrome/components/pages/utilities/overrides, in that order], EC themes + pluginPrivCommand, an empty head array (no font preloads, see DECISIONS 2026-07-07; the reading-progress script became a component 2026-10-18), image-zoom, vite alias, components overrides (PageSidebar + MarkdownContent + Head, and the replacing ThemeSelect), pagefind ranking weights for the search fields, markdown remarkPlugins (content-taxonomy validation guard, PasswordReveal import injection, WriteupMeta injection, recon-rail transform, search-field injection) + rehypePlugins (content image loading)
+├─ astro.config.mjs                   # Starlight config: site, sidebar, customCss[layers.css, fonts.css, then the eight theme modules tokens/base/prose/chrome/components/pages/utilities/overrides, in that order], EC themes + pluginPrivCommand, an empty head array (no font preloads, see DECISIONS 2026-07-07; the reading-progress script became a component 2026-10-18), image-zoom, vite alias, components overrides (PageSidebar + MarkdownContent + Head, and the replacing ThemeSelect), pagefind ranking weights for the search fields, markdown remarkPlugins (content-taxonomy validation guard, PasswordReveal import injection, WriteupMeta injection, recon-rail transform, search-field injection) + rehypePlugins (content image loading, inline-chip grouping)
 ├─ src/
 │  ├─ content.config.ts               # docs collection (gatedDocsLoader, a wrapper that delegates to Starlight's docsLoader and then refuses any non-index file under the four platform directories that is not .mdx, so a .md writeup fails the content sync before any page builds, 2026-09-14; + docsSchema) + the writeup metadata schema (§7)
 │  ├─ pages/
@@ -319,6 +319,7 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 │  │     ├─ Head.astro                # additive Starlight override: renders <Default/> then appends only what Starlight omits: the social tags (author, og:image + secure_url/type/width/height/alt, twitter:title/description/image), per-page values read from frontmatter (see §2 "Social and SEO metadata"), and <ThemeColor/>
 │  │     └─ ThemeSelect.astro         # REPLACING Starlight override, the one exception (owner, 2026-10-18): Starlight's Dark/Light/Auto select becomes About's one-click theme button, in the header and the phone menu (see §6 "Starlight Component Overrides")
 │  ├─ lib/
+│  │  ├─ chip-units.mjs               # the inline-chip grouping rule, one module and two callers: groupChips (the rehype plugin) and groupLabelHtml (Toggle.astro's set:html label); imported by Node (plugins/) and Vite (src/), its only import unist-util-visit
 │  │  ├─ ec-priv-command.mjs          # EC plugin: tags command words by category (priv/recon/net/inspect)
 │  │  └─ taxonomy.mjs                 # what a writeup's MIDDLE directory means per platform (difficulty tiers, the six picoCTF categories, PLATFORM_AXIS); dependency-free because Node (plugins/) and Vite (src/) both import it
 │  └─ styles/                         # the theme pass, split into cascade-layer modules (see §5 "The layer contract")
@@ -326,7 +327,7 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 │     ├─ fonts.css                    # self-hosted @font-face (subset WOFF2: Syne, JetBrains Mono, Geist) + metric-matched fallbacks for each (Syne's one face per weight, plus a glyph fallback for what Syne's subset lacks); loaded via customCss and imported by the marketing pages. The one module with no layer statement. Ships as its own /_astro/ stylesheet since 2026-10-03 (see §6 "Fonts")
 │     ├─ tokens.css                   # @layer tokens: every custom property (surfaces, accents, flag gold, the PasswordReveal amber pair, the prose/chrome type scale). Also owns the prose/chrome type token block (see §6)
 │     ├─ base.css                     # @layer base: the zero-specificity defaults under everything, today the shared focus ring alone
-│     ├─ prose.css                    # @layer prose: the reading surface inside .sl-markdown-content (type, rhythm, links, quotes, the raw <details> default)
+│     ├─ prose.css                    # @layer prose: the reading surface inside .sl-markdown-content (type, rhythm, links, quotes, the raw <details> default, the inline-code chip and its .chip-unit groups)
 │     ├─ chrome.css                   # @layer chrome: the header (the quiet bar, §6 "Component inventory"), the reading hairline, sidebar, TOC, code frames, scrollbars, the three-column layout, light-mode depth
 │     ├─ components.css               # @layer components: badges, toggles, callouts, the recon rail (a two-column grid plus the 12rem container query that stacks it when the callout is narrow, which page zoom on a phone does), FlagCapture, PasswordReveal, Principle, WriteupMeta
 │     ├─ pages.css                    # @layer pages: whole-page treatments (splash hero, platform index, the reveal state rules, the landing's 80rem content cap, and the sideways-scroll clip pairs: html:has(.pi-index) + body:has(.pi-index) and html:has(.hero) + body:has(.hero), both rules of each pair needed, see §6; every :has() on <html> or <body> has it as the subject, see §8)
@@ -334,6 +335,7 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 │     └─ overrides.css                # THE ONLY UNLAYERED SURFACE. The 14-rule tail, each rule carrying an evidence comment naming what it beats (see §8 "The layer law")
 ├─ plugins/
 │  ├─ rehype-content-image-loading.mjs # rehype: sets loading/decoding on content <img> (first eager, rest lazy); wired via astro.config markdown.rehypePlugins
+│  ├─ rehype-group-inline-chips.mjs   # rehype: wraps each inline-code chip and the characters glued to it in span.chip-unit (§7 "Build-time plugins")
 │  ├─ remark-inject-passwordreveal.mjs # remark: injects the PasswordReveal import (§7 "Build-time plugins")
 │  ├─ remark-inject-writeupmeta.mjs   # remark: injects the WriteupMeta badge row (§7 "Build-time plugins")
 │  ├─ remark-transform-recon-rail.mjs  # remark: builds the recon findings rail (§7 "Build-time plugins")
@@ -2045,6 +2047,36 @@ which reads as a passing test of a dead guard. It produced exactly that false ne
 Astro 7 upgrade verification. Any probe of the guard must use a filename that does not start with an
 underscore.
 
+Two rehype passes run after the remark plugins. `rehype-content-image-loading.mjs` sets loading and
+decoding on each content `<img>`; the other groups the inline-code chips:
+
+- **`rehype-group-inline-chips.mjs`** (built 2026-09-24, merged 2026-11-01) wraps each inline-code chip,
+  together with every character glued to it, in `<span class="chip-unit">`, which `prose.css` makes an
+  atomic inline-block capped at its column: a chip never splits across two lines unless its group is
+  longer than the line, and then it wraps inside the group with its punctuation still attached. The rule
+  lives in `src/lib/chip-units.mjs`. A chip is inline `<code>` (hast, or MDX JSX `code`) outside `pre`,
+  or a hand-written `.port-label`. Glue is every character except breakable whitespace (U+0020, U+0009,
+  U+000A, U+000C, U+000D, U+200B), so punctuation, curly quotes, slashes, hyphens and the no-break
+  spaces all glue. From the chip a group extends over glued text (a text node is split at its first
+  breakable whitespace), takes a phrasing element WHOLE when the edge touching the group is glue, and
+  climbs out of an inline ancestor whose edge it reaches when the glue continues outside; it stops at
+  breakable whitespace, a hard boundary (`br`, `img`, `input`, any capitalized component, any MDX
+  expression, any non-phrasing element) or the edge of the block. **The invariant:** the character just
+  before a group, and the one just after it, is breakable whitespace, a hard boundary or nothing, so no
+  group edge ever falls between two glued characters. **Never grouped:** anything in `pre`, the recon
+  rail's `dt` (the grid track measures its chip), any `.not-content` subtree, and the markdown children of
+  every capitalized component except the prose containers `Callout`, `Toggle` and `Steps` (`Steps`
+  because two Bandit pages carry chips in its list items). It is REHYPE because it has to see the tree
+  after every remark transform, including the rail's `dd`, which the remark-stage plugins never see; its
+  order against the image pass does not matter. The wrapper is a `span` because Starlight's
+  `markdown.css` flow-spacing sibling rule exempts `span`. Measured 2026-11-01: 533 groups on 56 pages,
+  and every page's HTML byte-identical to the build without the pass once the wrappers are stripped.
+  **Toggle labels** reach the page through `set:html`, so the plugin never sees them. `Toggle.astro` runs
+  the same module's `groupLabelHtml` over the label string first. It supports exactly the markup labels
+  use (text, character references and a bare `<code>`) and fails the build on anything else, naming the
+  file and the label. See DECISIONS 2026-11-01 · An inline-code chip splits only when its group is
+  longer than the line.
+
 **One guard runs after the build instead of over the source.** `validate-decorative-glyphs.mjs` is an
 integration, listed after `starlight()` in `astro.config.mjs` `integrations`, whose `astro:build:done`
 hook reads every built page and stylesheet and fails the build when a decorative character on its list
@@ -2162,6 +2194,9 @@ against any build directory.
   theme-tuned, deliberately distinct from the sharp code blocks);
   inside a colored callout it instead harmonizes with that callout's accent (reads `--acc` / `--cl-ink`,
   generic per type); see DECISIONS 2026-06-29.
+  A chip never splits across two lines unless its group (the chip plus the characters glued to it) is
+  longer than the line: `plugins/rehype-group-inline-chips.mjs` wraps each group in `.chip-unit` at
+  build time (§7 "Build-time plugins"). `.chip-unit` is generated, never hand-authored.
 - **Bold inside a callout is INK, not weight.** `<strong>` in a `.cl` drops to weight 400 and takes
   `--cl-emph`, the callout's own hue leaned into the body text colour, so emphasis reads as "this belongs to
   this callout" rather than as a shout. Per theme, and the percentages deliberately differ: dark mixes

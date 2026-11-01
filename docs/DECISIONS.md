@@ -6,6 +6,41 @@
 
 ---
 
+### 2026-11-01 · An inline-code chip splits only when its group is longer than the line
+- **Decision:** at build time each inline-code chip, with every character glued to it, is wrapped in
+  `span.chip-unit`, an `inline-block` capped at its column (`max-width: 100%`, `baseline-source:
+  first`, `overflow-wrap: anywhere`, `text-wrap: balance`): a chip stays on one line whenever its group
+  fits, and a group longer than the line wraps inside itself with its punctuation attached. That
+  emulates `wrap-inside: avoid`, which neither Chrome nor Firefox supports. The rule is
+  `src/lib/chip-units.mjs`, run over every page by `plugins/rehype-group-inline-chips.mjs` and over
+  Toggle labels by `Toggle.astro` (CORE_SPEC §7). Built and verified on 2026-09-24 on its own
+  branch; merged onto `dev` on 2026-11-01, where the Toggle `flag` variant it also handled had gone.
+- **Why:** a browser breaks a line at any space inside a chip or after a hyphen, which is how
+  `DOMAIN ADMINS@HTB.LOCAL` ended a line with DOMAIN: 13 unnecessary splits at 1280, 17 at 375 and
+  40 at 320 across 65 pages (2026-09-24).
+- **Rejected:**
+  - `white-space: nowrap` on chips: long chips overflow on phones (Forest's NTLM pair scrolled the
+    page 324px sideways at 320).
+  - `inline-block` on the chip alone: a browser may break on either side of it, stranding `(` and
+    `,` (Bandit 6-7 went from 0 to 46 of 141 widths).
+  - `nowrap` under a 24-character threshold: a number tied to the 14px chip and the 202px callout
+    column at 320, and every long chip still split.
+  - That threshold plus `inline-block` for long chips: those rendered 29.14px tall against 23.34px, a
+    comma still fell to the next line, and at a 20px default text a 19-character chip overflowed by
+    20.5px.
+- **Known:** six long tokens are longer than their line at narrow widths and still wrap, inside their
+  group; `text-wrap: balance` does not even out breaks inside a token.
+- **Verified:** 2026-09-24: 544 groups on 57 pages; no unnecessary split at 1280, 375 or 320; no
+  defect in sweeps from 320 to 1440; no sideways scroll; chip heights unchanged; every page's HTML
+  byte-identical to the baseline once the wrappers are stripped; copied text identical; Firefox 156
+  clean. 2026-11-01, on the merge: build green at 67 pages; only the shared stylesheet (the two rules,
+  +247 bytes) and 56 pages change, each byte-identical to the build without the pass once its wrappers
+  (533 in all) are stripped; on every page at 320, 375 and 1280, no sideways scroll, chips split across
+  lines down from 37, 18 and 9 to 3, 2 and 0, each a group longer than its line, and the copied text
+  unchanged wherever a chip is.
+- **Status:** Adopted; committed to `dev` on 2026-11-01 as
+  `feat(prose): an inline-code chip splits only when its group is longer than the line`.
+
 ### 2026-11-01 · `:has()` on `<html>` or `<body>` keeps that element as the subject
 - **Supersedes in part:** 2026-09-07 · Two taxonomy palettes: the landing pages re-base onto the
   WriteupMeta chip model. Only how the landing's prev/next links reach the platform, by pairing each
