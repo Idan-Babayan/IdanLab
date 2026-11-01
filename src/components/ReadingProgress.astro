@@ -10,12 +10,14 @@
 // batched into one animation frame), on resize, and whenever the content's height changes (a spoiler or
 // a toggle opening, ToggleAll). The scale is a paused animation's time, so no frame writes an attribute.
 //
-// Why no frame writes to the page itself: Chrome restyles the whole page (1,056 elements on Busqueda)
-// when an attribute that a :has() argument names changes anywhere in it. chrome.css's phone-strip rules
-// name style, href and aria-current, and Starlight's list rule (style/markdown.css) carries the restyle
-// to the whole page, so the line's inline transform, written on every frame, did that once per scrolled
-// frame (traced 2026-11-01). A data-* attribute costs nothing, and an animation's time is outside what
-// :has() can see.
+// Why no frame writes to the page itself: a write to an attribute that a :has() argument names, anywhere,
+// sends Chrome up the page to restyle the :has() anchors it finds. chrome.css's phone-strip rules name
+// style, href and aria-current, and while pages.css anchored :has() on <body> outside the subject,
+// Starlight's list rule (style/markdown.css) made that the whole page: the line's inline transform,
+// written on every frame, restyled 1,056 elements on Busqueda once per scrolled frame (traced
+// 2026-11-01). Since that day pages.css keeps <body> the subject and the same write touches 5 elements,
+// but a frame should not pay even that walk (CORE_SPEC §8). A data-* attribute costs nothing, and an
+// animation's time is outside what :has() can see.
 ---
 
 <script>
