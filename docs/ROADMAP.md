@@ -83,16 +83,15 @@
   every switch, with no reload, the bar and the phone strip must be clear at the top and frosted once
   scrolled; under reduced motion always frosted, under reduced transparency and increased contrast
   solid, and in Firefox (no scroll timeline) always frosted.
-  **The columns' glass, the moving light and the paper lines (2026-10-30 and 31), in Firefox and
-  Safari:** at the top of a writeup the glow runs under the bar and the sidebar with only the hairlines
-  between them; scrolling, the bar, the sidebar and the right-hand column frost together (in Firefox,
-  with no scroll timelines, all three fully tinted from the top) while the light at the left edge
-  scrolls with the article; on paper the bar's line, the sidebar's edge and the right column's edge are
-  one warm colour; on a Bandit page at 1280x800 the sidebar's scrollbar shows its thumb and no track
-  (Safari reads the `::-webkit-scrollbar-track` rule, never run in WebKit here). Checked in headless
-  Chrome only (CORE_SPEC §6, "Sidebar (chrome)"). On a real screen, also judge the paper light: under the
-  66% tint it lifts the paper by about 2 levels of 255 at its faintest, and its strength is one number
-  per colour in `chrome.css`.
+  **The columns' glass, the hairline's animation and the paper lines (2026-10-30 to 2026-11-01), in
+  Firefox and Safari:** at the top of a writeup the glow runs under the bar and the sidebar with only the
+  hairlines between them; scrolling, the bar, the sidebar and the right-hand column frost together (in
+  Firefox, with no scroll timelines, all three fully tinted from the top) while dark's top-left glow
+  scrolls away with the article; the reading hairline still fills, now through a paused animation's
+  time; on paper the bar's line, the sidebar's edge and the right column's edge are one warm colour; on
+  a Bandit page at 1280x800 the sidebar's scrollbar shows its thumb and no track (Safari reads the
+  `::-webkit-scrollbar-track` rule, never run in WebKit here). Checked in headless Chrome only
+  (CORE_SPEC §6, "Sidebar (chrome)").
 - [ENG] WriteupMeta filter routes: `/platform`, `/os` and `/environment` do not exist, so the three
   navigational chips render as non-interactive `<span>` rather than `<a>`. When the routes land, restore
   the anchors kept commented in `WriteupMeta.astro` (they restore verbatim) and drop the temporary

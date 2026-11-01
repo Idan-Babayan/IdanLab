@@ -6,6 +6,55 @@
 
 ---
 
+### 2026-11-01 · The sidebar keeps its plain tint: no light from the content
+- **Decision:** the sidebar is its tint and nothing else; nothing in the article lights it. The light from
+  the content, built from the owner's brief of 2026-10-31 and never committed, is removed whole. On a
+  writeup, from 50rem, a coloured block lit the sidebar beside it: callouts and asides in the colour of
+  their edge, the lead and quote boxes in lime, the flag headings and the flag and password reveals in
+  gold, and an image in its average colour, read once from a 16px copy on a canvas, light only (nothing
+  when darker than the page, a grey or white one at half strength). Each glow was a band level with its
+  block, entering at the sidebar's edge and fading toward the left, at 12% of its colour on dark and 8%
+  on paper (`--tp-sidebar-light`, and `--tp-sidebar-light-neutral` at half). `ReadingProgress.astro`
+  placed them: an IntersectionObserver kept the blocks in view, and four bands in a shadow root moved by
+  `transform` on the writeup's scroll handler, fading in and out over 300ms. The code, its two tokens and
+  every rule that served it are gone. The rest of that brief stands (CORE_SPEC §6 "Sidebar (chrome)"):
+  the series of glows down the left edge stays removed, dark's top-left and low glows burn at half
+  strength, and the sidebar keeps its own denser tint, `--tp-sidebar-alpha`, 0.82 on dark and 0.80 on
+  paper. So does the reading hairline's fix, found while measuring the light's cost: its scale is a
+  paused animation's time, so the line no longer restyles the page on every scrolled frame (CORE_SPEC §6
+  "Signature effects").
+- **Why** (owner, 2026-11-01): scrolling felt delayed, the light felt unnatural, it broke under fast
+  scrolling, and it does not fit the site's design. The lag and the breaking come with the approach:
+  Chrome scrolls the page off the main thread, but the bands were placed by script from the last scroll
+  position the main thread had seen, so a band trails its block, the more the faster the page moves; and
+  an IntersectionObserver reports a block in view only after the frame that shows it, so each glow
+  arrived after its block and then took 300ms to fade in.
+- **Rejected:**
+  - The light from the content, for the reasons above (owner, 2026-11-01).
+  - Within it, while it was built (owner, 2026-10-31): an image casting its literal average colour. Every
+    screenshot averages to a grey, so on paper a terminal would have laid a grey shadow; the light took
+    only averages lighter than the page.
+  - The series of glows repeating down the page's left edge (owner, 2026-10-31): committed to `dev` and
+    removed the same day, for a calmer page. CORE_SPEC's Rejected and settled carries it.
+- **Known:** the measurements made before it was turned down missed what the owner saw. Headless Chrome
+  scrolled Busqueda by script, `scrollBy` in each animation frame, on the main thread, where a band cannot
+  trail its block: they found no long frame at full speed and nothing of the lag. Anything a script places
+  as the page scrolls needs a real wheel, trackpad or touch scroll to be judged.
+- **Verified:** the feat tree, built on its own, green at 67 pages with the decorative-character guard
+  clean; its output carries none of the light (no layer, no tokens, no band code) and differs from the
+  hairline fix's build in the shared stylesheet alone. In headless Chrome at 1440, in both themes, five
+  frames of Busqueda (the top, a callout, a quote box, a screenshot, 600px down) match the build with the
+  light pixel for pixel outside what the light drew (its bands in the sidebar, and beside the quote box a
+  faint trace in the bar's frost, 4 levels of 255 at most), and match it whole where it drew nothing. The
+  hairline's computed scale at 0, 25, 50 and 100% is the one before the fix, at 1440 and 375. Scrolling
+  Busqueda top to bottom at 1440x900, 24px a frame: no long animation frame at full speed, and 11 or 12
+  with the CPU slowed four times, each one the table of contents changing its current entry. No page
+  carries a light layer; phones and the phone menu (375, both themes) are pixel-identical to the hairline
+  fix's build.
+- **Status:** Adopted (owner, 2026-11-01): a record of what was turned down. The light was never
+  committed; the rest of the brief is committed to `dev` as `feat(sidebar): calmer glows and a denser
+  sidebar`, after `perf(reading-progress): the hairline fills through an animation's time`.
+
 ### 2026-10-25 · The bar's glass thins and frosts over, and what sits on it turns full contrast
 - **Supersedes in part:** 2026-10-23 · The quiet bar: Starlight's header puts on the HUD. Only the glass's
   values and its fade (`blur(14px) saturate(1.25)` fading in over 20px, in its "Adaptive glass" bullet),

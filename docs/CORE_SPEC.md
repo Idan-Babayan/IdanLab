@@ -739,7 +739,22 @@ token is an open ROADMAP item, not a bug.
   a passive scroll listener batched through `requestAnimationFrame`, recomputed on resize and on any
   change of the page's height (a `ResizeObserver` on `body`, so a spoiler or ToggleAll moves it). It
   replaced a 2px bar along the top of every Starlight page, sized by an inline `head` script. See DECISIONS
-  2026-10-18 · The reading hairline fills on writeups only, from a typed component.
+  2026-10-18 · The reading hairline fills on writeups only, from a typed component. **No frame writes
+  an attribute** (2026-11-01): the scale is a paused animation's time, not the line's inline style.
+  Chrome restyles the whole page when an attribute that a `:has()` argument names changes anywhere in
+  it: the phone strip's rules in `chrome.css` name `style`, `href` and `aria-current`, and Starlight's
+  list rule in `style/markdown.css` carries the restyle to the whole page, so the inline transform
+  written on every frame did that on every scrolled frame, 1,056 elements on Busqueda. A `data-*`
+  attribute, `aria-label` or `title` costs one element or none; with the strip's five rules deleted in
+  the page an inline-style write touches 1 element, with Starlight's rule deleted 67 (traced in
+  headless Chrome). Scrolling Busqueda top to bottom at 1440x900, 24px a frame: 0.4ms of style a frame
+  against 6.6 to 7.5 before, and with the CPU slowed four times 10 to 12 long animation frames against
+  261, each one left the table of contents changing its current entry, an `aria-current` write.
+  Anything a script moves every frame goes through an animation's time or inside a shadow root, never
+  through the page's own attributes or inline styles. The line fills exactly as before (the same
+  computed scale at 0, 25, 50 and 100% at 1440 and 375, and the bar pixel-identical at 1440); on a
+  phone (375, DPR 2) the animated line moves the anti-aliasing of the menu button's icon ends, 52
+  pixels by up to 42 levels of 255, and its own pixels by 2 at most, nothing that shows.
 - All effects are **`prefers-reduced-motion` aware**. Reading content stays calm
   (NO tilt/scroll-reveal on writeup body text). That includes the marketing pages' smooth scroll since
   2026-10-03: each page's reduced-motion block names `html, *`, because the smooth rule names `html`
@@ -802,17 +817,19 @@ token is an open ROADMAP item, not a bug.
     pixels. Solid `--sl-color-bg` under reduced transparency and increased contrast. The phone "On this
     page" strip wears the same. **The side columns wear the tint** (owner, 2026-10-31): from 50rem the
     sidebar's pane and from 72rem the right-hand column take the same tint with no blur or saturation,
-    nothing scrolling under them, so the bar and both columns read as one surface at every scroll
-    position. Each of the four surfaces (the bar's and the strip's `::before`, the pane, the right
-    column) runs the ramp itself, with the same keyframes, timeline and range, so `--tp-frost` stays
-    non-inherited and nothing else on the page inherits an animated number, and each rests at 1 where
-    the ramp does not run. Measured in headless Chrome on the built site: at 1440 the bar and both
-    columns read 0, 0.5 and 1 at 0, 18 and 36px of scroll in both themes, with identical tints, and at
-    1024 the strip matches them. Under reduced transparency and increased contrast the columns go solid
-    in the page colour with the bar, their hairlines carrying the edges; under reduced motion all three
-    are at full strength from the top. The source writes `-webkit-backdrop-filter` beside the standard
-    property, but the built CSS carries only the standard one (the minifier drops the prefix), so Safari
-    before 18 shows the tint without the frost.
+    nothing scrolling under them, the sidebar's a little denser at full strength (82% and 80%,
+    `--tp-sidebar-alpha`; owner, 2026-10-31), so the bar and both columns are clear together at the top
+    and frost together. Each of the four surfaces (the bar's and the strip's `::before`, the pane, the
+    right column) runs the ramp itself, with the same keyframes, timeline and range, so `--tp-frost`
+    stays non-inherited and nothing else on the page inherits an animated number, and each rests at 1
+    where the ramp does not run. Measured in headless Chrome on the built site: at 1440 the bar and both
+    columns read 0, 0.5 and 1 at 0, 18 and 36px of scroll in both themes (2026-11-01: the bar and the
+    right column at alpha 0.35 and 0.70 on dark, the sidebar at 0.41 and 0.82; 0.33, 0.66 and 0.40, 0.80
+    on paper), and at 1024 the strip matches them. Under reduced transparency and increased contrast
+    the columns go solid in the page colour with the bar, their hairlines carrying the edges; under
+    reduced motion all three are at full strength from the top. The source writes
+    `-webkit-backdrop-filter` beside the standard property, but the built CSS carries only the standard
+    one (the minifier drops the prefix), so Safari before 18 shows the tint without the frost.
   - **On the glass, full contrast** (owner, 2026-10-24 and 2026-10-25): the thinner tint lets a
     screenshot show through, and the muted grey fell to about 2:1 over a white one on dark and 2.5:1 over
     a black terminal on paper. So everything on the glass except the name reads `--tp-hud-ink` at rest,
@@ -1559,8 +1576,7 @@ Light is art-directed on its own terms (dark is unchanged). All rules scoped to
 `[data-theme='light']`, spread across the modules by concern (surfaces in `tokens.css`, chrome in
 `chrome.css`, badges and callouts in `components.css`):
 - **Editorial ink:** body text near-black `#1a1815` on warm paper (crisp, premium).
-- **Texture not glow:** a faint warm technical dot-grid behind content (`body::before`; from 50rem
-  faint glows in the paper glow colours also scroll down the left edge, §6 "Sidebar (chrome)"), replacing
+- **Texture not glow:** a faint warm technical dot-grid behind content (`body::before`), replacing
   the old bottom atmosphere wash. Static, low contrast, prefers-reduced-motion safe.
 - **Decorative accent palette (NON-text):** vivid `--pf-accent-2`-style trio for dots, fills,
   the `#` marker, the h2 rule, the sidebar active bar, panel accents. The reading hairline's light
@@ -1592,46 +1608,41 @@ stay aligned). Width trimmed via `--sl-sidebar-width: 17rem` (from Starlight's 1
 
 **The bar's glass, without the frost (owner, 2026-10-30 and 2026-10-31).** From 50rem the sidebar wears
 the bar's tint and nothing else, and from 72rem so does the right-hand column: clear at the top of a
-page, so the page's glow runs across the bar and the sidebar with no edge but the hairlines, then 70%
-of the page colour on dark and 66% on paper over the first 36px of scroll, with the bar, as one surface
-(§6 "Starlight's header is the quiet bar", "Adaptive glass"). No `backdrop-filter`: nothing scrolls
-under them, and the light under them is soft already. Their hairlines are the edges, as the bar's is (on
-paper the warm divider). On 2026-10-30 the sidebar lost its own fill (`--tp-sidebar-fill`, 0%, a dial
-for a day); the tint replaced it, and the `--sl-color-bg-sidebar` declarations (#0a0e0f, #f1eee5) went
-as dead in effect, since the tint, or the solid page colour, always wins on the pane. Under reduced
-transparency and increased contrast the bar and both columns go solid in the page colour. The
-sidebar's scrollbar track is clear and the thumb is the page's: a long list overflows the pane (every
-Bandit page at 1280x800), and the page's track drew a 16px strip down its edge. The paper edge and inset
-shadow once written on `nav.sidebar` never painted, the nav being 0px tall around its fixed pane, and
-were deleted on 2026-10-30. Below 50rem the same pane is the phone menu, which keeps Starlight's solid
-panel (#17181c, white on paper); every rule here sits inside the 50rem query, and phones and the phone
-menu are pixel-identical to before (both themes, 2026-10-31).
+page, so the page's glow runs across the bar and the sidebar with no edge but the hairlines, then
+frosting over the first 36px of scroll with the bar (§6 "Starlight's header is the quiet bar",
+"Adaptive glass"): the right-hand column to the bar's 70% of the page colour on dark and 66% on paper,
+the sidebar a little denser, 82% and 80% (`--tp-sidebar-alpha`; owner, 2026-10-31). No
+`backdrop-filter`: nothing scrolls under them, and the light under them is soft already. Their
+hairlines are the edges, as the bar's is (on paper the warm divider). On 2026-10-30 the sidebar lost its
+own fill (`--tp-sidebar-fill`, 0%, a dial for a day); the tint replaced it, and the
+`--sl-color-bg-sidebar` declarations (#0a0e0f, #f1eee5) went as dead in effect, since the tint, or the
+solid page colour, always wins on the pane. Under reduced transparency and increased contrast the bar
+and both columns go solid in the page colour. The sidebar's scrollbar track is clear and the thumb is
+the page's: a long list overflows the pane (every Bandit page at 1280x800), and the page's track drew a
+16px strip down its edge. The paper edge and inset shadow once written on `nav.sidebar` never painted,
+the nav being 0px tall around its fixed pane, and were deleted on 2026-10-30. Below 50rem the same pane
+is the phone menu, which keeps Starlight's solid panel (#17181c, white on paper); every rule here sits
+inside the 50rem query, and the sidebar's changes leave phones and the phone menu pixel-identical (both
+themes, 2026-10-31 and 2026-11-01).
 
 **The light moves with the page (owner, 2026-10-31).** The sidebar's backdrop used to be fixed: the
 top-left glow sat in the fixed `body::before`, so a clear sidebar never changed as the article
 scrolled. From 50rem, on pages with a sidebar, that glow is part of the page's own background
 (`body`, normal scrolling, no fixed layer and no script): at scroll 0 it sits where it did, at the same
-size and colour, and it scrolls away with the article. Below it soft glows run down the left edge for
-the page's whole height, lime and cyan in turn at the corner glows' strengths (10% and 11%; paper, which
-has no top-left glow, takes its own glow colours at its top glow's 12%). Each is a 420 by 280px ellipse
-centred 40px off the left edge and gone by 262px, before the article's text (288px from 800 to 1151px
-wide, 296 up to 1280, 363 at 1440); they sit 560px apart and fade over 202px either side of their
-centres, the first at 350px, clear of the top-left glow. The top-right lime and the low glow stay fixed,
-and phones keep the fixed layer whole. Over a full colour period at 1280x800 (scroll 36 to 1156) the
-brightest band at the sidebar's left edge moves with the scroll and never lifts less than 6.92 levels of
-255 over the page on dark, 2.01 on paper, where the fixed glow sat at row 54 at every position; at 600
-and 2000 it sits at rows 309 and 57 on dark, 305 and 593 on paper. Under the full tint about a third of
-the light shows, so once scrolled it is faint on paper.
+size, and it scrolls away with the article. It and the low glow, which stays fixed, burn at half their
+old strength, 5.5% and 4.5% fading to 3%, so the page is calmer (owner, 2026-10-31); the top-right lime
+stays fixed and whole. Paper has neither and keeps its fixed layer whole, the dot grid and the top-centre
+lime at 12%, as phones do (computed values unchanged at 375 in both themes). For a day soft glows also
+ran down the left edge for the page's whole height, lime and cyan in turn, 560px apart; they are gone.
 
-Sidebar text, measured at Busqueda's top (tint 0, the first lime glow under the rows from Return to
-Medium) and at full strength with a glow centred under the text (scroll 100 for lime, 660 for cyan),
-against the lowest rendered pixel under each entry, grain and dots included (model C, 1280x800): on dark
-the group labels read 16.89:1 at the top and 18.67 or more at full strength, the links 9.81 and 10.61,
-the current page 9.08 and 9.64 on its fill; on paper the labels 12.67 and 13.81, the links 8.41 and
-9.12, the current page 6.03 and 6.44. The paper focus rings read 3.63 to 4.33:1 at the top and 3.91 to
-4.64 under the full tint, and 2.95 where HackTheBox's crosses its open group's guide line (the rings'
-comment in `chrome.css`). On the landings the hero glow is still clipped to its pane, so it stops at the
-sidebar's hairline as at the bar's (§6 "A landing keeps to its own pane on a desktop").
+Sidebar text against the lowest rendered pixel under each entry, grain and dots included (model C,
+Busqueda at 1440x900, 2026-11-01): at the top, tint 0, the group labels read 19.14:1 on dark, the links
+10.90 and the current page 10.20 on its fill, and 19.19, 10.90 and 10.20 under the full tint, from 36px
+of scroll; on paper 12.94, 8.56 and 6.13 at the top and 14.00, 9.24 and 6.53 under the full tint. The
+paper focus rings read 3.67 to 4.33:1 at the top and 3.93 to 4.66 under the full tint, and 2.96 where
+HackTheBox's crosses its open group's guide line (DPR 2; the rings' comment in `chrome.css`). On the
+landings the hero glow is still clipped to its pane, so it stops at the sidebar's hairline as at the
+bar's (§6 "A landing keeps to its own pane on a desktop").
 
 ### Platform-index duotone
 On the platform index each platform reads as its color (lead) plus a universal cyan secondary
@@ -2803,3 +2814,5 @@ whole records.
 - Two `theme-color` metas keyed to `prefers-color-scheme`: rejected, they follow the phone's scheme, not the theme the site shows. See DECISIONS 2026-10-24 · The browser's own colour follows the theme.
 - A thicker glass tint (80% on dark, 73% on paper) to keep the bar's muted grey at 3:1, and GitHub and the theme left muted or inked only below 72rem: rejected, the glass stays thin and everything on it but the name reads the ink at every width. See DECISIONS 2026-10-25 · The bar's glass thins and frosts over, and what sits on it turns full contrast.
 - `--tp-frost` set once on `:root` for everything to inherit, or written there by a scroll script: rejected (owner, 2026-10-31); each surface that wears the glass runs the same scroll-timeline ramp itself, so nothing inherits an animated value and no script runs. §6 "Starlight's header is the quiet bar", "Adaptive glass", carries the readings.
+- A series of glows repeating down the page's left edge, under the sidebar: shipped and removed the same day (owner, 2026-10-31), for a calmer page. §6 "Sidebar (chrome)".
+- The sidebar lit by the article's coloured blocks beside it (callouts, quote boxes, flags and images, each in its own colour): built and turned down before it shipped (owner, 2026-11-01); it lagged the scroll, broke under fast scrolling and does not fit the site's design, and the sidebar keeps its plain tint. See DECISIONS 2026-11-01 · The sidebar keeps its plain tint: no light from the content.
