@@ -205,6 +205,19 @@
 
 ## Open bugs / known issues
 
+- [ENG] **Starlight's list rule turns Chrome's `:has()` invalidation into whole-subtree restyles**
+  (upstream; CORE_SPEC §8 "`:has()` on `<html>` or `<body>` only as the subject"). The site's side is
+  fixed (2026-11-01: `pages.css` keeps `<body>` the subject, and a table-of-contents change touches 8
+  elements where it touched 1,056). Still open, all measured, none urgent:
+  - An issue for withastro/starlight is drafted with a standalone repro, NOT filed. The owner files it;
+    the template wants a reproduction on the latest Starlight, which was not built.
+  - The subject `:has()` clip pairs and the 80rem cap on `<html>` and `<body>` still cost each such change
+    about 0.5ms (3 to 5ms with the CPU slowed four times). They could move to CSS scoped to those five
+    pages some other way (Starlight's per-page `head` frontmatter, for one).
+  - The phone strip's rung colours could move off `:has()` onto an attribute TocTracking writes, so a
+    `style`, `href` or `aria-current` write would not walk at all. On its own this fixes nothing: the
+    strip's label rewrite walks regardless.
+
 - [DESIGN] **The `46ch` Principle cap is the third instance of the context law and is deliberately NOT
   fixed** (CORE_SPEC section 8, DECISIONS 2026-07-27). `.sl-markdown-content .principle` declares
   `max-width: 46ch`, and `ch` resolves on the ASIDE (18px JetBrains Mono, 1ch = 10.80px) giving 496.80px,

@@ -269,6 +269,12 @@ each Vite major; recorded, not pinned.
   move also retires the image-zoom rule at the end of `overrides.css` (§8 "The layer law"). Whether and
   when to make that move is not decided; see
   DECISIONS 2026-10-24 · Dependabot alerts cleared by a lockfile-only refresh, vite held at 8.2.4.
+- **On the move to Starlight 0.42**, `data-mobile-menu-expanded` leaves `<body>`, and the release notes
+  migrate `[data-mobile-menu-expanded] header` to `body:has(sl-sidebar-pane:popover-open) header`. The
+  hairline's `[data-mobile-menu-expanded] #tp-progress` in `chrome.css` must not take that shape: a
+  `:has()` on `<body>` with another subject restyles the whole page on every table-of-contents change
+  (§8 "`:has()` on `<html>` or `<body>` only as the subject"). Keep `<body>` the subject, with a custom
+  property the line reads, as `pages.css` does with `--pf-landing-accent`.
 - After a zod change, rerun the negative frontmatter probe as well as the byte comparison: an identical
   build proves valid frontmatter still parses the same, not that invalid frontmatter still fails. The
   probe and its expected failure are in
@@ -323,7 +329,7 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 │     ├─ prose.css                    # @layer prose: the reading surface inside .sl-markdown-content (type, rhythm, links, quotes, the raw <details> default)
 │     ├─ chrome.css                   # @layer chrome: the header (the quiet bar, §6 "Component inventory"), the reading hairline, sidebar, TOC, code frames, scrollbars, the three-column layout, light-mode depth
 │     ├─ components.css               # @layer components: badges, toggles, callouts, the recon rail (a two-column grid plus the 12rem container query that stacks it when the callout is narrow, which page zoom on a phone does), FlagCapture, PasswordReveal, Principle, WriteupMeta
-│     ├─ pages.css                    # @layer pages: whole-page treatments (splash hero, platform index, the reveal state rules, the landing's 80rem content cap, and the sideways-scroll clip pairs: html:has(.pi-index) + body:has(.pi-index) and html:has(.hero) + body:has(.hero), both rules of each pair needed, see §6)
+│     ├─ pages.css                    # @layer pages: whole-page treatments (splash hero, platform index, the reveal state rules, the landing's 80rem content cap, and the sideways-scroll clip pairs: html:has(.pi-index) + body:has(.pi-index) and html:has(.hero) + body:has(.hero), both rules of each pair needed, see §6; every :has() on <html> or <body> has it as the subject, see §8)
 │     ├─ utilities.css                # @layer utilities: single-purpose helpers that must sit above the named layers, today .sr-only (two rules: the hiding declarations scoped to .sl-markdown-content, and an UNSCOPED user-select:none that has to reach Starlight's .sr-only too, see §8 "Invisible to the eye is not invisible to the clipboard")
 │     └─ overrides.css                # THE ONLY UNLAYERED SURFACE. The 14-rule tail, each rule carrying an evidence comment naming what it beats (see §8 "The layer law")
 ├─ plugins/
@@ -658,7 +664,7 @@ ring echoes what the element is rather than inventing an identity. Everything el
 | In-prose links | `--tp-cyan` / `--tp-cyan-ink` |
 | `WriteupMeta` chips | `--wm-c` (live: the chips render on every writeup) |
 | Filter rail pills (`.pi-pill`) | `--pill` (its own hue: the group hue, or the neutral on ALL; 2026-09-07). On the PRESSED pill the ring sits 4px out (`outline-offset`), so 2px of page separates it from the 2px pressed ring; at the shared 2px the two touched and read as one 4px band, 1.01:1 between them (2026-10-03) |
-| Landing pagination (`.pagination-links a` on a page carrying `.pi-index`) | `--pf-accent` (the platform, lifted onto the footer container by `:has()` in `pages.css`; writeup pages keep the site default; 2026-09-07) |
+| Landing pagination (`.pagination-links a` on a page carrying `.pi-index`) | `--pf-accent` (the platform, lifted onto `<body>` as `--pf-landing-accent` by a subject `:has()` in `pages.css` and read back by the footer container, 2026-11-01; writeup pages keep the site default; 2026-09-07) |
 | Anything else inside `.pi-index` (the wargame card) | `--accent` (the platform, set on the landing root; 2026-09-07) |
 
 **Light flag gold is the one contrast carve-out.** The decorative `--flag-gold` (`#C6A243`) rings at only
@@ -741,15 +747,18 @@ token is an open ROADMAP item, not a bug.
   replaced a 2px bar along the top of every Starlight page, sized by an inline `head` script. See DECISIONS
   2026-10-18 · The reading hairline fills on writeups only, from a typed component. **No frame writes
   an attribute** (2026-11-01): the scale is a paused animation's time, not the line's inline style.
-  Chrome restyles the whole page when an attribute that a `:has()` argument names changes anywhere in
+  Chrome restyled the whole page when an attribute that a `:has()` argument names changed anywhere in
   it: the phone strip's rules in `chrome.css` name `style`, `href` and `aria-current`, and Starlight's
-  list rule in `style/markdown.css` carries the restyle to the whole page, so the inline transform
-  written on every frame did that on every scrolled frame, 1,056 elements on Busqueda. A `data-*`
-  attribute, `aria-label` or `title` costs one element or none; with the strip's five rules deleted in
-  the page an inline-style write touches 1 element, with Starlight's rule deleted 67 (traced in
+  list rule in `style/markdown.css` carried the restyle to the whole page through `<body>`, where
+  `pages.css` then anchored `:has()` rules (§8 "`:has()` on `<html>` or `<body>` only as the
+  subject"), so the inline transform written on every frame did that on every scrolled frame, 1,056
+  elements on Busqueda. A `data-*` attribute, `aria-label` or `title` costs one element or none; with
+  the strip's five rules deleted in the page an inline-style write touched 1 element, with Starlight's
+  rule deleted 67, and since the same day, with `pages.css` keeping `<body>` the subject, 5 (traced in
   headless Chrome). Scrolling Busqueda top to bottom at 1440x900, 24px a frame: 0.4ms of style a frame
   against 6.6 to 7.5 before, and with the CPU slowed four times 10 to 12 long animation frames against
-  261, each one left the table of contents changing its current entry, an `aria-current` write.
+  261, each one left the table of contents changing its current entry; the `pages.css` change took
+  those to none in an untraced run (§8).
   Anything a script moves every frame goes through an animation's time or inside a shadow root, never
   through the page's own attributes or inline styles. The line fills exactly as before (the same
   computed scale at 0, 25, 50 and 100% at 1440 and 375, and the bar pixel-identical at 1440); on a
@@ -2519,6 +2528,41 @@ any future phase: the remaining multi-part selectors either express real precede
 are load-bearing against unlayered CSS, and flattening them buys tidiness at the cost of the behavior the
 layer contract just made legible. Unit conversions are likewise deferred to the retune (see the unit rule
 in `layers.css`).
+
+### `:has()` on `<html>` or `<body>` only as the subject
+
+**Never write `body:has(x) y` or `html:has(x) y`**: a `:has()` placed on the root or on `<body>` keeps that
+element as the rule's subject (2026-11-01). Chrome keeps one invalidation set for every `:has()` outside a
+subject compound, and Starlight's list rule in `style/markdown.css` (`:is(ol, ul):has(> li > …) > li >
+:is(…)`, unchanged through 0.42.8) leaves that set nothing to key on, so it invalidates whole subtrees: an
+element that anchors such a `:has()` is restyled with everything under it whenever Chrome walks up to it.
+Chrome walks for a write to any attribute a `:has()` argument names, anywhere on the page (the phone
+strip's rules in `chrome.css` name `style`, `href` and `aria-current`), for any element added or removed
+(the `:not()` inside Starlight's `:has()` makes every insertion count), and for a `textContent` rewrite,
+which `<mobile-starlight-toc>` makes on every change of the current entry, at every width, shown or hidden.
+Until 2026-11-01 `pages.css` keyed its landing rules as `body:has(.pi-index…) x`, so `<body>` was that
+anchor and each of those changes restyled the whole page: a table-of-contents change touched 1,056 of
+Busqueda's elements (1,067 on a phone), 5 to 6ms and 42 to 50ms with the CPU slowed four times, and a
+scroll of the page at 4x had 11 long animation frames at 1440 and 17 to 19 at 375, one per change. The
+landing rules now lift the accent onto `<body>` as the subject (`--pf-landing-accent`, which
+`.pagination-links` reads) and key the title and the hero panel on Starlight's ContentPanels. They render
+identically (the four landings, the 404, Busqueda and Bandit 12-13, both themes, 1440 and 375: every
+element's box and the values the rules set), and a TOC change touches 8 elements (68 on a phone, the
+strip's own subtree), 0.5ms (1.8 for the phone's strip) and 4 to 8ms at 4x, with no long animation frame
+left in an untraced 4x scroll at either width (headless Chrome 156, isolated builds of HEAD and of HEAD
+with the change).
+
+- **What is left, measured and accepted.** A subject `:has()` with a descendant argument on `<html>` or
+  `<body>` (the `overflow-x: clip` pairs, the 80rem cap) spreads nothing, but it puts every element on
+  Chrome's walk, and each walk recalculates `<html>` and `<body>` and repeats their whole-page searches:
+  about 0.5ms a change and 3 to 5ms at 4x, measured by taking them away as well. Moving them off
+  `:has()`, and the multiplier itself, which is Starlight's, are ROADMAP's "Open bugs".
+- **Probe it with the stylesheet rewritten before the page loads, never by deleting rules through the
+  CSSOM.** Chrome's `:has()` flags on an element outlive the rule that set them: on HEAD, the 11 old
+  `body:has()` rules deleted in the page still left an inline-style write on `#tp-progress` restyling
+  1,056 elements, where the build without them restyles 5.
+- **Starlight 0.42 suggests the wrong shape**: its release notes migrate `[data-mobile-menu-expanded]
+  header` to `body:has(sl-sidebar-pane:popover-open) header`. See §3 "Upgrade path".
 
 ### The context law
 

@@ -6,6 +6,44 @@
 
 ---
 
+### 2026-11-01 · `:has()` on `<html>` or `<body>` keeps that element as the subject
+- **Supersedes in part:** 2026-09-07 · Two taxonomy palettes: the landing pages re-base onto the
+  WriteupMeta chip model. Only how the landing's prev/next links reach the platform, by pairing each
+  platform token with `body:has(.pi-index.pf-<platform>) .pagination-links`: `<body>` is now the
+  subject and carries `--pf-landing-accent`, which `.pagination-links` reads. The links still ring in
+  the platform, and the rest of that entry stands.
+- **Decision:** a `:has()` on `<html>` or `<body>` keeps that element as the rule's subject: never
+  `body:has(x) y` or `html:has(x) y` (CORE_SPEC §8 carries the rule and the mechanism). `pages.css`'s
+  landing rules follow it: the platform accent goes onto `<body>` as `--pf-landing-accent`, which
+  `.pagination-links` reads (a writeup keeps the site's default ring), and the hidden title and the hero
+  panel key on Starlight's ContentPanels.
+- **Why:** Chrome keeps one invalidation set for every `:has()` outside a subject compound, and
+  Starlight's list rule leaves it nothing to key on, so an element anchoring such a `:has()` is
+  restyled with everything under it whenever Chrome walks up to it: for a write to an attribute a
+  `:has()` argument names, for any element added or removed, and for the phone strip's label rewrite
+  on every table-of-contents change. With `pages.css` anchoring on `<body>`, every TOC change
+  restyled the whole page: 1,056 elements on Busqueda, 42 to 50ms with the CPU slowed four times, 11
+  long animation frames in a 4x scroll at 1440 and 17 to 19 at 375.
+- **Rejected:**
+  - Re-anchoring the rules on `.main-pane`: the smallest edit, but a change inside the article still
+    restyles 865 elements.
+  - Moving only the phone strip's colours off `:has()`: the strip's label rewrite still walks, so the
+    11 long frames stay.
+  - Patching Starlight's CSS, which edits Starlight; upgrading, since 0.42.8 ships the same rule.
+  - Taking the subject clip pairs and the 80rem cap off `:has()` too: about 0.5ms a change, parked in
+    ROADMAP.
+- **Known:** deleting a rule through the CSSOM is no probe for an anchor: Chrome's `:has()` flags
+  outlive the rule, which is how an earlier probe read `pages.css` as no cause. Starlight 0.42's
+  release notes suggest the shape this rules out (CORE_SPEC §3). The issue for withastro/starlight is
+  drafted, not filed.
+- **Verified:** isolated builds with and without the change, green at 67 pages; the four landings,
+  the 404, Busqueda and Bandit 12-13 render identically in both themes at 1440 and 375, every
+  element's box and the values the rules set. A TOC change touches 8 elements (68 for the phone
+  strip), 4 to 8ms at 4x; an inline-style write on `#tp-progress` touches 5 instead of 1,056; an
+  untraced 4x scroll has no long animation frame at either width (headless Chrome 156).
+- **Status:** Adopted; committed to `dev` on 2026-11-01 as
+  `perf(pages): the landing rules keep :has() on <body> as the subject`.
+
 ### 2026-11-01 · The sidebar keeps its plain tint: no light from the content
 - **Decision:** the sidebar is its tint and nothing else; nothing in the article lights it. The light from
   the content, built from the owner's brief of 2026-10-31 and never committed, is removed whole. On a
@@ -2006,7 +2044,10 @@
   a card rings in `var(--tx)`, the landing root defaults to the platform so the OverTheWire wargame card
   stops falling through to the site default, and the landing's prev/next links, which Starlight renders in
   the footer outside the landing's subtree, are reached by pairing each platform token with
-  `body:has(.pi-index.pf-<platform>) .pagination-links` so a page with no landing matches nothing.
+  `body:has(.pi-index.pf-<platform>) .pagination-links` so a page with no landing matches nothing
+  (**Partly superseded by:** 2026-11-01 · `:has()` on `<html>` or `<body>` keeps that element as the
+  subject. Only the pairing: `<body>` is now the subject and carries `--pf-landing-accent`, which
+  `.pagination-links` reads; the links still ring in the platform).
   ALL is neutral; the rail is MULTI-SELECT (owner
   decision, same day, replacing a single-select first cut): group pills are independent `aria-pressed`
   toggles, any number may be pressed, a card shows on a match with ANY pressed value, a pressed pill
