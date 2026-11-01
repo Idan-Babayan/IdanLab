@@ -614,7 +614,7 @@ nav.sidebar summary {
    from 50rem the strip starts past the sidebar (Starlight's --sl-content-inline-start), and a full-width
    line crossed the sidebar's first entry there (a phone held sideways, 914px, 2026-10-24); from 72rem it
    lies on the bar's own border, which runs the full width. ReadingProgress.astro creates it and sets its
-   scale, with no transition; it is decorative and aria-hidden. */
+   scale through a paused animation's time, with no transition; it is decorative and aria-hidden. */
 #tp-progress {
   position: fixed;
   top: calc(var(--sl-nav-height) + var(--sl-mobile-toc-height) - 1px);

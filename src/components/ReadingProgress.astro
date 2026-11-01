@@ -8,7 +8,14 @@
 // and the 404 keep the plain hairline. The whole page is measured, scrollTop over scrollHeight minus
 // clientHeight, and the line is scaled from the left with no transition, recomputed on scroll (passive,
 // batched into one animation frame), on resize, and whenever the content's height changes (a spoiler or
-// a toggle opening, ToggleAll).
+// a toggle opening, ToggleAll). The scale is a paused animation's time, so no frame writes an attribute.
+//
+// Why no frame writes to the page itself: Chrome restyles the whole page (1,056 elements on Busqueda)
+// when an attribute that a :has() argument names changes anywhere in it. chrome.css's phone-strip rules
+// name style, href and aria-current, and Starlight's list rule (style/markdown.css) carries the restyle
+// to the whole page, so the line's inline transform, written on every frame, did that once per scrolled
+// frame (traced 2026-11-01). A data-* attribute costs nothing, and an animation's time is outside what
+// :has() can see.
 ---
 
 <script>
@@ -19,6 +26,8 @@
     line.id = 'tp-progress';
     line.setAttribute('aria-hidden', 'true');
     document.body.appendChild(line);
+    const fill = line.animate([{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], { duration: 1000, fill: 'both' });
+    fill.pause();
 
     const page = document.documentElement;
     let frame = 0;
@@ -27,7 +36,7 @@
       frame = 0;
       const range = page.scrollHeight - page.clientHeight;
       const progress = range > 0 ? Math.min(1, Math.max(0, page.scrollTop / range)) : 0;
-      line.style.transform = `scaleX(${progress})`;
+      fill.currentTime = progress * 1000;
     };
 
     const schedule = (): void => {
