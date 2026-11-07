@@ -160,3 +160,20 @@ html[data-theme="light"] .ec-cmd-inspect span {
     padding-inline-end: calc(var(--sl-nav-gap) + var(--sl-nav-pad-x) + var(--sl-menu-button-size)) !important;
   }
 }
+
+/* The zoomed image's close control and caption keep inside the safe area on a phone held sideways
+   (chrome.css, "Safe areas"). UNLAYERED ON PURPOSE: they beat starlight-image-zoom 0.15.0's own
+   unlayered styles, its global `:is(.starlight-image-zoom-opened, .starlight-image-zoom-transition)
+   .starlight-image-zoom-control { inset: 20px 20px auto auto }` (0,2,0, which `html` lifts this one
+   past) and its scoped `figure figcaption` padding (0,0,2 under Astro's :where() scoping). The dialog
+   covers the whole screen, so 20px from the right edge put the control under the rounded corner, and
+   the caption's text at the bar's padding under the Dynamic Island. With no inset both compute to the
+   plugin's own values. No !important. */
+html :is(.starlight-image-zoom-opened, .starlight-image-zoom-transition) .starlight-image-zoom-control {
+  inset: 20px max(20px, var(--tp-safe-right)) auto auto;
+}
+.starlight-image-zoom-dialog figure figcaption {
+  padding-left: max(var(--sl-nav-pad-x), var(--tp-safe-left));
+  padding-right: max(var(--sl-nav-pad-x), var(--tp-safe-right));
+  padding-bottom: max(var(--sl-nav-pad-y), var(--tp-safe-bottom));
+}

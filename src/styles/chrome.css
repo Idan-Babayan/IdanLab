@@ -1259,3 +1259,110 @@ ul.top-level > li:nth-child(5) { --focus-ring: #f2e300; }  /* OverTheWire */
   box-shadow: inset 0 1px 2px rgba(60, 50, 30, 0.08);
 }
 } /* @layer chrome */
+
+/* ── Safe areas: a phone held sideways (owner, 2026-11-06) ──
+   Every page declares viewport-fit=cover (astro.config.mjs `head`), so a phone held sideways lays the
+   page out across the whole screen. Before, Safari laid it out inside the safe area and filled the
+   strips beside it with the page colour: black bars at both sides, 62px each on an iPhone 17 Pro. Now
+   the backgrounds, the bar's glass, the sidebar's tint, the hairlines and the grid run to the edges, and
+   text and controls keep inside the safe area, as apple.com's do: a gutter at a screen edge is the
+   larger of its own width and the inset (tokens.css, "Safe areas"). Where the insets are 0, a desktop
+   and the sides of a portrait phone, every value here is Starlight's own and nothing moves.
+
+   Two offsets, because Starlight's two gutters step at different widths: the bar's padding is 1.5rem
+   from 50em, the page's only from 72rem (1rem below). --tp-safe-*-x is how far an inset reaches past
+   the bar's padding: the bar's content grows by it (div.header, inside Starlight's padding, which
+   starlight-image-zoom's inline style can rewrite), the menu button moves in by it, and from 50rem the
+   sidebar widens by the left one, with the page beside it starting at the sidebar's new edge, so the
+   bar's grid still starts the search box at the article column. --tp-safe-*-c is how far it reaches
+   past the page's own padding, for the page where it meets a screen edge itself: the right edge on
+   every page, the left one on a phone and on the splash pages. The sidebar's own text, which sits at
+   the edge, keeps clear of the whole inset. */
+@layer chrome {
+:root {
+  --tp-safe-left-x: max(0px, var(--tp-safe-left) - var(--sl-nav-pad-x));
+  --tp-safe-right-x: max(0px, var(--tp-safe-right) - var(--sl-nav-pad-x));
+  --tp-safe-left-c: max(0px, var(--tp-safe-left) - var(--sl-content-pad-x));
+  --tp-safe-right-c: max(0px, var(--tp-safe-right) - var(--sl-content-pad-x));
+}
+div.header {
+  padding-left: var(--tp-safe-left-x);
+  padding-right: var(--tp-safe-right-x);
+}
+starlight-menu-button button {
+  inset-inline-end: calc(var(--sl-nav-pad-x) + var(--tp-safe-right-x));
+}
+.main-frame {
+  padding-left: calc(var(--sl-content-inline-start, 0rem) + var(--tp-safe-left-c));
+  padding-right: var(--tp-safe-right-c);
+}
+@media (min-width: 50rem) {
+  :root[data-has-sidebar] .main-frame {
+    padding-left: calc(var(--sl-content-inline-start, 0rem) + var(--tp-safe-left-x));
+  }
+}
+/* The page's foot clears the home indicator (21px sideways, 34px upright), which Starlight's 1.5rem
+   already does on a phone held sideways. */
+.content-panel:last-child {
+  padding-bottom: max(1.5rem, var(--tp-safe-bottom));
+}
+.sl-skip-link {
+  inset-inline-start: max(0.75rem, var(--tp-safe-left));
+}
+
+/* The sidebar, and below 50rem the phone menu it becomes: its text keeps clear of the inset at the edge
+   it touches, both edges for the full-width menu, and its last row and the menu's footer scroll clear
+   of the home indicator. */
+.sidebar-content {
+  padding-left: max(var(--sl-sidebar-pad-x), var(--tp-safe-left));
+  padding-bottom: var(--tp-safe-bottom);
+}
+@media (width < 50rem) {
+  .sidebar-content {
+    padding-right: max(var(--sl-sidebar-pad-x), var(--tp-safe-right));
+  }
+}
+@media (min-width: 50rem) {
+  .sidebar-pane {
+    width: calc(var(--sl-sidebar-width) + var(--tp-safe-left-x));
+  }
+}
+
+/* The phone "On this page" strip: full width below 50rem, from the sidebar's edge to the right-hand
+   edge from 50rem, so it starts where the widened sidebar ends. Its open panel's rows move in with it.
+   The reading hairline that runs along its bottom edge starts where the strip does. */
+mobile-starlight-toc summary {
+  padding-right: max(1rem, var(--tp-safe-right));
+}
+mobile-starlight-toc .dropdown {
+  padding-right: var(--tp-safe-right);
+}
+@media (width < 50rem) {
+  mobile-starlight-toc summary {
+    padding-left: max(1rem, var(--tp-safe-left));
+  }
+  mobile-starlight-toc .dropdown {
+    padding-left: var(--tp-safe-left);
+  }
+}
+@media (min-width: 50rem) {
+  mobile-starlight-toc nav {
+    inset-inline-start: calc(var(--sl-content-inline-start, 0rem) + var(--tp-safe-left-x));
+  }
+}
+@media (50rem <= width < 72rem) {
+  #tp-progress {
+    left: calc(var(--sl-content-inline-start, 0rem) + var(--tp-safe-left-x));
+  }
+}
+
+/* Search below 50rem fills the screen: its frame keeps the field, the results and the Cancel button
+   inside the safe area. From 50rem it is a centred box well clear of both edges. */
+@media (width < 50rem) {
+  site-search .dialog-frame {
+    padding-left: max(1rem, var(--tp-safe-left));
+    padding-right: max(1rem, var(--tp-safe-right));
+    padding-bottom: max(1rem, var(--tp-safe-bottom));
+  }
+}
+} /* @layer chrome */

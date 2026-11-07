@@ -451,6 +451,21 @@ html[data-theme="dark"] {
 }
 } /* @layer tokens */
 
+/* ── Safe areas: the screen's edges a phone keeps for itself (chrome.css, "Safe areas") ──
+   Every page declares viewport-fit=cover, so a phone held sideways lays the page out across the whole
+   screen, where Safari used to shrink it to the safe area and fill the sides with the page colour. The
+   insets are how far the Dynamic Island, a camera cutout, the rounded corners and the home indicator
+   reach in from each edge: 62px left and right and 21px at the bottom on an iPhone 17 Pro held
+   sideways, 0 in portrait at the sides, 0 everywhere on a desktop. Backgrounds run into them; text and
+   controls keep out. */
+@layer tokens {
+:root {
+  --tp-safe-left: env(safe-area-inset-left, 0px);
+  --tp-safe-right: env(safe-area-inset-right, 0px);
+  --tp-safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+} /* @layer tokens */
+
 /* ── Sidebar: trim the rail width so it gives the content column more room ──
    Starlight's default --sl-sidebar-width (18.75rem) reads wide once the rows are taller;
    17rem keeps every label on one line (HackTheBox, OverTheWire fit) while handing ~1.75rem

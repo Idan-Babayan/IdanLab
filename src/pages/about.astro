@@ -28,7 +28,7 @@ const PERSON = JSON.stringify({
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>About | Idan.Lab</title>
   <meta name="description" content="Idan Babayan: cybersecurity student, CTF player, and offensive security enthusiast documenting the journey from recon to root." />
   <meta name="author" content="Idan Babayan" />
@@ -314,7 +314,15 @@ const PERSON = JSON.stringify({
       radial-gradient(50vw 45vh at 92% 12%, color-mix(in oklab, var(--glow-2) 44%, transparent), transparent 72%),
       radial-gradient(55vw 50vh at 60% 100%, color-mix(in oklab, var(--glow-3) 34%, transparent), transparent 72%);
   }
-  .wrap { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; }
+  /* Safe areas (owner, 2026-11-06). The page declares viewport-fit=cover, so a phone held sideways lays
+     it out across the whole screen, the glows, the grain and the constellation to both edges, where
+     Safari used to shrink it to the safe area and fill the sides with black bars (62px each on an
+     iPhone 17 Pro). The gutters at a screen edge are the larger of their own width and the inset the
+     Dynamic Island and the rounded corners need, so text and controls keep out; with no inset, a desktop
+     or a portrait phone, they are 1.5rem as before. The same rules are in index.astro, and Starlight's
+     pages do the same (src/styles/chrome.css, "Safe areas"). */
+  .wrap { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto;
+    padding: 0 max(1.5rem, env(safe-area-inset-right, 0px)) 0 max(1.5rem, env(safe-area-inset-left, 0px)); }
 
   /* NAV HUD */
   /* Both rows may WRAP. In the root-200% simulation that motivated this (2026-09-14) the row
@@ -329,7 +337,8 @@ const PERSON = JSON.stringify({
      bar declares no row gap on purpose: wrapped rows sit at line height, and any spacing there is a
      design value, not this fix; the nav's own `gap` already applies to both axes. */
   .hud { position: relative; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
-    max-width: 1100px; margin: 0 auto; padding: 1rem 1.5rem; border-bottom: 1px solid var(--panel-brd);
+    max-width: 1100px; margin: 0 auto; border-bottom: 1px solid var(--panel-brd);
+    padding: 1rem max(1.5rem, env(safe-area-inset-right, 0px)) 1rem max(1.5rem, env(safe-area-inset-left, 0px));
     font-family: var(--mono); font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; }
   /* HUD controls carry a >=24px pointer target (WCAG 2.2 target-size min). Block padding
      grows the hit area while the equal negative margin keeps the compact bar height and the
@@ -463,7 +472,8 @@ const PERSON = JSON.stringify({
   .footcta h2 { font-family: var(--display); font-weight: 800; font-size: clamp(min(2rem, 10vw),5vw,3.2rem); letter-spacing:-.02em; margin-bottom: 1.2rem; }
   .footcta .accent { color: var(--lime); }
   .foot-sub { color: var(--muted); max-width: 46ch; margin: 0 auto 2.5rem; font-size: .95rem; line-height: 1.7; }
-  .footbar { border-top: 1px solid var(--panel-brd); padding: 1.5rem 0; position: relative; z-index: 1; }
+  .footbar { border-top: 1px solid var(--panel-brd); padding: 1.5rem 0 max(1.5rem, env(safe-area-inset-bottom, 0px));
+    position: relative; z-index: 1; }
   .footbar-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;
     font-family: var(--mono); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
   .foot-live { display: flex; align-items: center; gap: .5rem; }
@@ -488,7 +498,8 @@ const PERSON = JSON.stringify({
   }
   /* Skip link, as Starlight's .sl-skip-link on every content route: clipped at rest, and on focus a
      block in the top corner in the primary button's colours. The same rule is in index.astro. */
-  .skip-link { position: fixed; top: .75rem; inset-inline-start: .75rem; z-index: 10000; clip: rect(0 0 0 0); }
+  .skip-link { position: fixed; top: .75rem; inset-inline-start: max(.75rem, env(safe-area-inset-left, 0px));
+    z-index: 10000; clip: rect(0 0 0 0); }
   .skip-link:focus { clip: auto; padding: .5rem 1rem; text-decoration: none;
     background: var(--lime); color: var(--btn-primary-text); }
   /* Visually hidden text a screen reader still reads (the headline's settled name), the clip-rect
