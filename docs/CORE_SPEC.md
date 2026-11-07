@@ -94,8 +94,9 @@
 - **The static `head` array in `astro.config.mjs` is the WRONG seam for per-page tags.** It cannot vary
   per page, so a `twitter:title` declared there would pin one constant string over every writeup and
   contradict the per-page `og:title` Starlight already gets right. Per-page social tags belong in the
-  Head override; the `head` array is for the genuinely constant, and holds nothing since 2026-10-18, when
-  the reading-progress script became a component (§6 "Signature effects").
+  Head override; the `head` array is for the genuinely constant, and holds one tag, the viewport with
+  `viewport-fit=cover` (2026-11-06, §6 "Safe areas"). It held nothing from 2026-10-18, when the
+  reading-progress script became a component (§6 "Signature effects").
 - **`og:image` is an ABSOLUTE URL on every surface** (`new URL('/og.jpg', Astro.site)` in the override,
   written out in full on the marketing pages), because crawlers do not resolve relative paths.
 - **The card is a static asset, not generated at build time.** One site-wide identity card, checked in
@@ -266,8 +267,10 @@ each Vite major; recorded, not pinned.
   as a `^7.3.0` peer and arrives with Starlight 0.42 (`@astrojs/mdx ^8.0.0`). `starlight-image-zoom`
   0.15.0 accepts any Starlight from 0.41 up, but 0.16.x shipped alongside Starlight 0.42 and its
   current release requires it. Its 0.16.2 restores the bar's padding after a zoom (its #83), so that
-  move also retires the image-zoom rule at the end of `overrides.css` (§8 "The layer law"). Whether and
-  when to make that move is not decided; see
+  move also retires the bar's phone-padding rule in `overrides.css` (§8 "The layer law"); the two
+  safe-area rules after it, for the zoomed image's close control and caption, answer 0.15.0's own
+  styles and are measured again on the move (§6 "Safe areas"). Whether and when to make that move is
+  not decided; see
   DECISIONS 2026-10-24 · Dependabot alerts cleared by a lockfile-only refresh, vite held at 8.2.4.
 - **On the move to Starlight 0.42**, `data-mobile-menu-expanded` leaves `<body>`, and the release notes
   migrate `[data-mobile-menu-expanded] header` to `body:has(sl-sidebar-pane:popover-open) header`. The
@@ -1582,6 +1585,73 @@ on writeups). Recorded so nobody re-derives it.
   root-200% simulation is retired (DECISIONS 2026-09-19 · Android text enlargement is Chrome page zoom,
   not a root font scale).
 
+### Safe areas: a phone held sideways (2026-11-06)
+
+**Every page covers the screen.** Every page declares `viewport-fit=cover`: Starlight's through the one
+tag in `astro.config.mjs` `head` (Starlight's head merge replaces its own viewport tag with it, so each
+page carries one), home and About in their own `<head>`. Without it iOS Safari lays a page out inside
+the safe area when the phone is held sideways and fills the strips beside it with the page colour: on
+the owner's iPhone 17 Pro, a 62pt black bar at each side of every page (reported 2026-11-06). The insets
+(`env(safe-area-inset-*)`, read through `--tp-safe-left`, `--tp-safe-right` and `--tp-safe-bottom` in
+`tokens.css`) are how far the Dynamic Island, a camera cutout, the rounded corners and the home indicator
+reach in: 62px left and right and 21px at the bottom on an iPhone 17 Pro held sideways, 59 on an iPhone
+16, 50 on a 13 mini, 0 at the sides upright, 0 everywhere on a desktop.
+
+**Backgrounds run to the edges; text and controls keep inside.** A gutter at a screen edge is the larger
+of its own width and the inset, as apple.com's are, so where the insets are 0 every value is the one it
+was. To the edges: the page colour, the grid and the glows, the bar with its glass and hairline, the
+sidebar's tint and edge, the phone "On this page" strip and its open panel, the reading hairline, home's
+and About's HUD and footer lines and the constellation. Inside: every line of text, every link and
+button. The rules are chrome.css "Safe areas" for Starlight's pages and the `.wrap`, `.hud`, `.footbar`
+and `.skip-link` rules on home and About:
+
+- **Two offsets, because Starlight's gutters step apart.** The bar's padding is 1.5rem from 50em and the
+  page's only from 72rem (1rem below). The bar's content (`div.header`), the menu button and, from
+  50rem, the sidebar's width grow by how far an inset reaches past the bar's padding (`--tp-safe-*-x`),
+  and the page beside the sidebar starts at its new edge, so the bar's grid still starts the search box
+  at the article column. The page itself, where it meets a screen edge (the right edge everywhere, the
+  left one on a phone and on the splash pages), pads by how far an inset reaches past its own padding
+  (`--tp-safe-*-c`). One offset for both put the article's text 8px into the inset at 852 to 956px.
+- **The rest:** the sidebar's text keeps max(1rem, inset) from the edge it touches, both edges in the
+  phone menu, and its foot and the menu's footer clear the home indicator; the strip's row and open
+  panel, and search below 50rem, which fills the screen, keep inside; the skip link, and the last
+  content panel's foot at max(1.5rem, bottom inset).
+- **The zoomed image's close control and caption** are two rules in the unlayered tail
+  (`overrides.css`), the only way to beat `starlight-image-zoom` 0.15.0's own unlayered styles: a
+  layered copy of each left the control 20px from the right edge, inside the inset, and the caption at
+  the bar's padding (measured 2026-11-06). Neither needs `!important`.
+
+**Held sideways, a phone gets the desktop layout from 800px.** Covering the screen makes an iPhone 17 Pro
+874px wide where Safari's safe area made it 750, so from 50rem Starlight shows the sidebar beside the
+article instead of the menu (852 on an iPhone 16, 812 on a 13 mini; a 17 Pro Max was past 800 at 832
+already).
+
+**Measured 2026-11-06** on isolated builds of `cd5e680` and of the change, in headless Chrome 153 with
+`Emulation.setSafeAreaInsetsOverride`:
+
+- iPhone 17 Pro sideways (874x330, insets 62, 62 and 21) on all 67 routes: no text and no control in an
+  inset, nothing scrolls sideways; the bar (0 to 874px), the sidebar (0 to 310), the strip (310 to 874)
+  and home's and About's HUD and footer reach both edges. The same with no safe-area rules has 5,291
+  text runs and controls in the insets, the site title at 24px and the sidebar's at 51.
+- iPhone 16, 13 mini and 17 Pro Max sizes and an Android cutout on either side, 13 routes each: the same.
+  The one control that crosses a safe edge is the theme button's invisible 24px target, by 4px, its
+  icon inside: the target's negative margin reaches past the bar's content box by design, as it reaches
+  into the bar's padding on a desktop.
+- Upright with a 34px home indicator, the open phone menu and search keep their foot 34px clear.
+- The zoomed image's close control sits 62px from the right edge, and its caption is padded 62, 62 and
+  21px.
+- With no insets nothing moves: every element's rect matches `cd5e680`'s build on 13 routes at
+  1280x800, 1440x900, 768x1024, 375x812, 750x330 and 874x330, except home's and About's pulsing live
+  dots, whose animation phase differs between two loads of the same build too.
+- On the Android emulator (API 37, Chrome 145, a simulated tall notch, held sideways), Android keeps
+  the strip beside the notch black with or without the change: the page is 866 of the screen's 915px,
+  and nothing a page declares reaches the strip. Chrome reports the notch's 48px inset to the page all
+  the same, so on that side the text sits 24px further in than it did; `viewport-fit=cover` also runs
+  the page under the gesture bar (24px taller, a 24px bottom inset), which its foot already clears.
+
+Not yet seen on an iPhone (ROADMAP Now). See
+DECISIONS 2026-11-06 · Every page covers the screen, and its text keeps to the safe area.
+
 ### Light-mode identity (paper-native "risograph")
 Light is art-directed on its own terms (dark is unchanged). All rules scoped to
 `[data-theme='light']`, spread across the modules by concern (surfaces in `tokens.css`, chrome in
@@ -2486,7 +2556,7 @@ icon.
 - **The tail contract.** `overrides.css` is the only unlayered surface, and a rule earns a place there on
   exactly one of two grounds: it must beat unlayered CSS (a vendor stylesheet, an inline style, or one of
   our own Astro-scoped component styles, all of which sit above every layer), or it carries `!important`.
-  Every tail rule carries a comment naming what it beats. The tail is 14 rules today: nine `.ec-cmd-*`
+  Every tail rule carries a comment naming what it beats. The tail is 16 rules today: nine `.ec-cmd-*`
   rules, eight colours and the weight (unlayered and `!important` on a premise the build contradicts: Expressive Code puts no
   inline colour on a tagged span, only inline custom properties, and paints token colours through a
   rule that skips classed spans, read from the build 2026-10-03; whether they can move into
@@ -2497,7 +2567,10 @@ icon.
   against an inline style: `starlight-image-zoom` 0.15.0 leaves Starlight's desktop padding on
   `<header>` when a zoom closes, which put the search icon on the menu icon below 50rem until the next
   page load; the plugin's 0.16.2 fixes it and needs Starlight 0.42, "Upgrade path" above; see DECISIONS
-  2026-10-24 · The bar keeps its phone padding against the image-zoom plugin until Starlight 0.42).
+  2026-10-24 · The bar keeps its phone padding against the image-zoom plugin until Starlight 0.42), and
+  the zoomed image's close control and caption (2026-11-06, no `!important`: they keep inside the safe
+  area against the same plugin's own unlayered styles, which a layered copy measurably loses to; §6
+  "Safe areas").
 - **Growing the tail is a decision, not a convenience.** Reach for a layer first; the tail is for cases
   where layering provably cannot work, and "provably" means measured in a browser, not argued.
 
@@ -2895,3 +2968,5 @@ whole records.
 - `--tp-frost` set once on `:root` for everything to inherit, or written there by a scroll script: rejected (owner, 2026-10-31); each surface that wears the glass runs the same scroll-timeline ramp itself, so nothing inherits an animated value and no script runs. §6 "Starlight's header is the quiet bar", "Adaptive glass", carries the readings.
 - A series of glows repeating down the page's left edge, under the sidebar: shipped and removed the same day (owner, 2026-10-31), for a calmer page. §6 "Sidebar (chrome)".
 - The sidebar lit by the article's coloured blocks beside it (callouts, quote boxes, flags and images, each in its own colour): built and turned down before it shipped (owner, 2026-11-01); it lagged the scroll, broke under fast scrolling and does not fit the site's design, and the sidebar keeps its plain tint. See DECISIONS 2026-11-01 · The sidebar keeps its plain tint: no light from the content.
+- A way to hide a revealed PasswordReveal value again: rejected (owner, 2026-11-06); the reveal is one-way by design, and from then on the same button copies. §6 "Password waypoint amber (PasswordReveal)". See DECISIONS 2026-11-06 · PasswordReveal stays one-way.
+- Safari's letterboxing of a phone held sideways, the page colour filling the safe area's sides: replaced (owner, 2026-11-06); every page covers the screen and keeps its text inside the safe area. §6 "Safe areas". See DECISIONS 2026-11-06 · Every page covers the screen, and its text keeps to the safe area.

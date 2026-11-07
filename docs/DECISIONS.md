@@ -6,6 +6,79 @@
 
 ---
 
+### 2026-11-06 · Every page covers the screen, and its text keeps to the safe area
+- **Decision:** every page declares `viewport-fit=cover`, Starlight's through the one tag in
+  `astro.config.mjs` `head` (Starlight's head merge replaces its own viewport tag with it), home and
+  About in their own `<head>`. A phone held sideways shows the page from edge to edge: the page colour,
+  the grid and the glows, the bar and its glass, the sidebar's tint, the phone "On this page" strip, and
+  home's and About's HUD and footer lines. Text and controls keep inside the safe area: a gutter at a
+  screen edge is the larger of its own width and the inset (`env(safe-area-inset-*)`, read through
+  `--tp-safe-left`, `--tp-safe-right` and `--tp-safe-bottom` in `tokens.css`). On Starlight's pages that
+  takes two offsets (chrome.css "Safe areas"): the bar's content, the menu button and, from 50rem, the
+  sidebar's width grow by how far an inset reaches past the bar's padding (`--tp-safe-*-x`), and the
+  page pads by how far it reaches past its own (`--tp-safe-*-c`). The zoomed image's close control and
+  caption are two unlayered rules in `overrides.css`, without `!important`. With no insets every value
+  is the one it was (CORE_SPEC §6 "Safe areas").
+- **Why:** on an iPhone 17 Pro held sideways the owner saw a black bar at each side of every page
+  (2026-11-06) and asked for the page to fill the screen, as apple.com's does. Without the tag, iOS
+  Safari lays a page out inside the safe area and fills the 62pt strips beside it with the page colour,
+  near black here. The larger of the gutter and the inset, not their sum: the inset already keeps text
+  clear of the island and the corners, so the gutter only counts where it is the wider of the two. Two
+  offsets, because Starlight's gutters step apart: the bar's padding is 1.5rem from 50em, the page's
+  only from 72rem.
+- **Rejected:**
+  - Safari's letterbox kept: the bars the owner reported.
+  - The inset added to each gutter: up to 24px more than the safe area needs at each side, the side
+    without the island included.
+  - One offset for the bar and the page: between 50em and 72rem the bar's padding is 24px and the
+    page's 16px, so the article's text sat 8px into the inset at 852 to 956px, and the 404's heading at
+    51px beside a 59px inset on an iPhone 16 (measured).
+  - `<body>` padded by the insets: the backgrounds inside the page would stop short of the edges, and
+    the fixed bar and sidebar, placed against the screen, would not move.
+  - A layered rule for the zoomed image's control and caption: `starlight-image-zoom` 0.15.0's styles
+    are unlayered and beat every layer; the layered copy left the control 20px from the right edge,
+    inside the inset (measured).
+  - The side insets honoured on iOS alone, to spare Android's notch side its extra 24px: it takes a
+    browser test in CSS, and would put text under the notch in any browser that runs a page under its
+    cutout.
+- **Known:**
+  - Held sideways, a phone 800px wide or more now gets the desktop layout, the sidebar beside the
+    article: an iPhone 17 Pro is 874px wide where Safari's safe area made it 750.
+  - On the Android emulator (API 37, Chrome 145, a simulated tall notch, held sideways), Android keeps
+    the strip beside the notch black with or without the tag, and Chrome reports the notch's 48px inset
+    to the page all the same, so on that side the text sits 24px further in than it did.
+  - The theme button's invisible 24px target crosses the safe edge by 4px, its icon inside: its negative
+    margin reaches past the bar's content box by design, as it reaches into the bar's padding on a
+    desktop.
+  - The two zoom rules answer `starlight-image-zoom` 0.15.0's own selectors, so the move to 0.16
+    measures them again (CORE_SPEC "Upgrade path").
+  - Not yet seen on an iPhone (ROADMAP Now): headless Chrome emulates the insets, not Safari.
+- **Verified:** build green, 67 pages, the decorative-character guard clean. On isolated builds of
+  `cd5e680` and of the change, in headless Chrome 153 with `Emulation.setSafeAreaInsetsOverride`: at
+  874x330 with insets 62, 62 and 21 (an iPhone 17 Pro held sideways) on all 67 routes no text or
+  control sits in an inset, the theme button's invisible target aside, and nothing scrolls sideways,
+  where the same pages without the safe-area rules put 5,291 text runs and controls in the insets; the
+  same on 13 routes at iPhone 16, 13 mini and 17 Pro Max sizes and with an Android cutout on either
+  side. Upright with a 34px home indicator, the open phone menu and search keep their foot 34px clear.
+  The zoomed image's close control sits 62px from the right edge and its caption is padded 62, 62 and
+  21px. With no insets every element's rect matches `cd5e680`'s build on 13 routes at six sizes, except
+  home's and About's pulsing live dots, whose phase differs between two loads of the same build.
+- **Status:** Adopted; committed to `dev` on 2026-11-07 as
+  `fix(phone): every page covers the screen held sideways, and its text keeps to the safe area`.
+
+### 2026-11-06 · PasswordReveal stays one-way
+- **Decision:** a revealed PasswordReveal value is never hidden again. The row's one button goes from
+  "Reveal" to "Copy" in place and copies from then on, as built (2026-07-05 · PasswordReveal: a
+  dedicated amber component for wargame passwords (not a FlagCapture reuse)).
+- **Why:** the owner's call, a deliberate part of the design (2026-11-06). A way to hide the value again
+  was proposed together with two changes that shipped on 2026-10-31 (the confirmation waits for the
+  clipboard, and a revealed value can be selected:
+  `fix(passwordreveal): Copied waits for the clipboard, the revealed value selects, the button reads first`);
+  the owner kept the reveal one-way.
+- **Rejected:** the eye kept after the reveal as a toggle that blurs the value again: the row's one
+  control would become two, Hide beside Copy, or one button with three states.
+- **Status:** Adopted; nothing changes in the code. CORE_SPEC §11 "Rejected and settled" carries it.
+
 ### 2026-11-01 · An inline-code chip splits only when its group is longer than the line
 - **Decision:** at build time each inline-code chip, with every character glued to it, is wrapped in
   `span.chip-unit`, an `inline-block` capped at its column (`max-width: 100%`, `baseline-source:
