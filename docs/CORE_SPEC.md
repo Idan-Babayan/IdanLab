@@ -32,10 +32,13 @@
   lands** rather than accumulating for one release. **`main` is reached ONLY by `git merge --no-ff dev` run
   locally followed by a plain push, never a pull request and never the GitHub web UI, and force pushes,
   rebases, amends, resets and history rewrites are forbidden.** Never `--squash`, which would collapse the
-  atomic commit history. A pull request mints a permanent `refs/pull/N/head` and the web UI authors under a
-  second identity, which is why both are excluded: DECISIONS 2026-08-06 · Merges to `main` run from the
-  command line, not through a pull request. Reasoning for the 2026-07-26 hold and its lift: DECISIONS
-  2026-07-27 · The release hold is lifted and `dev` ships to production.
+  atomic commit history. After the merge, `dev` is fast-forwarded to it (`git merge --ff-only main`, then a
+  plain push), so the two branches name the same commit and `dev` never trails `main` by its merge
+  commits (owner, 2026-11-09; until then it had trailed by 18). A pull request mints a permanent
+  `refs/pull/N/head` and the web UI authors under a second identity, which is why both are excluded:
+  DECISIONS 2026-08-06 · Merges to `main` run from the command line, not through a pull request.
+  Reasoning for the 2026-07-26 hold and its lift:
+  DECISIONS 2026-07-27 · The release hold is lifted and `dev` ships to production.
 - **robots.txt:** managed in-repo at `public/robots.txt` (served at `/robots.txt`). The in-repo file
   holds the easter-egg breadcrumb comment + a `Sitemap:` line. On deploy, Cloudflare composes its own
   managed block (the Content-Signals header plus the managed bot disallow list: Amazonbot,
