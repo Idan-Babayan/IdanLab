@@ -92,6 +92,18 @@
   a Bandit page at 1280x800 the sidebar's scrollbar shows its thumb and no track (Safari reads the
   `::-webkit-scrollbar-track` rule, never run in WebKit here). Checked in headless Chrome only
   (CORE_SPEC §6, "Sidebar (chrome)").
+- [DESIGN] **Confirm the safe areas and the phone layout on the owner's iPhone 17 Pro (iOS 26 Safari),
+  held sideways both ways round (2026-11-06, again after 2026-11-09):** the first look on the device
+  found no bars but the desktop layout and larger titles, since replaced. Now: no bar at either side on
+  home, About, a writeup, a landing and the 404; the phone layout, with the menu button and the
+  magnifier and no sidebar; home's, About's and the landings' titles at the size they had before the
+  bars went, and About's hero stacked; the bar's name, the magnifier, the menu button and the article's
+  text clear of the Dynamic Island and the corners; the open menu and search filling the screen; a
+  zoomed image's close button easy to reach; and upright, the bar where it was, below the status bar,
+  and the open menu's footer and search clear of the home indicator. Checked in headless Chrome with
+  emulated insets, never on an iPhone (CORE_SPEC §6, "Safe areas" and "A phone held sideways keeps the
+  phone layout"). If text sits under the island, record the model and the iOS version before changing
+  anything.
 - [ENG] WriteupMeta filter routes: `/platform`, `/os` and `/environment` do not exist, so the three
   navigational chips render as non-interactive `<span>` rather than `<a>`. When the routes land, restore
   the anchors kept commented in `WriteupMeta.astro` (they restore verbatim) and drop the temporary
@@ -164,8 +176,9 @@
   tail? The premise that kept them there (an inline colour on the span) is false (CORE_SPEC §8 "The
   layer law"), and a layered, non-important rule governed the span in a live-page test; move one
   category into `@layer components` without `!important`, build, compare the computed colours and
-  weight in both themes, then the rest. Success shrinks the tail from 13 rules to 4 and its
-  `!important` count from 11 to 2 (the FlagCapture reduced-motion kill keeps its two).
+  weight in both themes, then the rest. Success shrinks the tail from 17 rules to 8 and its
+  `!important` count from 12 to 3 (the FlagCapture reduced-motion kill keeps its two, the bar's phone
+  padding its one).
 - [ENG] Starlight plugins: scroll-to-top button, mobile sidebar swipe, fullscreen code blocks.
 - [DESIGN] Replace `ethical-hacking.png` about portrait with a transparent custom SVG.
 - [ENG] Extract repeated UI into reusable Astro components (cards, badges, buttons, hero FX).

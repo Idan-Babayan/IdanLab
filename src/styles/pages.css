@@ -31,6 +31,18 @@ html[data-theme="light"] .hero h1 {
   color: #4d7c00;
 }
 
+/* The splash hero's title and tagline (the 404) grow with the safe area's width, not the whole
+   screen's. Starlight's Hero.astro sizes them in vw, so held sideways on an iPhone 17 Pro the "404" was
+   47.7px where Safari's safe area had made it 41.5, and the tagline 18.5 for 16 (owner, 2026-11-09).
+   These are Starlight's own formulas with --tp-safe-vw (tokens.css), 1vw exactly with no side inset,
+   so every other screen keeps Starlight's sizes. COUPLED to Hero.astro (Starlight 0.41.10). */
+.hero h1 {
+  font-size: clamp(var(--sl-text-3xl), calc(0.25rem + 5 * var(--tp-safe-vw)), var(--sl-text-6xl));
+}
+.hero .tagline {
+  font-size: clamp(var(--sl-text-base), calc(0.0625rem + 2 * var(--tp-safe-vw)), var(--sl-text-xl));
+}
+
 
 /* ══════════════════════════════════════════════
    PLATFORM INDEX PAGES: animated hero + writeup grid
@@ -168,7 +180,7 @@ body:has(.pi-index) { overflow-x: clip; }
    in the pane sits inside its 24px gutter, so no ring or shadow reaches the cut. One side effect,
    measured in a windowed Chrome too: the sidebar's text on a landing drew with subpixel antialiasing
    only while the glow ran under it, and now draws grayscale, as it does on the Bandit hub. */
-@media (min-width: 50rem) {
+@media (min-width: 50rem) and (height > 30rem), (min-width: 50rem) and (hover: hover) {
   .main-pane:has(.pi-index) { overflow: clip; }
 }
 

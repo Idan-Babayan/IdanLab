@@ -108,6 +108,16 @@ export default defineConfig({
         },
       },
       head: [
+        // viewport-fit=cover: a phone held sideways lays the page out across the whole screen, instead
+        // of Safari shrinking it to the safe area and filling the sides with the page colour (black
+        // bars beside every page on an iPhone 17 Pro, owner, 2026-11-06). Text and controls keep out
+        // of the insets through the "Safe areas" rules in src/styles/chrome.css. Starlight's head
+        // merge replaces its own viewport tag with this one (same name), so the page carries one.
+        // Home and About declare the same tag in their own <head>.
+        {
+          tag: 'meta',
+          attrs: { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
+        },
         // Fonts are self-hosted via @font-face in src/styles/fonts.css (public/fonts/) with
         // metric-matched fallbacks and font-display: swap, so first paint is shift-free with no
         // preload. Font <link rel="preload"> was removed on purpose: Firefox does not credit a

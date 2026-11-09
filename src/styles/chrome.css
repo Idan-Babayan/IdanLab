@@ -406,7 +406,7 @@ body::before {
    has no top-left or low glow and keeps its fixed layer whole, as phones do. Normal scrolling: no fixed
    layer, no script. COUPLED: the dark override repeats the base rule's top-right glow, and its low one
    at half strength, and the page takes its top-left one; change them together. */
-@media (min-width: 50rem) {
+@media (min-width: 50rem) and (height > 30rem), (min-width: 50rem) and (hover: hover) {
   :root[data-has-sidebar]:not([data-theme='light']) body::before {
     background:
       radial-gradient(55vw 280px at 92% -90px, color-mix(in oklab, var(--tp-glow-2) 10%, transparent), transparent 72%),
@@ -595,7 +595,8 @@ nav.sidebar summary {
    starts: --sl-mobile-toc-height is the strip's 2.375rem there (the Quiet strip, near the top of this
    file) and 0 everywhere else. It spans what the strip spans:
    from 50rem the strip starts past the sidebar (Starlight's --sl-content-inline-start), and a full-width
-   line crossed the sidebar's first entry there (a phone held sideways, 914px, 2026-10-24); from 72rem it
+   line crossed the sidebar's first entry there (a phone held sideways, 914px, 2026-10-24, before a phone
+   held sideways kept the phone layout, "A phone held sideways" below); from 72rem it
    lies on the bar's own border, which runs the full width. ReadingProgress.astro creates it and sets its
    scale through a paused animation's time, with no transition; it is decorative and aria-hidden. */
 #tp-progress {
@@ -756,7 +757,7 @@ html[data-theme="light"] .expressive-code pre::-webkit-scrollbar-track { backgro
    the page, so its track is clear too and only the page's thumb shows: a long list, every Bandit page
    at 1280x800, would otherwise lay a 16px strip of track down its edge. The thumbs repeat the page's,
    above. Below 50rem the pane is the phone menu, on its own solid panel, and keeps the page's track. */
-@media (min-width: 50rem) {
+@media (min-width: 50rem) and (height > 30rem), (min-width: 50rem) and (hover: hover) {
   html[data-theme="dark"] .sidebar-pane { scrollbar-color: #2e3440 transparent; }
   html[data-theme="light"] .sidebar-pane { scrollbar-color: #b3a88f transparent; }
   html[data-theme] .sidebar-pane::-webkit-scrollbar-track { background: transparent; }
@@ -892,7 +893,7 @@ mobile-starlight-toc nav::before {
    (--tp-sidebar-alpha; owner, 2026-10-31) on the same ramp, so the top still reads as one surface.
    Below 50rem the sidebar's pane is the phone menu, which keeps Starlight's solid panel, and below
    72rem the right-hand column is not shown. */
-@media (min-width: 50rem) {
+@media (min-width: 50rem) and (height > 30rem), (min-width: 50rem) and (hover: hover) {
   .sidebar-pane {
     --tp-frost: 1;
     background-color: rgb(var(--tp-glass-rgb) / calc(var(--tp-sidebar-alpha) * var(--tp-frost)));
@@ -926,7 +927,8 @@ mobile-starlight-toc nav::before {
       animation-range: 0 var(--tp-glass-ramp);
     }
   }
-  @media (prefers-reduced-motion: no-preference) and (min-width: 50rem) {
+  @media (prefers-reduced-motion: no-preference) and (min-width: 50rem) and (height > 30rem),
+         (prefers-reduced-motion: no-preference) and (min-width: 50rem) and (hover: hover) {
     .sidebar-pane,
     .right-sidebar {
       --tp-frost: 0;
@@ -949,7 +951,7 @@ mobile-starlight-toc nav::before {
     backdrop-filter: none;
     animation: none;
   }
-  @media (min-width: 50rem) {
+  @media (min-width: 50rem) and (height > 30rem), (min-width: 50rem) and (hover: hover) {
     .sidebar-pane {
       background-color: var(--sl-color-bg);
       animation: none;
@@ -978,7 +980,7 @@ a.site-title {
   border-bottom: 1px solid transparent;
   transition: color .15s, border-color .15s, text-shadow .15s;
 }
-@media (min-width: 50em) {
+@media (min-width: 50em) and (height > 30rem), (min-width: 50em) and (hover: hover) {
   a.site-title { font-size: var(--tp-name-size); }
 }
 @supports (color: color-mix(in oklab, red, blue)) {
@@ -1018,7 +1020,7 @@ div.header .social-icons::after { content: none; }
 :root:not([data-has-sidebar]) div.header .right-group { display: flex; }
 :root:not([data-has-sidebar]) div.header .social-icons { display: none; }
 :root:not([data-has-sidebar]) div.header > :nth-child(2) { margin-inline-start: auto; }
-@media (min-width: 50em) {
+@media (min-width: 50em) and (height > 30rem), (min-width: 50em) and (hover: hover) {
   :root:not([data-has-sidebar]) div.header .social-icons { display: flex; }
   :root:not([data-has-sidebar]) div.header > :nth-child(2) { margin-inline-start: 0; }
 }
@@ -1055,7 +1057,7 @@ div.header .social-icons::after { content: none; }
    pure white area (dark) or a pure black one (paper) under the glass, against the lowest rendered pixel
    under each, the label and the key chips read 6.23:1 or more and the magnifier 6.39:1 or more. */
 site-search button[data-open-modal] { color: var(--tp-hud-ink); }
-@media (min-width: 50em) {
+@media (min-width: 50em) and (height > 30rem), (min-width: 50em) and (hover: hover) {
   div.header > :nth-child(2) { min-width: 0; }
   site-search button[data-open-modal] {
     width: 100%;
@@ -1100,8 +1102,9 @@ site-search button[data-open-modal] { color: var(--tp-hud-ink); }
   }
 }
 /* A screen with only touch has no Ctrl or Cmd to press: the key chips go where nothing can hover
-   (tablets, and phones held sideways, where the box shows from 50em). A tablet with a trackpad hovers
-   and keeps them; one with a keyboard alone loses them though Ctrl K would work (owner, 2026-10-24). */
+   (tablets, where the box shows from 50em; a phone held sideways keeps the phone's magnifier, "A phone
+   held sideways" below). A tablet with a trackpad hovers and keeps them; one with a keyboard alone
+   loses them though Ctrl K would work (owner, 2026-10-24). */
 @media (min-width: 50em) and (any-hover: none) {
   site-search button[data-open-modal] > kbd { display: none; }
 }
@@ -1257,5 +1260,204 @@ ul.top-level > li:nth-child(5) { --focus-ring: #f2e300; }  /* OverTheWire */
 }
 :root[data-theme='light'] .expressive-code .frame {
   box-shadow: inset 0 1px 2px rgba(60, 50, 30, 0.08);
+}
+} /* @layer chrome */
+
+/* ── A phone held sideways keeps the phone layout (owner, 2026-11-09) ──
+   Covering the screen ("Safe areas", below) made a phone held sideways as wide as its screen, 874px on
+   an iPhone 17 Pro where Safari's safe area had given it 750, so from 50rem Starlight laid it out as a
+   desktop: the sidebar beside the article, 310 of its 874px. A phone stays a phone. A
+   screen 30rem tall or less whose main input cannot hover is a phone held sideways: every phone held
+   sideways is one (the tallest is about 440px), a 7-inch tablet is not (its page is about 520px tall),
+   and a short desktop window hovers. Every 50rem breakpoint in these modules says so:
+   - what starts at 50rem starts there only on a taller screen or one that hovers:
+     (min-width: 50rem) and (height > 30rem), (min-width: 50rem) and (hover: hover)
+   - what stops at 50rem holds on a phone held sideways too:
+     (width < 50rem), (height <= 30rem) and (hover: none)
+   Starlight's own rules from 50rem cannot be rewritten, so this block puts back, on a phone held
+   sideways, the value each has below 50rem: Starlight's, or the browser's (revert) where Starlight's
+   phone styles leave the property alone. Properties these modules already set at every width are not
+   repeated. COUPLED to Starlight 0.41.10's breakpoint rules, one group per file named below: an upgrade
+   re-reads them. The one such rule outside Starlight's layers, Page.astro's --sl-content-inline-start,
+   is undone in overrides.css. */
+@layer chrome {
+@media (min-width: 50rem) and (height <= 30rem) and (hover: none) {
+  /* style/props.css: the bar's padding and the heading scale step up from 50em. */
+  :root {
+    --sl-nav-pad-x: 1rem;
+    --sl-text-h1: var(--sl-text-4xl);
+    --sl-text-h2: var(--sl-text-3xl);
+    --sl-text-h3: var(--sl-text-2xl);
+    --sl-text-h4: var(--sl-text-xl);
+  }
+  /* style/util.css: what Starlight shows only from 50rem hides again, and what it hides shows. */
+  .md\:sl-hidden { display: block; }
+  .sl-flex.md\:sl-hidden { display: flex; }
+  .sl-hidden:is(.md\:sl-flex, .md\:sl-block) { display: none; }
+  /* PageFrame.astro: the sidebar is the phone menu again, shown while its button is pressed, and the
+     bar keeps its right end clear of that button. */
+  :root[data-has-sidebar] header.header {
+    padding-inline-end: calc(var(--sl-nav-gap) + var(--sl-nav-pad-x) + var(--sl-menu-button-size));
+  }
+  .sidebar-pane {
+    --sl-sidebar-visibility: hidden;
+    width: 100%;
+    background-color: var(--sl-color-black);
+    border-inline-end: 0;
+  }
+  [aria-expanded='true'] ~ .sidebar-pane { --sl-sidebar-visibility: visible; }
+  .sidebar-content::after { content: none; }
+  /* Header.astro: one row, not the grid that lines the search box up with the article. */
+  div.header { display: flex; }
+  /* MobileMenuToggle.astro: the open menu holds the page still. */
+  [data-mobile-menu-expanded] { overflow: hidden; }
+  /* SidebarSublist.astro: the menu's larger rows. */
+  .top-level > li + li { margin-top: 0.75rem; }
+  .top-level .large { font-size: var(--sl-text-lg); }
+  .top-level a { font-size: inherit; }
+  /* Search.astro: the magnifier alone in the bar, and the dialog that fills the screen. */
+  site-search button[data-open-modal] {
+    border: 0;
+    border-radius: revert;
+    padding-inline: revert;
+    background-color: transparent;
+    font-size: var(--sl-text-xl);
+    width: revert;
+    max-width: revert;
+  }
+  #starlight__search { --sl-search-cancel-space: 5rem; }
+  site-search dialog {
+    margin: 0;
+    border-radius: revert;
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    min-height: revert;
+    max-height: 100%;
+  }
+  site-search .dialog-frame { padding: 1rem; }
+  /* user-components/CardGrid.astro (the Bandit index): one column. */
+  .card-grid { grid-template-columns: 100%; gap: 1rem; }
+  .card-grid.stagger { padding-bottom: revert; }
+  .card-grid.stagger > :nth-child(2n) { transform: revert; }
+  /* Hero.astro and user-components/LinkButton.astro (the 404): the hero stacks and centres, and its
+     buttons keep the phone's size. */
+  .hero { grid-template-columns: 100%; gap: 1rem; padding-block: 0 1rem; }
+  .hero > :is(img, .hero-html) { order: revert; width: min(70%, 20rem); }
+  .hero .stack { text-align: center; }
+  .hero .copy { align-items: center; }
+  .hero .actions { justify-content: center; }
+  .sl-link-button { font-size: var(--sl-text-sm); padding: 0.4375rem 1.125rem; }
+  .sl-link-button.minimal { padding-inline: 0; }
+}
+} /* @layer chrome */
+
+/* ── Safe areas: a phone held sideways (owner, 2026-11-06) ──
+   Every page declares viewport-fit=cover (astro.config.mjs `head`), so a phone held sideways lays the
+   page out across the whole screen. Before, Safari laid it out inside the safe area and filled the
+   strips beside it with the page colour: black bars at both sides, 62px each on an iPhone 17 Pro. Now
+   the backgrounds, the bar's glass, the sidebar's tint, the hairlines and the grid run to the edges, and
+   text and controls keep inside the safe area, as apple.com's do: a gutter at a screen edge is the
+   larger of its own width and the inset (tokens.css, "Safe areas"). Where the insets are 0, a desktop
+   and the sides of a portrait phone, every value here is Starlight's own and nothing moves.
+
+   Two offsets, because Starlight's two gutters step at different widths: the bar's padding is 1.5rem
+   from 50em, the page's only from 72rem (1rem below). --tp-safe-*-x is how far an inset reaches past
+   the bar's padding: the bar's content grows by it (div.header, inside Starlight's padding, which
+   starlight-image-zoom's inline style can rewrite), the menu button moves in by it, and from 50rem the
+   sidebar widens by the left one, with the page beside it starting at the sidebar's new edge, so the
+   bar's grid still starts the search box at the article column. --tp-safe-*-c is how far it reaches
+   past the page's own padding, for the page where it meets a screen edge itself: the right edge on
+   every page, the left one on a phone and on the splash pages. The sidebar's own text, which sits at
+   the edge, keeps clear of the whole inset. A phone held sideways takes the rules below 50rem at any
+   width ("A phone held sideways", above). */
+@layer chrome {
+:root {
+  --tp-safe-left-x: max(0px, var(--tp-safe-left) - var(--sl-nav-pad-x));
+  --tp-safe-right-x: max(0px, var(--tp-safe-right) - var(--sl-nav-pad-x));
+  --tp-safe-left-c: max(0px, var(--tp-safe-left) - var(--sl-content-pad-x));
+  --tp-safe-right-c: max(0px, var(--tp-safe-right) - var(--sl-content-pad-x));
+}
+div.header {
+  padding-left: var(--tp-safe-left-x);
+  padding-right: var(--tp-safe-right-x);
+}
+starlight-menu-button button {
+  inset-inline-end: calc(var(--sl-nav-pad-x) + var(--tp-safe-right-x));
+}
+.main-frame {
+  padding-left: calc(var(--sl-content-inline-start, 0rem) + var(--tp-safe-left-c));
+  padding-right: var(--tp-safe-right-c);
+}
+@media (min-width: 50rem) and (height > 30rem), (min-width: 50rem) and (hover: hover) {
+  :root[data-has-sidebar] .main-frame {
+    padding-left: calc(var(--sl-content-inline-start, 0rem) + var(--tp-safe-left-x));
+  }
+}
+/* The page's foot clears the home indicator (21px sideways, 34px upright), which Starlight's 1.5rem
+   already does on a phone held sideways. */
+.content-panel:last-child {
+  padding-bottom: max(1.5rem, var(--tp-safe-bottom));
+}
+.sl-skip-link {
+  inset-inline-start: max(0.75rem, var(--tp-safe-left));
+}
+
+/* The sidebar, and below 50rem and on a phone held sideways the phone menu it becomes: its text keeps
+   clear of the inset at the edge it touches, both edges for the full-width menu, and its last row and
+   the menu's footer scroll clear of the home indicator. */
+.sidebar-content {
+  padding-left: max(var(--sl-sidebar-pad-x), var(--tp-safe-left));
+  padding-bottom: var(--tp-safe-bottom);
+}
+@media (width < 50rem), (height <= 30rem) and (hover: none) {
+  .sidebar-content {
+    padding-right: max(var(--sl-sidebar-pad-x), var(--tp-safe-right));
+  }
+}
+@media (min-width: 50rem) and (height > 30rem), (min-width: 50rem) and (hover: hover) {
+  .sidebar-pane {
+    width: calc(var(--sl-sidebar-width) + var(--tp-safe-left-x));
+  }
+}
+
+/* The phone "On this page" strip: full width below 50rem and on a phone held sideways, from the
+   sidebar's edge to the right-hand edge from 50rem, so it starts where the widened sidebar ends. Its
+   open panel's rows move in with it. The reading hairline that runs along its bottom edge starts where
+   the strip does. */
+mobile-starlight-toc summary {
+  padding-right: max(1rem, var(--tp-safe-right));
+}
+mobile-starlight-toc .dropdown {
+  padding-right: var(--tp-safe-right);
+}
+@media (width < 50rem), (height <= 30rem) and (hover: none) {
+  mobile-starlight-toc summary {
+    padding-left: max(1rem, var(--tp-safe-left));
+  }
+  mobile-starlight-toc .dropdown {
+    padding-left: var(--tp-safe-left);
+  }
+}
+@media (min-width: 50rem) and (height > 30rem), (min-width: 50rem) and (hover: hover) {
+  mobile-starlight-toc nav {
+    inset-inline-start: calc(var(--sl-content-inline-start, 0rem) + var(--tp-safe-left-x));
+  }
+}
+@media (50rem <= width < 72rem) and (height > 30rem), (50rem <= width < 72rem) and (hover: hover) {
+  #tp-progress {
+    left: calc(var(--sl-content-inline-start, 0rem) + var(--tp-safe-left-x));
+  }
+}
+
+/* Search below 50rem and on a phone held sideways fills the screen: its frame keeps the field, the
+   results and the Cancel button inside the safe area. From 50rem it is a centred box well clear of
+   both edges. */
+@media (width < 50rem), (height <= 30rem) and (hover: none) {
+  site-search .dialog-frame {
+    padding-left: max(1rem, var(--tp-safe-left));
+    padding-right: max(1rem, var(--tp-safe-right));
+    padding-bottom: max(1rem, var(--tp-safe-bottom));
+  }
 }
 } /* @layer chrome */

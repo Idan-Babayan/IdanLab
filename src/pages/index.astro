@@ -51,7 +51,7 @@ const PERSON = JSON.stringify({
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <ThemeColor />
   <title>{TITLE}</title>
   <meta name="description" content={DESCRIPTION} />
@@ -232,12 +232,26 @@ const PERSON = JSON.stringify({
       radial-gradient(50vw 50vh at 90% 20%, color-mix(in oklab, var(--cyan) 12%, transparent), transparent 70%),
       radial-gradient(50vw 50vh at 60% 100%, color-mix(in oklab, var(--magenta) 8%, transparent), transparent 70%);
   }
-  .wrap { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 0 1.5rem; }
+  /* Safe areas (owner, 2026-11-06). The page declares viewport-fit=cover, so a phone held sideways lays
+     it out across the whole screen, the glows, the grain and the constellation to both edges, where
+     Safari used to shrink it to the safe area and fill the sides with black bars (62px each on an
+     iPhone 17 Pro). The gutters at a screen edge are the larger of their own width and the inset the
+     Dynamic Island and the rounded corners need, so text and controls keep out; with no inset, a desktop
+     or a portrait phone, they are 1.5rem as before. The same rules are in about.astro, and Starlight's
+     pages do the same (src/styles/chrome.css, "Safe areas").
+     Type that grows with the width grows with the safe area's width: --safe-vw is a vw of the safe area,
+     so held sideways the titles keep the size Safari's safe area gave them (the headline 52.5px on an
+     iPhone 17 Pro, where the whole 874px would make it 61.2; owner, 2026-11-09). With no inset it is
+     1vw exactly, and the vw figures in the notes below are in it. */
+  :root { --safe-vw: calc((100vw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)) / 100); }
+  .wrap { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto;
+    padding: 0 max(1.5rem, env(safe-area-inset-right, 0px)) 0 max(1.5rem, env(safe-area-inset-left, 0px)); }
 
   .hud {
     position: relative; z-index: 5; display: flex; align-items: center; justify-content: space-between;
     font-family: var(--mono); font-size: .72rem; letter-spacing: .12em; text-transform: uppercase;
-    color: var(--muted); padding: 1rem 1.5rem; max-width: 1180px; margin: 0 auto;
+    color: var(--muted); max-width: 1180px; margin: 0 auto;
+    padding: 1rem max(1.5rem, env(safe-area-inset-right, 0px)) 1rem max(1.5rem, env(safe-area-inset-left, 0px));
     border-bottom: 1px solid var(--panel-brd);
   }
   .hud-spacer { width: 80px; }
@@ -296,13 +310,14 @@ const PERSON = JSON.stringify({
      guarantees: the viewport, not the column. Measured on isolated builds 2026-09-18: against a
      2.2rem floor only 320 to 480 differ at normal size; 640 and up are identical. */
   h1.headline {
-    font-family: var(--display); font-weight: 800; font-size: clamp(min(2.3rem, 11.5vw), 7vw, 5.6rem);
+    font-family: var(--display); font-weight: 800;
+    font-size: clamp(min(2.3rem, calc(11.5 * var(--safe-vw))), calc(7 * var(--safe-vw)), 5.6rem);
     line-height: .98; letter-spacing: -.02em; margin-bottom: 1.6rem;
   }
   .headline .decode { color: var(--lime); }
   .headline .alt { color: var(--cyan); font-style: italic; }
 
-  .sub { font-size: clamp(.95rem, 1.4vw, 1.12rem); color: var(--muted); max-width: 52ch;
+  .sub { font-size: clamp(.95rem, calc(1.4 * var(--safe-vw)), 1.12rem); color: var(--muted); max-width: 52ch;
          margin-bottom: 2.5rem; line-height: 1.7; }
   .sub b { color: var(--text); font-weight: 500; }
 
@@ -326,13 +341,13 @@ const PERSON = JSON.stringify({
   .sec { padding-block: 6rem; position: relative; }
   .sec-label { font-family: var(--mono); font-size: .75rem; letter-spacing: .3em; text-transform: uppercase;
     color: var(--cyan); margin-bottom: .8rem; display: flex; }
-  .sec-title { font-family: var(--display); font-weight: 700; font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+  .sec-title { font-family: var(--display); font-weight: 700; font-size: clamp(1.8rem, calc(3.5 * var(--safe-vw)), 2.8rem);
     letter-spacing: -.01em; margin-bottom: 3rem; }
 
   .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--panel-brd);
     border: 1px solid var(--panel-brd); border-radius: 16px; overflow: hidden; }
   .stat { background: var(--ink-2); padding: 2.5rem 1.5rem; text-align: center; }
-  .stat .num { font-family: var(--mono); font-weight: 700; font-size: clamp(2.4rem,5vw,3.5rem);
+  .stat .num { font-family: var(--mono); font-weight: 700; font-size: clamp(2.4rem,calc(5 * var(--safe-vw)),3.5rem);
     line-height: 1; color: var(--lime); letter-spacing: -.01em; }
   .stat .lbl { font-family: var(--mono); font-size: .72rem; letter-spacing: .22em; text-transform: uppercase;
     color: var(--muted); margin-top: .8rem; }
@@ -391,11 +406,12 @@ const PERSON = JSON.stringify({
      normal size. On the device its box stays inside the viewport at every zoom measured, its text
      overflowing the box only at 137 and 119px (4 and 9px; 2026-09-19). The previous 14.7vw was fitted to the
      word and left 0.16px. */
-  .footcta h2 { font-family: var(--display); font-weight: 800; font-size: clamp(min(2rem, 10vw),5vw,3.4rem); letter-spacing:-.02em; margin-bottom: 1.2rem; }
+  .footcta h2 { font-family: var(--display); font-weight: 800; font-size: clamp(min(2rem, calc(10 * var(--safe-vw))),calc(5 * var(--safe-vw)),3.4rem); letter-spacing:-.02em; margin-bottom: 1.2rem; }
   .footcta .accent { color: var(--lime); }
   .foot-sub { color: var(--muted); max-width: 46ch; margin: 0 auto 2.5rem; font-size: .95rem; line-height: 1.7; }
 
-  .footbar { border-top: 1px solid var(--panel-brd); padding: 1.5rem 0; position: relative; z-index: 1; }
+  .footbar { border-top: 1px solid var(--panel-brd); padding: 1.5rem 0 max(1.5rem, env(safe-area-inset-bottom, 0px));
+    position: relative; z-index: 1; }
   .footbar-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;
     font-family: var(--mono); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
   .foot-live { display: flex; align-items: center; gap: .5rem; }
@@ -418,7 +434,8 @@ const PERSON = JSON.stringify({
   .card:focus-visible { outline-color: var(--accent); }
   /* Skip link, as Starlight's .sl-skip-link on every content route: clipped at rest, and on focus a
      block in the top corner in the primary button's colours. The same rule is in about.astro. */
-  .skip-link { position: fixed; top: .75rem; inset-inline-start: .75rem; z-index: 10000; clip: rect(0 0 0 0); }
+  .skip-link { position: fixed; top: .75rem; inset-inline-start: max(.75rem, env(safe-area-inset-left, 0px));
+    z-index: 10000; clip: rect(0 0 0 0); }
   .skip-link:focus { clip: auto; padding: .5rem 1rem; text-decoration: none;
     background: var(--lime); color: #06251a; }
   /* Visually hidden text a screen reader still reads (the headline's settled word), the clip-rect

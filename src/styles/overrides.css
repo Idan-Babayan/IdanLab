@@ -154,9 +154,39 @@ html[data-theme="light"] .ec-cmd-inspect span {
    zoom the search icon slid 48px right and sat on the menu icon until the next page load (Chrome for
    Android, 2026-10-24). This is Starlight's own value. Phones scroll with overlay scrollbars, so the
    plugin's scrollbar compensation, which this also outranks while a zoom is open, is 0px there. The
-   plugin fixes it in 0.16.2 (its #83), which needs Starlight 0.42: delete this rule with that upgrade. */
-@media (width < 50rem) {
+   plugin fixes it in 0.16.2 (its #83), which needs Starlight 0.42: delete this rule with that upgrade.
+   A phone held sideways has the menu too (chrome.css, "A phone held sideways"). */
+@media (width < 50rem), (height <= 30rem) and (hover: none) {
   :root[data-has-sidebar] header.header {
     padding-inline-end: calc(var(--sl-nav-gap) + var(--sl-nav-pad-x) + var(--sl-menu-button-size)) !important;
   }
+}
+
+/* A phone held sideways keeps the phone layout (chrome.css, "A phone held sideways"), so its page starts
+   at the screen's edge, not past a sidebar it does not show. UNLAYERED ON PURPOSE: it beats the one
+   Starlight rule from 50em outside Starlight's layers, Page.astro's
+   `[data-has-sidebar] { --sl-content-inline-start: var(--sl-sidebar-width) }` (0,1,0 under Astro's
+   :where() scoping). A layered copy loses to it (measured 2026-11-09 on a writeup held sideways on an
+   iPhone 17 Pro: the variable stays 17rem and the article starts at 334px, not 62, beside an empty
+   column). Unset, the variable is what it is below 50em: Starlight's and these modules' fallbacks, 0,
+   apply. No !important. */
+@media (min-width: 50em) and (height <= 30rem) and (hover: none) {
+  :root[data-has-sidebar] { --sl-content-inline-start: initial; }
+}
+
+/* The zoomed image's close control and caption keep inside the safe area on a phone held sideways
+   (chrome.css, "Safe areas"). UNLAYERED ON PURPOSE: they beat starlight-image-zoom 0.15.0's own
+   unlayered styles, its global `:is(.starlight-image-zoom-opened, .starlight-image-zoom-transition)
+   .starlight-image-zoom-control { inset: 20px 20px auto auto }` (0,2,0, which `html` lifts this one
+   past) and its scoped `figure figcaption` padding (0,0,2 under Astro's :where() scoping). The dialog
+   covers the whole screen, so 20px from the right edge put the control under the rounded corner, and
+   the caption's text at the bar's padding under the Dynamic Island. With no inset both compute to the
+   plugin's own values. No !important. */
+html :is(.starlight-image-zoom-opened, .starlight-image-zoom-transition) .starlight-image-zoom-control {
+  inset: 20px max(20px, var(--tp-safe-right)) auto auto;
+}
+.starlight-image-zoom-dialog figure figcaption {
+  padding-left: max(var(--sl-nav-pad-x), var(--tp-safe-left));
+  padding-right: max(var(--sl-nav-pad-x), var(--tp-safe-right));
+  padding-bottom: max(var(--sl-nav-pad-y), var(--tp-safe-bottom));
 }
