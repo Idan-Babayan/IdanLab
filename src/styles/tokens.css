@@ -457,12 +457,15 @@ html[data-theme="dark"] {
    insets are how far the Dynamic Island, a camera cutout, the rounded corners and the home indicator
    reach in from each edge: 62px left and right and 21px at the bottom on an iPhone 17 Pro held
    sideways, 0 in portrait at the sides, 0 everywhere on a desktop. Backgrounds run into them; text and
-   controls keep out. */
+   controls keep out. --tp-safe-vw is a vw of the safe area: type that grows with the width grows with
+   it, so held sideways a title keeps the size Safari's safe area gave it (owner, 2026-11-09). With no
+   side inset it is 1vw exactly. */
 @layer tokens {
 :root {
   --tp-safe-left: env(safe-area-inset-left, 0px);
   --tp-safe-right: env(safe-area-inset-right, 0px);
   --tp-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --tp-safe-vw: calc((100vw - var(--tp-safe-left) - var(--tp-safe-right)) / 100);
 }
 } /* @layer tokens */
 

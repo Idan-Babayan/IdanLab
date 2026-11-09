@@ -320,7 +320,12 @@ const PERSON = JSON.stringify({
      iPhone 17 Pro). The gutters at a screen edge are the larger of their own width and the inset the
      Dynamic Island and the rounded corners need, so text and controls keep out; with no inset, a desktop
      or a portrait phone, they are 1.5rem as before. The same rules are in index.astro, and Starlight's
-     pages do the same (src/styles/chrome.css, "Safe areas"). */
+     pages do the same (src/styles/chrome.css, "Safe areas").
+     Type that grows with the width grows with the safe area's width: --safe-vw is a vw of the safe area,
+     so held sideways the titles keep the size Safari's safe area gave them (the headline 45px on an
+     iPhone 17 Pro, where the whole 874px would make it 52.4; owner, 2026-11-09). With no inset it is
+     1vw exactly, and the vw figures in the notes below are in it. */
+  :root { --safe-vw: calc((100vw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)) / 100); }
   .wrap { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto;
     padding: 0 max(1.5rem, env(safe-area-inset-right, 0px)) 0 max(1.5rem, env(safe-area-inset-left, 0px)); }
 
@@ -387,10 +392,11 @@ const PERSON = JSON.stringify({
      the viewport at every zoom measured to 200% on a 360 phone and at each level measured on a 411
      one (100, 200, 300%), and passes by 4.8px only at a 119px viewport (2026-09-19). The figure this
      comment first carried came from the root-200% simulation and is retired. */
-  h1.headline { font-family: var(--display); font-weight: 800; font-size: clamp(min(2.4rem, 12vw), 6vw, 4.6rem);
+  h1.headline { font-family: var(--display); font-weight: 800;
+    font-size: clamp(min(2.4rem, calc(12 * var(--safe-vw))), calc(6 * var(--safe-vw)), 4.6rem);
     line-height: 1; letter-spacing: -.02em; margin-bottom: 1.5rem; }
   .headline .decode { color: var(--lime); }
-  .sub { font-size: clamp(.95rem, 1.3vw, 1.08rem); color: var(--muted); max-width: 54ch; line-height: 1.75; }
+  .sub { font-size: clamp(.95rem, calc(1.3 * var(--safe-vw)), 1.08rem); color: var(--muted); max-width: 54ch; line-height: 1.75; }
   .sub b { color: var(--text); font-weight: 500; }
 
   /* SECTIONS */
@@ -400,13 +406,13 @@ const PERSON = JSON.stringify({
   .sec { padding-block: 4.5rem; position: relative; }
   .sec-label { font-family: var(--mono); font-size: .75rem; letter-spacing: .3em; text-transform: uppercase;
     color: var(--cyan); margin-bottom: .8rem; display: flex; }
-  .sec-title { font-family: var(--display); font-weight: 700; font-size: clamp(1.7rem, 3.5vw, 2.6rem);
+  .sec-title { font-family: var(--display); font-weight: 700; font-size: clamp(1.7rem, calc(3.5 * var(--safe-vw)), 2.6rem);
     letter-spacing: -.01em; margin-bottom: 2rem; }
   .prose { color: var(--muted); max-width: 64ch; line-height: 1.8; margin-bottom: 1.3rem; font-size: .98rem; }
   .prose b { color: var(--text); font-weight: 600; }
 
   .pullquote { border-left: 3px solid var(--lime); padding: .6rem 0 .6rem 1.5rem; margin: 1.8rem 0;
-    font-family: var(--display); font-weight: 600; font-size: clamp(1.15rem, 2vw, 1.5rem);
+    font-family: var(--display); font-weight: 600; font-size: clamp(1.15rem, calc(2 * var(--safe-vw)), 1.5rem);
     line-height: 1.45; color: var(--text); max-width: 60ch; }
   .pullquote em { color: var(--lime-ink, var(--lime)); font-style: italic; }
 
@@ -445,7 +451,7 @@ const PERSON = JSON.stringify({
     border-radius: 16px; padding: 2.5rem 3rem; }
   .headed-main { color: var(--muted); line-height: 1.8; font-size: 1.05rem; }
   .headed-em { font-family: var(--display); font-weight: 700; color: var(--lime);
-    font-size: clamp(1.2rem, 1.9vw, 1.55rem); line-height: 1.4; }
+    font-size: clamp(1.2rem, calc(1.9 * var(--safe-vw)), 1.55rem); line-height: 1.4; }
 
   /* BUTTONS */
   .cta-row { display: flex; gap: 1rem; flex-wrap: wrap; }
@@ -469,7 +475,7 @@ const PERSON = JSON.stringify({
      normal size. On the device its box stays inside the viewport at every zoom measured, its text
      overflowing the box only at 137 and 119px (4 and 9px; 2026-09-19). The previous 14.7vw was fitted to the
      word and left 0.16px. */
-  .footcta h2 { font-family: var(--display); font-weight: 800; font-size: clamp(min(2rem, 10vw),5vw,3.2rem); letter-spacing:-.02em; margin-bottom: 1.2rem; }
+  .footcta h2 { font-family: var(--display); font-weight: 800; font-size: clamp(min(2rem, calc(10 * var(--safe-vw))),calc(5 * var(--safe-vw)),3.2rem); letter-spacing:-.02em; margin-bottom: 1.2rem; }
   .footcta .accent { color: var(--lime); }
   .foot-sub { color: var(--muted); max-width: 46ch; margin: 0 auto 2.5rem; font-size: .95rem; line-height: 1.7; }
   .footbar { border-top: 1px solid var(--panel-brd); padding: 1.5rem 0 max(1.5rem, env(safe-area-inset-bottom, 0px));
@@ -510,7 +516,10 @@ const PERSON = JSON.stringify({
   /* Platform practice cards key the ring to their identity accent (echoes the hover border). */
   .practice:focus-visible { outline-color: var(--accent); }
 
-  @media (max-width: 780px){
+  /* A phone held sideways keeps this stacked hero, as Safari's safe area kept it on an iPhone 17 Pro
+     (750px): a screen 30rem tall or less that cannot hover (src/styles/chrome.css, "A phone held
+     sideways"; owner, 2026-11-09). */
+  @media (max-width: 780px), (height <= 30rem) and (hover: none) {
     .about-hero-inner { flex-direction: column-reverse; text-align: center; gap: 1.5rem; }
     .eyebrow { justify-content: center; }
     .sub { margin: 0 auto; }
