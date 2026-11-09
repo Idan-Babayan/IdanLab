@@ -7,10 +7,13 @@
 ---
 
 ### 2026-11-06 · Every page covers the screen, and its text keeps to the safe area
+- **Supersedes in part:** 2026-10-24 · Page titles balance their lines, and the search's key chips hide
+  where nothing hovers (that phones held sideways reach the search box: since 2026-11-09 a phone held
+  sideways keeps the magnifier).
 - **Decision:** every page declares `viewport-fit=cover`, Starlight's through the one tag in
   `astro.config.mjs` `head` (Starlight's head merge replaces its own viewport tag with it), home and
   About in their own `<head>`. A phone held sideways shows the page from edge to edge: the page colour,
-  the grid and the glows, the bar and its glass, the sidebar's tint, the phone "On this page" strip, and
+  the grid and the glows, the bar and its glass, the phone "On this page" strip, the open menu, and
   home's and About's HUD and footer lines. Text and controls keep inside the safe area: a gutter at a
   screen edge is the larger of its own width and the inset (`env(safe-area-inset-*)`, read through
   `--tp-safe-left`, `--tp-safe-right` and `--tp-safe-bottom` in `tokens.css`). On Starlight's pages that
@@ -18,21 +21,39 @@
   sidebar's width grow by how far an inset reaches past the bar's padding (`--tp-safe-*-x`), and the
   page pads by how far it reaches past its own (`--tp-safe-*-c`). The zoomed image's close control and
   caption are two unlayered rules in `overrides.css`, without `!important`. With no insets every value
-  is the one it was (CORE_SPEC §6 "Safe areas").
+  is the one it was (CORE_SPEC §6 "Safe areas"). Corrected 2026-11-09, as two more parts of the same
+  decision:
+  - **A phone held sideways keeps the phone layout.** A screen 30rem tall or less whose main input
+    cannot hover is a phone held sideways, and it takes the phone layout at any width: the menu button
+    and the magnifier, no sidebar, the phone's heading sizes. Every 50rem query in the theme modules,
+    AttackPath and About's stacked hero says so: what starts at 50rem needs a taller screen or one that
+    hovers, and what stops there holds on a phone held sideways too. chrome.css "A phone held sideways"
+    puts Starlight's own 50rem rules back to their phone values for that case, and one more unlayered
+    rule in `overrides.css` unsets Page.astro's `--sl-content-inline-start`, the one such rule outside
+    Starlight's layers (CORE_SPEC §6 "A phone held sideways keeps the phone layout").
+  - **Titles keep the size the safe area gave them.** Type that grows with the width grows with the safe
+    area's width: `--tp-safe-vw` (tokens.css) on Starlight's pages and `--safe-vw` on home and About are
+    a vw of the safe area, 1vw exactly with no side inset. That covers the titles on home, About, the
+    landings (PlatformIndex) and the 404 (Starlight's Hero formulas, restated in pages.css).
 - **Why:** on an iPhone 17 Pro held sideways the owner saw a black bar at each side of every page
   (2026-11-06) and asked for the page to fill the screen, as apple.com's does. Without the tag, iOS
   Safari lays a page out inside the safe area and fills the 62pt strips beside it with the page colour,
   near black here. The larger of the gutter and the inset, not their sum: the inset already keeps text
   clear of the island and the corners, so the gutter only counts where it is the wider of the two. Two
   offsets, because Starlight's gutters step apart: the bar's padding is 1.5rem from 50em, the page's
-  only from 72rem.
+  only from 72rem. The phone layout and the titles, because covering the screen made the iPhone 17 Pro
+  874px wide where Safari's safe area had made it 750: the first commit let it take the desktop layout
+  from 50rem, Starlight's sidebar taking 310 of the 874px, and grew every title sized by the width
+  16.5% (home's headline 61.2px for 52.5). The owner found it on the device (2026-11-09): a phone stays a
+  phone, as the site always was on that phone.
 - **Rejected:**
   - Safari's letterbox kept: the bars the owner reported.
   - The inset added to each gutter: up to 24px more than the safe area needs at each side, the side
     without the island included.
   - One offset for the bar and the page: between 50em and 72rem the bar's padding is 24px and the
     page's 16px, so the article's text sat 8px into the inset at 852 to 956px, and the 404's heading at
-    51px beside a 59px inset on an iPhone 16 (measured).
+    51px beside a 59px inset on an iPhone 16 (measured on the desktop layout a phone held sideways had
+    until 2026-11-09; it still holds where the desktop layout meets an inset).
   - `<body>` padded by the insets: the backgrounds inside the page would stop short of the edges, and
     the fixed bar and sidebar, placed against the screen, would not move.
   - A layered rule for the zoomed image's control and caption: `starlight-image-zoom` 0.15.0's styles
@@ -41,30 +62,54 @@
   - The side insets honoured on iOS alone, to spare Android's notch side its extra 24px: it takes a
     browser test in CSS, and would put text under the notch in any browser that runs a page under its
     cutout.
+  - The safe area's width as the breakpoint, which is exactly what Safari's letterbox gave: a media query
+    cannot subtract the insets, and Starlight's breakpoints are media queries.
+  - A viewport narrowed to the safe area (`width=750`): Safari scales the page up to fill the screen, so
+    everything grows.
+  - A build step rewriting every 50rem media query, Starlight's included: one rule in place of the block
+    of Starlight's values, but it rewrites Starlight's own CSS at build time, which the theme pass never
+    does.
+  - Orientation, or a coarse pointer alone, as the test: a tablet held sideways is landscape too, and a
+    touch tablet or laptop would lose the desktop layout.
+  - The undo of Page.astro's variable in a layer: it loses to the unlayered rule (measured: the article
+    at 334px, not 62, beside an empty column).
 - **Known:**
-  - Held sideways, a phone 800px wide or more now gets the desktop layout, the sidebar beside the
-    article: an iPhone 17 Pro is 874px wide where Safari's safe area made it 750.
+  - A 17 Pro Max (832px inside its safe area) and Android phones (915px) took the desktop layout held
+    sideways even before this entry; they keep the phone layout now. A 7-inch tablet (its page about
+    520px tall) and a short desktop window, which hovers, keep the desktop layout.
+  - chrome.css "A phone held sideways" mirrors Starlight 0.41.10's 50rem rules, so any upgrade lists
+    them again and diffs them against it (CORE_SPEC "Upgrade path"); Starlight 0.42 moves the phone menu
+    to a popover.
   - On the Android emulator (API 37, Chrome 145, a simulated tall notch, held sideways), Android keeps
     the strip beside the notch black with or without the tag, and Chrome reports the notch's 48px inset
     to the page all the same, so on that side the text sits 24px further in than it did.
-  - The theme button's invisible 24px target crosses the safe edge by 4px, its icon inside: its negative
-    margin reaches past the bar's content box by design, as it reaches into the bar's padding on a
-    desktop.
+  - The theme button's invisible 24px target crosses the safe edge by 4px, its icon inside, where the
+    button sits in the bar (About, the 404 and `/secret`; elsewhere a phone keeps it in the menu): its
+    negative margin reaches past the bar's content box by design, as it reaches into the bar's padding
+    on a desktop.
   - The two zoom rules answer `starlight-image-zoom` 0.15.0's own selectors, so the move to 0.16
     measures them again (CORE_SPEC "Upgrade path").
-  - Not yet seen on an iPhone (ROADMAP Now): headless Chrome emulates the insets, not Safari.
-- **Verified:** build green, 67 pages, the decorative-character guard clean. On isolated builds of
-  `cd5e680` and of the change, in headless Chrome 153 with `Emulation.setSafeAreaInsetsOverride`: at
-  874x330 with insets 62, 62 and 21 (an iPhone 17 Pro held sideways) on all 67 routes no text or
-  control sits in an inset, the theme button's invisible target aside, and nothing scrolls sideways,
-  where the same pages without the safe-area rules put 5,291 text runs and controls in the insets; the
-  same on 13 routes at iPhone 16, 13 mini and 17 Pro Max sizes and with an Android cutout on either
-  side. Upright with a 34px home indicator, the open phone menu and search keep their foot 34px clear.
-  The zoomed image's close control sits 62px from the right edge and its caption is padded 62, 62 and
-  21px. With no insets every element's rect matches `cd5e680`'s build on 13 routes at six sizes, except
-  home's and About's pulsing live dots, whose phase differs between two loads of the same build.
+  - Not yet seen on an iPhone (ROADMAP Now): headless Chrome emulates the insets and the touch screen,
+    not Safari.
+- **Verified:** build green, 67 pages, the decorative-character guard clean, on both dates. On isolated
+  builds in headless Chrome 153 with `Emulation.setSafeAreaInsetsOverride` and touch, 2026-11-09: held
+  sideways on an iPhone 17 Pro (874x330, insets 62, 62 and 21), every element of all 67 routes computes
+  the same display, visibility, position, type, alignment, overflow, borders, colours and grid as the
+  750px phone layout, of the change and of `cd5e680`, before it. No text or control sits in an inset,
+  the theme button's invisible target aside, and nothing scrolls sideways (on 2026-11-06 the same
+  pages without the safe-area rules put 5,291 text runs and controls in the insets); the same on 13
+  routes at iPhone 16, 13 mini and 17 Pro Max sizes and with an Android cutout on either side. The menu
+  opens over the whole screen and holds the page still, and search fills the screen, both clear of the
+  insets; upright with a 34px home indicator their foot keeps 34px clear. The zoomed image's close
+  control sits 62px from the right edge and its caption is padded 62, 62 and 21px. With no insets
+  nothing moves: every element's rect matches the build before on 13 routes at desktop sizes, short
+  desktop windows with a mouse, touch tablets and phones up to 750px wide (`cd5e680` on 2026-11-06,
+  `5bb6d9b` on 2026-11-09), except home's and About's pulsing live dots, whose phase differs between
+  two loads of the same build.
 - **Status:** Adopted; committed to `dev` on 2026-11-07 as
-  `fix(phone): every page covers the screen held sideways, and its text keeps to the safe area`.
+  `fix(phone): every page covers the screen held sideways, and its text keeps to the safe area`, and
+  corrected on 2026-11-09 as
+  `fix(phone): a phone held sideways keeps the phone layout, and its titles keep their size`.
 
 ### 2026-11-06 · PasswordReveal stays one-way
 - **Decision:** a revealed PasswordReveal value is never hidden again. The row's one button goes from
@@ -405,6 +450,9 @@
 - **Why:** at 360px "Bandit 12 → 13" broke as "Bandit 12 →" over "13", and "Rust fixme 3" as "Rust fixme"
   over "3"; balanced, a number keeps its word. A touch screen has no Ctrl or Cmd to press, and the box
   shows from 50em, which tablets and phones held sideways reach.
+  **Partly superseded by:** 2026-11-06 · Every page covers the screen, and its text keeps to the safe
+  area. Since 2026-11-09 a phone held sideways keeps the phone layout and its magnifier, so the box, and
+  the rule on its chips, are for tablets.
 - **Known:** Chrome 114, Safari 17.5 and Firefox 121 balance; older engines wrap as before. A tablet with a
   keyboard and no pointer loses the chips though Ctrl K works there; one with a trackpad hovers and keeps
   them.
