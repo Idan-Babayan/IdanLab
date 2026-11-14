@@ -143,7 +143,7 @@
   the build). Five are live as of 2026-09-04 (General Skills, Cryptography, Web Exploitation, Forensics,
   Binary Exploitation); only Reverse Engineering is still commented, and the archive holds nothing for it.
 - [CONTENT] Author `principle:` frontmatter on HackTheBox writeups (optional, HTB only, build-guarded;
-  see CORE_SPEC §7). Three carry one today: busqueda, return, forest. The coda renders inside the
+  see CORE_SPEC §7). Four carry one today: busqueda, return, forest, unified. The coda renders inside the
   content with the default pager beneath it (2026-09-03).
 - [PRODUCT] Global `/writeups` index (path 3): reuse `WriteupCard` with `showPlatform` true for a
   mixed cross-platform grid (the card was built for this).

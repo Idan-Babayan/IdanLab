@@ -1031,8 +1031,8 @@ token is an open ROADMAP item, not a bug.
   (mixed in sRGB, the gradient's own space), future dots stay grey, and the bar's gradient spans the whole
   track, so its leading edge is the current dot's colour and gold arrives only at the goal. Every node state and all chrome text measures AA in BOTH themes. REQUIRED on every HackTheBox writeup
   under `## Summary` (2026-09-12), no longer an Active Directory device, see §8. Live on Forest (6 hops),
-  Return (5 hops) and Busqueda (5 hops); Forest and Return keep their BloodHound graph above as evidence,
-  Busqueda carries none and is the reference for that case. See
+  Return (5 hops), Busqueda (5 hops) and Unified (5 hops); Forest and Return keep their BloodHound graph
+  above as evidence, Busqueda and Unified carry none, and Busqueda is the reference for that case. See
   DECISIONS 2026-07-19 (original build + native-fabric rework) and 2026-07-20 (production-polish pass +
   Return instance; edge-mask gutter; production-readiness audit)), `badges/WriteupMeta` (navigational
   Platform / Category (PicoCTF, directory-derived) / OS / Environment chip row + a trailing neutral Difficulty
@@ -2608,7 +2608,7 @@ icon.
   but stiffer to read is a regression, not a fix. Read it before writing, and diff against it after.
 - **Every HackTheBox writeup carries an `AttackPath`.** Required, not optional, and no longer an Active
   Directory device: the component models any privilege chain, so it ships on every HTB writeup, placed
-  under `## Summary` in the position Forest, Return and Busqueda use. The component's own constraint
+  under `## Summary` in the position Forest, Return, Busqueda and Unified use. The component's own constraint
   still binds: LINEAR chains only, one spine, no branching, at least two nodes (it throws below that).
   Where a box genuinely branches, the writeup picks the spine and says so in prose. Busqueda is the
   reference instance for a box with no directory graph above it.
