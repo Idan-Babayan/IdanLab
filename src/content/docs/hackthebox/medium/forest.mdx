@@ -1,6 +1,6 @@
 ---
 title: Forest
-description: AS-REP roasting cracks a pre-auth-disabled service account, then an Exchange Windows Permissions WriteDACL over the domain grants DCSync for Administrator.
+description: AS-REP roasting cracks the svc-alfresco service account, and an Exchange Windows Permissions WriteDACL over the domain turns that foothold into a DCSync for Administrator.
 os: Windows
 environment: Active Directory
 difficulty: Medium
@@ -12,7 +12,7 @@ import Callout from '@components/Callout.astro';
 import FlagCapture from '@components/FlagCapture.astro';
 import AttackPath from '@components/AttackPath.astro';
 
-> AS-REP roasting cracks the svc-alfresco service account, and an Exchange Windows Permissions WriteDACL over the domain turns that foothold into a DCSync for Administrator.
+> A Windows domain where the directory answers questions it should not, and years of delegated permissions have quietly piled up.
 
 ## Recon
 
@@ -80,33 +80,6 @@ Host script results:
 </Toggle>
 
 The host scripts name the box outright: `FOREST`, in `htb.local`, Windows Server 2016. Kerberos and LDAP are open and port 80 is not, so the name checks out.
-
-An aggressive scan pins down the OS version but adds nothing else.
-
-<Toggle label="Aggressive scan, OS detection & extended service enumeration <code>nmap</code>">
-
-```bash frame="code" title="Bash"
-┌──(Idan@Kali)-[~/Forest]
-└─> nmap -A 10.129.16.68
-Starting Nmap 7.98 ( https://nmap.org )
-Nmap scan report for 10.129.16.68
-Host is up (0.078s latency).
-Not shown: 988 closed tcp ports (reset)
-# the same twelve open ports as the -sC -sV run, trimmed
-Device type: general purpose
-Running: Microsoft Windows 2016
-OS CPE: cpe:/o:microsoft:windows_server_2016
-OS details: Microsoft Windows Server 2016
-Network Distance: 2 hops
-Service Info: Host: FOREST; OS: Windows; CPE: cpe:/o:microsoft:windows
-
-TRACEROUTE (using port 3389/tcp)
-HOP RTT      ADDRESS
-1   70.13 ms 10.10.14.1
-2   70.64 ms 10.129.16.68
-```
-
-</Toggle>
 
 <Callout type="recon">
 
@@ -307,7 +280,7 @@ SeChangeNotifyPrivilege       Bypass traverse checking       Enabled
 SeIncreaseWorkingSetPrivilege Increase a process working set Enabled
 
 *Evil-WinRM* PS C:\Users\svc-alfresco\Documents> whoami /groups
-# trimmed to the five rows that matter
+# The five rows that matter
 BUILTIN\Pre-Windows 2000 Compatible Access Alias            S-1-5-32-554
 BUILTIN\Remote Management Users            Alias            S-1-5-32-580
 BUILTIN\Account Operators                  Alias            S-1-5-32-548
@@ -447,7 +420,7 @@ No password is typed anywhere, and the shell that comes back is not the account 
 
 <Toggle label="Confirming SYSTEM and reading the root flag <code>whoami</code>">
 
-```bash frame="code" title="Bash" {2}
+```bash frame="code" title="CMD" {2}
 C:\Windows\system32> whoami
 nt authority\system
 C:\Windows\system32> cd C:\Users\Administrator\Desktop
