@@ -1,6 +1,6 @@
 ---
 title: Return
-description: LDAP pass-back from a printer admin panel leaks a service account, then a Server Operators service-binary hijack escalates to SYSTEM.
+description: An LDAP pass-back from the printer's admin panel hands over a service account, and a service-binary hijack as Server Operators turns that foothold into SYSTEM.
 os: Windows
 environment: Active Directory
 difficulty: Easy
@@ -12,11 +12,11 @@ import Callout from '@components/Callout.astro';
 import FlagCapture from '@components/FlagCapture.astro';
 import AttackPath from '@components/AttackPath.astro';
 
-> An LDAP pass-back from the printer's admin panel hands over a service account, and a service-binary hijack as Server Operators turns that foothold into SYSTEM.
+> A Windows box where a configuration field is trusted to point anywhere, and an ordinary-sounding operator group carries more power than its name suggests.
 
 ## Recon
 
-> A machine named PRINTER with this many ports open is not really a printer. Before I open the web panel, I want the full inventory of what it is pretending to be.
+> A box named Return. Something on it is going to send something back, and before I guess what, I want the full list of what is listening.
 
 First, confirm the host is actually up.
 
@@ -392,7 +392,7 @@ The listener catches the callback long before the service manager finishes givin
 
 <Toggle label="Confirming SYSTEM and reading the root flag <code>whoami</code>">
 
-```bash frame="code" title="Bash" {4,5}
+```bash frame="code" title="CMD" {4,5}
 # Back in terminal 1:
 [+] Got reverse shell from PRINTER~10.129.19.227-Microsoft_Windows_Server_2019_Standard-x64-based_PC  Assigned SessionID <1>
 ──────────────────────────────────────────────────────────────────────────────
