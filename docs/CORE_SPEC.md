@@ -426,10 +426,33 @@ The theme pass is organised into declared cascade layers, one module per layer, 
   state in `aria-pressed` (2026-09-30), as `PlatformIndex`'s filter pills do.
 - **Skip link and main landmark (2026-09-30):** Starlight gives every doc both, so the two marketing
   pages carry their own. Each opens with a "Skip to content" link, clipped until focused like
-  Starlight's `.sl-skip-link` and shown on focus as a block in the primary button's colours, that lands
-  on a `<main id="main">` wrapping everything between the HUD and the footer. The rule is written in
-  both files, like the token block. The homepage's HUD holds no link, so there the skip link passes
-  over nothing; it is kept so the first Tab stop is the same on every page.
+  Starlight's `.sl-skip-link`, that lands on a `<main id="main">` wrapping everything between the HUD
+  and the footer. The rule is written in both files, like the token block. The homepage's HUD holds no
+  link, so there the skip link passes over nothing; it is kept so the first Tab stop is the same on
+  every page.
+- **On focus the skip link is one of the bar's words (2026-11-16), the same on every page:** the HUD's
+  capitals (JetBrains Mono 0.72rem, tracked .12em, line-height 1.6) in a 147 by 34px box with the
+  search box's 6px radius, in the primary button's colours and flat, its text on the bar's line, 1rem
+  from the top, and its box at the start of the bar's row. On a Starlight page that is over the name, at
+  the bar's gutter (max(`--sl-nav-pad-x`, inset)), and its top is computed from `--sl-nav-height`, so it
+  stays centred if the bar changes (`chrome.css`, the type and box in "The quiet bar", the start in
+  "Safe areas"). On home and About it is over the HUD's first item (the HUD's padding plus half of
+  what the window has beyond its max-width, 1180px and 1100px), from each page's own rule, written
+  as coupled to `.hud`. The box ends 8px above the hairline and its ring 4px above it. Starlight had
+  drawn it as a 176 by 44px block of 16px body text 12px from the corner, sized for Starlight's own
+  bar (64px from 50em, 56px below); since the quiet bar took the HUD's 51.4px (2026-10-23) it had run
+  4.6px past the hairline and its ring 8.6px, over the sidebar's first entry and the phone strip, and
+  on home and About, which copied its geometry onto a 51.4px HUD, 2.2 and 6.2px (reported 2026-11-16).
+  **While it holds focus, the HUD item under it steps aside on home and About** (`opacity: 0` on `.live`
+  and on `.hud-home`, the 232px "◂ IDAN.LAB // SECURITY NOTES" from 781px), and below 30rem the whole
+  row does: there home's masthead, which wraps under the box below 395px, and at 320px About's nav
+  reach under it. `opacity`, never `visibility` or `display`, which would take About's links out of the
+  tab order: the next Tab still lands on the home link. On a Starlight page the box covers the 100px
+  name whole and nothing steps aside. Tab order unchanged everywhere. Measured on the built site in
+  headless Chrome at 320, 390, 430, 479, 480, 781, 1024 and 1440px, both themes. The capitals reach
+  the accessible name: Chrome's accessibility tree names the link "SKIP TO CONTENT", where it was "Skip
+  to content", as it already named About's nav "WRITEUPS"; Starlight's link could keep its case only
+  through an `aria-label`, which means forking `SkipLink`.
 - **Content-embedded components:** platform landings, the 404, and `/secret` are Starlight docs
   that embed scoped Astro components via MDX (`PlatformIndex`, `NotFound`, `SecretTerminal`). They
   carry Starlight's `not-content` class so prose styling skips them; most of our prose rules in
@@ -939,6 +962,9 @@ token is an open ROADMAP item, not a bug.
   - Tab order: skip link, name, search, GitHub, theme; on a splash page below 50rem, skip link, name,
     search, theme. See DECISIONS 2026-10-23 · The quiet bar:
     Starlight's header puts on the HUD.
+  - **The skip link** sits in the bar while it holds focus, over the name, in the HUD's capitals, its
+    top computed from `--sl-nav-height` (§5 "On focus the skip link is one of the bar's words",
+    2026-11-16). The quiet bar had left it at Starlight's size, so it ran past the hairline.
 - **The phone "On this page" is the Quiet strip** (owner, 2026-10-24; `chrome.css`): Starlight's own
   `<mobile-starlight-toc>`, restyled in CSS, below 72rem.
   - **The strip** is 38px (`--sl-mobile-toc-height: 2.375rem`, Starlight's 48px; it also sets the
@@ -1627,7 +1653,9 @@ and `.skip-link` rules on home and About:
 - **The rest:** the sidebar's text keeps max(1rem, inset) from the edge it touches, both edges in the
   phone menu, and its foot and the menu's footer clear the home indicator; the strip's row and open
   panel, and search below 50rem and on a phone held sideways, which fills the screen, keep inside; the
-  skip link, and the last content panel's foot at max(1.5rem, bottom inset).
+  skip link starts at the bar's gutter, max(its padding, inset), as the name does (home's and About's
+  at their HUD's padding, max(1.5rem, inset)); and the last content panel's foot sits at max(1.5rem,
+  bottom inset).
 - **The zoomed image's close control and caption** are two rules in the unlayered tail
   (`overrides.css`), the only way to beat `starlight-image-zoom` 0.15.0's own unlayered styles: a
   layered copy of each left the control 20px from the right edge, inside the inset, and the caption at
