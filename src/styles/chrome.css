@@ -694,10 +694,11 @@ nav.sidebar summary {
    Canonical dark token values are untouched (every rule is scoped to data-theme='light').
    ══════════════════════════════════════════════ */
 
-/* Warm the light code surface: EC's catppuccin-latte editor bg is #fafafa, a cool white slab on the
-   warm paper. Override the EC editor + tab-bar background vars to a soft warm off-white slightly
-   darker than the page paper (#ece9e0), so a code block reads as a distinct warm panel. Light only;
-   dark (github-dark-dimmed) is untouched. Kept light enough that the catppuccin text stays AA. */
+/* Warm the light code surface: one-light's editor bg is #fafafa, a cool white slab on the warm paper.
+   Override the EC editor + tab-bar background vars to a soft warm off-white slightly darker than the
+   page paper (#ece9e0), so a code block reads as a distinct warm panel. Light only; dark (tokyo-night)
+   is untouched. Kept light enough that every code colour role but the privilege magenta clears 5:1 on
+   it (CORE_SPEC section 6 "Code-block colour roles"). */
 @layer chrome {
 :root[data-theme='light'] .expressive-code {
   --ec-frm-edBg: #e8e2d3;
@@ -810,8 +811,9 @@ html[data-theme="light"] .expressive-code pre::-webkit-scrollbar-track { backgro
    only colours that reach a classed span: no !important and no place in the unlayered tail (DECISIONS
    2026-11-18). Every role sets its font-style, because Expressive Code's italics no longer reach a
    classed span: comments italic, the rest upright. Commands and privilege commands are bold. The
-   figures per role, model B on the rendered frames, are in CORE_SPEC section 6 "Code-block colour
-   roles"; every light role clears 5:1 but the privilege magenta, the vuln label's own ink. */
+   figures per role, model B on the code frame (dark #1a1b26, light #e6dfd0), are in CORE_SPEC section
+   6 "Code-block colour roles"; every light role clears 5:1 but the privilege magenta, the vuln label's
+   own ink. `open` and `Enabled` share the string green in both themes. */
 html[data-theme="dark"] .expressive-code :is(.cx-base, .cx-out, .cx-prp) { color: #a9b1d6; }
 html[data-theme="dark"] .expressive-code :is(.cx-str, .cx-arg, .cx-ok) { color: #9ece6a; }
 html[data-theme="dark"] .expressive-code .cx-kw { color: #bb9af7; }
@@ -827,8 +829,7 @@ html[data-theme="dark"] .expressive-code .cx-cmd { color: oklch(0.745 0.045 60);
 html[data-theme="dark"] .expressive-code .cx-priv { color: #ff4d9d; }
 
 html[data-theme="light"] .expressive-code :is(.cx-base, .cx-out) { color: #383a42; }
-html[data-theme="light"] .expressive-code :is(.cx-str, .cx-arg) { color: #2f6631; }
-html[data-theme="light"] .expressive-code .cx-ok { color: #2a632a; }
+html[data-theme="light"] .expressive-code :is(.cx-str, .cx-arg, .cx-ok) { color: #2f6631; }
 html[data-theme="light"] .expressive-code .cx-kw { color: #9a1f98; }
 html[data-theme="light"] .expressive-code :is(.cx-fn, .cx-url) { color: #2e57b3; }
 html[data-theme="light"] .expressive-code :is(.cx-num, .cx-ip) { color: #8f4409; }

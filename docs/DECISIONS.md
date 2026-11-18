@@ -10,12 +10,17 @@
 - **Supersedes:** 2026-06-15 · Command-highlight palette rebuilt on a principled OKLCH basis (+ bold
   weight) and 2026-06-14 · Code-block command highlighting by semantic category, both moved to
   `DECISIONS-ARCHIVE.md`; what survives of them (bold commands, the dark sand, sudo's magenta) is
-  restated here. **In part:** 2026-10-11 · Sudo's light magenta is the vuln callout's ink, and the light
-  command figures are re-measured (the magenta stands; the category figures are gone); 2026-09-28 ·
-  Callouts speak in five voices, and light mode gets its own border and label (the `.ec-cmd-priv` class
-  it names; the magenta and its meaning stand); and 2026-08-29 · Astro 6 to 7 and Starlight 0.39 to
-  0.41, upgraded in phases against a byte-reproducible build (the four `ec-cmd-*` counts its
-  silent-failure counters watch; the method stands, with the `cx-` line classes as the canary).
+  restated here.
+- **Supersedes in part:** 2026-10-11 · Sudo's light magenta is the vuln callout's ink, and the light
+  command figures are re-measured (the class name `.ec-cmd-priv` in its Decision, and the recon, net and
+  inspect figures in its Verified; the magenta stands); 2026-09-28 · Callouts speak in five voices, and
+  light mode gets its own border and label (the class name `.ec-cmd-priv` in its Decision, and in its
+  Rejected the distances from `curl`, `nc` and `nmap` in code frames, which wore teal and brass until
+  now); 2026-10-11 · A marked code line shows one lime bar: Expressive Code's own, recoloured (in its
+  Rejected, "in code cyan already means a network command": cyan now marks ports and Kali's brackets);
+  and 2026-08-29 · Astro 6 to 7 and Starlight 0.39 to 0.41, upgraded in phases against a
+  byte-reproducible build (the four `ec-cmd-*` counts its silent-failure counters watch; the method
+  stands, with the `cx-` line classes as the canary).
 - **Decision:** `src/lib/ec-terminal.mjs` replaces `ec-priv-command.mjs`. Every token takes a role from
   its (tokyo-night, one-light) colour pair, since Expressive Code 0.44 passes no scopes, and `chrome.css`
   colours the roles per theme in `@layer chrome`, without `!important`. A block with a prompt line is a
@@ -33,7 +38,7 @@
   system, and output took full shell syntax colour. Position finds any command on any OS, one palette
   makes a flag a flag in every language, and plain output lets the commands and the evidence in it stand
   out. On the light frame, one-light's own flag, argument and comment inks read about 4.4:1; every light
-  role now clears 5:1 but the magenta (4.9:1). The CSS could move into a layer because the tail's
+  role now clears 5:1 but the magenta (4.94:1). The CSS could move into a layer because the tail's
   premise was false: in a build test the layered rules computed identically on every code span of
   Busqueda, Return and n0s4n1ty-1 in both themes, which answers the ROADMAP question.
 - **Rejected:** keeping the category hues inside the new system (per the owner, the names are no longer
@@ -47,14 +52,16 @@
 
 ### 2026-11-18 · Prose colours lower their energy: soft h3, smooth lede fade, ice inline code
 - **Supersedes in part:** 2026-06-29 · Inline code is its own object: a rounded red hairline chip
-  (theme-tuned) (its red ink and its 2026-06-30 light fill `#ece2d6`; the chip itself stands) and
-  2026-09-28 · Callouts speak in five voices, and light mode gets its own border and label (that the h3
-  wears recon's `#41efff`; recon's cyan stands); and, for the dark h3 rung's token only, 2026-06-29 ·
-  TOC active entry recolors to its heading level (cyan h3, gray h4+), 2026-07-10 · Mobile TOC parity:
-  gold flag entries + cyan current-h3 (CSS-only, additive), 2026-07-13 · Focus ring extended to TOC
-  entries + prose links; spoiler-toggle already correct; light flag gold strengthened, and 2026-10-25 ·
-  The bar's glass thins and frosts over, and what sits on it turns full contrast (the strip's h3 name
-  figure).
+  (theme-tuned) (its red ink and its 2026-06-30 light fill `#ece2d6`; the chip itself stands);
+  2026-06-29 · Inline code inside a colored callout harmonizes with the callout accent (only its
+  description of the standalone chip as red; the callout rule stands); 2026-09-28 · Callouts speak in
+  five voices, and light mode gets its own border and label (that the h3 wears recon's `#41efff`;
+  recon's cyan stands); and, for the dark h3 rung's token only, 2026-06-29 · TOC active entry recolors
+  to its heading level (cyan h3, gray h4+), 2026-07-10 · Mobile TOC parity: gold flag entries + cyan
+  current-h3 (CSS-only, additive), 2026-07-11 · Mobile TOC: current top-level (h2) entry green
+  (completes desktop parity), 2026-07-13 · Focus ring extended to TOC entries + prose links;
+  spoiler-toggle already correct; light flag gold strengthened, and 2026-10-25 · The bar's glass thins
+  and frosts over, and what sits on it turns full contrast (the strip's h3 name figure).
 - **Decision:** the h3 reads a new role token, `--tp-h3-ink` (dark `#9de2ea`, light `#2a6e7b`), with no
   `##` marker. On dark the TOC's current h3 entry follows it (desktop rung, phone rail and wash, phone
   strip label, focus ring); on paper the rung keeps `--tp-cyan-ink` (`#08697a`), the same hue a step
@@ -77,7 +84,7 @@
 - **Rejected:** gray inline code and a weight-only hierarchy (a first proposal that flattened the page);
   lime chips; a `##` marker on the h3; a softer light h3 (too close to the black body text); a dimmed
   lede bar (it read flat); keeping the dark TOC rung on the link cyan (it no longer matched its
-  heading); the heading's `#2a6e7b` as the light rung (under AA as 13px text, above).
+  heading); the heading's `#2a6e7b` as the light rung (4.32:1 as 13px text on the darkest grid dot).
 - **Status:** Adopted 2026-11-18, chosen in a live preview of Busqueda in both themes.
 
 ### 2026-11-06 · Every page covers the screen, and its text keeps to the safe area
@@ -894,6 +901,9 @@
 - **Rejected:**
   - A cyan bar (`--tp-cyan`, `--tp-cyan-ink` on light), 12.22:1 and 4.78:1 against the frames (model B):
     it puts a second hue back on a lime-tinted line, and in code cyan already means a network command.
+    (**Partly superseded by:** 2026-11-18 · Code blocks share one colour system: token roles in every
+    language, commands by position: in code cyan now marks ports and Kali's brackets, not network
+    commands; the rejection stands.)
   - Keeping the line's own border and hiding EC's: that border is what pushed the text 2px, and EC already
     takes its own bar's width out of the cell's padding.
   - The light decorative lime `--tp-deco-lime` for the bar: 2.05:1 against the frame `#e6dfd0`, under the
@@ -1563,6 +1573,9 @@
   brass, pink and a red within 0.08 of VulnHub's, and the teal sits 0.034 from `curl` and `nc` in code
   frames and the brass 0.050 from `nmap`, tighter than any pair the site accepts); intel sharing recon's
   cyan (the two sit together in nearly every writeup, and two cyan boxes in a row read as one).
+  (**Partly superseded by:** 2026-11-18 · Code blocks share one colour system: token roles in every
+  language, commands by position: `curl`, `nc` and `nmap` wear the one command sand now, so the teal and
+  brass distances describe code frames as they were; the rejections stand.)
 - **Known nearness, taken knowingly:** intel sits 0.046 OKLab from the medium tier violet (the difficulty
   pips) and 0.049 from the Cryptography chip violet, and every slot farther from both is near white. Vuln
   sits 0.067 from the hard tier magenta, which no page ships yet. The tightest pair the site accepts
@@ -4716,7 +4729,9 @@
   (`#b6ff3c` dark / `#4d7c0f` light), current h3 cyan (`#41efff` / `#08697a`), current flag gold
   (`#ffc23d` / `#C6A243`), inactive entries muted default; desktop TOC unchanged (its current h2 stays
   green via the Starlight default, and the new rule does not match it). No console errors. `npm run build`
-  green (45 pages). No new deps, no motion.
+  green (45 pages). No new deps, no motion. (**Partly superseded by:** 2026-11-18 · Prose colours lower
+  their energy: soft h3, smooth lede fade, ice inline code: on dark the current h3 reads the heading's
+  soft `#9de2ea`, not `#41efff`; `#08697a` on light stands.)
 - **Status:** Adopted; committed to `dev`, then merged to `main` (production) via PR the same day
   (2026-07-11).
 
@@ -5314,7 +5329,9 @@ automatically; no astro.config.mjs edit is needed per writeup.
 ### 2026-06-29 · Inline code inside a colored callout harmonizes with the callout accent
 - **Problem:** the standalone red inline-code chip (see the entry below) clashed inside a colored
   callout: two reds in a `vuln` callout (worst in dark, where the callout tint is more saturated), and
-  red code also fought the cyan / violet / green / amber callouts.
+  red code also fought the cyan / violet / green / amber callouts. (**Partly superseded by:** 2026-11-18 ·
+  Prose colours lower their energy: soft h3, smooth lede fade, ice inline code: the standalone chip is
+  ice now, not red; the callout rule stands.)
 - **Decision:** inline code inside `.cl` (Callout.astro) drops the standalone red chip and adopts the
   callout's OWN accent, generically, by reading the callout's existing `--acc` / `--cl-ink` tokens, so
   every type (recon / loot / intel / defense / vuln) adapts with no per-type rule: text = the accent,

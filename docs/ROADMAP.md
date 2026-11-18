@@ -254,13 +254,15 @@
   `.flag-title` class to flag headings during authoring, used by both the gold rule and the cyan exclusion.
 - [ENG] Code-role residual risks (`src/lib/ec-terminal.mjs`): a shell-language fence with no prompt
   reads as a script, so output pasted into one turns its first words into commands (the authoring rule
-  is a `text` fence, CORE_SPEC §7 "MDX conventions"; nothing checks it); a transcript line that continues
-  a command without a trailing `\` or backtick (a heredoc body, a multi-line string) reads as output;
-  hosts are recognized only on the plugin's top-level domain list (htb, local, com, org, net, io, lab,
-  corp); and the colour-pair table is keyed to tokyo-night and one-light as Expressive Code adjusts them,
-  so a theme change, or an Expressive Code release that moves a token colour, sends that token back to
-  the theme's own colour (it shows, it does not break). Expressive Code still highlights with
-  `includeExplanation: false` at 0.44.1, so scopes cannot replace the pairs (read 2026-10-03).
+  is a `text` fence, CORE_SPEC §7 "MDX conventions"; nothing checks it); output in a `text` fence renders
+  plain, without the IP, host, port and open-state colours transcript output gets (none holds one
+  today); a transcript line that continues a command without a trailing `\` or backtick (a heredoc body,
+  a multi-line string) reads as output; hosts are recognized only on the plugin's top-level domain list
+  (htb, local, com, org, net, io, lab, corp); and the colour-pair table is keyed to tokyo-night and
+  one-light as Expressive Code adjusts them, so a theme change, or an Expressive Code release that moves
+  a token colour, sends that token back to the theme's own colour (it shows, it does not break; CORE_SPEC
+  §3 "Upgrade path"). Expressive Code still highlights with `includeExplanation: false` at 0.44.1, so
+  scopes cannot replace the pairs (read 2026-10-03).
 - [DESIGN] Right rail mobile layout at 375px: unresolved how the TOC rail behaves
   at the narrow breakpoint. Needs a real-device or 375px-viewport decision, paired
   with the narrow-screen gutter call below.
