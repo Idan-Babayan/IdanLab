@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-10-25 (the glass's ramp animates one number, `--tp-frost`, so no theme value sits in its keyframes, where WebKit had left the glass transparent after a theme switch or a return to Safari on iOS, and it now holds on the owner's iPhone; the bar's glass is thinner and stronger and frosts over in 36px, its values tokens; everything on the glass but the name reads full contrast, so a screenshot under the bar no longer drowns the search, the icons or the phone strip; on 2026-10-24, the phone "On this page" is the Quiet strip: 38px, the current entry named in its heading's colour, the panel numbered on the page colour with a rail on the current entry; page titles balance their lines; the search box's key chips hide where nothing can hover; Chrome for Android's status bar takes the theme's page colour on a phone in light mode; on a phone: on iOS Safari the strip above the bar is the page colour, not the page scrolling, the bar now giving Safari a colour and the film grain lying off its top edge; the reading hairline hides under the open menu and, beside the sidebar from 50rem, spans only the strip; the bar keeps its room for the menu button after an image zoom; the flag's "Copied!" pill takes the label's row, clear of a wrapped flag; on 2026-10-23, Starlight's header is the quiet bar: the HUD's height, clear at the top and frosted once scrolled, the name in Syne at 21px, every other word in the HUD's mono capitals, the search in Starlight's own place on the article column's edge, GitHub and a one-click theme button at the right, the one replacing override; the reading hairline fills on writeups only, from a typed component; home's masthead lockup sits on the bar's centre; on 2026-10-17, writeup screenshots take the code frames' edge, the difficulty chip answers the pointer, About's bar links CONTACT, and identity links tie the site to the owner's profiles; on 2026-10-05, the landing hero's glow stays in its own pane on a desktop and shows no hard edge at any width; callouts are no longer unnamed landmarks; landing card titles sit one level under the page title; the mobile "On this page" check wears its entry's colour; site search keeps no image as a field and ranks each Bandit page first however it is typed, bar two routes and two logins that Pagefind cannot tell from other levels; on 2026-10-03, site search no longer indexes the flags and passwords the pages hide; the decode headlines give a screen reader the settled word; the current "On this page" entry keeps its colour under the pointer on desktop and mobile; Syne's fallback is one face per weight, so the headline no longer jumps when the font arrives; a captured flag's spent button and the toggle-all control announce the truth; reduced motion stops the marketing pages' smooth scroll; the pressed filter pill's focus ring stands apart; the secret terminal's dim labels reach AA; dead CSS deleted and stale counts refreshed; on 2026-10-02, tool output in the writeups no longer dates the runs; on 2026-10-01, decorative characters keep their look and say only what they mean, and a build guard checks part of it; About is in site search for its owner, not for the writeups' topics; the marketing pages gain a skip link, a main landmark and `color-scheme`, and About's theme toggle reports its state; the writeup badge row names each fact for a screen reader; on 2026-09-30, sidebar entries that name what each platform holds, and About's practice cards split 2 + 2).
+> Last updated: 2026-11-18 (Expand all and Collapse all keep the reader's line in place: every toggle above the first line under the header opens or closes out of view, and on Collapse all a toggle the reader was inside lands where a TOC click lands a heading; on 2026-10-25, the glass's ramp animates one number, `--tp-frost`, so no theme value sits in its keyframes, where WebKit had left the glass transparent after a theme switch or a return to Safari on iOS, and it now holds on the owner's iPhone; the bar's glass is thinner and stronger and frosts over in 36px, its values tokens; everything on the glass but the name reads full contrast, so a screenshot under the bar no longer drowns the search, the icons or the phone strip; on 2026-10-24, the phone "On this page" is the Quiet strip: 38px, the current entry named in its heading's colour, the panel numbered on the page colour with a rail on the current entry; page titles balance their lines; the search box's key chips hide where nothing can hover; Chrome for Android's status bar takes the theme's page colour on a phone in light mode; on a phone: on iOS Safari the strip above the bar is the page colour, not the page scrolling, the bar now giving Safari a colour and the film grain lying off its top edge; the reading hairline hides under the open menu and, beside the sidebar from 50rem, spans only the strip; the bar keeps its room for the menu button after an image zoom; the flag's "Copied!" pill takes the label's row, clear of a wrapped flag; on 2026-10-23, Starlight's header is the quiet bar: the HUD's height, clear at the top and frosted once scrolled, the name in Syne at 21px, every other word in the HUD's mono capitals, the search in Starlight's own place on the article column's edge, GitHub and a one-click theme button at the right, the one replacing override; the reading hairline fills on writeups only, from a typed component; home's masthead lockup sits on the bar's centre; on 2026-10-17, writeup screenshots take the code frames' edge, the difficulty chip answers the pointer, About's bar links CONTACT, and identity links tie the site to the owner's profiles; on 2026-10-05, the landing hero's glow stays in its own pane on a desktop and shows no hard edge at any width; callouts are no longer unnamed landmarks; landing card titles sit one level under the page title; the mobile "On this page" check wears its entry's colour; site search keeps no image as a field and ranks each Bandit page first however it is typed, bar two routes and two logins that Pagefind cannot tell from other levels; on 2026-10-03, site search no longer indexes the flags and passwords the pages hide; the decode headlines give a screen reader the settled word; the current "On this page" entry keeps its colour under the pointer on desktop and mobile; Syne's fallback is one face per weight, so the headline no longer jumps when the font arrives; a captured flag's spent button and the toggle-all control announce the truth; reduced motion stops the marketing pages' smooth scroll; the pressed filter pill's focus ring stands apart; the secret terminal's dim labels reach AA; dead CSS deleted and stale counts refreshed; on 2026-10-02, tool output in the writeups no longer dates the runs; on 2026-10-01, decorative characters keep their look and say only what they mean, and a build guard checks part of it; About is in site search for its owner, not for the writeups' topics; the marketing pages gain a skip link, a main landmark and `color-scheme`, and About's theme toggle reports its state; the writeup badge row names each fact for a screen reader; on 2026-09-30, sidebar entries that name what each platform holds, and About's practice cards split 2 + 2).
 
 ---
 
@@ -426,10 +426,33 @@ The theme pass is organised into declared cascade layers, one module per layer, 
   state in `aria-pressed` (2026-09-30), as `PlatformIndex`'s filter pills do.
 - **Skip link and main landmark (2026-09-30):** Starlight gives every doc both, so the two marketing
   pages carry their own. Each opens with a "Skip to content" link, clipped until focused like
-  Starlight's `.sl-skip-link` and shown on focus as a block in the primary button's colours, that lands
-  on a `<main id="main">` wrapping everything between the HUD and the footer. The rule is written in
-  both files, like the token block. The homepage's HUD holds no link, so there the skip link passes
-  over nothing; it is kept so the first Tab stop is the same on every page.
+  Starlight's `.sl-skip-link`, that lands on a `<main id="main">` wrapping everything between the HUD
+  and the footer. The rule is written in both files, like the token block. The homepage's HUD holds no
+  link, so there the skip link passes over nothing; it is kept so the first Tab stop is the same on
+  every page.
+- **On focus the skip link is one of the bar's words (2026-11-16), the same on every page:** the HUD's
+  capitals (JetBrains Mono 0.72rem, tracked .12em, line-height 1.6) in a 147 by 34px box with the
+  search box's 6px radius, in the primary button's colours and flat, its text on the bar's line, 1rem
+  from the top, and its box at the start of the bar's row. On a Starlight page that is over the name, at
+  the bar's gutter (max(`--sl-nav-pad-x`, inset)), and its top is computed from `--sl-nav-height`, so it
+  stays centred if the bar changes (`chrome.css`, the type and box in "The quiet bar", the start in
+  "Safe areas"). On home and About it is over the HUD's first item (the HUD's padding plus half of
+  what the window has beyond its max-width, 1180px and 1100px), from each page's own rule, written
+  as coupled to `.hud`. The box ends 8px above the hairline and its ring 4px above it. Starlight had
+  drawn it as a 176 by 44px block of 16px body text 12px from the corner, sized for Starlight's own
+  bar (64px from 50em, 56px below); since the quiet bar took the HUD's 51.4px (2026-10-23) it had run
+  4.6px past the hairline and its ring 8.6px, over the sidebar's first entry and the phone strip, and
+  on home and About, which copied its geometry onto a 51.4px HUD, 2.2 and 6.2px (reported 2026-11-16).
+  **While it holds focus, the HUD item under it steps aside on home and About** (`opacity: 0` on `.live`
+  and on `.hud-home`, the 232px "◂ IDAN.LAB // SECURITY NOTES" from 781px), and below 30rem the whole
+  row does: there home's masthead, which wraps under the box below 395px, and at 320px About's nav
+  reach under it. `opacity`, never `visibility` or `display`, which would take About's links out of the
+  tab order: the next Tab still lands on the home link. On a Starlight page the box covers the 100px
+  name whole and nothing steps aside. Tab order unchanged everywhere. Measured on the built site in
+  headless Chrome at 320, 390, 430, 479, 480, 781, 1024 and 1440px, both themes. The capitals reach
+  the accessible name: Chrome's accessibility tree names the link "SKIP TO CONTENT", where it was "Skip
+  to content", as it already named About's nav "WRITEUPS"; Starlight's link could keep its case only
+  through an `aria-label`, which means forking `SkipLink`.
 - **Content-embedded components:** platform landings, the 404, and `/secret` are Starlight docs
   that embed scoped Astro components via MDX (`PlatformIndex`, `NotFound`, `SecretTerminal`). They
   carry Starlight's `not-content` class so prose styling skips them; most of our prose rules in
@@ -939,6 +962,9 @@ token is an open ROADMAP item, not a bug.
   - Tab order: skip link, name, search, GitHub, theme; on a splash page below 50rem, skip link, name,
     search, theme. See DECISIONS 2026-10-23 · The quiet bar:
     Starlight's header puts on the HUD.
+  - **The skip link** sits in the bar while it holds focus, over the name, in the HUD's capitals, its
+    top computed from `--sl-nav-height` (§5 "On focus the skip link is one of the bar's words",
+    2026-11-16). The quiet bar had left it at Starlight's size, so it ran past the hairline.
 - **The phone "On this page" is the Quiet strip** (owner, 2026-10-24; `chrome.css`): Starlight's own
   `<mobile-starlight-toc>`, restyled in CSS, below 72rem.
   - **The strip** is 38px (`--sl-mobile-toc-height: 2.375rem`, Starlight's 48px; it also sets the
@@ -1627,7 +1653,9 @@ and `.skip-link` rules on home and About:
 - **The rest:** the sidebar's text keeps max(1rem, inset) from the edge it touches, both edges in the
   phone menu, and its foot and the menu's footer clear the home indicator; the strip's row and open
   panel, and search below 50rem and on a phone held sideways, which fills the screen, keep inside; the
-  skip link, and the last content panel's foot at max(1.5rem, bottom inset).
+  skip link starts at the bar's gutter, max(its padding, inset), as the name does (home's and About's
+  at their HUD's padding, max(1.5rem, inset)); and the last content panel's foot sits at max(1.5rem,
+  bottom inset).
 - **The zoomed image's close control and caption** are two rules in the unlayered tail
   (`overrides.css`), the only way to beat `starlight-image-zoom` 0.15.0's own unlayered styles: a
   layered copy of each left the control 20px from the right edge, inside the inset, and the caption at
@@ -2109,8 +2137,17 @@ PasswordReveal's block mode; flags are FlagCapture controls, never toggles; code
 Its name carries the NEXT action, "Expand all toggles" or "Collapse all toggles", like any action button,
 and it carries no `aria-pressed` (2026-10-03): paired with a name that flips, the pressed state announced
 "Collapse all toggles, pressed" with everything open, the opposite of the truth.
-Preserves reading position: anchors on the current heading and corrects scroll synchronously, with native
-`overflow-anchor` suppressed for the operation (see DECISIONS; ROADMAP has the unverified few-pixel shift).
+Preserves the reader's line: the first line under the fixed header (`header.header`'s bottom edge,
+measured live). Before the change it pins the first content element that starts at or below that line,
+or crosses it with no changing toggle inside; a crossing element that holds one is searched inside, and
+passed over when the line only grazes its padding; a closed toggle offers only its summary. It toggles,
+re-measures the pin and corrects scroll in the same task, so every toggle above the line opens or closes
+out of view, and one on screen opens downward from its title, as a click on it would. On Collapse all,
+when the reader's line is inside a closing toggle's body, that card lands at the root's
+`scroll-padding-top`, where a TOC click lands a heading. Past the last content block the content's bottom
+edge is the pin. Native `overflow-anchor` is suppressed on the root for the operation, restored next
+frame. The previous anchor, the section heading above a fixed 96px line, moved the reader by every toggle
+between that heading and the screen (2026-11-17, see DECISIONS).
 
 ## 7. Content Pipeline (Notion → site)
 

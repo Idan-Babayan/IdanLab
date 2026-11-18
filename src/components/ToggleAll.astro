@@ -11,8 +11,8 @@
 // The wrapper starts hidden and the script reveals it only when a page has two or more content
 // toggles, so there is no dead button without JS, no empty control on a page that has no toggles, and
 // no bulk control on a single-toggle page (where expand/collapse-all adds nothing over the lone
-// toggle). Expand/collapse anchors on the reader's current heading and corrects scroll so the page
-// does not teleport.
+// toggle). Expand/collapse pins the reader's line (the first line under the fixed header) and corrects
+// scroll so the page does not teleport: every toggle above that line opens or closes out of view.
 ---
 
 <div class="toggle-all-wrap" hidden>
@@ -55,29 +55,79 @@
     return Array.from(scope.querySelectorAll('details.toggle')) as HTMLDetailsElement[];
   }
 
-  // A stable scroll anchor for the bulk operation: the content heading (h2/h3) at or just above the
-  // top of the viewport (the section the reader is under). Headings live outside the toggles, so they
-  // survive both expand and collapse. Falls back to the topmost visible content element, else null.
-  function anchorElement(): HTMLElement | null {
-    const scope = document.querySelector('.sl-markdown-content');
-    if (!scope) return null;
-    const ANCHOR_LINE = 96; // a little below the sticky header, the reader's notional reading line
-    const headings = Array.from(scope.querySelectorAll('h2, h3')) as HTMLElement[];
-    let current: HTMLElement | null = null;
-    for (const h of headings) {
-      if (h.getBoundingClientRect().top <= ANCHOR_LINE) current = h; // last heading at/above the line
-      else break; // headings are in document order, so the rest are further down
+  // The reader's line: the top edge of the readable area, directly under the fixed header. This is the
+  // line that must not move. Measured live, so it follows the header's real height.
+  function readingLine(): number {
+    const header = document.querySelector('header.header');
+    return header instanceof HTMLElement ? header.getBoundingClientRect().bottom : 0;
+  }
+
+  // Where a toggle lands when the reader was inside it and it closes: the same offset Starlight gives a
+  // heading reached from the TOC (the root's scroll-padding-top), so it reads like a normal arrival.
+  function landingLine(): number {
+    const pad = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop);
+    return Number.isFinite(pad) ? pad : readingLine();
+  }
+
+  // An element's laid-out children, in document order. display:contents wrappers have no box of their
+  // own, so their children stand in for them; elements with no box and out-of-flow ones (the heading
+  // anchor icon) are skipped. A CLOSED toggle offers only its summary: its body sits under the UA's
+  // content-visibility:hidden, and Chromium still answers geometry queries there by forcing a layout,
+  // so a hidden body would otherwise report a position and could be picked as the anchor.
+  function boxedChildren(parent: Element): Element[] {
+    const out: Element[] = [];
+    const kids =
+      parent instanceof HTMLDetailsElement && !parent.open
+        ? Array.from(parent.children).filter((c) => c instanceof HTMLElement && c.localName === 'summary')
+        : Array.from(parent.children);
+    for (const child of kids) {
+      const style = getComputedStyle(child);
+      if (style.display === 'contents') {
+        out.push(...boxedChildren(child));
+        continue;
+      }
+      if (style.position === 'absolute' || style.position === 'fixed') continue;
+      if (child.getClientRects().length === 0) continue;
+      out.push(child);
     }
-    if (current) return current;
-    // Reader is above the first heading: anchor on the topmost element still in view.
-    const candidates: HTMLElement[] = headings.length
-      ? headings
-      : (Array.from(scope.children) as HTMLElement[]);
-    for (const el of candidates) {
-      const top = el.getBoundingClientRect().top;
-      if (top >= 0 && top < window.innerHeight) return el;
+    return out;
+  }
+
+  // The element to pin: the first one, in document order, that either starts at or below the reading
+  // line, or crosses it with nothing inside it about to change size. Pinning such an element pins every
+  // line inside it. A crossing element that DOES hold a changing toggle is searched inside instead; if
+  // the line only grazes it (a toggle's padding peeking out under the header, the summary already
+  // above), the search moves on past it, so its change happens above the reader, out of view.
+  function anchorAtLine(scope: Element, line: number, changing: ReadonlySet<HTMLDetailsElement>): Element | null {
+    const changes = (el: Element): boolean => {
+      for (const d of changing) if (el === d || el.contains(d)) return true;
+      return false;
+    };
+    const visit = (parent: Element): Element | null => {
+      for (const child of boxedChildren(parent)) {
+        const r = child.getBoundingClientRect();
+        if (r.bottom <= line) continue; // wholly above the line
+        if (r.top >= line || !changes(child)) return child;
+        const inner = visit(child);
+        if (inner !== null) return inner;
+      }
+      return null;
+    };
+    return visit(scope);
+  }
+
+  // On collapse, an anchor inside a closing toggle's BODY loses its boxes. Return the OUTERMOST closing
+  // toggle that swallows it (its card survives, title showing), or null when the anchor survives. A
+  // toggle's own summary stays visible when it closes, so it never swallows its own title text.
+  function swallowingToggle(el: Element, closing: ReadonlySet<HTMLDetailsElement>): HTMLDetailsElement | null {
+    let outer: HTMLDetailsElement | null = null;
+    let d: HTMLDetailsElement | null = el.parentElement?.closest('details') ?? null;
+    while (d !== null) {
+      const summary = d.querySelector(':scope > summary');
+      if (closing.has(d) && !(summary !== null && summary.contains(el))) outer = d;
+      d = d.parentElement?.closest('details') ?? null;
     }
-    return null;
+    return outer;
   }
 
   function initToggleAll(): void {
@@ -97,37 +147,53 @@
 
       btn.addEventListener('click', () => {
         const current = contentToggles();
-        const anyClosed = current.some((d) => !d.open);
+        const opening = current.some((d) => !d.open); // mixed or all closed expands; all open collapses
+        const changing = new Set(current.filter((d) => d.open !== opening));
+        const scope = document.querySelector('.sl-markdown-content');
 
-        // Scroll-anchor around the bulk change so the reader's place is preserved (no teleport).
-        const anchor = anchorElement();
-        const oldTop = anchor ? anchor.getBoundingClientRect().top : 0;
+        // Pin the reader's line BEFORE anything moves. With the line past the last content block (the
+        // pager in view), the content's bottom edge is the pin, so what is on screen holds still.
+        const line = readingLine();
+        let anchor: Element | null = scope ? anchorAtLine(scope, line, changing) : null;
+        let edge: 'top' | 'bottom' = 'top';
+        if (anchor === null && scope !== null) {
+          anchor = scope;
+          edge = 'bottom';
+        }
+        const edgeOf = (el: Element): number => {
+          const r = el.getBoundingClientRect();
+          return edge === 'top' ? r.top : r.bottom;
+        };
+        let target = anchor ? edgeOf(anchor) : 0;
+        if (anchor && edge === 'top' && !opening) {
+          const swallow = swallowingToggle(anchor, changing);
+          if (swallow) {
+            anchor = swallow; // the reader's text was inside this toggle: land its card in view, title first
+            target = landingLine();
+          }
+        }
 
-        // Suppress the browser's NATIVE scroll anchoring for just this operation. It is active
-        // (overflow-anchor: auto) and picks its own anchor, which fights the manual correction below
-        // and leaves a few-pixel offset that differs between the expanded and collapsed layouts (a
-        // small reversible shift). Set it on document.documentElement (the viewport scroller).
+        // Suppress the browser's NATIVE scroll anchoring for just this operation, so the correction below
+        // is the only one (an engine that applied its own after this task would correct twice). Set on
+        // document.documentElement (the viewport scroller).
         const scroller = document.documentElement;
         scroller.style.setProperty('overflow-anchor', 'none');
 
-        // Mixed or all-closed expands first; all-open collapses. anyClosed is the next open state.
-        current.forEach((d) => {
-          d.open = anyClosed;
+        changing.forEach((d) => {
+          d.open = opening;
         });
-        setExpanded(btn, anyClosed);
+        setExpanded(btn, opening);
 
-        // Reading getBoundingClientRect forces the reflow, so newTop is the post-mutation position.
-        // Correct by the difference synchronously (same task, no rAF), keeping the anchor heading
-        // visually fixed. Two-arg scrollBy is instant here (writeup pages have no smooth scroll-behavior).
+        // Reading getBoundingClientRect forces the reflow, so this is the post-change position. Correct by
+        // the difference synchronously (same task, no rAF): the reader never sees an intermediate frame.
+        // Two-arg scrollBy is instant here (writeup pages have no smooth scroll-behavior).
         if (anchor) {
-          const delta = anchor.getBoundingClientRect().top - oldTop;
+          const delta = edgeOf(anchor) - target;
           if (delta !== 0) window.scrollBy(0, delta);
         }
 
-        // Restore native anchoring on the NEXT frame, not synchronously: native anchoring runs during
-        // this operation's rendering step (after this task), so the override must still be in place
-        // then. Restoring next frame scopes the suppression to the operation, so normal reading (for
-        // example late-loading content above the viewport) still benefits from native anchoring.
+        // Restore native anchoring on the NEXT frame, so normal reading (late-loading content above the
+        // viewport) still benefits from it.
         requestAnimationFrame(() => {
           scroller.style.removeProperty('overflow-anchor');
         });

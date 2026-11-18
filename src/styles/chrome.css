@@ -1005,6 +1005,30 @@ a.site-title:hover {
   text-shadow: 0 0 8px color-mix(in oklab, var(--sl-color-accent) 45%, transparent);
 }
 
+/* The skip link: one of the bar's words while it holds focus, over the name. Starlight draws it as a
+   block of body text 12px from the corner, sized for its own bar (64px from 50em, 56px below): 176 by
+   44px, it ran 4.6px past this one's hairline and its ring 8.6px, over the sidebar's first entry and
+   the phone strip (reported 2026-11-16). Here it is the HUD's capitals in a box the search box's height
+   to half a pixel and with its radius, in the primary button's colours and flat, as the bar is. Its
+   top is computed from the bar's own height, less the hairline and the link's box (1rem of padding and
+   one line), so it stays centred on the bar if the bar ever changes: today its text sits on the bar's
+   line, 1rem from the top, and its ring ends 4px above the hairline. The end padding gives back the
+   tracking after the last letter, so the word sits centred. It starts at the bar's gutter, where the
+   name does ("Safe areas", below). Home and About draw the same link in their own style blocks. */
+.sl-skip-link {
+  top: calc((var(--sl-nav-height) - 1px - 1rem - 0.72rem * 1.6) / 2);
+  font-family: var(--sl-font-mono);
+  font-size: 0.72rem;
+  line-height: 1.6;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.sl-skip-link:focus {
+  padding: 0.5rem calc(0.75rem - 0.12em) 0.5rem 0.75rem;
+  border-radius: 6px;
+  box-shadow: none;
+}
+
 /* The right-hand end: GitHub, then the theme, 1.4rem apart as About's HUD nav is, with no separator.
    The bar's own columns keep Starlight's gap: its grid template subtracts that gap to start the search
    column at the article column's edge, so any other gap moves the search off it. */
@@ -1400,7 +1424,7 @@ starlight-menu-button button {
   padding-bottom: max(1.5rem, var(--tp-safe-bottom));
 }
 .sl-skip-link {
-  inset-inline-start: max(0.75rem, var(--tp-safe-left));
+  inset-inline-start: max(var(--sl-nav-pad-x), var(--tp-safe-left));
 }
 
 /* The sidebar, and below 50rem and on a phone held sideways the phone menu it becomes: its text keeps
