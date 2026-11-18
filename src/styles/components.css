@@ -415,7 +415,7 @@ html[data-theme="dark"] .port-label {
    - intel: a pale UV lavender (oklch 0.80 0.12 304), told apart from PicoCTF's purple #d96bff, which it
      wore until 2026-09-28, by lightness and chroma: 0.14 OKLab from it. It sits 0.046 from the medium
      tier violet and 0.049 from the Cryptography chip violet; every slot farther from both is near white.
-   - vuln: the magenta sudo wears in code blocks (.ec-cmd-priv in overrides.css), the same meaning
+   - vuln: the magenta sudo wears in code blocks (.cx-priv in chrome.css), the same meaning
      (privilege, the dangerous path), off VulnHub's red #ff5c5c, which it wore until 2026-09-28: 0.10.
    - defense: its own green. */
 .sl-markdown-content .cl-recon   { --acc: #41efff; }

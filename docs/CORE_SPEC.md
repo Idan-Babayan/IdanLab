@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-11-18 (writeup prose lowers its energy: the h3 reads a soft cyan of its own while the TOC's current h3 keeps the link cyan, the lede's bar fades between two opaque greens over a lighter wash, and inline code turns ice; Expand all and Collapse all keep the reader's line in place: every toggle above the first line under the header opens or closes out of view, and on Collapse all a toggle the reader was inside lands where a TOC click lands a heading; on 2026-10-25, the glass's ramp animates one number, `--tp-frost`, so no theme value sits in its keyframes, where WebKit had left the glass transparent after a theme switch or a return to Safari on iOS, and it now holds on the owner's iPhone; the bar's glass is thinner and stronger and frosts over in 36px, its values tokens; everything on the glass but the name reads full contrast, so a screenshot under the bar no longer drowns the search, the icons or the phone strip; on 2026-10-24, the phone "On this page" is the Quiet strip: 38px, the current entry named in its heading's colour, the panel numbered on the page colour with a rail on the current entry; page titles balance their lines; the search box's key chips hide where nothing can hover; Chrome for Android's status bar takes the theme's page colour on a phone in light mode; on a phone: on iOS Safari the strip above the bar is the page colour, not the page scrolling, the bar now giving Safari a colour and the film grain lying off its top edge; the reading hairline hides under the open menu and, beside the sidebar from 50rem, spans only the strip; the bar keeps its room for the menu button after an image zoom; the flag's "Copied!" pill takes the label's row, clear of a wrapped flag; on 2026-10-23, Starlight's header is the quiet bar: the HUD's height, clear at the top and frosted once scrolled, the name in Syne at 21px, every other word in the HUD's mono capitals, the search in Starlight's own place on the article column's edge, GitHub and a one-click theme button at the right, the one replacing override; the reading hairline fills on writeups only, from a typed component; home's masthead lockup sits on the bar's centre; on 2026-10-17, writeup screenshots take the code frames' edge, the difficulty chip answers the pointer, About's bar links CONTACT, and identity links tie the site to the owner's profiles; on 2026-10-05, the landing hero's glow stays in its own pane on a desktop and shows no hard edge at any width; callouts are no longer unnamed landmarks; landing card titles sit one level under the page title; the mobile "On this page" check wears its entry's colour; site search keeps no image as a field and ranks each Bandit page first however it is typed, bar two routes and two logins that Pagefind cannot tell from other levels; on 2026-10-03, site search no longer indexes the flags and passwords the pages hide; the decode headlines give a screen reader the settled word; the current "On this page" entry keeps its colour under the pointer on desktop and mobile; Syne's fallback is one face per weight, so the headline no longer jumps when the font arrives; a captured flag's spent button and the toggle-all control announce the truth; reduced motion stops the marketing pages' smooth scroll; the pressed filter pill's focus ring stands apart; the secret terminal's dim labels reach AA; dead CSS deleted and stale counts refreshed; on 2026-10-02, tool output in the writeups no longer dates the runs; on 2026-10-01, decorative characters keep their look and say only what they mean, and a build guard checks part of it; About is in site search for its owner, not for the writeups' topics; the marketing pages gain a skip link, a main landmark and `color-scheme`, and About's theme toggle reports its state; the writeup badge row names each fact for a screen reader; on 2026-09-30, sidebar entries that name what each platform holds, and About's practice cards split 2 + 2).
+> Last updated: 2026-11-18 (code blocks share one colour system: every token takes a role from its theme colour pair, a transcript reads as prompt, commands found by position and plain output with only its evidence coloured, the privilege group keeps the vuln magenta, and the category rules leave the unlayered tail, 17 rules to 8; writeup prose lowers its energy: the h3 reads a soft cyan of its own while the TOC's current h3 keeps the link cyan, the lede's bar fades between two opaque greens over a lighter wash, and inline code turns ice; Expand all and Collapse all keep the reader's line in place: every toggle above the first line under the header opens or closes out of view, and on Collapse all a toggle the reader was inside lands where a TOC click lands a heading; on 2026-10-25, the glass's ramp animates one number, `--tp-frost`, so no theme value sits in its keyframes, where WebKit had left the glass transparent after a theme switch or a return to Safari on iOS, and it now holds on the owner's iPhone; the bar's glass is thinner and stronger and frosts over in 36px, its values tokens; everything on the glass but the name reads full contrast, so a screenshot under the bar no longer drowns the search, the icons or the phone strip; on 2026-10-24, the phone "On this page" is the Quiet strip: 38px, the current entry named in its heading's colour, the panel numbered on the page colour with a rail on the current entry; page titles balance their lines; the search box's key chips hide where nothing can hover; Chrome for Android's status bar takes the theme's page colour on a phone in light mode; on a phone: on iOS Safari the strip above the bar is the page colour, not the page scrolling, the bar now giving Safari a colour and the film grain lying off its top edge; the reading hairline hides under the open menu and, beside the sidebar from 50rem, spans only the strip; the bar keeps its room for the menu button after an image zoom; the flag's "Copied!" pill takes the label's row, clear of a wrapped flag; on 2026-10-23, Starlight's header is the quiet bar: the HUD's height, clear at the top and frosted once scrolled, the name in Syne at 21px, every other word in the HUD's mono capitals, the search in Starlight's own place on the article column's edge, GitHub and a one-click theme button at the right, the one replacing override; the reading hairline fills on writeups only, from a typed component; home's masthead lockup sits on the bar's centre; on 2026-10-17, writeup screenshots take the code frames' edge, the difficulty chip answers the pointer, About's bar links CONTACT, and identity links tie the site to the owner's profiles; on 2026-10-05, the landing hero's glow stays in its own pane on a desktop and shows no hard edge at any width; callouts are no longer unnamed landmarks; landing card titles sit one level under the page title; the mobile "On this page" check wears its entry's colour; site search keeps no image as a field and ranks each Bandit page first however it is typed, bar two routes and two logins that Pagefind cannot tell from other levels; on 2026-10-03, site search no longer indexes the flags and passwords the pages hide; the decode headlines give a screen reader the settled word; the current "On this page" entry keeps its colour under the pointer on desktop and mobile; Syne's fallback is one face per weight, so the headline no longer jumps when the font arrives; a captured flag's spent button and the toggle-all control announce the truth; reduced motion stops the marketing pages' smooth scroll; the pressed filter pill's focus ring stands apart; the secret terminal's dim labels reach AA; dead CSS deleted and stale counts refreshed; on 2026-10-02, tool output in the writeups no longer dates the runs; on 2026-10-01, decorative characters keep their look and say only what they mean, and a build guard checks part of it; About is in site search for its owner, not for the writeups' topics; the marketing pages gain a skip link, a main landmark and `color-scheme`, and About's theme toggle reports its state; the writeup badge row names each fact for a screen reader; on 2026-09-30, sidebar entries that name what each platform holds, and About's practice cards split 2 + 2).
 
 ---
 
@@ -161,7 +161,7 @@ DECISIONS 2026-10-24 · Dependabot alerts cleared by a lockfile-only refresh, vi
 
 **Transitive, not declared, but load-bearing:** `@astrojs/mdx` 7.0.8, `astro-expressive-code` 0.44.1
 and `@expressive-code/core` 0.44.1 (themes `tokyo-night` dark / `one-light` light; the custom EC
-plugin `src/lib/ec-priv-command.mjs` tags command words by category, see §6), `pagefind` 1.5.2,
+plugin `src/lib/ec-terminal.mjs` gives every code token a colour role, see §6 "Code-block colour roles"), `pagefind` 1.5.2,
 `vite` 8.2.4, `zod` 4.6.7 (the strict frontmatter enums in `src/content.config.ts` run on it;
 DECISIONS 2026-10-24 · zod 4.5.1 to 4.6.7 by a lockfile-only refresh, checked with a negative frontmatter probe).
 
@@ -332,7 +332,7 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 │  │     └─ ThemeSelect.astro         # REPLACING Starlight override, the one exception (owner, 2026-10-18): Starlight's Dark/Light/Auto select becomes About's one-click theme button, in the header and the phone menu (see §6 "Starlight Component Overrides")
 │  ├─ lib/
 │  │  ├─ chip-units.mjs               # the inline-chip grouping rule, one module and two callers: groupChips (the rehype plugin) and groupLabelHtml (Toggle.astro's set:html label); imported by Node (plugins/) and Vite (src/), its only import unist-util-visit
-│  │  ├─ ec-priv-command.mjs          # EC plugin: tags command words by category (priv/recon/net/inspect)
+│  │  ├─ ec-terminal.mjs              # EC plugin: code colour roles (token colour pairs, prompts, commands by position, output entities)
 │  │  └─ taxonomy.mjs                 # what a writeup's MIDDLE directory means per platform (difficulty tiers, the six picoCTF categories, PLATFORM_AXIS); dependency-free because Node (plugins/) and Vite (src/) both import it
 │  └─ styles/                         # the theme pass, split into cascade-layer modules (see §5 "The layer contract")
 │     ├─ layers.css                   # the order statement `@layer starlight, tokens, base, prose, chrome, components, pages, utilities;` plus the cascade contract and the unit rule. First customCss entry
@@ -1838,41 +1838,58 @@ breakdown and the cyan card eyebrow are gone (2026-09-07): enumeration lives in 
 are tinted by the difficulty arc or the category ring as the cards' bars, borders, glares and rings are (2026-09-07), and the card's meta line is text-coloured with its glyph in hue
 (see "Taxonomy palettes" above).
 
-### Code-block command highlighting (by category, OKLCH palette)
-`ec-priv-command.mjs` tags command words by semantic category, colored in `overrides.css` (theme-aware,
-`!important`). The palette is designed in OKLCH and measured against the rendered code bg: tokyo-night
-`#1a1b26` on dark; on light the warm `--ec-frm-edBg` `#e6dfd0` that `chrome.css` paints, not one-light's
-`#fafafa`, which no frame shows and which the first light figures were taken against. It separates the
-three perceptual channels:
-- **Lightness = contrast (uniform):** one target L per theme (dark `L 0.745`, light `L 0.43`) so all
-  categories read at one brightness. Measured: dark recon 7.56 / net 7.96 / inspect 7.45 (all AAA, on
-  `#1a1b26`, model B). On the light frame the set clears AA, not 7:1: recon 6.08 / net 5.86 / inspect
-  4.59 (`#e6dfd0`, model B, measured 2026-10-11). **Exception:** light inspect is deliberately lightened
-  to `L 0.50` per owner preference, because the darker uniform brown read too heavy on paper (the ~5.8:1
-  first recorded was against `#fafafa`).
-- **Hue = category** (kept clear of the theme's string/keyword/function token hues): privilege magenta,
-  recon gold `h95`, network cyan `h200`, inspect warm-sand `h60` (~145 deg off the theme's cool neutral
-  text, so the near-neutral inspect still reads as a distinct tint).
-- **Chroma = loud vs quiet** (NOT lightness): recon + network vivid (high C); inspect LOW C at the same
-  L/contrast, so it is calm without going dim. This fixed the previously near-invisible inspect color
-  (it had been quieted by dropping CONTRAST instead of chroma).
-- Values: privilege `.ec-cmd-priv` `#ff4d9d`/`#b70066` (sudo, su, doas). recon `.ec-cmd-recon`
-  `oklch(0.745 0.153 95)`/`oklch(0.43 0.088 95)` (nmap, gobuster, ffuf, feroxbuster, nikto, whatweb,
-  enum4linux, smbclient). network `.ec-cmd-net` `oklch(0.745 0.126 200)`/`oklch(0.43 0.073 200)`
-  (nc, ncat, netcat, penelope, socat, curl, wget, ssh, chisel). inspect `.ec-cmd-inspect`
-  `oklch(0.745 0.045 60)`/`oklch(0.5 0.045 60)` (ls, cd, cat, echo, whoami, id, find, grep, pwd, ping).
-- **Weight channel:** every recognized command is `font-weight:700`, so a command pops by weight while
-  color only signals category. **sudo's dark COLOR is the fixed anchor (`#ff4d9d`, unchanged); it
-  gains bold only** and sits at 5.53:1 on `#1a1b26` (model B), just under the 7:1 the redesigned set
-  meets, by design, because the dark anchor must not be recolored. On light the old `#c41d6f` read
-  4.22:1 on the warm frame, under AA, so since 2026-10-11 light reads `#b70066`, the vuln callout's own
-  light ink, 4.94:1 (`#e6dfd0`, model B): one magenta on paper for privilege and the dangerous path.
-- Mechanism: command-position detection (first word after prompt / `sudo` / `|` `&&` `;`); sudo stays
-  content-matched. Command lists are one-line-extendable. Residual risk: an output line whose first
-  word is exactly a listed command (rare) can be mis-tagged.
+### Code-block colour roles (one palette for every language, terminal-aware)
+`src/lib/ec-terminal.mjs`, an Expressive Code plugin on `postprocessRenderedLine`, gives every code token
+a role class, and `chrome.css` colours each role per theme in `@layer chrome`, without `!important`, so a
+keyword, a string or a flag reads the same in Bash, PowerShell, cmd, Python, Rust, JavaScript, HTML and
+PHP (DECISIONS 2026-11-18).
+- **Token roles by colour pair.** Expressive Code writes a token's theme colours as inline custom
+  properties (`--0` tokyo-night, `--1` one-light) and paints them through
+  `:where(span[style^='--']:not([class]))`, so a classed span takes its role colour instead. It
+  highlights with `includeExplanation: false` (0.44.1), so no scopes reach a plugin; with both themes
+  pinned, the (dark, light) pair as Expressive Code renders it, after its contrast adjustment, names the
+  scope. An unknown pair falls back on its dark colour alone, then stays Expressive Code's. A theme change
+  needs a new pair table.
+- **Line kinds.** A block with a prompt line is a transcript: its prompt lines split into the prompt and
+  a command line, its comment lines keep their token roles, and every other line is output (`cx-out`),
+  plain ink with only IPs, hosts and URLs, ports and `open` / `Enabled` coloured, in the colours those
+  entities have in commands. A shell-language block without a prompt is a script, every line a command
+  line, so output pasted without a prompt goes in a `text` fence (§7 "MDX conventions"). A line ending in
+  `\` or a backtick continues its command.
+- **Prompts.** Kali's two-line prompt, `user@host:path$` or `#`, `*Evil-WinRM* PS path>`, `PS C:\path>`,
+  `C:\path>`, a bare `$ `, `>> ` and `(gdb) ` today; the msf, meterpreter, `smb:`, mysql, MariaDB,
+  sqlite, ftp and sftp prompts are recognized for later writeups. On dark the prompt reads the variable
+  lavender, Kali's `[ ]` cyan and its path and connectors the base ink; on light the whole prompt is one
+  ink, `#3a4687`, the variable ink, as dark's prompt is its variable lavender.
+- **Commands by position, not by name.** A command is the first word after the prompt, after `|`, `||`,
+  `&&`, `;` or `&`, inside `$(`, `(` or `{`, or after a privilege word. Every command is one style
+  (`cx-cmd`, bold sand). Only the privilege group is named (`cx-priv`, bold: sudo, su, doas, runas,
+  pkexec), in the vuln callout's magenta. Flags (and `/x` switches on Windows), arguments, strings,
+  variables, numbers, redirections and separators take fixed roles.
+- **Markup.** In html, php, xml, svg, vue, astro and svelte blocks a tag name reads as a keyword and an
+  attribute name as a flag, so HTML inside PHP matches plain HTML.
+- **Values** (dark / light; model B on the rendered frames, dark `#1c1d28`, light `#e5decf`, read from
+  the build): base and output `#a9b1d6` 7.9 / `#383a42` 8.5; strings and arguments `#9ece6a` 9.2 /
+  `#2f6631` 5.1; `open` and `Enabled` `#9ece6a` / `#2a632a` 5.4; keywords and tag names `#bb9af7` 7.2 /
+  `#9a1f98` 5.2; functions, URLs and hosts `#7aa2f7` 6.6 / `#2e57b3` 5.0; numbers and IPs `#ff9e64`
+  8.2 / `#8f4409` 5.2; variables `#c0caf5` 10.4 / `#3a4687` 6.5; flags and attribute names `#e0af68`
+  8.4 / `#7a5300` 5.1; punctuation `#959ec8` 6.4 / `#565966` 5.2; ports `#7dcfff` 9.7 / `#0a6178` 5.2;
+  comments (italic) `#8d92aa` 5.4 / `#5a5b60` 5.1; prompt `#c0caf5` / `#3a4687` 6.5, Kali's brackets
+  `#89ddff` 11.0, Kali's path `#a9b1d6`; commands (bold) `oklch(0.745 0.045 60)` 7.3 / `#6f5644` 5.1;
+  privilege (bold) `#ff4d9d` 5.4 / `#b70066` 4.9.
+  - Every light role clears 5:1 except the privilege magenta, the vuln label's own ink (DECISIONS
+    2026-10-11). One-light's own flag, argument and comment inks had read about 4.4:1 on this frame.
+  - Marked lines (dark `#2d352c`, light `#d5d8b6`, model B): every role that sits on a marked line today
+    clears 4.5:1 (lowest: dark punctuation 4.8, light functions and URLs 4.6). Comments would read 4.1:1
+    on a dark marked line and the privilege magenta 4.1:1 dark, 4.47:1 light; neither sits on one today,
+    so a fence that marks such a line needs a marked-line ink for it first.
+- **Weight and style.** Commands and privilege commands are bold, comments italic, every other role
+  upright: Expressive Code's own italics do not reach a classed span.
+- **Line classes.** Each processed line carries `cx-<kind>` (`prompt`, `prompt-only`, `cont`, `script`,
+  `output`, `code`), a hook for checks and for any later per-kind rule.
 - EC `{n}` line highlights get a decisive-line focus treatment (`chrome.css`, after the scrollbar rules):
   `.ec-line.mark` gets a lime gutter bar + a low tint (dark accent 10%, light `--tp-deco-lime` 12%) that
-  sits under the command-token colors. The bar is Expressive Code's own, the code cell's 0.15rem
+  sits under the role colours. The bar is Expressive Code's own, the code cell's 0.15rem
   inline-start border, recoloured to the accent in both themes; EC takes its width back out of the cell's
   padding, so the marked line's text stays in line with the rest. Until 2026-10-11 the rule drew a second,
   2px border on the line itself, which sat beside EC's blue bar (a lime and a blue bar on every marked
@@ -1907,7 +1924,7 @@ Starlight has no shield). Icons via Starlight's `<Icon>`. Authored as `<Callout 
 - **Five voices (2026-09-28).** A callout wears a colour the page already owns only when it means the
   same thing there, never a platform's identity. Recon takes the site's cyan secondary (links, port
   chips, and in a softer tint the h3; the About sidebar dot inherits it too), loot the flag gold (credentials are loot), vuln the magenta
-  sudo wears in code blocks (`.ec-cmd-priv`: privilege, the dangerous path; on light, since 2026-10-11, sudo
+  sudo wears in code blocks (`.cx-priv`: privilege, the dangerous path; on light, since 2026-10-11, sudo
   reads the vuln label's own ink `#b70066`, so the two are one magenta). Intel is the one new hue, a pale
   UV lavender told apart from PicoCTF's purple by lightness and chroma (0.14 OKLab). Until 2026-09-28 intel
   wore PicoCTF's `#d96bff` and vuln VulnHub's `#ff5c5c`, byte-identical to their sidebar dots and badge
@@ -2309,6 +2326,9 @@ against any build directory.
   fails (`plugins/remark-inject-writeupmeta.mjs`). See DECISIONS 2026-09-03.
 - Long/indented code → wrapped in `<Toggle>`; all code blocks get `frame="code"` + a
   language `title` so bash and python look identical.
+- Output pasted with no prompt goes in a `text` fence. A shell-language fence (bash, sh, zsh,
+  powershell, cmd and the like) with no prompt line reads as a script, so the first word of each line
+  would render as a command (DECISIONS 2026-11-18).
 - **Tool output never dates the run (2026-10-02, the owner's):** no writeup shows when its machine was
   worked, so the order the machines were done in cannot be read off the site. Trim nmap's banner to
   `Starting Nmap <version> ( https://nmap.org )`, as Bandit 16-17 always had it; drop Kerberos's
@@ -2670,12 +2690,9 @@ icon.
 - **The tail contract.** `overrides.css` is the only unlayered surface, and a rule earns a place there on
   exactly one of two grounds: it must beat unlayered CSS (a vendor stylesheet, an inline style, or one of
   our own Astro-scoped component styles, all of which sit above every layer), or it carries `!important`.
-  Every tail rule carries a comment naming what it beats. The tail is 17 rules today: nine `.ec-cmd-*`
-  rules, eight colours and the weight (unlayered and `!important` on a premise the build contradicts: Expressive Code puts no
-  inline colour on a tagged span, only inline custom properties, and paints token colours through a
-  rule that skips classed spans, read from the build 2026-10-03; whether they can move into
-  `@layer components` without `!important` waits for a build test, see the comment in
-  `overrides.css`), the two `.pi-index .reveal`
+  Every tail rule carries a comment naming what it beats. The tail is 8 rules today (the nine `.ec-cmd-*`
+  rules left it on 2026-11-18, once a build test settled that nothing else colours a classed code span,
+  DECISIONS 2026-11-18): the two `.pi-index .reveal`
   transition rules and the V3 light card shadow (they beat WriteupCard's and PlatformIndex's own scoped
   styles), the `.flagcap` reduced-motion kill, and the bar's phone padding (2026-10-24, `!important`
   against an inline style: `starlight-image-zoom` 0.15.0 leaves Starlight's desktop padding on
@@ -3047,7 +3064,7 @@ whole records.
 - Simulating Android text scaling as a doubled root font size on an unchanged viewport: rejected, Chrome for Android has no such state (it ignores the OS font size for web content and its zoom narrows the viewport). Model phone enlargement as a narrower viewport. See DECISIONS 2026-09-19 · Android text enlargement is Chrome page zoom, not a root font scale.
 - A layout for viewports below 320px (Chrome page zoom past about 110 percent on a 360 phone, 125 on a 411): out of scope, not attempted, with the landings' silent clip the one exception kept in ROADMAP (About and home, which cut the same way, are an open question there). See DECISIONS 2026-09-19 · The supported floor is a 320px viewport, and the landings' clip is the one exception.
 - Grey callouts with only vuln coloured: rejected, the reading column loses its voice and the warning red would still be VulnHub's. See DECISIONS 2026-09-28 · Callouts speak in five voices, and light mode gets its own border and label.
-- A new hue for every callout type: rejected, what the wheel has left lands in the code-frame command colours (teal 0.034 from `curl`, brass 0.050 from `nmap`) and every warning red sits within 0.08 of VulnHub's. See DECISIONS 2026-09-28 · Callouts speak in five voices, and light mode gets its own border and label.
+- A new hue for every callout type: rejected, what the wheel has left lands in what were then the code-frame command colours (teal 0.034 from `curl`'s, brass 0.050 from `nmap`'s; commands share one sand since 2026-11-18) and every warning red sits within 0.08 of VulnHub's. See DECISIONS 2026-09-28 · Callouts speak in five voices, and light mode gets its own border and label.
 - Intel sharing recon's cyan: rejected, the two sit together in nearly every writeup and read as one box. See DECISIONS 2026-09-28 · Callouts speak in five voices, and light mode gets its own border and label.
 - A warmer or darker yellow for OverTheWire, Mustard `#f3c500` among them: rejected, every one lands 0.02 to 0.06 from the flag gold, the collision the move exists to end. See DECISIONS 2026-09-28 · OverTheWire moves to Canary yellow, and the amber stays with PasswordReveal.
 - Citrine `#dfdd00` for OverTheWire: rejected, it leans green, toward HackTheBox's lime. See DECISIONS 2026-09-28 · OverTheWire moves to Canary yellow, and the amber stays with PasswordReveal.
@@ -3065,7 +3082,7 @@ whole records.
 - Accent-high (`#2f4d09`) for all small lime text on paper: rejected, the highlight words go near-black and AttackPath's done run sinks to its own caption's lightness; accent-high stays for lime text on a lime tint. See DECISIONS 2026-10-11 · One lime ink for small text on paper, and About's light inks clear its glows.
 - `#447000` or `#426d00` as the light lime ink: rejected, the first reads 4.35:1 on the darkest grid dot and the second sits 0.020 OKLab from `#3e6700`, a near-duplicate. See DECISIONS 2026-10-11 · One lime ink for small text on paper, and About's light inks clear its glows.
 - The small-text gold ink on the flag headings, the 70% gray mix on a light TOC flag at rest, and a gilded fill on the current flag entry: rejected. See DECISIONS 2026-10-11 · Flag golds: a display gold for the headings, the AA golds for small words, and the glyph in the TOC.
-- A cyan bar on a marked code line, or the line's own border kept beside Expressive Code's: rejected, cyan puts a second hue back on a lime-tinted line and already means a network command in code, and the line's border is what pushed the marked line's text 2px right. See DECISIONS 2026-10-11 · A marked code line shows one lime bar: Expressive Code's own, recoloured.
+- A cyan bar on a marked code line, or the line's own border kept beside Expressive Code's: rejected, cyan puts a second hue back on a lime-tinted line and meant a network command in code at the time, and the line's border is what pushed the marked line's text 2px right. See DECISIONS 2026-10-11 · A marked code line shows one lime bar: Expressive Code's own, recoloured.
 - The root tier's ink as the light current flag entry, or a brighter current gold on dark: rejected, the first is an OKLab step of 0.046 from the resting gold, and past `#ffc23d` gold turns cream, near the white every other entry turns under the pointer. See DECISIONS 2026-10-11 · Flag golds: a display gold for the headings, the AA golds for small words, and the glyph in the TOC.
 - Light sudo kept inside the fixed anchor: rejected, the 5.4:1 that justified it described a background no frame paints; the anchor is the dark `#ff4d9d`. See DECISIONS 2026-10-11 · Sudo's light magenta is the vuln callout's ink, and the light command figures are re-measured.
 - The PasswordReveal block's chevron in the amber accent at full strength: rejected, it would be the one chevron not drawn in its own label's ink. See DECISIONS 2026-10-11 · The PasswordReveal block's chevron sits at 0.8 on paper.

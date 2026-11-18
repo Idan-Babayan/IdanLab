@@ -6,6 +6,45 @@
 
 ---
 
+### 2026-11-18 · Code blocks share one colour system: token roles in every language, commands by position
+- **Supersedes:** 2026-06-15 · Command-highlight palette rebuilt on a principled OKLCH basis (+ bold
+  weight) and 2026-06-14 · Code-block command highlighting by semantic category, both moved to
+  `DECISIONS-ARCHIVE.md`; what survives of them (bold commands, the dark sand, sudo's magenta) is
+  restated here. **In part:** 2026-10-11 · Sudo's light magenta is the vuln callout's ink, and the light
+  command figures are re-measured (the magenta stands; the category figures are gone); 2026-09-28 ·
+  Callouts speak in five voices, and light mode gets its own border and label (the `.ec-cmd-priv` class
+  it names; the magenta and its meaning stand); and 2026-08-29 · Astro 6 to 7 and Starlight 0.39 to
+  0.41, upgraded in phases against a byte-reproducible build (the four `ec-cmd-*` counts its
+  silent-failure counters watch; the method stands, with the `cx-` line classes as the canary).
+- **Decision:** `src/lib/ec-terminal.mjs` replaces `ec-priv-command.mjs`. Every token takes a role from
+  its (tokyo-night, one-light) colour pair, since Expressive Code 0.44 passes no scopes, and `chrome.css`
+  colours the roles per theme in `@layer chrome`, without `!important`. A block with a prompt line is a
+  transcript: the prompt takes its own roles (dark: the variable lavender, Kali's brackets cyan; light:
+  one ink, `#3a4687`), commands are found by position and share one bold sand, flags, arguments,
+  strings, variables and entities take fixed roles, and output is plain ink with only IPs, hosts, URLs,
+  ports and `open` / `Enabled` coloured. Only the privilege group keeps a name: sudo, su, doas, runas and
+  pkexec wear the vuln callout's magenta (`#ff4d9d` / `#b70066`), bold. Markup blocks read tag names as
+  keywords and attribute names as flags. The nine `.ec-cmd-*` rules leave the unlayered tail (17 rules
+  to 8), and Unified's LinPEAS listing becomes a `text` fence.
+- **Why:** the category palette coloured commands from name lists (curl and ssh as network, ls and cat
+  as inspection), so every new tool needed a list entry and an unlisted one kept the theme's token
+  colour. The themes paint one kind of token in several colours depending on the grammar (tokyo-night
+  alone paints keywords purple, cyan or red), so blocks in different languages did not read as one
+  system, and output took full shell syntax colour. Position finds any command on any OS, one palette
+  makes a flag a flag in every language, and plain output lets the commands and the evidence in it stand
+  out. On the light frame, one-light's own flag, argument and comment inks read about 4.4:1; every light
+  role now clears 5:1 but the magenta (4.9:1). The CSS could move into a layer because the tail's
+  premise was false: in a build test the layered rules computed identically on every code span of
+  Busqueda, Return and n0s4n1ty-1 in both themes, which answers the ROADMAP question.
+- **Rejected:** keeping the category hues inside the new system (per the owner, the names are no longer
+  needed once commands are found by position); sudo in the command sand (the magenta appears a few
+  times a page and ties privilege to the vuln callout, so it does not shout); the Semantic scheme (its
+  prompt colours were kept, the rest varied between shell and Python blocks); a single colour for all
+  output (it read like the comments); light prompts in `#4d5888` (too tinted) or `#353f66` (too close to
+  the body ink).
+- **Status:** Adopted 2026-11-18, chosen in a live preview of every language and prompt style on the
+  site in both themes.
+
 ### 2026-11-18 · Prose colours lower their energy: soft h3, smooth lede fade, ice inline code
 - **Supersedes in part:** 2026-06-29 · Inline code is its own object: a rounded red hairline chip
   (theme-tuned) (its red ink and its 2026-06-30 light fill `#ece2d6`; the chip itself stands),
@@ -979,6 +1018,9 @@
 - **Decision:** on light, `.ec-cmd-priv` reads `#b70066`, the vuln callout's own light ink (OKLCH L 0.51,
   C 0.21, h 357.4, against the old `#c41d6f` at 0.54, 0.21, 358.1), in the same unlayered `!important`
   rule. Dark `#ff4d9d`, the fixed anchor, is unchanged.
+  **Partly superseded by:** 2026-11-18 · Code blocks share one colour system: token roles in every
+  language, commands by position. The magenta stands, now on `.cx-priv` in `@layer chrome` without
+  `!important`, and on su, doas, runas and pkexec as well as sudo.
 - **Why:** light code frames paint `--ec-frm-edBg` `#e6dfd0` (`chrome.css`), not one-light's `#fafafa`, and
   every light figure on record was taken against `#fafafa`, which no frame shows. On the real frame the old
   sudo read 4.22:1 (model B), under AA, in the one token a reader is meant to notice before pasting the
@@ -989,6 +1031,9 @@
 - **Verified:** production build, green at 67 pages. On `#e6dfd0` (model B): sudo 4.94, recon 6.08, net
   5.86, inspect 4.59, the three redesigned categories clearing AA, not the 7:1 the record claimed. Dark, on
   `#1a1b26` (model B): sudo 5.53, recon 7.56, net 7.96, inspect 7.45, unchanged.
+  **Partly superseded by:** 2026-11-18 · Code blocks share one colour system: token roles in every
+  language, commands by position. Recon, net and inspect are gone with their figures. On the frames as
+  they render today the magenta reads 4.9:1 on paper (`#e5decf`) and 5.4:1 on ink (`#1c1d28`, model B).
 - **Status:** Adopted; committed to `dev` on 2026-10-11 as
   `fix(highlighting): light sudo reads the vuln callout's magenta`.
 
@@ -1491,6 +1536,9 @@
   **Partly superseded by:** 2026-11-18 · Prose colours lower their energy: soft h3, smooth lede fade, ice
   inline code. The h3 no longer wears `#41efff`: it reads a softer tint of its own, `--tp-h3-ink`. Recon's
   cyan, the links and the port chips stand.
+  **Partly superseded by:** 2026-11-18 · Code blocks share one colour system: token roles in every
+  language, commands by position. Sudo's class is `.cx-priv` now (`chrome.css`); the magenta and its
+  meaning stand.
 - **Why:** intel and vuln were byte-identical to the PicoCTF and VulnHub sidebar dots and badge chips, so on
   a desktop writeup, and beside the platform chip on those platforms' own writeups, a box's colour made a
   platform claim it does not mean. Recon's and loot's matches mean the same thing, so they stay. On paper
@@ -2586,6 +2634,11 @@
     copy and stopped colouring anything. The image-zoom pair is counted as TWO numbers, plugin wrappers
     and override roots, because the plugin and the component override fail independently and one combined
     number would mask either.
+    **Partly superseded by:** 2026-11-18 · Code blocks share one colour system: token roles in every
+    language, commands by position. The `ec-cmd-*` classes are gone. The Expressive Code canary is now
+    the plugin's line classes in the built HTML, `cx-output` 724, `cx-prompt` 283, `cx-prompt-only` 90,
+    `cx-code` 21 and `cx-script` 14 over 156 blocks (read 2026-11-18): any of them at zero means the
+    plugin has stopped running.
   - **The settled computed-style probe** records the resolved value AND the full matching-rule list per
     target. Its predecessor sampled at a fixed 250ms after flipping the theme, landing inside the 300ms
     transition on `/about` and reporting two colour differences that were pure measurement error, drifting
@@ -5511,64 +5564,6 @@ automatically; no astro.config.mjs edit is needed per writeup.
 - **Status:** Adopted. Anchoring verified (drift 0) in headless; the few-pixel shift is not reproducible
   in headless Chromium (known false negative), so visual confirmation of that shift fix is pending on the
   owner's real browsers (Chrome/Edge/Opera GX). See ROADMAP open issues.
-
-### 2026-06-15 · Command-highlight palette rebuilt on a principled OKLCH basis (+ bold weight)
-- **Decision:** Redesign the `.ec-cmd-*` palette in OKLCH, measured against the rendered code bg
-  (tokyo-night `#1a1b26` / one-light `#fafafa`), separating the three channels: (1) LIGHTNESS uniform
-  per theme (dark `L 0.745`, light `L 0.43`) so all categories share one brightness and each clears
-  **WCAG 7:1 (AAA)**, measured; (2) HUE = category, kept off the theme's string/keyword/function hues
-  (privilege magenta, recon gold `h95`, network cyan `h200`, inspect warm-sand `h60`); (3) CHROMA =
-  loud vs quiet, so recon/network are vivid and inspect is LOW chroma at the SAME L/contrast. Final
-  values: recon `oklch(0.745 0.153 95)`/`oklch(0.43 0.088 95)`, network `oklch(0.745 0.126 200)`/
-  `oklch(0.43 0.073 200)`, inspect `oklch(0.745 0.045 60)`/`oklch(0.5 0.045 60)`. Also added a second
-  channel: every recognized command is `font-weight:700` (incl. sudo, weight only). Inspect set: ls, cd,
-  cat, echo, whoami, id, find, grep, pwd, ping; recon also includes whatweb.
-  **Partly superseded by:** 2026-10-11 · Sudo's light magenta is the vuln callout's ink, and the light
-  command figures are re-measured. Stale on light: the code bg (light frames paint `#e6dfd0`, not
-  `#fafafa`) and "each clears WCAG 7:1", which holds on dark only; on the real light frame the categories
-  clear AA (recon 6.08, net 5.86, inspect 4.59, model B), and the light figures under Why are against
-  `#fafafa`.
-- **Why:** The old inspect color was near-invisible because it had been quieted by dropping CONTRAST;
-  the fix is to drop CHROMA instead and hold lightness/contrast uniform with the vivid set. Working in
-  OKLCH makes loudness (chroma) and legibility (contrast) independent, so "quiet" no longer means
-  "dim." Bold gives a weight channel so the command word pops without relying on color alone. Verified
-  in-browser in both themes: computed colors match the shipped `oklch()` values, browser-measured
-  contrast matches the design math (recon 7.56/7.72, net 7.96/7.45, inspect 7.45 dark / 5.8 light), and
-  command-position detection leaves command OUTPUT untagged. Light inspect is the one deliberate
-  exception to uniform-L: lightened to `oklch(0.5 0.045 60)` (~5.8:1, still AA) at owner request because
-  the darker uniform brown read too heavy on paper; the quiet-via-chroma intent is unchanged.
-- **Constraint honored / tradeoff:** sudo's COLOR is the immovable anchor and is NOT recolored, so it
-  sits at ~5.5:1 (dark) / ~5.4:1 (light), just under the 7:1 the redesigned categories meet. "All four
-  at sudo's lightness AND all ≥7:1" is physically impossible without recoloring sudo, so the 7:1 floor
-  applies to the three redesigned categories and sudo keeps its hue/color (gaining only bold). Light
-  vivid chroma is gamut-limited at `L 0.43` (warm/teal hues cannot be both dark and saturated on white),
-  so light reads more muted than dark; this is the honest cost of the 7:1 floor on a paper bg.
-  **Partly superseded by:** 2026-10-11 · Sudo's light magenta is the vuln callout's ink, and the light
-  command figures are re-measured. The anchor is the dark value alone now: light sudo reads `#b70066`
-  (4.94:1 on the real frame, model B, where `#c41d6f` read 4.22:1).
-- **Supersedes in part:** 2026-06-14 · Code-block command highlighting by semantic category, specifically its
-  color values. Its mechanism and category structure still stand, so it stays in force and is not archived.
-- **Status:** Adopted. Colors live in `custom.css` only (`oklch()` +
-  `!important`); command-list additions (`cd`, `echo`, `ping` to inspect; `whatweb` to recon) are in
-  `ec-priv-command.mjs`.
-
-### 2026-06-14 · Code-block command highlighting by semantic category
-- **Decision:** Extend the EC command-tagging plugin (`ec-priv-command.mjs`) from sudo-only to four
-  categories colored by signal value: privilege (magenta; sudo/su/doas), recon (gold/orange; nmap,
-  gobuster, ffuf, feroxbuster, nikto, enum4linux, smbclient), network (cyan; nc/ncat/netcat,
-  penelope, socat, curl, wget, ssh, chisel), inspect (quiet lavender; ls, cat, whoami, id, find,
-  grep, pwd). Match in command position (first word after a prompt / sudo / `|` `&&` `;`); sudo keeps
-  its exact content-match path and color. Command lists are one-line-extendable.
-- **Why:** One color per category (not per command) communicates intent and avoids monochrome code.
-  Command-position avoids tagging the same short word where it appears in command OUTPUT. Recon is
-  gold not lime because lime is too close to the theme command-green; recon hue is theme-tuned
-  (gold on ink, burnt-orange on paper) to clear the theme amber. All four are WCAG AA on the code bg
-  and mutually distinct in both themes.
-- **Partly superseded by:** 2026-06-15 · Command-highlight palette rebuilt on a principled OKLCH basis
-  (+ bold weight), specifically the color values recorded here. The mechanism and category structure still
-  stand, so this entry stays in force and is not archived.
-- **Status:** Adopted and committed/pushed. Residual
-  risk: an output line whose first word is exactly a listed command can be mis-tagged (rare).
 
 ### 2026-06-14 · Platform-index duotone: platform color + universal cyan secondary
 - **Decision:** On the platform index, the platform color leads and a universal cyan secondary

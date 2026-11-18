@@ -3,7 +3,7 @@ import { unified } from '@astrojs/markdown-remark';
 import starlight from '@astrojs/starlight';
 import starlightImageZoom from 'starlight-image-zoom';
 import path from 'path';
-import { pluginPrivCommand } from './src/lib/ec-priv-command.mjs';
+import { pluginTerminal } from './src/lib/ec-terminal.mjs';
 import rehypeContentImageLoading from './plugins/rehype-content-image-loading.mjs';
 import rehypeGroupInlineChips from './plugins/rehype-group-inline-chips.mjs';
 import remarkInjectPasswordReveal from './plugins/remark-inject-passwordreveal.mjs';
@@ -84,10 +84,9 @@ export default defineConfig({
         // collapsed command+flag+path into one band of blues). one-light separates command vs flag
         // on every command line (catppuccin-latte merged them). Both pass WCAG AA on their code bg.
         themes: ['tokyo-night', 'one-light'],
-        // Tag privilege commands (sudo, ...) with .ec-cmd-priv so overrides.css can color them
-        // distinctly. Implemented as an EC plugin because EC 0.42 rejects Shiki DOM-transformer
-        // hooks (span/etc). See src/lib/ec-priv-command.mjs for the mechanism + rationale.
-        plugins: [pluginPrivCommand()],
+        // One role system for every code block: see src/lib/ec-terminal.mjs. Its colour-pair table is
+        // keyed to the two themes above, so changing either theme needs a new table.
+        plugins: [pluginTerminal()],
       },
       plugins: [starlightImageZoom()],
       // Site search ranking. Starlight's own defaults for the other options still apply (pageLength

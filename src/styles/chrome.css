@@ -769,8 +769,8 @@ html[data-theme="light"] .expressive-code pre::-webkit-scrollbar-track { backgro
 
 /* ── Decisive-line focus layer (Expressive Code {n} markers) ──────────────────
    Marks the one line that matters in a dense dump (a leaked credential, the ttl tell, the single ./).
-   This is a LINE-LEVEL focus layer that sits UNDER the semantic command-highlighting token colors
-   (sudo magenta, recon vivid, network cyan, inspection muted) and must never fight them. Two rules:
+   This is a LINE-LEVEL focus layer that sits UNDER the code colour roles (the block below,
+   src/lib/ec-terminal.mjs) and must never fight them. Two rules:
    the lime lives ONLY in the gutter (the left accent bar), where no token ever sits, and the tint is
    kept low (<= 12%) so every syntax color reads unchanged on the marked line. If any token ever
    muddies, the tint loses: lower it. OKLCH-mixed lime, both themes. No motion. Scoped to
@@ -794,6 +794,49 @@ html[data-theme="light"] .expressive-code pre::-webkit-scrollbar-track { backgro
 .expressive-code .ec-line.mark .code {
   border-inline-start-color: var(--sl-color-accent);
 }
+
+/* ── Code colour roles (src/lib/ec-terminal.mjs) ──────────────────────────────
+   The plugin gives every code token a role, cx-<role>, and these rules colour the roles per theme, so
+   a keyword, a string or a flag reads the same in Bash, PowerShell, Python, Rust or HTML, and in a
+   transcript the prompt, the commands, the evidence and the output read apart. Expressive Code paints
+   a token only while its span has no class (:where(span[style^='--']:not([class]))), so these are the
+   only colours that reach a classed span: no !important and no place in the unlayered tail (DECISIONS
+   2026-11-18). Every role sets its font-style, because Expressive Code's italics no longer reach a
+   classed span: comments italic, the rest upright. Commands and privilege commands are bold. The
+   figures per role, model B on the rendered frames, are in CORE_SPEC section 6 "Code-block colour
+   roles"; every light role clears 5:1 but the privilege magenta, the vuln label's own ink. */
+html[data-theme="dark"] .expressive-code :is(.cx-base, .cx-out, .cx-prp) { color: #a9b1d6; }
+html[data-theme="dark"] .expressive-code :is(.cx-str, .cx-arg, .cx-ok) { color: #9ece6a; }
+html[data-theme="dark"] .expressive-code .cx-kw { color: #bb9af7; }
+html[data-theme="dark"] .expressive-code :is(.cx-fn, .cx-url) { color: #7aa2f7; }
+html[data-theme="dark"] .expressive-code :is(.cx-num, .cx-ip) { color: #ff9e64; }
+html[data-theme="dark"] .expressive-code :is(.cx-var, .cx-pr) { color: #c0caf5; }
+html[data-theme="dark"] .expressive-code .cx-flag { color: #e0af68; }
+html[data-theme="dark"] .expressive-code .cx-pun { color: #959ec8; }
+html[data-theme="dark"] .expressive-code .cx-port { color: #7dcfff; }
+html[data-theme="dark"] .expressive-code .cx-com { color: #8d92aa; }
+html[data-theme="dark"] .expressive-code .cx-prb { color: #89ddff; }
+html[data-theme="dark"] .expressive-code .cx-cmd { color: oklch(0.745 0.045 60); }
+html[data-theme="dark"] .expressive-code .cx-priv { color: #ff4d9d; }
+
+html[data-theme="light"] .expressive-code :is(.cx-base, .cx-out) { color: #383a42; }
+html[data-theme="light"] .expressive-code :is(.cx-str, .cx-arg) { color: #2f6631; }
+html[data-theme="light"] .expressive-code .cx-ok { color: #2a632a; }
+html[data-theme="light"] .expressive-code .cx-kw { color: #9a1f98; }
+html[data-theme="light"] .expressive-code :is(.cx-fn, .cx-url) { color: #2e57b3; }
+html[data-theme="light"] .expressive-code :is(.cx-num, .cx-ip) { color: #8f4409; }
+html[data-theme="light"] .expressive-code :is(.cx-var, .cx-pr, .cx-prb, .cx-prp) { color: #3a4687; }
+html[data-theme="light"] .expressive-code .cx-flag { color: #7a5300; }
+html[data-theme="light"] .expressive-code .cx-pun { color: #565966; }
+html[data-theme="light"] .expressive-code .cx-port { color: #0a6178; }
+html[data-theme="light"] .expressive-code .cx-com { color: #5a5b60; }
+html[data-theme="light"] .expressive-code .cx-cmd { color: #6f5644; }
+html[data-theme="light"] .expressive-code .cx-priv { color: #b70066; }
+
+.expressive-code :is(.cx-base, .cx-out, .cx-str, .cx-arg, .cx-ok, .cx-kw, .cx-fn, .cx-url, .cx-num, .cx-ip, .cx-var,
+  .cx-flag, .cx-pun, .cx-port, .cx-pr, .cx-prb, .cx-prp, .cx-cmd, .cx-priv) { font-style: normal; }
+.expressive-code .cx-com { font-style: italic; }
+.expressive-code :is(.cx-cmd, .cx-priv) { font-weight: 700; }
 } /* @layer chrome */
 
 /* ── The quiet bar: Starlight's header in the HUD's voice (owner, 2026-10-18) ──
