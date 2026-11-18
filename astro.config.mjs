@@ -3,7 +3,7 @@ import { unified } from '@astrojs/markdown-remark';
 import starlight from '@astrojs/starlight';
 import starlightImageZoom from 'starlight-image-zoom';
 import path from 'path';
-import { pluginPrivCommand } from './src/lib/ec-priv-command.mjs';
+import { pluginTerminal } from './src/lib/ec-terminal.mjs';
 import rehypeContentImageLoading from './plugins/rehype-content-image-loading.mjs';
 import rehypeGroupInlineChips from './plugins/rehype-group-inline-chips.mjs';
 import remarkInjectPasswordReveal from './plugins/remark-inject-passwordreveal.mjs';
@@ -78,16 +78,14 @@ export default defineConfig({
   integrations: [
     starlight({
       expressiveCode: {
-        // Chosen by A/B on the busiest bash command lines (Busqueda writeup), not corpus-wide
-        // counts: a real command line only exercises a couple of token scopes. tokyo-night is the
-        // only-tier dark theme that gives command / flag / IP three distinct colors (github-dark
-        // collapsed command+flag+path into one band of blues). one-light separates command vs flag
-        // on every command line (catppuccin-latte merged them). Both pass WCAG AA on their code bg.
+        // Both themes stay pinned because src/lib/ec-terminal.mjs maps the colour pairs they render to
+        // roles, which chrome.css colours: the roles keep command, flag and IP apart whatever the theme,
+        // and they replace the themes' own inks (one-light's own flag, argument and comment inks read
+        // 4.39 to 4.41:1 on the light frame #e6dfd0, model B).
         themes: ['tokyo-night', 'one-light'],
-        // Tag privilege commands (sudo, ...) with .ec-cmd-priv so overrides.css can color them
-        // distinctly. Implemented as an EC plugin because EC 0.42 rejects Shiki DOM-transformer
-        // hooks (span/etc). See src/lib/ec-priv-command.mjs for the mechanism + rationale.
-        plugins: [pluginPrivCommand()],
+        // One role system for every code block: see src/lib/ec-terminal.mjs. Its colour-pair table is
+        // keyed to the two themes above, so changing either theme needs a new table.
+        plugins: [pluginTerminal()],
       },
       plugins: [starlightImageZoom()],
       // Site search ranking. Starlight's own defaults for the other options still apply (pageLength

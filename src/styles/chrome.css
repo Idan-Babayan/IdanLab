@@ -4,8 +4,8 @@
 /* ── "On this page": the current entry wears its heading's colour ──────────────
    The entry the reader is on (aria-current) takes the hue of the heading it points to, so the list
    echoes the in-page ladder: the page title and every h2 lime (--sl-color-text-accent, --tp-lime-ink
-   on light), h3 cyan (--tp-cyan, --tp-cyan-ink on light), h4 and deeper the muted gray of the h4
-   heading (--sl-color-gray-2). The two flags are gold, each led by the flag glyph in --flag-gold: a
+   on light), h3 the heading's soft cyan (--tp-h3-ink, --tp-cyan-ink on light), h4 and deeper the muted
+   gray of the h4 heading (--sl-color-gray-2). The two flags are gold, each led by the flag glyph in --flag-gold: a
    quieter gold at rest (a gray mix on dark, --flag-gold-val on light) and --flag-gold-current when
    current or hovered. Only the current entry changes colour. The same ladder
    is written twice, for the desktop column and for the mobile dropdown, and every rung is ours: this
@@ -14,7 +14,10 @@
    Starlight's desktop hover (`.right-sidebar-panel :where(a):hover`, white) outranks its
    `a[aria-current]`, so the current h2 turned white on hover while h3 and the flags held (measured
    rgb(182,255,60) to rgb(255,255,255)). The heading rules share these tokens: if a heading colour
-   changes, change it here too. Which entry is current is TocTracking.astro's job, not this file's.
+   changes, change it here too. On paper two rungs read a step deeper than their heading, because they
+   are 13px text on the dot grid: the h2 rung --tp-lime-ink for the accent, the h3 rung --tp-cyan-ink
+   for --tp-h3-ink, whose #2a6e7b reads 4.32:1 on the darkest grid dot (model C). Which entry is current
+   is TocTracking.astro's job, not this file's.
    Entries that are not current keep Starlight's colours in the desktop column: gray-3, white on hover.
    On a phone the strip names the current entry in the same colour, and its panel (the Quiet strip,
    below) reads h2 entries in the text colour and deeper ones in gray-2, marking the current entry with
@@ -66,10 +69,13 @@
   color: var(--tp-lime-ink);
 }
 
-/* h3 (nested one level): cyan, matching the ### heading. Flags are also h3, so their anchors are
-   excluded here (they own the gold rule above). */
+/* h3 (nested one level): the ### heading's own soft cyan on dark, #9de2ea, 13.78:1 on the page (model B)
+   and still a clear step from the resting gray, 0.239 in OKLab. On paper --tp-cyan-ink, the same hue a
+   step deeper (0.025 in OKLab): as 13px text the heading's #2a6e7b reads 4.32:1 on the darkest grid
+   dot (model C), where #08697a reads 4.71:1 (5.22:1 on the page, model B). Flags are also h3, so their
+   anchors are excluded here (they own the gold rule above). */
 .right-sidebar-panel nav > ul > li > ul > li > a[aria-current="true"]:not([href="#user-flag"]):not([href="#root-flag"]) {
-  color: var(--tp-cyan);
+  color: var(--tp-h3-ink);
 }
 :root[data-theme='light'] .right-sidebar-panel nav > ul > li > ul > li > a[aria-current="true"]:not([href="#user-flag"]):not([href="#root-flag"]) {
   color: var(--tp-cyan-ink);
@@ -135,9 +141,11 @@ mobile-starlight-toc a[aria-current="true"][style*="--depth: 0"]:not([href="#use
   color: var(--tp-lime-ink);
 }
 
-/* h3 (--depth: 1): cyan. Flags are h3 too, so they are excluded and keep their gold. */
+/* h3 (--depth: 1): as on desktop, the heading's soft cyan on dark and --tp-cyan-ink on paper; the rail
+   and the 6% wash below follow it through currentColor. Flags are h3 too, so they are excluded and keep
+   their gold. */
 mobile-starlight-toc a[aria-current="true"][style*="--depth: 1"]:not([href="#user-flag"]):not([href="#root-flag"]) {
-  color: var(--tp-cyan);
+  color: var(--tp-h3-ink);
 }
 :root[data-theme='light'] mobile-starlight-toc a[aria-current="true"][style*="--depth: 1"]:not([href="#user-flag"]):not([href="#root-flag"]) {
   color: var(--tp-cyan-ink);
@@ -214,7 +222,8 @@ mobile-starlight-toc a[href="#root-flag"]::before {
    The strip itself lies on the glass over the article column, so its words are full contrast (owner,
    2026-10-24): the label and the chevron read --tp-hud-ink, and the name keeps its rung on dark only.
    Over a pure white area under the glass on dark, the lowest rendered pixel under each word gives: the
-   label 6.43:1, lime 6.11, cyan 5.28 and the flag's gold 4.59 (gray-2, for depths the TOC never
+   label 6.43:1, lime 6.11, the h3's soft cyan 5.10 (5.28 in the link cyan it wore until 2026-11-18)
+   and the flag's gold 4.59 (gray-2, for depths the TOC never
    reaches, 4.19). Over a pure black one on paper the ink gives 6.15:1, where the coloured inks fell to
    2.32 (lime), 2.20 (cyan) and 4.09 (the deep gold). Without :has() (Firefox before 121) the strip's
    name keeps Starlight's white. */
@@ -235,7 +244,7 @@ mobile-starlight-toc:has(a[aria-current="true"][style*="--depth: 0"]) .display-c
   color: var(--sl-color-text-accent);
 }
 mobile-starlight-toc:has(a[aria-current="true"][style*="--depth: 1"]:not([href="#user-flag"], [href="#root-flag"])) .display-current {
-  color: var(--tp-cyan);
+  color: var(--tp-h3-ink);
 }
 mobile-starlight-toc:has(a[aria-current="true"]:not([style*="--depth: 0"], [style*="--depth: 1"])) .display-current {
   color: var(--sl-color-gray-2);
@@ -359,11 +368,12 @@ mobile-starlight-toc a[href="#root-flag"] {
   --focus-ring: var(--flag-gold-val);
 }
 
-/* h3 entries (cyan): desktop by the nesting chain, mobile by Starlight's inline --depth: 1. Flags are
-   h3-level, so they are excluded here exactly as in the cyan color rules, and keep their gold. */
+/* h3 entries ring as their text reads when current: the heading's soft cyan on dark (--tp-h3-ink),
+   --tp-cyan-ink on paper. Desktop by the nesting chain, mobile by Starlight's inline --depth: 1. Flags
+   are h3-level, so they are excluded here exactly as in the h3 color rules, and keep their gold. */
 .right-sidebar-panel nav > ul > li > ul > li > a:not([href="#user-flag"]):not([href="#root-flag"]),
 mobile-starlight-toc a[style*="--depth: 1"]:not([href="#user-flag"]):not([href="#root-flag"]) {
-  --focus-ring: var(--tp-cyan);
+  --focus-ring: var(--tp-h3-ink);
 }
 :root[data-theme='light'] .right-sidebar-panel nav > ul > li > ul > li > a:not([href="#user-flag"]):not([href="#root-flag"]),
 :root[data-theme='light'] mobile-starlight-toc a[style*="--depth: 1"]:not([href="#user-flag"]):not([href="#root-flag"]) {
@@ -684,10 +694,11 @@ nav.sidebar summary {
    Canonical dark token values are untouched (every rule is scoped to data-theme='light').
    ══════════════════════════════════════════════ */
 
-/* Warm the light code surface: EC's catppuccin-latte editor bg is #fafafa, a cool white slab on the
-   warm paper. Override the EC editor + tab-bar background vars to a soft warm off-white slightly
-   darker than the page paper (#ece9e0), so a code block reads as a distinct warm panel. Light only;
-   dark (github-dark-dimmed) is untouched. Kept light enough that the catppuccin text stays AA. */
+/* Warm the light code surface: one-light's editor bg is #fafafa, a cool white slab on the warm paper.
+   Override the EC editor + tab-bar background vars to a soft warm off-white slightly darker than the
+   page paper (#ece9e0), so a code block reads as a distinct warm panel. Light only; dark (tokyo-night)
+   is untouched. Kept light enough that every code colour role but the privilege magenta clears 5:1 on
+   it (CORE_SPEC section 6 "Code-block colour roles"). */
 @layer chrome {
 :root[data-theme='light'] .expressive-code {
   --ec-frm-edBg: #e8e2d3;
@@ -766,8 +777,8 @@ html[data-theme="light"] .expressive-code pre::-webkit-scrollbar-track { backgro
 
 /* ── Decisive-line focus layer (Expressive Code {n} markers) ──────────────────
    Marks the one line that matters in a dense dump (a leaked credential, the ttl tell, the single ./).
-   This is a LINE-LEVEL focus layer that sits UNDER the semantic command-highlighting token colors
-   (sudo magenta, recon vivid, network cyan, inspection muted) and must never fight them. Two rules:
+   This is a LINE-LEVEL focus layer that sits UNDER the code colour roles (the block below,
+   src/lib/ec-terminal.mjs) and must never fight them. Two rules:
    the lime lives ONLY in the gutter (the left accent bar), where no token ever sits, and the tint is
    kept low (<= 12%) so every syntax color reads unchanged on the marked line. If any token ever
    muddies, the tint loses: lower it. OKLCH-mixed lime, both themes. No motion. Scoped to
@@ -791,6 +802,49 @@ html[data-theme="light"] .expressive-code pre::-webkit-scrollbar-track { backgro
 .expressive-code .ec-line.mark .code {
   border-inline-start-color: var(--sl-color-accent);
 }
+
+/* ── Code colour roles (src/lib/ec-terminal.mjs) ──────────────────────────────
+   The plugin gives every code token a role, cx-<role>, and these rules colour the roles per theme, so
+   a keyword, a string or a flag reads the same in Bash, PowerShell, Python, Rust or HTML, and in a
+   transcript the prompt, the commands, the evidence and the output read apart. Expressive Code paints
+   a token only while its span has no class (:where(span[style^='--']:not([class]))), so these are the
+   only colours that reach a classed span: no !important and no place in the unlayered tail (DECISIONS
+   2026-11-18). Every role sets its font-style, because Expressive Code's italics no longer reach a
+   classed span: comments italic, the rest upright. Commands and privilege commands are bold. The
+   figures per role, model B on the code frame (dark #1a1b26, light #e6dfd0), are in CORE_SPEC section
+   6 "Code-block colour roles"; every light role clears 5:1 but the privilege magenta, the vuln label's
+   own ink. `open` and `Enabled` share the string green in both themes. */
+html[data-theme="dark"] .expressive-code :is(.cx-base, .cx-out, .cx-prp) { color: #a9b1d6; }
+html[data-theme="dark"] .expressive-code :is(.cx-str, .cx-arg, .cx-ok) { color: #9ece6a; }
+html[data-theme="dark"] .expressive-code .cx-kw { color: #bb9af7; }
+html[data-theme="dark"] .expressive-code :is(.cx-fn, .cx-url) { color: #7aa2f7; }
+html[data-theme="dark"] .expressive-code :is(.cx-num, .cx-ip) { color: #ff9e64; }
+html[data-theme="dark"] .expressive-code :is(.cx-var, .cx-pr) { color: #c0caf5; }
+html[data-theme="dark"] .expressive-code .cx-flag { color: #e0af68; }
+html[data-theme="dark"] .expressive-code .cx-pun { color: #959ec8; }
+html[data-theme="dark"] .expressive-code .cx-port { color: #7dcfff; }
+html[data-theme="dark"] .expressive-code .cx-com { color: #8d92aa; }
+html[data-theme="dark"] .expressive-code .cx-prb { color: #89ddff; }
+html[data-theme="dark"] .expressive-code .cx-cmd { color: oklch(0.745 0.045 60); }
+html[data-theme="dark"] .expressive-code .cx-priv { color: #ff4d9d; }
+
+html[data-theme="light"] .expressive-code :is(.cx-base, .cx-out) { color: #383a42; }
+html[data-theme="light"] .expressive-code :is(.cx-str, .cx-arg, .cx-ok) { color: #2f6631; }
+html[data-theme="light"] .expressive-code .cx-kw { color: #9a1f98; }
+html[data-theme="light"] .expressive-code :is(.cx-fn, .cx-url) { color: #2e57b3; }
+html[data-theme="light"] .expressive-code :is(.cx-num, .cx-ip) { color: #8f4409; }
+html[data-theme="light"] .expressive-code :is(.cx-var, .cx-pr, .cx-prb, .cx-prp) { color: #3a4687; }
+html[data-theme="light"] .expressive-code .cx-flag { color: #7a5300; }
+html[data-theme="light"] .expressive-code .cx-pun { color: #565966; }
+html[data-theme="light"] .expressive-code .cx-port { color: #0a6178; }
+html[data-theme="light"] .expressive-code .cx-com { color: #5a5b60; }
+html[data-theme="light"] .expressive-code .cx-cmd { color: #6f5644; }
+html[data-theme="light"] .expressive-code .cx-priv { color: #b70066; }
+
+.expressive-code :is(.cx-base, .cx-out, .cx-str, .cx-arg, .cx-ok, .cx-kw, .cx-fn, .cx-url, .cx-num, .cx-ip, .cx-var,
+  .cx-flag, .cx-pun, .cx-port, .cx-pr, .cx-prb, .cx-prp, .cx-cmd, .cx-priv) { font-style: normal; }
+.expressive-code .cx-com { font-style: italic; }
+.expressive-code :is(.cx-cmd, .cx-priv) { font-weight: 700; }
 } /* @layer chrome */
 
 /* ── The quiet bar: Starlight's header in the HUD's voice (owner, 2026-10-18) ──

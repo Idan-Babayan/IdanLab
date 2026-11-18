@@ -236,6 +236,66 @@
 - **Status:** Adopted (busquedav2). The `notion_cleaner.py` line-highlight convention is now unused; if
   reintroduced, EC's default marked-line color would need restyling again.
 
+### 2026-06-15 · Command-highlight palette rebuilt on a principled OKLCH basis (+ bold weight)
+- **Superseded by:** 2026-11-18 · Code blocks share one colour system: token roles in every language, commands by position
+- **Decision:** Redesign the `.ec-cmd-*` palette in OKLCH, measured against the rendered code bg
+  (tokyo-night `#1a1b26` / one-light `#fafafa`), separating the three channels: (1) LIGHTNESS uniform
+  per theme (dark `L 0.745`, light `L 0.43`) so all categories share one brightness and each clears
+  **WCAG 7:1 (AAA)**, measured; (2) HUE = category, kept off the theme's string/keyword/function hues
+  (privilege magenta, recon gold `h95`, network cyan `h200`, inspect warm-sand `h60`); (3) CHROMA =
+  loud vs quiet, so recon/network are vivid and inspect is LOW chroma at the SAME L/contrast. Final
+  values: recon `oklch(0.745 0.153 95)`/`oklch(0.43 0.088 95)`, network `oklch(0.745 0.126 200)`/
+  `oklch(0.43 0.073 200)`, inspect `oklch(0.745 0.045 60)`/`oklch(0.5 0.045 60)`. Also added a second
+  channel: every recognized command is `font-weight:700` (incl. sudo, weight only). Inspect set: ls, cd,
+  cat, echo, whoami, id, find, grep, pwd, ping; recon also includes whatweb.
+  **Partly superseded by:** 2026-10-11 · Sudo's light magenta is the vuln callout's ink, and the light
+  command figures are re-measured. Stale on light: the code bg (light frames paint `#e6dfd0`, not
+  `#fafafa`) and "each clears WCAG 7:1", which holds on dark only; on the real light frame the categories
+  clear AA (recon 6.08, net 5.86, inspect 4.59, model B), and the light figures under Why are against
+  `#fafafa`.
+- **Why:** The old inspect color was near-invisible because it had been quieted by dropping CONTRAST;
+  the fix is to drop CHROMA instead and hold lightness/contrast uniform with the vivid set. Working in
+  OKLCH makes loudness (chroma) and legibility (contrast) independent, so "quiet" no longer means
+  "dim." Bold gives a weight channel so the command word pops without relying on color alone. Verified
+  in-browser in both themes: computed colors match the shipped `oklch()` values, browser-measured
+  contrast matches the design math (recon 7.56/7.72, net 7.96/7.45, inspect 7.45 dark / 5.8 light), and
+  command-position detection leaves command OUTPUT untagged. Light inspect is the one deliberate
+  exception to uniform-L: lightened to `oklch(0.5 0.045 60)` (~5.8:1, still AA) at owner request because
+  the darker uniform brown read too heavy on paper; the quiet-via-chroma intent is unchanged.
+- **Constraint honored / tradeoff:** sudo's COLOR is the immovable anchor and is NOT recolored, so it
+  sits at ~5.5:1 (dark) / ~5.4:1 (light), just under the 7:1 the redesigned categories meet. "All four
+  at sudo's lightness AND all ≥7:1" is physically impossible without recoloring sudo, so the 7:1 floor
+  applies to the three redesigned categories and sudo keeps its hue/color (gaining only bold). Light
+  vivid chroma is gamut-limited at `L 0.43` (warm/teal hues cannot be both dark and saturated on white),
+  so light reads more muted than dark; this is the honest cost of the 7:1 floor on a paper bg.
+  **Partly superseded by:** 2026-10-11 · Sudo's light magenta is the vuln callout's ink, and the light
+  command figures are re-measured. The anchor is the dark value alone now: light sudo reads `#b70066`
+  (4.94:1 on the real frame, model B, where `#c41d6f` read 4.22:1).
+- **Supersedes in part:** 2026-06-14 · Code-block command highlighting by semantic category, specifically its
+  color values. Its mechanism and category structure still stand, so it stays in force and is not archived.
+- **Status:** Adopted. Colors live in `custom.css` only (`oklch()` +
+  `!important`); command-list additions (`cd`, `echo`, `ping` to inspect; `whatweb` to recon) are in
+  `ec-priv-command.mjs`.
+
+### 2026-06-14 · Code-block command highlighting by semantic category
+- **Superseded by:** 2026-11-18 · Code blocks share one colour system: token roles in every language, commands by position
+- **Decision:** Extend the EC command-tagging plugin (`ec-priv-command.mjs`) from sudo-only to four
+  categories colored by signal value: privilege (magenta; sudo/su/doas), recon (gold/orange; nmap,
+  gobuster, ffuf, feroxbuster, nikto, enum4linux, smbclient), network (cyan; nc/ncat/netcat,
+  penelope, socat, curl, wget, ssh, chisel), inspect (quiet lavender; ls, cat, whoami, id, find,
+  grep, pwd). Match in command position (first word after a prompt / sudo / `|` `&&` `;`); sudo keeps
+  its exact content-match path and color. Command lists are one-line-extendable.
+- **Why:** One color per category (not per command) communicates intent and avoids monochrome code.
+  Command-position avoids tagging the same short word where it appears in command OUTPUT. Recon is
+  gold not lime because lime is too close to the theme command-green; recon hue is theme-tuned
+  (gold on ink, burnt-orange on paper) to clear the theme amber. All four are WCAG AA on the code bg
+  and mutually distinct in both themes.
+- **Partly superseded by:** 2026-06-15 · Command-highlight palette rebuilt on a principled OKLCH basis
+  (+ bold weight), specifically the color values recorded here. The mechanism and category structure still
+  stand, so this entry stays in force and is not archived.
+- **Status:** Adopted and committed/pushed. Residual
+  risk: an output line whose first word is exactly a listed command can be mis-tagged (rare).
+
 ### 2026-05-31 · Notion → notion_cleaner.py → MDX pipeline
 - **Superseded by:** 2026-07-11 · Content pipeline is manual editorial polish, not a script (retires notion_cleaner.py)
 - **Decision:** Author in Notion, normalize with a Python script into clean MDX.

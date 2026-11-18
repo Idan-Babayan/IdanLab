@@ -312,8 +312,8 @@ html[data-theme="dark"] .port-label {
 
 /* Toggle titles use the normal foreground text color (no cyan), so cyan stays reserved for links, and
    the disclosure chevron stays dim (the ::before above). Inline <code> in a summary is deliberately NOT
-   special-cased here: the unified inline-code rule at the top of this file already renders it as the
-   same red chip on the toggle-panel surface (that was the point of making inline code its own object). */
+   special-cased here: the unified inline-code rule (prose.css) already renders it as the same chip on
+   the toggle-panel surface (that was the point of making inline code its own object). */
 
 @layer components {
 .toggle-body {
@@ -409,12 +409,13 @@ html[data-theme="dark"] .port-label {
 
 /* Per-type accent (border + icon + label), dark mode. Five voices, and a callout may wear a colour the
    page already owns only when it means the same thing there, never a platform's identity:
-   - recon: the site's cyan secondary (h3, links, port chips). The About sidebar dot inherits it too.
+   - recon: the site's cyan secondary (links, port chips, and in a softer tint the h3). The About
+     sidebar dot inherits it too.
    - loot: the flag gold. A box of credentials is loot, the same meaning as the flag.
    - intel: a pale UV lavender (oklch 0.80 0.12 304), told apart from PicoCTF's purple #d96bff, which it
      wore until 2026-09-28, by lightness and chroma: 0.14 OKLab from it. It sits 0.046 from the medium
      tier violet and 0.049 from the Cryptography chip violet; every slot farther from both is near white.
-   - vuln: the magenta sudo wears in code blocks (.ec-cmd-priv in overrides.css), the same meaning
+   - vuln: the magenta sudo wears in code blocks (.cx-priv in chrome.css), the same meaning
      (privilege, the dangerous path), off VulnHub's red #ff5c5c, which it wore until 2026-09-28: 0.10.
    - defense: its own green. */
 .sl-markdown-content .cl-recon   { --acc: #41efff; }
@@ -440,9 +441,9 @@ html[data-theme="light"] .sl-markdown-content .cl-defense { --cl-bar: #009542; -
 html[data-theme="light"] .sl-markdown-content .cl-vuln    { --cl-bar: #ea368b; --cl-ink: #b70066; }
 
 /* Inline code INSIDE a colored callout harmonizes with that callout's accent instead of fighting it.
-   The standalone red chip (red text + warm-red fill) clashes inside a colored callout, worst in a vuln
-   callout in DARK (two saturated reds while vuln was red, until 2026-09-28; it is magenta now, and still
-   clashes). Generic across every type: this reads the callout's own --acc
+   The standalone chip's own ink (red until 2026-11-18, ice since) would be a second voice inside a
+   colored callout; the red clashed worst in a vuln callout in DARK (two saturated reds while vuln was
+   red, until 2026-09-28). Generic across every type: this reads the callout's own --acc
    (and the light --cl-ink) tokens, so recon / loot / intel / defense / vuln each adapt automatically
    with no per-type rule. The fill becomes a soft SAME-accent tint (quiet emphasis that reads as part of
    the callout), the standalone hairline is dropped (transparent), and the text takes the accent: the

@@ -170,13 +170,6 @@
     `data-pagefind-ignore` by hand, and nothing checks that it has one. The last `aria-hidden` text still
     indexed is the landings' pill counts, numbers whose meaning the visually hidden ", N writeups" also
     carries (checked 2026-10-03; FlagCapture's cipher and "Copied!" pill left the index that day).
-- [ENG] Can the nine `.ec-cmd-*` rules (eight colour rules and the weight rule) leave the unlayered
-  tail? The premise that kept them there (an inline colour on the span) is false (CORE_SPEC §8 "The
-  layer law"), and a layered, non-important rule governed the span in a live-page test; move one
-  category into `@layer components` without `!important`, build, compare the computed colours and
-  weight in both themes, then the rest. Success shrinks the tail from 17 rules to 8 and its
-  `!important` count from 12 to 3 (the FlagCapture reduced-motion kill keeps its two, the bar's phone
-  padding its one).
 - [ENG] Starlight plugins: scroll-to-top button, mobile sidebar swipe, fullscreen code blocks.
 - [DESIGN] Replace `ethical-hacking.png` about portrait with a transparent custom SVG.
 - [ENG] Extract repeated UI into reusable Astro components (cards, badges, buttons, hero FX).
@@ -259,10 +252,17 @@
   also excludes flags by those same two slug ids so they stay gold instead of going cyan, so it shares the
   fragility. Breaks if those headings are renamed or another page reuses the slugs. Clean fix: add a
   `.flag-title` class to flag headings during authoring, used by both the gold rule and the cyan exclusion.
-- [ENG] Command-highlighting residual risk: an OUTPUT line whose first word is exactly a listed command
-  (e.g. `ls: cannot access`) can be mis-tagged. Rare; documented in `ec-priv-command.mjs` (Expressive
-  Code highlights with `includeExplanation: false`, so no token scopes reach a plugin and
-  strings/comments cannot be skipped by scope: true at 0.42 and still at 0.44.1, read 2026-10-03).
+- [ENG] Code-role residual risks (`src/lib/ec-terminal.mjs`): a shell-language fence with no prompt
+  reads as a script, so output pasted into one turns its first words into commands (the authoring rule
+  is a `text` fence, CORE_SPEC §7 "MDX conventions"; nothing checks it); output in a `text` fence renders
+  plain, without the IP, host, port and open-state colours transcript output gets (none holds one
+  today); a transcript line that continues a command without a trailing `\` or backtick (a heredoc body,
+  a multi-line string) reads as output; hosts are recognized only on the plugin's top-level domain list
+  (htb, local, com, org, net, io, lab, corp); and the colour-pair table is keyed to tokyo-night and
+  one-light as Expressive Code adjusts them, so a theme change, or an Expressive Code release that moves
+  a token colour, sends that token back to the theme's own colour (it shows, it does not break; CORE_SPEC
+  §3 "Upgrade path"). Expressive Code still highlights with `includeExplanation: false` at 0.44.1, so
+  scopes cannot replace the pairs (read 2026-10-03).
 - [DESIGN] Right rail mobile layout at 375px: unresolved how the TOC rail behaves
   at the narrow breakpoint. Needs a real-device or 375px-viewport decision, paired
   with the narrow-screen gutter call below.
