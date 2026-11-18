@@ -59,8 +59,6 @@
 - [ENG/INFRA] Domain rebrand, remaining work only (in-repo is done): Pages custom domain, the 301 from
   idanstudio.click and its eventual sunset, Cloudflare email on @idanlab.dev, Search Console and sitemap
   resubmit, external link updates. All owner-side or other-chat work.
-- [CONTENT] Verify the ToggleAll few-pixel shift fix in real browsers (see Open bugs), then it can be
-  considered closed.
 - [DESIGN] Confirm the quiet bar where headless Chrome cannot: a real Windows contrast theme (the name
   falls back to the system text colour and the frost to system colours, checked so far under emulation
   only), and Firefox and Safari, where a missing scroll timeline should leave the bar fully frosted from
@@ -255,13 +253,6 @@
   retune, not a component fix. `.port-label` was the other consumer and is now pinned via
   `--mono-chrome-leading` (2026-07-27).
 
-- [ENG] ToggleAll few-pixel shift: expand/collapse can leave a small reversible content offset in real
-  Chromium (Chrome/Edge/Opera GX), from native scroll anchoring fighting the manual correction. Fix
-  applied: suppress `overflow-anchor` for the operation, restored next frame (DECISIONS 2026-06-20). NOT
-  reproducible in headless Chromium (false negative), so the fix is UNVERIFIED visually; owner to confirm
-  in a real browser. Diagnostic recipe if it still shifts: confirm `overflow-anchor: none` is landing
-  on `document.scrollingElement`, and instrument the correction delta against where `scrollY`
-  actually settles. If a sub-pixel residual remains, it is rounding territory, leave it.
 - [DESIGN] Flag-gold targets the slug ids `#user-flag` / `#root-flag` as an interim (no `.flag-title`
   class exists; flag headings reuse `.task-title`, which has no colour of its own since 2026-10-03 and
   no carrier but the six flag headings). The TOC active-color ladder (DECISIONS 2026-06-29)
