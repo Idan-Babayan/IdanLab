@@ -47,13 +47,19 @@
 
 ### 2026-11-18 · Prose colours lower their energy: soft h3, smooth lede fade, ice inline code
 - **Supersedes in part:** 2026-06-29 · Inline code is its own object: a rounded red hairline chip
-  (theme-tuned) (its red ink and its 2026-06-30 light fill `#ece2d6`; the chip itself stands),
-  2026-06-29 · TOC active entry recolors to its heading level (cyan h3, gray h4+) (that the h3 rung
-  shares the `###` heading's tokens; the rung itself stands) and 2026-09-28 · Callouts speak in five
-  voices, and light mode gets its own border and label (that the h3 wears recon's `#41efff`; recon's
-  cyan stands).
+  (theme-tuned) (its red ink and its 2026-06-30 light fill `#ece2d6`; the chip itself stands) and
+  2026-09-28 · Callouts speak in five voices, and light mode gets its own border and label (that the h3
+  wears recon's `#41efff`; recon's cyan stands); and, for the dark h3 rung's token only, 2026-06-29 ·
+  TOC active entry recolors to its heading level (cyan h3, gray h4+), 2026-07-10 · Mobile TOC parity:
+  gold flag entries + cyan current-h3 (CSS-only, additive), 2026-07-13 · Focus ring extended to TOC
+  entries + prose links; spoiler-toggle already correct; light flag gold strengthened, and 2026-10-25 ·
+  The bar's glass thins and frosts over, and what sits on it turns full contrast (the strip's h3 name
+  figure).
 - **Decision:** the h3 reads a new role token, `--tp-h3-ink` (dark `#9de2ea`, light `#2a6e7b`), with no
-  `##` marker; the TOC's current h3 entry keeps the link cyan, as the rail's position marker. The lede bar
+  `##` marker. On dark the TOC's current h3 entry follows it (desktop rung, phone rail and wash, phone
+  strip label, focus ring); on paper the rung keeps `--tp-cyan-ink` (`#08697a`), the same hue a step
+  deeper, because the heading's ink reads 4.32:1 as 13px text on the darkest grid dot (model C) and
+  4.44:1 on the phone panel's 6% wash. The lede bar
   is a 3px vertical gradient between two opaque greens (dark `#aadf5b` to `#6eab59`, light `#81a749` to
   `#a1c88e`), painted under a transparent border over a lighter wash (dark 4% accent, light 6%
   `--tp-lime-ink` into `#f4f1e8`). Inline code turns ice: dark `#b0d9e4` on the same white lift, light
@@ -63,12 +69,15 @@
   loud together. The fix tunes strength rather than identity (hue says what a thing is; chroma and area
   say how much it matters): the full cyan h3 pulled the eye harder than the text under it, and the lede
   bar was a solid full-lime stripe, louder than the quote it marks; a fade to nothing, tried first in the
-  preview, went olive on dark and near-white on light and drew the eye instead of easing it. Inline code
-  is the one hue that changes: red read as an alarm on neutral tokens
-  like filenames and ports, and ice keeps the chip a code object without the urgency.
+  preview, went olive on dark and near-white on light and drew the eye instead of easing it. The TOC
+  rung follows its heading because the list mirrors the page: on dark a neon rung beside a soft heading
+  read as two different levels, and the soft rung still steps 0.239 in OKLab from the resting gray.
+  Inline code is the one hue that changes: red read as an alarm on neutral tokens like filenames and
+  ports, and ice keeps the chip a code object without the urgency.
 - **Rejected:** gray inline code and a weight-only hierarchy (a first proposal that flattened the page);
   lime chips; a `##` marker on the h3; a softer light h3 (too close to the black body text); a dimmed
-  lede bar (it read flat).
+  lede bar (it read flat); keeping the dark TOC rung on the link cyan (it no longer matched its
+  heading); the heading's `#2a6e7b` as the light rung (under AA as 13px text, above).
 - **Status:** Adopted 2026-11-18, chosen in a live preview of Busqueda in both themes.
 
 ### 2026-11-06 · Every page covers the screen, and its text keeps to the safe area
@@ -372,6 +381,10 @@
   white page) on dark, 6.39:1 and up over busqueda-4 (a terminal) on paper. Under the pointer GitHub and
   the theme turn lime on dark and the accent on paper, the search the lime ink on paper; the phone menu's
   footer copies stay muted.
+  **Partly superseded by:** 2026-11-18 · Prose colours lower their energy: soft h3, smooth lede fade, ice
+  inline code. On dark the strip names a current h3 in the heading's soft `--tp-h3-ink` now: 5.10:1
+  against the lowest rendered pixel over white under the glass (model C), measured the same way at 390,
+  800, 1000, 1024 and 1100, where the old cyan still read 5.28 and lime 6.11.
 - **Status:** Adopted; committed to `dev` on 2026-10-25 as
   `feat(header): the glass thins and frosts over, and what sits on it turns full contrast`.
 
@@ -4351,6 +4364,9 @@
     chain on desktop, inline `--depth: 1` on mobile) and deliberately WITHOUT the `aria-current` condition
     the color rules use, so the ring is right whether or not the entry is the active section. Flags are
     excluded from the h3 rule exactly as in the color rules, so they never ring cyan.
+    **Partly superseded by:** 2026-11-18 · Prose colours lower their energy: soft h3, smooth lede fade,
+    ice inline code. On dark an h3 entry rings in the heading's soft `--tp-h3-ink` (`#9de2ea`), not
+    `--tp-cyan`; light keeps `--tp-cyan-ink`.
   - **In-prose links** ring cyan: `--focus-ring` added to the existing
     `.sl-markdown-content a:not(:where(.not-content *))` rule and its light variant, reusing the same
     `--tp-cyan` / `--tp-cyan-ink` pair the link color already uses. The `.not-content` guard means
@@ -4749,6 +4765,9 @@ data URI rather than hashing.
   small words, and the glyph in the TOC. On light only, the flag words read `--flag-gold-val` at rest and
   `--flag-gold-current` on hover and when current, with no gray mix, and each entry leads with the flag
   glyph. Dark's muted gold and full gold stand, the muted gold now a 45% mix.
+  **Partly superseded by:** 2026-11-18 · Prose colours lower their energy: soft h3, smooth lede fade, ice
+  inline code. On dark the current h3 entry reads the heading's soft `--tp-h3-ink` (`#9de2ea`), not
+  `--tp-cyan`; light keeps `--tp-cyan-ink`.
 - **Why the mobile cyan rule differs from desktop:** desktop reads heading level from the TOC nesting
   chain (`nav > ul > li > ul > li > a`). Mobile uses the same recursive `TableOfContentsList` but wraps it
   under `nav > details > .dropdown`, so that exact chain does not line up. Instead the mobile rule matches
@@ -5380,9 +5399,10 @@ automatically; no astro.config.mjs edit is needed per writeup.
   clear its glows. On light only, the current h2 reads `--tp-lime-ink`: the green named here is 4.11:1 on
   paper as small text. Dark and the h3 and h4+ rungs stand.
   **Partly superseded by:** 2026-11-18 · Prose colours lower their energy: soft h3, smooth lede fade, ice
-  inline code. The `###` heading reads its own `--tp-h3-ink` now, so the h3 rung no longer shares its
-  tokens: it keeps `--tp-cyan` / `--tp-cyan-ink` on purpose, one step stronger, as the rail's position
-  marker, and the How bullet's token parity holds for h4 and deeper only. The rung itself stands.
+  inline code. The `###` heading reads its own `--tp-h3-ink` now. On dark the h3 rung follows it
+  (`#9de2ea`), so the token parity named here holds there; on paper the rung keeps `--tp-cyan-ink`
+  (`#08697a`), a step deeper than the heading's `#2a6e7b`, which reads under AA as 13px text. The rung
+  itself stands.
 - **Why:** the heading ladder already uses a lime/cyan/gray duotone in the body (DECISIONS 2026-06-20
   era); carrying that hue into the active TOC entry makes the column echo the content hierarchy and
   strengthens the sense of place while scrolling. Owner request.

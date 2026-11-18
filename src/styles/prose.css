@@ -399,8 +399,8 @@ html[data-theme="light"] .sl-markdown-content details {
    paper it is lighter and less saturated than the link ink (#2a6e7b, 4.8:1 on the page #ece9e0, model
    B; an h3 is large text, so its bar is 3:1), so it reads apart from the near-black body text. Lighter
    weight than h2 and no "#" marker, so it differs unmistakably. The flag headings keep their gold: that
-   rule sits in the components layer, which outranks this one. The TOC's current h3 entry keeps the
-   link cyan, a step stronger, as the rail's position marker (chrome.css).
+   rule sits in the components layer, which outranks this one. The TOC's current h3 entry wears this
+   ink on dark; on paper it reads --tp-cyan-ink, a step deeper, as 13px text needs (chrome.css).
    The :not(:where(.not-content *)) guard mirrors Starlight's own prose rules: components
    rendered inside docs (e.g. PlatformIndex/WriteupCard) opt out with class="not-content",
    and these prose styles must respect that too. :where() adds zero specificity. */
