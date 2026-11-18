@@ -13,7 +13,9 @@
    why the current h2 has a rule too. It used to show Starlight's own lime, and inside starlight.core
    Starlight's desktop hover (`.right-sidebar-panel :where(a):hover`, white) outranks its
    `a[aria-current]`, so the current h2 turned white on hover while h3 and the flags held (measured
-   rgb(182,255,60) to rgb(255,255,255)). The heading rules share these tokens: if a heading colour
+   rgb(182,255,60) to rgb(255,255,255)). The heading rules share these tokens, except the h3's: since
+   2026-11-18 the ### heading reads its own softer --tp-h3-ink and the h3 rung keeps the link cyan, one
+   step stronger, so the current entry stays the rail's position marker. If another heading colour
    changes, change it here too. Which entry is current is TocTracking.astro's job, not this file's.
    Entries that are not current keep Starlight's colours in the desktop column: gray-3, white on hover.
    On a phone the strip names the current entry in the same colour, and its panel (the Quiet strip,
@@ -66,8 +68,9 @@
   color: var(--tp-lime-ink);
 }
 
-/* h3 (nested one level): cyan, matching the ### heading. Flags are also h3, so their anchors are
-   excluded here (they own the gold rule above). */
+/* h3 (nested one level): the link cyan, a step stronger than the ### heading's soft --tp-h3-ink (see
+   the note at the top). Flags are also h3, so their anchors are excluded here (they own the gold rule
+   above). */
 .right-sidebar-panel nav > ul > li > ul > li > a[aria-current="true"]:not([href="#user-flag"]):not([href="#root-flag"]) {
   color: var(--tp-cyan);
 }

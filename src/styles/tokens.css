@@ -252,6 +252,8 @@ html[data-theme="dark"] {
 
   --tp-cyan: #41efff;
   --tp-cyan-ink: #0b7e92;
+  /* The h3's ink: softer than the link cyan, so the heading stops pulling the eye ahead of its text (13.8:1, page #07090a, model B). */
+  --tp-h3-ink: #9de2ea;
 
   /* The flag glyph as a mask. The flag headings' ::before and the TOC flag entries' ::before both
      read it, so the shape is declared once. Paint it with background-color. */
@@ -396,6 +398,8 @@ html[data-theme="dark"] {
      (under AA 4.5 for body text). #08697a clears 4.5:1 while staying on-brand teal, not dull.
      Light-only override; the dark --tp-cyan is unchanged. */
   --tp-cyan-ink: #08697a;
+  /* The h3's ink on paper: lighter and less saturated than the link ink, so it reads apart from the near-black body text (4.8:1, page #ece9e0, model B; large text, bar 3:1). */
+  --tp-h3-ink: #2a6e7b;
   /* Lime TEXT on light surfaces: the current h2 in both TOCs, the 404 page's two marks, AttackPath's
      done run and the prose link hover. Hue held from the accent (OKLCH h 131.6; 131.4 once rounded to
      8 bits), lightness dropped until the per-pixel floor clears AA: 5.50:1 on the page #ece9e0
@@ -414,11 +418,11 @@ html[data-theme="dark"] {
      They carry no text a reader has to read: the one glyph they paint is the h2 "# " marker, which
      is decorative and silent to a screen reader (2.24:1 on the page, model B, accepted). Coloured
      TEXT on paper reads an ink measured where it lands (page #ece9e0, model B): cyan --tp-cyan-ink
-     (#08697a, 5.22:1); lime --tp-lime-ink (#3e6700, 5.50:1), or --sl-color-accent-high (#2f4d09)
-     when the text sits on a lime tint; gold --flag-gold-val (#7a5a12, 5.24:1), with
-     --flag-gold-display (#a27500, 3.40:1 against the 3:1 large-text bar) for the flag headings. The
-     accent #4d7c0f reads 4.11:1 there, under AA as small text, so it paints display type, rings,
-     bars and fills, never small text. */
+     (#08697a, 5.22:1), with --tp-h3-ink (#2a6e7b, 4.8:1 against the 3:1 large-text bar) for the h3;
+     lime --tp-lime-ink (#3e6700, 5.50:1), or --sl-color-accent-high (#2f4d09) when the text sits on
+     a lime tint; gold --flag-gold-val (#7a5a12, 5.24:1), with --flag-gold-display (#a27500, 3.40:1
+     against the 3:1 large-text bar) for the flag headings. The accent #4d7c0f reads 4.11:1 there,
+     under AA as small text, so it paints display type, rings, bars and fills, never small text. */
   --tp-deco-lime: #6fae00;
   --tp-deco-cyan: #0a9ec2;
   /* The header, paper: the name starts on the editorial ink and fades toward the light h1 gradient's

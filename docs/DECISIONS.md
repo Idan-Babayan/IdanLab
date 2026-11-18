@@ -6,6 +6,32 @@
 
 ---
 
+### 2026-11-18 · Prose colours lower their energy: soft h3, smooth lede fade, ice inline code
+- **Supersedes in part:** 2026-06-29 · Inline code is its own object: a rounded red hairline chip
+  (theme-tuned) (its red ink and its 2026-06-30 light fill `#ece2d6`; the chip itself stands),
+  2026-06-29 · TOC active entry recolors to its heading level (cyan h3, gray h4+) (that the h3 rung
+  shares the `###` heading's tokens; the rung itself stands) and 2026-09-28 · Callouts speak in five
+  voices, and light mode gets its own border and label (that the h3 wears recon's `#41efff`; recon's
+  cyan stands).
+- **Decision:** the h3 reads a new role token, `--tp-h3-ink` (dark `#9de2ea`, light `#2a6e7b`), with no
+  `##` marker; the TOC's current h3 entry keeps the link cyan, as the rail's position marker. The lede bar
+  is a 3px vertical gradient between two opaque greens (dark `#aadf5b` to `#6eab59`, light `#81a749` to
+  `#a1c88e`), painted under a transparent border over a lighter wash (dark 4% accent, light 6%
+  `--tp-lime-ink` into `#f4f1e8`). Inline code turns ice: dark `#b0d9e4` on the same white lift, light
+  `#1d5a5e` on `#e5e0d4` with the shared divider. Callout chips, callout washes, sidebar dots, badges and
+  links are unchanged.
+- **Why:** a colour critique of the HackTheBox writeups (2026-11-17) found each accent fine alone and too
+  loud together. The fix tunes strength rather than identity (hue says what a thing is; chroma and area
+  say how much it matters): the full cyan h3 pulled the eye harder than the text under it, and the lede
+  bar was a solid full-lime stripe, louder than the quote it marks; a fade to nothing, tried first in the
+  preview, went olive on dark and near-white on light and drew the eye instead of easing it. Inline code
+  is the one hue that changes: red read as an alarm on neutral tokens
+  like filenames and ports, and ice keeps the chip a code object without the urgency.
+- **Rejected:** gray inline code and a weight-only hierarchy (a first proposal that flattened the page);
+  lime chips; a `##` marker on the h3; a softer light h3 (too close to the black body text); a dimmed
+  lede bar (it read flat).
+- **Status:** Adopted 2026-11-18, chosen in a live preview of Busqueda in both themes.
+
 ### 2026-11-06 · Every page covers the screen, and its text keeps to the safe area
 - **Supersedes in part:** 2026-10-24 · Page titles balance their lines, and the search's key chips hide
   where nothing hovers (that phones held sideways reach the search box: since 2026-11-09 a phone held
@@ -1462,6 +1488,9 @@
   `#7a5a12`, `#715593`, `#006e47`, `#b70066`), each the dark hue held and lightness dropped; recon's ink is
   `--tp-cyan-ink` and loot's `--flag-gold-val`, the same meaning on the same paper. The recon rail's column
   rule reads the border value, `var(--cl-bar, var(--acc))`, instead of `--cl-code-ink`.
+  **Partly superseded by:** 2026-11-18 · Prose colours lower their energy: soft h3, smooth lede fade, ice
+  inline code. The h3 no longer wears `#41efff`: it reads a softer tint of its own, `--tp-h3-ink`. Recon's
+  cyan, the links and the port chips stand.
 - **Why:** intel and vuln were byte-identical to the PicoCTF and VulnHub sidebar dots and badge chips, so on
   a desktop writeup, and beside the platform chip on those platforms' own writeups, a box's colour made a
   platform claim it does not mean. Recon's and loot's matches mean the same thing, so they stay. On paper
@@ -5241,6 +5270,9 @@ automatically; no astro.config.mjs edit is needed per writeup.
 - **Colors:** DARK text `#ff9b9b`, fill `rgba(255,120,120,0.07)`, border `rgba(255,120,120,0.26)`. LIGHT
   text `#b03326`, fill `#f3e4d6`, border `rgba(150,74,38,0.32)`. Red text stays AA on its own fill (dark
   9.2:1, light 5.0:1, both verified on the live build in a real writeup).
+  **Partly superseded by:** 2026-11-18 · Prose colours lower their energy: soft h3, smooth lede fade, ice
+  inline code. The red text is ice now (dark `#b0d9e4`, light `#1d5a5e`); the fill and border named here
+  had already given way to this entry's 2026-06-30 amendment.
 - **Supersedes in part:** 2026-06-29 · Light/code/toggle polish: sharp code frames, light inline-code chip,
   softer copy toast, tighter toggle gap, specifically its light-only cream chip (`#f7f0dc`). This unifies both
   themes and drops the toggle-title special case. The rest of that entry stays in force and it is not
@@ -5254,6 +5286,9 @@ automatically; no astro.config.mjs edit is needed per writeup.
   LIGHT fill `#ece2d6` + border `var(--tp-divider)` (the shared structural hairline). Red text is
   unchanged (`#ff9b9b` / `#b03326`); AA on its own fill is dark 9.0:1, light 4.9:1 (verified live, both
   themes). The callout-harmonize rule (2026-06-29) is untouched. `npm run build` green (45 pages).
+  **Partly superseded by:** 2026-11-18 · Prose colours lower their energy: soft h3, smooth lede fade, ice
+  inline code. The red text is ice and the light fill `#e5e0d4`; the neutral structure, the dark lift and
+  the shared divider stand.
 
 ### 2026-06-29 · Light/code/toggle polish: sharp code frames, light inline-code chip, softer copy toast, tighter toggle gap
 - **Sharp code blocks (both themes):** the EC frame radius is zeroed via EC's own `--ec-brdRad: 0` plus
@@ -5291,6 +5326,10 @@ automatically; no astro.config.mjs edit is needed per writeup.
   **Partly superseded by:** 2026-10-11 · One lime ink for small text on paper, and About's light inks
   clear its glows. On light only, the current h2 reads `--tp-lime-ink`: the green named here is 4.11:1 on
   paper as small text. Dark and the h3 and h4+ rungs stand.
+  **Partly superseded by:** 2026-11-18 · Prose colours lower their energy: soft h3, smooth lede fade, ice
+  inline code. The `###` heading reads its own `--tp-h3-ink` now, so the h3 rung no longer shares its
+  tokens: it keeps `--tp-cyan` / `--tp-cyan-ink` on purpose, one step stronger, as the rail's position
+  marker, and the How bullet's token parity holds for h4 and deeper only. The rung itself stands.
 - **Why:** the heading ladder already uses a lime/cyan/gray duotone in the body (DECISIONS 2026-06-20
   era); carrying that hue into the active TOC entry makes the column echo the content hierarchy and
   strengthens the sense of place while scrolling. Owner request.

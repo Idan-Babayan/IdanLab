@@ -3,16 +3,18 @@
    Layer order, not file order, decides precedence. */
 /* Inline code: its own object (calm neutral chip, identity in the text). Inline code (:not(pre) > code)
    is a passing REFERENCE inside prose, not a destination, so it stays subordinate to the sentence. The
-   chip is neutral in both themes (no red in the fill or border); the red identity lives in the GLYPHS,
-   where it reads as deliberate and never broadcasts false urgency on neutral tokens like filenames or
-   ports. Soft rounded corners, deliberately the opposite of the sharp-cornered code-block destinations.
+   chip is neutral in both themes (no colour in the fill or border); the identity lives in an ICE ink in
+   the GLYPHS, calm enough for neutral tokens like filenames and ports (the red it wore until 2026-11-18
+   read as an alarm on them), and told apart from the h3's soft cyan by its box and its mono face. Soft
+   rounded corners, deliberately the opposite of the sharp-cornered code-block destinations.
    ONE structure for both themes; only the surface is tuned per theme. Dark: a white-alpha lift that
    adapts to whatever sits behind it (plain page, raised toggle panel, a summary title), so there is no
-   surface special-casing. Light: a warm fill (#ece2d6) with the shared --tp-divider hairline, the same
-   token every other structural line uses, so the chip edge stays system-coherent. Scoped to
-   :not(pre) > code so it never touches code-block tokens (those live in pre). Unlayered, so it overrides
-   Starlight's default inline-code chip. Red text stays AA on its own fill in both themes (dark is high
-   contrast on the near-black surface, light is about 4.9:1). */
+   surface special-casing. Light: the paper's own hue one step down (#e5e0d4) with the shared
+   --tp-divider hairline, the same token every other structural line uses, so the chip edge stays
+   system-coherent. Scoped to :not(pre) > code so it never touches code-block tokens (those live in
+   pre). The prose layer outranks Starlight's own layers, so this replaces its default inline-code chip.
+   The ice clears AA on its own fill in both themes (model B): dark #b0d9e4 reads 11.9:1 on the lift
+   over the page #07090a, light #1d5a5e 6.0:1 on #e5e0d4. */
 @layer prose {
 :not(pre) > code {
   border-radius: 5px;
@@ -26,13 +28,13 @@
   font-family: var(--sl-font-mono);
 }
 html[data-theme="dark"] :not(pre) > code {
-  color: #ff9b9b;
+  color: #b0d9e4;
   background-color: rgba(255, 255, 255, 0.055);
   border-color: rgba(255, 255, 255, 0.11);
 }
 html[data-theme="light"] :not(pre) > code {
-  color: #b03326;
-  background-color: #ece2d6;
+  color: #1d5a5e;
+  background-color: #e5e0d4;
   border-color: var(--tp-divider);
 }
 } /* @layer prose */
@@ -391,18 +393,21 @@ html[data-theme="light"] .sl-markdown-content details {
 }
 } /* @layer prose */
 
-/* h3: cyan accent, one clear step down. Lighter weight than h2 and no "#" marker
-   so it differs unmistakably. Cyan is theme-aware via the light override.
+/* h3: a soft cyan, one clear step down, read from its own role token, --tp-h3-ink (tokens.css), which
+   is theme-aware, so one rule covers both themes. On ink it is softer than the link cyan (#9de2ea,
+   13.8:1 on the page #07090a), so the heading stops pulling the eye ahead of the text under it; on
+   paper it is lighter and less saturated than the link ink (#2a6e7b, 4.8:1 on the page #ece9e0, model
+   B; an h3 is large text, so its bar is 3:1), so it reads apart from the near-black body text. Lighter
+   weight than h2 and no "#" marker, so it differs unmistakably. The flag headings keep their gold: that
+   rule sits in the components layer, which outranks this one. The TOC's current h3 entry keeps the
+   link cyan, a step stronger, as the rail's position marker (chrome.css).
    The :not(:where(.not-content *)) guard mirrors Starlight's own prose rules: components
    rendered inside docs (e.g. PlatformIndex/WriteupCard) opt out with class="not-content",
    and these prose styles must respect that too. :where() adds zero specificity. */
 @layer prose {
 .sl-markdown-content h3:not(:where(.not-content *)) {
-  color: var(--tp-cyan);
+  color: var(--tp-h3-ink);
   font-weight: 600;
-}
-:root[data-theme='light'] .sl-markdown-content h3:not(:where(.not-content *)) {
-  color: var(--tp-cyan-ink);
 }
 
 /* h4: quietest. Muted, smaller (Starlight scale), no marker. The Starlight gray
@@ -443,11 +448,30 @@ html[data-theme="light"] .sl-markdown-content details {
 }
 } /* @layer prose */
 
-/* ── Lead blockquote (machine description sits here) ── */
+/* ── Lead blockquote (machine description sits here) ──
+   The bar is a 3px vertical fade between two OPAQUE greens, lime at the top easing into a truer green
+   at the bottom, so it never drops to olive on ink or near-white on paper. It is a background layer
+   under a transparent 3px border, so the box, its radius and its padding stay where they were: the
+   layer starts at the border box's corner (border-box origin; position and clip keep their initial
+   0 0 and border-box), 3px wide and the full height, which is exactly the strip the border leaves
+   clear. The site runs left to right, so that corner is the inline start. The wash under it is light:
+   4% of the accent on ink.
+   Longhands, with literal stops: a declaration that holds a var() is accepted at parse time by every
+   engine, so a gradient written `in oklab` with one would win the cascade everywhere and then, in an
+   engine without gradient colour interpolation (Firefox before 127, inside the build targets), fail at
+   computed time and empty the background. Written without one, such an engine drops the second
+   background-image and keeps the first, an sRGB fade between the same stops. The wash keeps its var()
+   in background-color, which every target reads. */
 @layer prose {
 .sl-markdown-content blockquote {
-  border-inline-start: 3px solid var(--sl-color-accent);
-  background: color-mix(in oklab, var(--sl-color-accent) 7%, transparent);
+  border-inline-start: 3px solid transparent;
+  background-color: color-mix(in oklab, var(--sl-color-accent) 4%, transparent);
+  /* fallback for browsers without gradient color interpolation */
+  background-image: linear-gradient(180deg, #aadf5b, #6eab59);
+  background-image: linear-gradient(in oklab 180deg, #aadf5b, #6eab59);
+  background-size: 3px 100%;
+  background-repeat: no-repeat;
+  background-origin: border-box;
   border-radius: 0 10px 10px 0;
   /* The two axes deliberately use different units, see the token block in tokens.css. Vertical is em, so
      the quote's breathing tracks the text; horizontal is rem, because it is an alignment to .cl's inline
@@ -460,12 +484,14 @@ html[data-theme="light"] .sl-markdown-content details {
 } /* @layer prose */
 
 
-/* Lead blockquote: a calm warm-paper card (subtle olive tint kept light so the body text on it
-   stays AA), but the left bar is the vivid deco-lime panel accent. */
+/* Lead blockquote on paper: a calm warm-paper card, its wash 6% of the lime ink into #f4f1e8, its bar
+   the same fade between paper's own two greens (literal stops and a fallback first, as above), and the
+   soft shadow that lifts it off the page. The border stays the base rule's transparent one. */
 @layer prose {
 :root[data-theme='light'] .sl-markdown-content blockquote {
-  background: color-mix(in oklab, var(--sl-color-accent) 12%, #f4f1e8);
-  border-inline-start-color: var(--tp-deco-lime);
+  background-color: color-mix(in oklab, var(--tp-lime-ink) 6%, #f4f1e8);
+  background-image: linear-gradient(180deg, #81a749, #a1c88e);
+  background-image: linear-gradient(in oklab 180deg, #81a749, #a1c88e);
   box-shadow: 0 6px 20px -14px rgba(60, 50, 30, 0.4);
 }
 } /* @layer prose */
