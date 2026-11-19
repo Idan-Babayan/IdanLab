@@ -19,9 +19,10 @@
    for --tp-h3-ink, whose #2a6e7b reads 4.32:1 on the darkest grid dot (model C). Which entry is current
    is TocTracking.astro's job, not this file's.
    Entries that are not current keep Starlight's colours in the desktop column: gray-3, white on hover.
-   On a phone the strip names the current entry in the same colour, and its panel (the Quiet strip,
-   below) reads h2 entries in the text colour and deeper ones in gray-2, marking the current entry with
-   a rail and a faint wash of its own colour where Starlight drew a check. */
+   On a phone the strip names the current entry in the same colour on dark and in the ink on paper (the
+   Quiet strip, below, says why), and its panel reads h2 entries in the text colour and deeper ones in
+   gray-2, marking the current entry with a rail and a faint wash of its own colour where Starlight drew
+   a check. */
 
 /* Flags, desktop: matched by their slug anchors (#user-flag / #root-flag; no .flag-title class exists
    yet). A muted gold at rest, which with the glyph keeps the loot scannable at a glance; the full
@@ -252,8 +253,10 @@ mobile-starlight-toc:has(a[aria-current="true"]:not([style*="--depth: 0"], [styl
 mobile-starlight-toc:has(a[aria-current="true"]:is([href="#user-flag"], [href="#root-flag"])) .display-current {
   color: var(--flag-gold-current);
 }
-/* Paper: the ink, whichever entry is current. At the h3 rung's weight and the heaviest of the others,
-   so coming after them it wins. */
+/* Paper: the ink, whichever entry is current, on purpose (owner, 2026-10-24; kept 2026-11-19): with a
+   terminal under the glass the TOC's paper inks fall to 2.20 to 4.09:1 (figures above), so on paper the
+   ladder's colours stay in the panel. At the h3 rung's weight and the heaviest of the others, so coming
+   after them it wins. */
 :root[data-theme='light'] mobile-starlight-toc:has(a[aria-current="true"]) .display-current {
   color: var(--tp-hud-ink);
 }

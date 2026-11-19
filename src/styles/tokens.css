@@ -331,10 +331,10 @@ html[data-theme="dark"] {
   --tp-name-to: #9fef00;
   --tp-search-border: rgba(255, 255, 255, 0.16);
   --tp-hud-muted: #79857f;
-  /* The full-contrast ink for every word and glyph on the glass but the name, in the bar and the phone
-     strip (owner, 2026-10-24): a screenshot under the thin glass can be their backdrop. The name's start
-     colour, so #e9f1ee on dark and the editorial ink on paper. Declared once; it follows the theme
-     through --tp-name-from. */
+  /* The full-contrast ink for every word and glyph on the glass but the name (and, on dark, the strip's
+     section name, which keeps its rung), in the bar and the phone strip (owner, 2026-10-24): a
+     screenshot under the thin glass can be their backdrop. The name's start colour, so #e9f1ee on dark
+     and the editorial ink on paper. Declared once; it follows the theme through --tp-name-from. */
   --tp-hud-ink: var(--tp-name-from);
 }
 

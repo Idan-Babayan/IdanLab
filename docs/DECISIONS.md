@@ -66,7 +66,8 @@
   `##` marker. On dark the TOC's current h3 entry follows it (desktop rung, phone rail and wash, phone
   strip label, focus ring); on paper the rung keeps `--tp-cyan-ink` (`#08697a`), the same hue a step
   deeper, because the heading's ink reads 4.32:1 as 13px text on the darkest grid dot (model C) and
-  4.44:1 on the phone panel's 6% wash. The lede bar
+  4.44:1 on the phone panel's 6% wash, and the strip label stays the ink there (2026-10-25 · The bar's
+  glass thins and frosts over, and what sits on it turns full contrast). The lede bar
   is a 3px vertical gradient between two opaque greens (dark `#aadf5b` to `#6eab59`, light `#81a749` to
   `#a1c88e`), painted under a transparent border over a lighter wash (dark 4% accent, light 6%
   `--tp-lime-ink` into `#f4f1e8`). Inline code turns ice: dark `#b0d9e4` on the same white lift, light
@@ -357,15 +358,21 @@
 - **Why:** the owner tuned the glass to these values (2026-10-24). The thinner tint lets a screenshot under
   the bar show through: modelled before any change, the muted grey fell from 2.75 to 2.02:1 over pure white
   on dark and from 3.58 to 2.47:1 over pure black on paper. Offered a thicker tint to hold 3:1, the owner
-  kept the glass and raised the foreground instead (2026-10-24). GitHub and the theme were first left
-  muted as sitting over the right column, which holds only from 72rem: on a writeup from 800px to about
-  1100px the article column lies under them, where muted they measured 2.08 and 2.43:1 on dark and 2.56
-  and 2.89:1 on paper. Offered ink below 72rem only, the owner chose ink at every width (2026-10-25).
+  kept the glass and raised the foreground instead (2026-10-24). That brief named the strip's section
+  name itself: on dark it keeps its rung, and "on paper it moves to ink", held to 4.5:1. GitHub and the
+  theme were first left muted as sitting over the right column, which holds only from 72rem: on a
+  writeup from 800px to about 1100px the article column lies under them, where muted they measured 2.08
+  and 2.43:1 on dark and 2.56 and 2.89:1 on paper. Offered ink below 72rem only, the owner chose ink at
+  every width (2026-10-25).
 - **Rejected:**
   - A thicker tint, 80% on dark and 73% on paper, the lowest that held the grey at 3:1 (owner, 2026-10-24).
   - Ink for GitHub and the theme below 72rem only, muted over the right column above it (owner,
     2026-10-25).
   - GitHub and the theme left muted, at 2.1 to 2.9:1 between 800 and 1100px (owner, 2026-10-25).
+  - The strip's name on paper in its TOC rung (the lime ink, cyan ink and deep gold the panel shows):
+    over a black terminal under the glass they read 2.32, 2.20 and 4.09:1 against the ink's 6.15 (owner,
+    2026-10-24). Asked again on 2026-11-19, the owner kept the ink, over the rung inks and over deeper
+    ones that hold 4.5:1 (`#1f3800`, `#013741`, `#422e00`).
 - **Known:** the name keeps its fade, a logotype: its start reads 6.39:1 or more over the worst areas, and
   its lime end on paper is held to no text bar. On dark the flag's gold is the tightest rung, 4.59:1 over
   pure white. The source writes `-webkit-backdrop-filter`, but the build's minifier drops it (lightningcss
