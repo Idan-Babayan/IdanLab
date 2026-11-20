@@ -6,6 +6,47 @@
 
 ---
 
+### 2026-11-20 · The machine overview takes the callout header and a lime edge, and the section intros stay as they are
+- **Supersedes in part:** 2026-11-20 · Second-pass colour follow-ups: light callout inks and sudo
+  deepen, the light reading line takes the h2 rule's pair, the machine overview names itself (its Open
+  bullet: that the label is the current answer and not a settled one, and that ROADMAP tracks the
+  question; the label's word, type, colours and scope stand).
+- **Decision:** on a HackTheBox or VulnHub writeup the lead quote's `Overview` label becomes a callout
+  header: Starlight's own `open-book` icon before the word, at the callout icon's 1rem with the header's
+  `.4rem` gap and `.45rem` below (`.3rem` before), in the label's colour, which each theme writes into
+  the icon's fill (`#b6ff3c`, `#3e6700`). The lead's card gains a 1px lime edge inside it: 30% of the
+  accent with a faint `#9fef00` glow on dark, 30% of the lime ink over the lead's own paper shadow on
+  light. The badge row stays above the card, and the section intros keep their card as it is. CSS only,
+  in `prose.css`, keyed on the badge row's platform chip, as the label is.
+- **Why:** the word alone read generic and stood apart: nothing else on the page announced itself quite
+  like it, while every callout pairs its label with a glyph (owner). With the icon, the lead's header is
+  the callout header (icon, gap, type and spacing), so the lead is named in the page's own language, and
+  the edge, the line the platform chip above it wears, makes the named card one object. Every surface
+  stays filled: the edge sits inside the wash and the bar, where an outlined card would have dropped the
+  fill. The section intros keep their card; the lead's header and edge now tell it from them.
+- **Rejected:** the dossier, the badge row taken into the lead's card under the label (owner: the card
+  without it; on a phone that card stacked the label, three rows of badges, one more than today, and four
+  lines of text); for the section intros, an outlined (ghost) card, alone or beside the dossier, and
+  corner brackets (owner: the intros stay as they are, and a ghost card breaks the visual language the
+  filled callouts set).
+- **Verified:** the commit's tree, built on its own, green at 68 pages; against its parent's build only
+  the shared stylesheet changes, and every page's HTML differs only in that stylesheet's name. On the
+  preview server, Busqueda, Return, Unified, Forest, Bandit 17 to 18 and n0s4n1ty 1 in both themes at
+  1440 and 390, the only changed computed cells are on the four machine pages: the lead's `::before`
+  (`margin-block-end` 4.8px to 7.2px, `padding-inline-start` 0 to 22.4px, the icon in
+  `background-image` with its fill `%23b6ff3c` on dark and `%233e6700` on light, `16px 16px`,
+  `no-repeat`, `0px 50%`, the minifier writing `left center` as `0`); the lead's `box-shadow`, on dark
+  `none` to `oklab(0.918743 -0.139752 0.174632 / 0.3) 0px 0px 0px 1px inset, oklab(0.866761 -0.149256
+  0.178696 / 0.35) 0px 0px 18px -8px` (the minifier mixes the glow's colour at build time), on light the
+  paper shadow to `oklab(0.465241 -0.0845822 0.0959655 / 0.3) 0px 0px 0px 1px inset, rgba(60, 50, 30,
+  0.4) 0px 6px 20px -14px`; and everything below the lead, 2.4px lower (24.8px against no label).
+  Bandit and n0s4n1ty 1 do not change in either theme. Across all 59 writeups in both themes, the 16
+  section intros and the 55 OverTheWire and PicoCTF leads keep `::before` at `none` and their shadow
+  (`none` on dark, the paper shadow on light). In Chrome's accessibility tree the lead quote still reads
+  "OVERVIEW", then its text, with no node for the icon.
+- **Status:** Adopted 2026-11-20, chosen in a live preview of Busqueda in both themes, against the
+  word-only label and the dossier.
+
 ### 2026-11-20 · Second-pass colour follow-ups: light callout inks and sudo deepen, the light reading line takes the h2 rule's pair, the machine overview names itself
 - **Supersedes in part:** 2026-09-28 · Callouts speak in five voices, and light mode gets its own border
   and label (the light label inks of intel, defense and vuln, `#715593`, `#006e47` and `#b70066`, and its
@@ -41,6 +82,9 @@
   overview and the section intros differ; an outlined intro and corner brackets were liked, but both
   break the filled-surface language (callouts, flag capsules, the attack path and code frames are all
   filled). ROADMAP tracks it.
+  (**Partly superseded by:** 2026-11-20 · The machine overview takes the callout header and a lime
+  edge, and the section intros stay as they are: the label is settled, with the icon and an edge, the
+  section intros stay as they are, and the ROADMAP item is deleted.)
 - **Verified:** the commit's tree, built on its own, green at 68 pages; against its parent's build only
   the shared stylesheet changes, and every page's HTML differs only in that stylesheet's name. On the
   preview server, Busqueda, Return, Unified, Forest, Bandit 17 to 18 and n0s4n1ty 1 in both themes at
@@ -56,6 +100,9 @@
   The grain lowers each by 0.04 to 0.05, the dark label by 0.25. The model C floor on a grain dot,
   computed: intel 4.65, defense 4.63, vuln 4.65. In Chrome's accessibility tree the lead quote reads
   "OVERVIEW", then its text, and nothing else.
+  (**Partly superseded by:** 2026-11-20 · The machine overview takes the callout header and a lime
+  edge, and the section intros stay as they are: the label sits `.45rem` above the text now, not
+  `.3rem`, so everything below the lead is 24.8px lower against no label, not 22.4px.)
 - **Status:** Adopted 2026-11-20, chosen in a live preview of Busqueda in both themes.
 
 ### 2026-11-18 · Code blocks share one colour system: token roles in every language, commands by position
