@@ -443,13 +443,13 @@ The whole path in one breath: Forest is a domain controller with no website, and
 <AttackPath
   title="Attack Path · htb.local"
   nodes={[
-    { kind: 'Directory', name: 'FOREST', detail: [ { k: 'role', v: 'the domain controller for <code>htb.local</code>' }, { k: 'flaw', v: 'lists all 31 accounts without a credential' } ] },
-    { kind: 'User', name: 'svc-alfresco', edge: '<b>AS-REP roast</b>', detail: [ { k: 'crack', v: 'pre-auth disabled, cracked with <code>hashcat -m 18200</code>' }, { k: 'shell', v: '<code>evil-winrm</code> on port 5985, <code>user.txt</code>' } ] },
-    { kind: 'Group', name: 'Account Operators', edge: 'nested <b>MemberOf</b>', detail: [ { k: 'chain', v: 'through Service Accounts, then Privileged IT Accounts' }, { k: 'note', v: 'can create users and edit group membership' } ] },
-    { kind: 'Group', name: 'Exchange Windows Permissions', edge: '<b>GenericAll</b>', detail: [ { k: 'why', v: 'not a group AD protects, so its membership is writable' }, { k: 'action', v: 'create user <code>idan</code> and add it to the group' } ] },
-    { kind: 'Domain', name: 'htb.local', edge: '<b>WriteDACL</b>', detail: [ { k: 'scope', v: 'the security descriptor of the domain itself' }, { k: 'action', v: 'grant the replication rights to <code>idan</code>' } ] },
-    { kind: 'Account', name: 'Administrator', edge: '<b>DCSync</b> as idan', detail: [ { k: 'tool', v: '<code>impacket-secretsdump</code>' }, { k: 'result', v: 'replicated NTLM hash, no cracking' } ] },
-    { kind: 'Root', name: 'SYSTEM', edge: '<b>pass-the-hash</b>', detail: [ { k: 'tool', v: '<code>impacket-psexec</code> starts a service, so <code>LocalSystem</code>' }, { k: 'flag', v: '<code>root.txt</code>' } ] },
+    { kind: 'Computer', name: 'FOREST', detail: [ { k: 'role', v: 'the domain controller for <code>htb.local</code>' }, { k: 'flaw', v: 'lists all 31 accounts without a credential' } ] },
+    { kind: 'User', name: 'svc-alfresco', edge: '<b>AS-REP roast</b>', detail: [ { k: 'how', v: 'pre-auth disabled, cracked with <code>hashcat -m 18200</code>' }, { k: 'gain', v: '<code>evil-winrm</code> on port 5985' }, { k: 'flag', v: '<code>user.txt</code>' } ] },
+    { kind: 'Group', name: 'Account Operators', edge: 'nested <b>MemberOf</b>', detail: [ { k: 'how', v: 'through Service Accounts, then Privileged IT Accounts' }, { k: 'gain', v: 'can create users and edit group membership' } ] },
+    { kind: 'Group', name: 'Exchange Windows Permissions', edge: '<b>GenericAll</b>', detail: [ { k: 'flaw', v: 'not a group AD protects, so its membership is writable' }, { k: 'how', v: 'create user <code>idan</code> and add it to the group' } ] },
+    { kind: 'Domain', name: 'htb.local', edge: '<b>WriteDACL</b>', detail: [ { k: 'gain', v: 'control of the security descriptor of the domain itself' }, { k: 'how', v: 'grant the replication rights to <code>idan</code>' } ] },
+    { kind: 'Account', name: 'Administrator', edge: '<b>DCSync</b> as idan', detail: [ { k: 'how', v: '<code>impacket-secretsdump</code>' }, { k: 'gain', v: 'replicated NTLM hash, no cracking' } ] },
+    { kind: 'Root', name: 'SYSTEM', edge: '<b>pass-the-hash</b>', detail: [ { k: 'how', v: '<code>impacket-psexec</code> starts a service, so <code>LocalSystem</code>' }, { k: 'flag', v: '<code>root.txt</code>' } ] },
   ]}
 />
 

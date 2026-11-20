@@ -290,13 +290,9 @@
 - [DESIGN] **Below the 320px floor, recorded so nobody rediscovers them, out of scope by the same
   decision:** the inline PasswordReveal value column starves once its 55px label and 84px Reveal button
   have taken the row, 71px (four lines) at 288, 23px (two glyphs per line) at 240, 0px (one glyph per
-  line, 788px tall) from 205; the AttackPath meter, a nowrap label beside a 92px bar, sets the writeup's
-  scroll width to 220px, so writeups really scroll sideways (their `body` is `visible`) by 15px at 205
-  and 40 at 180; the mobile table-of-contents toggle spans the header and stretches to that width, 15.8px
-  past at 205 and 40.6 at 180, while on the Bandit pages, which have no meter, it stays within 1px until
-  the page itself scrolls at 119; from 205 the header wordmark's glyphs are cut by its span's
-  `overflow: hidden` with no ellipsis (18px at 205 and 44 at 180 on the Bandit pages and the landings,
-  about 3px on the HackTheBox writeups); the `/secret` terminal's title bar is cut by the terminal's own
+  line, 788px tall) from 205; from 205 the header wordmark's glyphs are cut by its span's
+  `overflow: hidden` with no ellipsis (18px at 205 and 44 at 180 on the Bandit pages, the HackTheBox
+  writeups and the landings); the `/secret` terminal's title bar is cut by the terminal's own
   `overflow-x: hidden` from 288 (its contents overflow the bar by 8px there and 116 at 180; the title
   text is hidden by 25.5px at 205 and 51 at 180). If the floor decision is ever revisited, these, the
   landings and About and home above are what a 240 to 288px layout has to answer for.

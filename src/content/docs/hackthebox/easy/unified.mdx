@@ -457,11 +457,11 @@ The whole path in one breath: UniFi Network 6.4.54 writes my login attempt into 
 <AttackPath
   title="Attack Path · unified.htb"
   nodes={[
-    { kind: 'Web', name: 'UniFi 6.4.54', detail: [ { k: 'port', v: '<code>8443/tcp</code>, the UniFi Network controller' }, { k: 'flaw', v: 'Log4Shell in the string it logs on login' } ] },
-    { kind: 'User', name: 'unifi', edge: '<b>Log4Shell</b>', detail: [ { k: 'shell', v: 'a rogue LDAP server answers the lookup and serves the payload' }, { k: 'flag', v: '<code>user.txt</code> in <code>/home/michael</code>' } ] },
-    { kind: 'Service', name: 'MongoDB', edge: 'open on <b>localhost</b>', detail: [ { k: 'access', v: 'unauthenticated read and write to the <code>ace</code> database' }, { k: 'holds', v: 'the <code>admin</code> account table, hashes in <code>x_shadow</code>' } ] },
-    { kind: 'Account', name: 'administrator', edge: 'overwrites <b>x_shadow</b>', detail: [ { k: 'write', v: '<code>db.admin.update()</code> sets a hash I generated' }, { k: 'opens', v: 'the UniFi UI as <code>administrator</code>' } ] },
-    { kind: 'Root', name: 'root', edge: 'reads the <b>SSH password</b>', detail: [ { k: 'source', v: 'Device Authentication stores it in the clear' }, { k: 'flag', v: '<code>ssh</code> as root, <code>root.txt</code>' } ] },
+    { kind: 'Web', name: 'UniFi 6.4.54', detail: [ { k: 'role', v: '<code>8443/tcp</code>, the UniFi Network controller' }, { k: 'flaw', v: 'Log4Shell in the string it logs on login' } ] },
+    { kind: 'User', name: 'unifi', edge: '<b>Log4Shell</b>', detail: [ { k: 'how', v: 'a rogue LDAP server answers the lookup and serves the payload' }, { k: 'flag', v: '<code>user.txt</code> in <code>/home/michael</code>' } ] },
+    { kind: 'Service', name: 'MongoDB', edge: '<b>localhost</b> access', detail: [ { k: 'flaw', v: 'unauthenticated read and write to the <code>ace</code> database' }, { k: 'gain', v: 'the <code>admin</code> account table, hashes in <code>x_shadow</code>' } ] },
+    { kind: 'Account', name: 'administrator', edge: '<b>x_shadow</b> overwrite', detail: [ { k: 'how', v: '<code>db.admin.update()</code> sets a hash I generated' }, { k: 'gain', v: 'the UniFi UI as <code>administrator</code>' } ] },
+    { kind: 'Root', name: 'root', edge: '<b>SSH password</b>', detail: [ { k: 'flaw', v: 'Device Authentication stores it in the clear' }, { k: 'how', v: '<code>ssh</code> as root' }, { k: 'flag', v: '<code>root.txt</code>' } ] },
   ]}
 />
 

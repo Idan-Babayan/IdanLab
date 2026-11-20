@@ -6,6 +6,110 @@
 
 ---
 
+### 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per chain, one dossier vocabulary
+- **Supersedes in part:** 2026-10-11 · One lime ink for small text on paper, and About's light inks clear
+  its glows. Only "AttackPath's done run" among the lime ink's consumers in its Decision: on light the
+  ink now sets the lit run, the technique of the hop that reached the current node, while done runs keep
+  their bold in the quiet grey. The ink, its other consumers and its figures stand.
+- **Supersedes in part:** 2026-09-23 · The AttackPath dossier is one stacked label/value grid, `via` is
+  reserved, and the goal step wears gold. Only the meter bar and its gradient (in its Decision, with "as
+  the bar's end is" in its Cost), the dots' focus ring on the green-to-gold ramp, and the label names in
+  its Also, which the shared set replaces. The grid, the `via` rule, the gold goal and the dots' ramp
+  stand.
+- **Supersedes in part:** 2026-09-19 · The supported floor is a 320px viewport, and the landings' clip is
+  the one exception. Only the writeups' sideways scroll in its measured ladder (15px at 175 percent and
+  40 at 200, set by the AttackPath meter, with the table-of-contents toggle stretching to it). The floor,
+  the exception and the other rungs stand.
+- **Supersedes in part:** 2026-09-19 · The text-scaling backlog is retired: thirteen simulated findings,
+  four re-filed by width. Only the AttackPath meter and the table-of-contents toggle that stretched to it
+  in its re-filed list, and "about 3px on the HackTheBox writeups" for the wordmark in its retired list.
+  Everything else stands.
+- **Supersedes in part:** 2026-07-27 · The release hold is lifted and `dev` ships to production. Only
+  item 2 of "What ships knowingly unfixed", AttackPath internals at about 0.533 of body size: the
+  smallest AttackPath text is 11px now, 0.61 of the 18px body.
+- **Supersedes in part:** 2026-07-20 · AttackPath production-readiness audit: 8 findings fixed (2 were
+  real WCAG AA failures). Only three records of code that is gone: the dots carrying the state word in
+  their names, the `is-enter` dossier class with its `animationend` self-clear, and `centre()` with the
+  6.1ms per advance measured on it. The eight fixes stand.
+- **Supersedes in part:** 2026-07-20 · AttackPath production-polish pass (connector-label rhythm, honest
+  weight ramp, dot touch targets) + Return instance. Only its third fix, the tap target as a
+  layout-neutral `::after` on a focusable 7px dot. The label rhythm and the weight ramp stand.
+- **Supersedes in part:** 2026-07-19 · AttackPath reworked onto the site's native fabric (surfaces, prize
+  identity, computed escalation). Only "and the meter" in its third rework: there is no bar left to tint.
+- **Supersedes in part:** 2026-07-19 · AttackPath: a guided, data-driven infographic for linear
+  privilege-escalation chains. Only two claims in its A11y bullet: the dots as real `<button>`s with a
+  focus ring, and the dossier as an `aria-live="polite"` region. Nodes and the Next control stay real
+  buttons.
+- **Decision:** the component keeps what it is (one step at a time, the climb, the static dossier form)
+  and changes how it behaves. One `requestAnimationFrame` clock drives the camera, the spark and the
+  line: the spark rides the connector's own path (`getPointAtLength`) and draws the line behind it
+  (`stroke-dashoffset`); the camera holds while the spark is in view (on a narrow screen it follows the
+  spark at the leading edge), then settles in 360ms on `cameraLeft()`, a frame that keeps the current
+  node whole with as much of the way in as fits, the hop first and then the node before it, and whatever
+  the left edge cuts recedes as a whole. The old node lets go, the spark runs the hop (160 to 380ms a
+  hop; a jump plays every hop), the new node lights as the spark lands and its values roll in, then the
+  frame settles; fast input finishes the step in flight. Type grows: node kinds 11px (were 9.6), names 14
+  to 16px (12.2 to 14.4) with `text-wrap: balance`, nodes `148px + t * 56px` capped at 176px on a phone,
+  connectors 124px (116), techniques 11.5px (9.7), dossier labels 11px (9.6) and values 14px (11.8), the
+  step count 12px (11.2), Next 13px (11.5). Only the current hop's technique is lit: the accent,
+  `--tp-lime-ink` on light, gold on the goal connector. Dossier labels stand still and values roll, up
+  when climbing and down when walking back. At the goal Next becomes a gold "Compromised" state with a
+  check and no frame, still focusable and `aria-disabled`, and the progress bar is gone. The bloom plays
+  once, after the settle, skipped under reduced motion, its ripple a 12px `box-shadow` ring inside the
+  gutter. The root is a `role="group"` named by its title; a roving tabindex leaves two tab stops; the
+  arrows move the step and focus together; Home and End work on a node; Enter no longer resets to step 1;
+  the hint is tied by `aria-describedby` and shows on `:focus-visible`; one polite status sentence per
+  step replaces the `aria-live` dossier; the dots are `aria-hidden` spans 14 by 24px. Fallbacks: forced
+  colours, a `<noscript>` style that hides the meter and footer and lists every panel, a stage that stays
+  `inert` until the script wires it, and print that lists every panel. The guard admits only `role` (node
+  0), `flaw`, `how`, `gain` and `flag` as detail keys. A separate editorial pass set that list on
+  2026-11-20, after an interim six (`role`, `why`, `how`, `scope`, `gain`, `flag`) did not fit every row.
+  The four writeups move onto it (23 labels become 5, and three rows that paired a flag with a shell or a
+  command split in two), with eight edges reworded as noun phrases that read after "via" (`is member of`
+  is now `group membership`). Geometry, the climb, surfaces, tokens, the `via` rule, reduced-motion
+  gating and re-init safety are unchanged.
+- **Why:** the spark was a CSS transform moving in a straight line from node centre to node centre while
+  the same click scrolled the strip, so on screen it slid up to 153px backwards and ended on the new
+  node's name. The next technique read brighter than the current one, and the whole dossier panel faded
+  back in over 340ms. Forest had 15 tab stops and the other chains 11, and every dot failed
+  `target-size`. The bar's fixed 92px width scrolled the writeups sideways below 220px. The bloom's
+  `scale(1.5)` was cut flat at the strip's edge and widened it about 8px on desktop. Without JavaScript a
+  reader got one step and 15 buttons that did nothing. Twenty-three different labels across four writeups
+  changed the label column at every step, and an edge written as a verb read wrong after "via" ("via is
+  member of").
+- **Rejected:** an overview-first rail that shows the whole chain at once, because the whole chain at
+  once reads as dense and overwhelming and the component's point is one step at a time; a Replay control
+  that plays the chain end to end, because it runs the whole chain in about a second without opening a
+  step or letting the reader go at their own pace; and MITRE ATT&CK ids and defence notes in the dossier,
+  because they add data to every panel and make the chain harder to follow.
+- **Verified:** the production build, green at 68 pages with the decorative-glyph guard clean; the label
+  guard fails the build on a `scope` row and on `role` past the entry, each with its own message. On
+  `astro preview` in headless Chrome 157, the before figures from the pre-change build in the same
+  harness: two tab stops on every chain (before 15 on Forest, 11 on the others); Right, Right, Enter,
+  End, Left and Home walk Forest 2, 3, 3, 7, 6, 1 with focus on the current node, which settles inside
+  the strip at 1440 and 390, and Home and End do nothing on Next; the hint shows on keyboard focus only;
+  the status line reads "Step 2 of 7: User svc-alfresco, via AS-REP roast." and ends "via pass-the-hash.
+  Compromised."; the tree holds a group named by the title, nodes named by kind, name and state, no dots
+  and a silent check, and at the goal Next is "Compromised", `aria-disabled`, with focus kept; five
+  clicks on Next in 420ms land on step 6 with the spark off and every line at rest; under reduced motion
+  each step lands in one frame with no spark, glide, roll or bloom; without JavaScript all 7 steps are
+  listed and nothing in the component takes focus (before 1 step and 15 buttons); print lists all 7
+  (before 1, with the strip); forced colours give the current node a 2px `Highlight` frame and future
+  nodes a dashed one, the dots three system colours; no sideways scroll on Forest or Busqueda at 320,
+  240, 205 or 180 (before 16 and 41px at 205 and 180 in this harness, the device's 15 and 40); the
+  strip's scroll width holds through the bloom, 2012px on desktop and 1932 on a phone (before it grew 8px
+  and 20); axe 4.10.2 finds nothing in the component at the first and last step, both themes, 1440 and
+  390 (before `target-size` on every dot). The owner's hand checks: the spark runs forward along each
+  curve and draws the line behind it while the camera holds, then the camera glides; at phone width the
+  spark holds the leading edge while the path slides under it; clicking the goal from step 1 plays every
+  hop in about a second; on light only the current technique is coloured; in Windows High Contrast the
+  current node's frame is `Highlight`; a real print (Ctrl+P) lists every step; a screen reader says one
+  sentence per step.
+- **Status:** Adopted 2026-11-20. Built and measured outside the repo against a production build of
+  `bb43b30`, approved as a whole from a live before and after, and landed byte for byte with every
+  fingerprint checked. The guard's label set changed afterwards, to the editorial pass's five (role,
+  flaw, how, gain, flag); nothing else changed since.
+
 ### 2026-11-20 · The machine overview takes the callout header and a lime edge, and the section intros stay as they are
 - **Supersedes in part:** 2026-11-20 · Second-pass colour follow-ups: light callout inks and sudo
   deepen, the light reading line takes the h2 rule's pair, the machine overview names itself (its Open
@@ -1054,6 +1158,10 @@
   HUD's hover and active links and the pull quote's emphasis; its light `--cyan` becomes `#08697a`, the
   theme pass's `--tp-cyan-ink`, and its light `--muted` `#515c59`, hue held and lightness dropped. Every
   new rule is light only.
+  **Partly superseded by:** 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per
+  chain, one dossier vocabulary, specifically "AttackPath's done run": on light the lime ink now sets the
+  lit run, the technique of the hop that reached the current node, while done runs keep their bold in the
+  quiet grey. The ink, its other consumers and its figures stand, so this entry stays live.
 - **Why:** on paper the accent `#4d7c0f` reads 4.11:1 against the page as small text (model B), under AA,
   wherever it set text: the current h2 (4.11), the 404 marks (4.11), AttackPath's done run (4.27 on the
   `#f2ede0` panel, model C median), the `/secret/` chip (3.28 on its own 16% lime tint, model C median),
@@ -1735,6 +1843,9 @@
 - **Supersedes in part:** 2026-07-19 · AttackPath: a guided, data-driven infographic for linear
   privilege-escalation chains. Only "accent on nodes/dots/next" in its A11y bullet, for the dots: a dot's
   focus ring now runs the green-to-gold ramp to the gold ink. Nodes and the Next control keep the accent.
+  **Partly superseded by:** 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per
+  chain, one dossier vocabulary, specifically the dot's focus ring on the ramp: the dots are
+  `aria-hidden` and take no focus now.
 - **Decision:** a dossier panel is ONE `<dl>`, every row a label/value pair: kind and name, the `via` edge,
   then the details. Every panel is laid out at once in the same grid cell, the inactive ones
   `visibility: hidden` and `user-select: none` with the `hidden` attribute kept, and each panel is a
@@ -1745,6 +1856,10 @@
   turns gold at the goal. The dots take their place on the meter bar's green-to-gold ramp from `--t`,
   mixed in sRGB (the gradient's own space), future dots stay grey, and the bar's gradient spans the whole
   track, so its leading edge is the current dot's colour and gold arrives only at the goal.
+  **Partly superseded by:** 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per
+  chain, one dossier vocabulary, specifically the meter bar and its gradient, with "as the bar's end is"
+  in Cost: there is no bar, and the dots keep the ramp on their own. The grid, the `via` rule and the
+  gold goal stand, so this entry stays live.
 - **Why:** rows read as misaligned, and the rule is that hierarchy between rows comes from colour, weight,
   size and presence, never from position. The head, the `via` line and the details were three layout
   systems that started one panel's values at up to three x positions, 12.3 to 27.1px apart, with the
@@ -1765,6 +1880,10 @@
 - **Also:** the step count and the other panels' kind labels read `--sl-color-accent-high` on light (8.22:1),
   the carve-out the Next control and the active node's kind label already carry. Content: Return's `via`
   rows are now `leak` and `trigger`, Forest's `crack` and `shell`.
+  **Partly superseded by:** 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per
+  chain, one dossier vocabulary, specifically the label names in its last sentence: every detail row now
+  takes the shared set, so Return's `leak` and `trigger` and Forest's `crack` are `how`, and Forest's
+  `shell` is `gain`, with its `user.txt` moved to a `flag` row of its own.
 - **Cost:** a short panel leaves empty space under it, since the dossier holds its tallest panel's height
   (Return's is 182px at 320). Chrome 111 to 116, inside the build's floor, lack subgrid and keep per-panel
   columns: rows still align and nothing moves vertically, only the seam can shift between steps. On light
@@ -1897,6 +2016,9 @@
   cuts the glyphs, 18px at 205 and 44 at 180 on the Bandit pages and the landings, about 3px on the
   HackTheBox writeups); the table-of-contents toggle 5.2px past the viewport and the AttackPath meter
   28.8px past it, both with simulated magnitudes (re-filed below with the measured ones).
+  **Partly superseded by:** 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per
+  chain, one dossier vocabulary, specifically "about 3px on the HackTheBox writeups" for the wordmark:
+  with no meter to widen their header, the writeups cut it as the Bandit pages do.
 - **Re-filed against the widths they fail at, in ROADMAP:** the landings' writeup cards, cut by the
   `body:has(.pi-index)` clip with no horizontal scroll, 8px at 288 (125 percent), 25 at 271, 56 at 240,
   91 at 205 and 116 at 180, the platform-name box by 5 at 271, 36 at 240, 71 at 205 and 96 at 180 while
@@ -1913,6 +2035,10 @@
   propagates to the viewport and offers no scroll; the wordmark and terminal cuts above. Only the
   landings' clip is inside scope; the rest sit below the floor of 2026-09-19 · The supported floor is a
   320px viewport, and the landings' clip is the one exception, which leaves About and home open.
+  **Partly superseded by:** 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per
+  chain, one dossier vocabulary, specifically the AttackPath meter, whose 92px bar set the writeups'
+  scroll width to 220px, and the table-of-contents toggle that stretched to it: the bar is gone and the
+  writeups no longer scroll at 205 or 180. The rest of the list stands.
 - **Why retire rather than fix:** the thirteen describe no state a Chrome reader can reach, and nothing
   in the four re-filed is caused by a unit, so the unit refactor these items were meant to justify would
   change none of it; what would is a layout for 240 to 288px or a
@@ -1942,6 +2068,10 @@
   nowrap meter, not a unit, so a floor below 320 is a design decision for the retune (a 240 to 288px
   layout for the card grids, the password row and the landings), not a correction, and it is not taken
   here.
+  **Partly superseded by:** 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per
+  chain, one dossier vocabulary, specifically the writeups' sideways scroll at 175 and 200 (15px and 40,
+  set by the AttackPath meter, with the toggle stretching to it): the bar is gone and the writeups hold
+  the viewport there, as the Bandit pages do. The other rungs stand.
 - **The exception:** `body:has(.pi-index) { overflow-x: clip }`, the pair that stops the landings'
   sideways wobble, converts a zoom overflow into lost content from 125 percent, cards cut by 8px at 288,
   25 at 271 and 56 at 240 with nothing scrolling. Silent truncation is a different category of failure
@@ -3285,6 +3415,11 @@
   2. **AttackPath internals read at about 0.533 of body size,** confirmed too small, and `.ap-panel-head`
      declares no font-size at all so the dossier's largest text inherits `--prose-size` while its siblings
      sit at 11.52px and 11.2px.
+     **Partly superseded by:** 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per
+     chain, one dossier vocabulary, specifically "about 0.533 of body size": the smallest AttackPath text
+     is 11px now (0.61 of the 18px body), its names 14 to 16px and its dossier values 14px. The
+     `.ap-panel-head` this item names went with 2026-09-23 · The AttackPath dossier is one stacked
+     label/value grid, `via` is reserved, and the goal step wears gold.
   3. **The HackTheBox and VulnHub platform-index eyebrows fail WCAG AA on paper:** 4.11:1 and 4.16:1
      measured by canvas readback on the real element, as 12.8px body text needing 4.5:1. PicoCTF passes at
      4.86:1 and OverTheWire was fixed by the amber pair. This is a real accessibility failure shipping
@@ -3774,6 +3909,9 @@
   marks only ONE node, so a screen reader heard an undifferentiated list of names. Each node and dot now
   carries the state word in its accessible name ("Web nginx, completed"), with the visible label still inside
   it so WCAG 2.5.3 Label in Name holds.
+  **Partly superseded by:** 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per
+  chain, one dossier vocabulary, specifically "Each node and dot": the dots are `aria-hidden` and carry
+  no name now; every node keeps the state word.
 - **Touch:** the track had `overscroll-behavior-x: auto`, so flicking past either end chained to the page and
   could fire the browser's back-navigation gesture, throwing a reader off the writeup. Now `contain`.
 - **Three smaller ones:** an over-long `kind` ran underneath the absolutely-positioned check glyph (now
@@ -3781,6 +3919,10 @@
   advances and would have spuriously animated if a reader enabled motion mid-session, contradicting its own
   code comment (now self-clears on `animationend`); and `--t` serialised 17 significant digits into every
   node's style attribute (now rounded to 4, far below one device pixel of the 52px it interpolates).
+  **Partly superseded by:** 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per
+  chain, one dossier vocabulary, specifically the `is-enter` dossier class and its `animationend`
+  self-clear: the values roll on `is-entering` and `is-leaving`, which a timer clears. The other two
+  fixes stand.
 - **A regression the audit caught in its own fix (worth recording):** adding `html[data-theme='light']` to the
   active-kind selector raised its specificity above the later `.is-goal[data-state='active']` gold rule, which
   silently turned the GOAL's kind label green. Caught by asserting the computed colour equals the gold token
@@ -3793,6 +3935,11 @@
   instance holding focus; `box-sizing: border-box` so the `is-start` border shifts nothing; performance is
   **6.1ms per advance** on the longest chain with no page-scroll side effect; `centre()` clamps correctly at
   both ends; zero ungated animation declarations.
+  **Partly superseded by:** 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per
+  chain, one dossier vocabulary, specifically "`centre()` clamps correctly at both ends" and the 6.1ms
+  per advance, both measured on code that is gone: the camera rests on `cameraLeft()`, clamped to the
+  strip, and an advance now runs as a `requestAnimationFrame` loop, not re-timed. The rest of the list
+  stands.
 - **Verified after the fixes, both themes:** every node state and all chrome text returns **belowAA: []**
   (light and dark), the goal keeps its gold identity in every state, focus is retained at the end of the
   chain, reduced motion still advances as a static state machine with no runner, no bloom and no stale class,
@@ -3889,6 +4036,10 @@
   siblings would steal a neighbour's overlap; the row gap was nudged 0.42rem to 0.7rem for the room. The dots
   are a redundant control (every step is also reachable by its full-size node, the Next button, and the arrow
   keys), so the cluster stays compact by design.
+  **Partly superseded by:** 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per
+  chain, one dossier vocabulary, specifically the layout-neutral `::after` on a focusable 7px dot whose
+  ring stays 7px, and the 0.7rem row gap: the target is the 14 by 24px `aria-hidden` span itself, outside
+  the tab order, in a row gapped `0 10px`. The tiling and the dots being a redundant control stand.
 - **Return instance (a deliberate different-shaped test, not just reuse):** a 5-node chain
   (`Printer Panel -> svc-printer -> Server Operators -> vss (LocalSystem) -> SYSTEM`) exercises what Forest's
   6-node chain did not: a shorter chain (escalation recomputed, rise 24, angle -12.2deg), a non-account START
@@ -4032,6 +4183,11 @@
   **Partly superseded by:** 2026-09-23 · The AttackPath dossier is one stacked label/value grid, `via` is
   reserved, and the goal step wears gold, specifically "accent on nodes/dots/next" for the dots: a dot's
   ring now runs the green-to-gold ramp to the gold ink. Nodes and the Next control keep the accent.
+  **Partly superseded by:** 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per
+  chain, one dossier vocabulary, specifically the dots as real `<button>`s with a focus ring and the
+  dossier as an `aria-live="polite"` region: the dots are `aria-hidden` spans outside the tab order, and
+  a separate polite status line says each step. Nodes and the Next control stay real buttons, and the
+  rest of this bullet stands.
 - **Reduced motion:** every one of the 11 transition/animation declarations sits inside
   `@media (prefers-reduced-motion: no-preference)` (verified programmatically: zero ungated). The JS reads
   `matchMedia` at interaction time, not once at load, so a mid-session change is honoured; under reduce there
@@ -4074,6 +4230,9 @@
   3. Node done/active fills and the meter were reworked to `color-mix` derivations off the accent into the
      panel surface (the callout / FlagCapture-hover idiom), giving a tint crescendo active 12% > done 7% >
      future none, with non-colour cues (scale, glow, the check glyph) carrying state alongside colour.
+     **Partly superseded by:** 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per
+     chain, one dossier vocabulary, specifically "and the meter": there is no bar left to tint. The node
+     fills stand.
   4. The edge fade-masks faded to `--sl-color-black`. Now they dissolve into `--ap-surface` (the alias
      flips per theme), so "there is more path" reads as content running under the panel edge, not fading
      to black. Made the dark surface a SOLID color (the opaque equivalent of the Toggle's

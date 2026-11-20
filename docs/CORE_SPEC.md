@@ -1029,7 +1029,7 @@ token is an open ROADMAP item, not a bug.
   grid), `badges/DifficultyPips` (the one ordinal pips glyph, shared by the card and the writeup row), `Callout` (icon-based tagged callout, used in writeup bodies),
   `NotFound` (404 body), `SecretTerminal` (vanilla-TS terminal), `AttackPath` (guided infographic for a
   LINEAR privilege-escalation chain: an ascending horizontal path whose nodes escalate toward the goal,
-  structural SVG connectors that arrow into the next node with the privilege verb on the segment, a
+  structural SVG connectors that arrow into the next node with the technique on the segment, a
   "Next step" progression with past/present/future states, and a one-time gold flourish at root. Built
   entirely from the site's own fabric so it reads as a native region, not a widget: the container is the
   Toggle / FlagCapture panel surface (`#f2ede0` light, a subtle lift dark) and the gold goal is derived
@@ -1040,11 +1040,13 @@ token is an open ROADMAP item, not a bug.
   `not-content`, AA in both themes, no branching. **Escalation rides the continuous font-SIZE ramp plus a
   single derived weight step** (Medium before the chain midpoint, Bold from it on): JetBrains Mono is subset
   to 400/500/700 only, so the earlier continuous weight calc silently snapped every intermediate value to
-  700; the honest ramp uses only loaded faces. **Each connector's verb label rides PARALLEL to its segment**
+  700; the honest ramp uses only loaded faces. **Each connector's edge label rides PARALLEL to its segment**
   at a constant ~6.5px gap (tilted to the chord angle, computed from `rise`), which is the one rule that keeps
-  every label the same distance from its line regardless of slope, label width, or line count. **Step dots
-  carry a layout-neutral 24px-tall tap target** (`::after` overflow, the About-HUD convention) while the
-  visible dot and focus ring stay 7px. **The edge fade-mask overlays a GUTTER, never the endpoint nodes:**
+  every label the same distance from its line regardless of slope, label width, or line count. **Step
+  dots are a pointer shortcut, outside the tab order and the accessibility tree (2026-11-20):**
+  `aria-hidden` spans 14px wide and 24px tall, so neighbouring targets tile without overlap and the
+  row wraps on a narrow screen, each drawing a 7px dot; the nodes, Next and the arrow keys already
+  reach every step. **The edge fade-mask overlays a GUTTER, never the endpoint nodes:**
   one token `--ap-fade-w` (36px, 24px under the 50rem breakpoint) drives both the mask band AND the spine's
   inline padding, so the start and goal nodes come to rest exactly where the band ends (measured alpha 0),
   and the falloff is a smoothstep rather than an opaque plateau. This also makes the affordance self-truthing:
@@ -1055,9 +1057,25 @@ token is an open ROADMAP item, not a bug.
   pass, which erases the state). Future names read the muted grey while done/active stay full-contrast.
   **The advance control uses `aria-disabled`, never the `disabled` property**, because `disabled` removed it
   from the tab order at the moment of the final keypress and dumped focus to `<body>`; the click path is
-  guarded instead, and the hover rule is keyed off `:not([aria-disabled='true'])`. Node and dot accessible
-  names carry the progress state word, since the check glyph is `aria-hidden` and `aria-current` marks only
-  one node. **The dossier is ONE label/value grid per panel, every panel stacked in one cell (2026-09-23):**
+  guarded instead, and the hover rule is keyed off `:not([aria-disabled='true'])`. Node accessible names carry
+  the progress state word, since the check glyph is `aria-hidden` and `aria-current` marks only one node.
+  **One tab stop per chain (2026-11-20):** a roving tabindex keeps only the current node in the tab order
+  beside Next; the arrow keys move the step and focus together, Home and End jump to the first and last step
+  while a node holds focus, a hint ("Arrow keys move between steps") shows under the path on keyboard focus
+  and describes every node, and a polite status line says each step once ("Step 4 of 7: Group Exchange Windows
+  Permissions, via GenericAll.") where the dossier used to be an `aria-live` region. The root is a
+  `role="group"` named by its title. **One clock drives the climb:** a single `requestAnimationFrame` loop
+  moves the camera, the spark and the line, the spark riding the connector's own curve and drawing the line
+  behind it; the camera holds while the spark is in view (on a narrow screen it follows the spark at the
+  leading edge), then settles on a frame that keeps the current node whole with as much of the way in as fits,
+  and whatever the left edge cuts recedes as a whole. A jump plays every hop in turn, faster, and fast input
+  finishes the step in flight. The goal blooms once the frame has settled, its ripple a 12px ring inside the
+  gutter that never widens the strip, and the end of the chain reads as a state: Next becomes a gold
+  "Compromised" with a check and no frame, still focusable and `aria-disabled`. **Fallbacks:** under forced
+  colours the current node takes a `Highlight` frame and future nodes a dashed one, the dots keeping their
+  states; without JavaScript (a `<noscript>` style) and in print the dossier lists every step, the meter and
+  footer are hidden, and the stage stays `inert` until the script wires it, so nothing dead can be pressed.
+  **The dossier is ONE label/value grid per panel, every panel stacked in one cell (2026-09-23):**
   the kind and name, the `via` edge and every detail row are pairs in one `<dl>`, told apart only by colour,
   weight and size, never by position. Labels share one tracking (0.16em), sit on their values' first
   baselines (`align-items: baseline`) and are RIGHT-aligned to the seam, so each stands one gutter
@@ -1067,20 +1085,30 @@ token is an open ROADMAP item, not a bug.
   panel, so the dots and the Next button never move between steps, and each panel is a subgrid of the
   dossier's two columns (under `@supports`), so the seam holds one x across the chain. Chrome 111 to 116,
   inside the build's floor, have no subgrid and keep per-panel columns: rows still align and nothing moves
-  vertically, only the seam can shift between steps. **`via` is reserved for the edge row:** a detail row
-  keyed `via` (any case) fails the build. The goal's panel wears the goal node's gold (kind label, name,
-  inline code) and the step count turns gold at the goal; on light the count and the other kind labels
-  read `--sl-color-accent-high`, the carve-out the active node and the Next button already use (the accent
-  read 4.27:1 on the panel). A done connector's bold run reads `--tp-lime-ink` on light instead (4.27 to
+  vertically, only the seam can shift between steps. Between panels the labels stand still and only the values
+  roll, up as the chain climbs and down when it is walked back; under reduced motion it is an instant swap.
+  **`via` is reserved for the edge row:** a detail row keyed `via` (any case) fails the build. **Detail rows
+  share one vocabulary (2026-11-20):** `role` (the entry only), `flaw`, `how`, `gain` and `flag`; any
+  other key, or `role` past the entry, fails the build, so the label column reads the same from tile to tile
+  and only the values change. Edges are noun phrases that read after `via` ("group membership", never
+  "is member of"). The goal's panel wears the goal node's gold (kind label, name, inline code) and the
+  step count turns gold at the goal; on light the count and the other kind labels read
+  `--sl-color-accent-high`, the carve-out the active node and the Next button already use (the accent read
+  4.27:1 on the panel). **Only the current hop's technique is lit (2026-11-20):** the connector that reached
+  the current node draws its bold run in the accent (gold on the goal connector), while every other run,
+  behind or ahead, keeps its bold in the quiet grey. On light that lit run reads `--tp-lime-ink` (4.27 to
   5.71:1 on the `#f2ede0` panel, model C median, 2026-10-11): accent-high (OKLCH L 0.38) would sit at the
-  lightness of the caption around it (L 0.41), while the lime ink (L 0.47) stays a step lighter. The dots take their place on the meter's green-to-gold ramp from their `--t`
-  (mixed in sRGB, the gradient's own space), future dots stay grey, and the bar's gradient spans the whole
-  track, so its leading edge is the current dot's colour and gold arrives only at the goal. Every node state and all chrome text measures AA in BOTH themes. REQUIRED on every HackTheBox writeup
+  lightness of the caption around it (L 0.41), while the lime ink (L 0.47) stays a step lighter. The dots take
+  their place on a green-to-gold ramp from their `--t` (mixed in sRGB), future dots stay grey and gold arrives
+  only at the goal. **There is no progress bar (2026-11-20):** the count, the dots and the nodes already say
+  the step, and the bar's fixed 92px width was what scrolled the writeups sideways below 220px. Every node
+  state and all chrome text measures AA in BOTH themes. REQUIRED on every HackTheBox writeup
   under `## Summary` (2026-09-12), no longer an Active Directory device, see §8. Live on Forest (6 hops),
-  Return (5 hops), Busqueda (5 hops) and Unified (5 hops); Forest and Return keep their BloodHound graph
+  Return (4 hops), Busqueda (4 hops) and Unified (4 hops); Forest and Return keep their BloodHound graph
   above as evidence, Busqueda and Unified carry none, and Busqueda is the reference for that case. See
-  DECISIONS 2026-07-19 (original build + native-fabric rework) and 2026-07-20 (production-polish pass +
-  Return instance; edge-mask gutter; production-readiness audit)), `badges/WriteupMeta` (navigational
+  DECISIONS 2026-07-19 (original build + native-fabric rework), 2026-07-20 (production-polish pass +
+  Return instance; edge-mask gutter; production-readiness audit) and 2026-11-20 (polish pass)),
+  `badges/WriteupMeta` (navigational
   Platform / Category (PicoCTF, directory-derived) / OS / Environment chip row + a trailing neutral Difficulty
   chip whose filled pips take the level hue, under a writeup title;
   each nav chip is coloured via a single `--wm-c` per value, with a restrained glow (halo on dark,
@@ -1571,14 +1599,13 @@ what is kept was measured at 100% or on the device (2026-09-19, Chrome 149 on th
   `overflow-x: hidden`: its contents overflow the bar by 8px at 288, 26 at 271, 56 at 240, 91 at 205
   and 116 at 180, the ONLINE badge going first and the title text from 205 (25.5px of it hidden, 51 at
   180). The header wordmark: from 205 its box shrinks below its text (`min-width: 0` allows it) and the
-  span's `overflow: hidden` with `text-overflow: clip` cuts the glyphs, with no ellipsis, 18px at 205
-  and 44 at 180 on the Bandit pages and the landings (about 3px on the HackTheBox writeups, whose header
-  widens with their scroll width; none on `/secret` above 160).
-  **Real sideways scroll, on the Starlight pages, whose `body` is `visible`.** The AttackPath meter, a
-  nowrap label beside a 92px bar, sets the writeup's scroll width to 220px, so writeups scroll by 15px
-  at 205 and 40 at 180. The mobile table-of-contents toggle spans the header and stretches to that
-  width, 15.8px past the viewport at 205 and 40.6 at 180; on the Bandit pages, which have no meter, it
-  stays within 1px until the page itself scrolls at 119 (26px).
+  span's `overflow: hidden` with `text-overflow: clip` cuts the glyphs, with no ellipsis, 18px at 205 and
+  44 at 180 on the Bandit pages, the HackTheBox writeups and the landings (none on `/secret` above 160).
+  **Real sideways scroll, on the Starlight pages, whose `body` is `visible`.** The HackTheBox writeups
+  no longer scroll at 205 or 180 and behave like the Bandit pages, measured in headless Chrome: the
+  AttackPath meter's bar that set their scroll width to 220px was removed (2026-11-20). The mobile
+  table-of-contents toggle spans the header and stays within 1px of the viewport on both until the page
+  itself scrolls at 119 (26px on the Bandit pages, 19 on Forest and 23 on Busqueda).
   **Degradation without overflow.** The inline PasswordReveal value column shrinks from 142px at 360 to
   71px at 288 (four lines), 23px at 240 (two glyphs per line) and 0 from 205 (one glyph per line, 788px
   tall), because its 55px label and 84px Reveal button are fixed.
@@ -1791,7 +1818,7 @@ Light is art-directed on its own terms (dark is unchanged). All rules scoped to
   `--tp-lime-ink` (`#3e6700`: 5.50:1 on the page, model B, 4.96:1 on the darkest grid dot, model C;
   6.68:1 on Starlight's white TOC dropdown, until the phone panel moved onto the page colour on
   2026-10-24), which About mirrors as its own `--lime-ink`: the current h2 in both
-  TOCs, the 404 page's two marks, AttackPath's done run, and a prose link under the pointer. That link
+  TOCs, the 404 page's two marks, AttackPath's lit run, and a prose link under the pointer. That link
   now moves from the cyan ink to the lime ink on light as it moves from cyan to lime on dark; before,
   the light rest rule outranked the shared hover rule and a light link never changed.
   `--sl-color-accent-high` (`#2f4d09`) is kept for lime text on a lime tint (the `/secret/` chip, 6.31:1
@@ -2706,7 +2733,9 @@ icon.
   under `## Summary` in the position Forest, Return, Busqueda and Unified use. The component's own constraint
   still binds: LINEAR chains only, one spine, no branching, at least two nodes (it throws below that).
   Where a box genuinely branches, the writeup picks the spine and says so in prose. Busqueda is the
-  reference instance for a box with no directory graph above it.
+  reference instance for a box with no directory graph above it. Its dossier rows use the shared labels
+  (`role` (the entry only), `flaw`, `how`, `gain` and `flag`; the build enforces them) and its
+  edges are noun phrases that read after `via`.
 - **Type-safe scripts:** all TS inside `.astro` `<script>` uses explicit assertions
   (`as NodeListOf<HTMLElement>`, `as HTMLElement | null`, `!`, `?? ''`) → zero VS Code problems.
 - **Code blocks:** every block has a language label; bash and python render identically; EC frames are
@@ -3114,7 +3143,7 @@ whole records.
 - An opaque header to hide the landing glow, or the glow clipped to the hero: rejected, the header stays translucent (owner) and a clip at the hero is a hard edge again. See DECISIONS 2026-10-04 · The landing glow holds its pools whole, and a landing keeps to its own pane on a desktop.
 - Search fields with the route kept hyphenated, without the wargame's name, without the one-digit next number, or with the login inside the level field, and a wider lead for the Bandit hub: rejected, each, measured on the built index, loses levels or hands the hub "bandit <word>" queries. See DECISIONS 2026-10-05 · Site search keeps no image as a field, and each wargame level carries level and login fields.
 - Image alt text in site search, indexed on its own through Pagefind's `data-pagefind-index-attrs`: rejected, the owner's call (2026-10-07); an alt text is what gave Forest its lead for "bloodhound" over Return, whose own text names the tool more often. See DECISIONS 2026-10-05 · Site search keeps no image as a field, and each wargame level carries level and login fields.
-- Accent-high (`#2f4d09`) for all small lime text on paper: rejected, the highlight words go near-black and AttackPath's done run sinks to its own caption's lightness; accent-high stays for lime text on a lime tint. See DECISIONS 2026-10-11 · One lime ink for small text on paper, and About's light inks clear its glows.
+- Accent-high (`#2f4d09`) for all small lime text on paper: rejected, the highlight words go near-black and AttackPath's lit run sinks to its own caption's lightness; accent-high stays for lime text on a lime tint. See DECISIONS 2026-10-11 · One lime ink for small text on paper, and About's light inks clear its glows.
 - `#447000` or `#426d00` as the light lime ink: rejected, the first reads 4.35:1 on the darkest grid dot and the second sits 0.020 OKLab from `#3e6700`, a near-duplicate. See DECISIONS 2026-10-11 · One lime ink for small text on paper, and About's light inks clear its glows.
 - The small-text gold ink on the flag headings, the 70% gray mix on a light TOC flag at rest, and a gilded fill on the current flag entry: rejected. See DECISIONS 2026-10-11 · Flag golds: a display gold for the headings, the AA golds for small words, and the glyph in the TOC.
 - A cyan bar on a marked code line, or the line's own border kept beside Expressive Code's: rejected, cyan puts a second hue back on a lime-tinted line and already means a port in code, and the line's border is what pushed the marked line's text 2px right. See DECISIONS 2026-10-11 · A marked code line shows one lime bar: Expressive Code's own, recoloured.
@@ -3155,3 +3184,6 @@ whole records.
 - Section intros told from the lead by a quiet card (a neutral bar, no wash), the lime bar alone, a wash that fades across the line, or a `>` marker in a softer ink, and a larger lead: rejected by the owner, the first reads dull, the second too slight, the fade does not hold on paper, the marker does not work as design, and a larger lead reads as a sizing bug. See DECISIONS 2026-11-20 · Second-pass colour follow-ups: light callout inks and sudo deepen, the light reading line takes the h2 rule's pair, the machine overview names itself.
 - The lead's card taking in the badge row (the dossier), the badges under the `Overview` label: rejected by the owner, the badge row stays above the card; on a phone that card stacked the label, three rows of badges and four lines of text. See DECISIONS 2026-11-20 · The machine overview takes the callout header and a lime edge, and the section intros stay as they are.
 - Section intros told from the lead by an outlined (ghost) card or by corner brackets: rejected by the owner, the intros stay as they are, and a ghost card breaks the visual language the filled callouts set. See DECISIONS 2026-11-20 · The machine overview takes the callout header and a lime edge, and the section intros stay as they are.
+- An overview-first AttackPath that shows the whole chain at once: rejected (owner, 2026-11-20); the whole chain at once reads as dense and overwhelming, and the component's point is one step at a time. See DECISIONS 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per chain, one dossier vocabulary.
+- A Replay control that plays the AttackPath chain end to end: rejected (owner, 2026-11-20); it runs the whole chain in about a second without opening a step or letting the reader go at their own pace. See DECISIONS 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per chain, one dossier vocabulary.
+- MITRE ATT&CK ids and defence notes in the AttackPath dossier: rejected (owner, 2026-11-20); they add data to every panel and make the chain harder to follow. See DECISIONS 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per chain, one dossier vocabulary.
