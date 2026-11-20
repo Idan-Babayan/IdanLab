@@ -624,11 +624,14 @@ nav.sidebar summary {
   transform-origin: 0 50%;
   background: linear-gradient(90deg, var(--sl-color-accent), var(--tp-cyan));
 }
-/* Light gets its own paper-appropriate duotone (lime-ink to cyan-ink). Dark is untouched and
-   stays lime -> cyan. The thin bar is decorative, so these darkened tones can be vivid; the
+/* The line that fills as you read wears the h2 rule's own pair in both themes, so the two read as one
+   gradient: on dark the accent to --tp-cyan (lime to #41efff), on paper --tp-deco-lime to
+   --tp-deco-cyan (#6fae00 to #0a9ec2) since 2026-11-20. Before, paper ran #4d7c0f to #0b7e92, the
+   paper cyan ink from before it deepened to #08697a, and matched nothing else on the page. The line is
+   decorative and aria-hidden, so the deco tones are the right ones for it; the
    :root[data-theme='light'] + #id selector outranks the base rule only in light. */
 :root[data-theme='light'] #tp-progress {
-  background: linear-gradient(90deg, #4d7c0f, #0b7e92);
+  background: linear-gradient(90deg, var(--tp-deco-lime), var(--tp-deco-cyan));
 }
 /* The phone menu covers the page, and the line goes with it. Its z-index lifts it over the bar's
    border, which also put it over the open menu, across the first entry. Starlight marks <body> with
@@ -700,8 +703,8 @@ nav.sidebar summary {
 /* Warm the light code surface: one-light's editor bg is #fafafa, a cool white slab on the warm paper.
    Override the EC editor + tab-bar background vars to a soft warm off-white slightly darker than the
    page paper (#ece9e0), so a code block reads as a distinct warm panel. Light only; dark (tokyo-night)
-   is untouched. Kept light enough that every code colour role but the privilege magenta clears 5:1 on
-   it (CORE_SPEC section 6 "Code-block colour roles"). */
+   is untouched. Kept light enough that every code colour role clears 5:1 on it, the privilege magenta
+   included since 2026-11-20 (CORE_SPEC section 6 "Code-block colour roles"). */
 @layer chrome {
 :root[data-theme='light'] .expressive-code {
   --ec-frm-edBg: #e8e2d3;
@@ -815,8 +818,9 @@ html[data-theme="light"] .expressive-code pre::-webkit-scrollbar-track { backgro
    2026-11-18). Every role sets its font-style, because Expressive Code's italics no longer reach a
    classed span: comments italic, the rest upright. Commands and privilege commands are bold. The
    figures per role, model B on the code frame (dark #1a1b26, light #e6dfd0), are in CORE_SPEC section
-   6 "Code-block colour roles"; every light role clears 5:1 but the privilege magenta, the vuln label's
-   own ink. `open` and `Enabled` share the string green in both themes. */
+   6 "Code-block colour roles"; every light role clears 5:1, the privilege magenta included (5.24:1 since
+   2026-11-20), which is still the vuln label's own ink. `open` and `Enabled` share the string green in
+   both themes. */
 html[data-theme="dark"] .expressive-code :is(.cx-base, .cx-out, .cx-prp) { color: #a9b1d6; }
 html[data-theme="dark"] .expressive-code :is(.cx-str, .cx-arg, .cx-ok) { color: #9ece6a; }
 html[data-theme="dark"] .expressive-code .cx-kw { color: #bb9af7; }
@@ -842,7 +846,7 @@ html[data-theme="light"] .expressive-code .cx-pun { color: #565966; }
 html[data-theme="light"] .expressive-code .cx-port { color: #0a6178; }
 html[data-theme="light"] .expressive-code .cx-com { color: #5a5b60; }
 html[data-theme="light"] .expressive-code .cx-cmd { color: #6f5644; }
-html[data-theme="light"] .expressive-code .cx-priv { color: #b70066; }
+html[data-theme="light"] .expressive-code .cx-priv { color: #b00061; }
 
 .expressive-code :is(.cx-base, .cx-out, .cx-str, .cx-arg, .cx-ok, .cx-kw, .cx-fn, .cx-url, .cx-num, .cx-ip, .cx-var,
   .cx-flag, .cx-pun, .cx-port, .cx-pr, .cx-prb, .cx-prp, .cx-cmd, .cx-priv) { font-style: normal; }

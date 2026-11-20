@@ -495,6 +495,32 @@ html[data-theme="light"] .sl-markdown-content details {
   box-shadow: 0 6px 20px -14px rgba(60, 50, 30, 0.4);
 }
 } /* @layer prose */
+
+/* The overview label (2026-11-20): on a machine writeup the lead quote and the section intros wear the
+   same card, so the lead names itself, in the callout label's type (JetBrains Mono 11px, 700, .14em,
+   uppercase) and with the word the table of contents already uses for it. Machine writeups only, keyed
+   on the badge row's platform chip: on OverTheWire and PicoCTF the lead is the "Goal:" line and no
+   section intro follows. The :has() sits on the badge row, not on <html> or <body> (CORE_SPEC section 8).
+   It is a word, not decoration, so a screen reader reads it as the quote's first word. Dark: the accent,
+   15.5:1 on the lead's wash. Light: the lime ink, 5.40:1 on the lead's paper card, which is opaque, so
+   no grain dot reaches it (model B). */
+@layer prose {
+.sl-markdown-content .writeup-meta:has(.pf-htb, .pf-vh) + blockquote::before {
+  content: "Overview";
+  display: block;
+  margin-block-end: 0.3rem;
+  font-family: var(--sl-font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  line-height: 1.6;
+  text-transform: uppercase;
+  color: var(--sl-color-accent);
+}
+:root[data-theme='light'] .sl-markdown-content .writeup-meta:has(.pf-htb, .pf-vh) + blockquote::before {
+  color: var(--tp-lime-ink);
+}
+} /* @layer prose */
 /* Open content Toggle keeps the closed divider color on paper (no green edge): opening a Toggle must
    not change its border, and lime/green must not appear here. Uses --tp-divider, the same token the
    closed Toggle border and the structural hairlines use. */

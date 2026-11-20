@@ -116,6 +116,12 @@
   and an email address is not a credential. Track the outcome; if declined, the residual is permanent and
   should be recorded as accepted rather than re-attempted. See DECISIONS 2026-08-01 · One identity across
   all history: the repository is rewritten and force-pushed.
+- [DESIGN] The overview and the section intros: the `Overview` label ships as the current answer
+  (DECISIONS 2026-11-20 · Second-pass colour follow-ups: light callout inks and sudo deepen, the light
+  reading line takes the h2 rule's pair, the machine overview names itself). Still open: whether another
+  treatment separates the lead quote from the four section intros better. The owner liked an outlined
+  intro and corner brackets, but both break the filled-surface language. Revisit before the label is
+  treated as settled.
 
 ## Next (committed)
 - [ENG/DESIGN] Unify the two marketing pages (home, about) under the `--focus-ring` token established for

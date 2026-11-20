@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-11-19 (on paper the phone strip names its section in the ink on purpose, as the owner's brief asked, and the notes that gave it the TOC's colour there now say so; on 2026-11-18, the light `open` / `Enabled` code role shares the string green, the code colour figures sit on the code frame, an upgrade checks that every code character still takes a role, and the colour passes' rejections are recorded here; on dark the TOC's current h3 entry follows the soft h3 on desktop, in the phone panel and strip and in its focus ring, while paper keeps the deeper cyan ink; code blocks share one colour system: every token takes a role from its theme colour pair, a transcript reads as prompt, commands found by position and plain output with only its evidence coloured, the privilege group keeps the vuln magenta, and the category rules leave the unlayered tail, 17 rules to 8; writeup prose lowers its energy: the h3 reads a soft cyan of its own, the lede's bar fades between two opaque greens over a lighter wash, and inline code turns ice; Expand all and Collapse all keep the reader's line in place: every toggle above the first line under the header opens or closes out of view, and on Collapse all a toggle the reader was inside lands where a TOC click lands a heading; on 2026-10-25, the glass's ramp animates one number, `--tp-frost`, so no theme value sits in its keyframes, where WebKit had left the glass transparent after a theme switch or a return to Safari on iOS, and it now holds on the owner's iPhone; the bar's glass is thinner and stronger and frosts over in 36px, its values tokens; everything on the glass but the name reads full contrast, so a screenshot under the bar no longer drowns the search, the icons or the phone strip; on 2026-10-24, the phone "On this page" is the Quiet strip: 38px, the current entry named in its heading's colour, the panel numbered on the page colour with a rail on the current entry; page titles balance their lines; the search box's key chips hide where nothing can hover; Chrome for Android's status bar takes the theme's page colour on a phone in light mode; on a phone: on iOS Safari the strip above the bar is the page colour, not the page scrolling, the bar now giving Safari a colour and the film grain lying off its top edge; the reading hairline hides under the open menu and, beside the sidebar from 50rem, spans only the strip; the bar keeps its room for the menu button after an image zoom; the flag's "Copied!" pill takes the label's row, clear of a wrapped flag; on 2026-10-23, Starlight's header is the quiet bar: the HUD's height, clear at the top and frosted once scrolled, the name in Syne at 21px, every other word in the HUD's mono capitals, the search in Starlight's own place on the article column's edge, GitHub and a one-click theme button at the right, the one replacing override; the reading hairline fills on writeups only, from a typed component; home's masthead lockup sits on the bar's centre; on 2026-10-17, writeup screenshots take the code frames' edge, the difficulty chip answers the pointer, About's bar links CONTACT, and identity links tie the site to the owner's profiles; on 2026-10-05, the landing hero's glow stays in its own pane on a desktop and shows no hard edge at any width; callouts are no longer unnamed landmarks; landing card titles sit one level under the page title; the mobile "On this page" check wears its entry's colour; site search keeps no image as a field and ranks each Bandit page first however it is typed, bar two routes and two logins that Pagefind cannot tell from other levels; on 2026-10-03, site search no longer indexes the flags and passwords the pages hide; the decode headlines give a screen reader the settled word; the current "On this page" entry keeps its colour under the pointer on desktop and mobile; Syne's fallback is one face per weight, so the headline no longer jumps when the font arrives; a captured flag's spent button and the toggle-all control announce the truth; reduced motion stops the marketing pages' smooth scroll; the pressed filter pill's focus ring stands apart; the secret terminal's dim labels reach AA; dead CSS deleted and stale counts refreshed; on 2026-10-02, tool output in the writeups no longer dates the runs; on 2026-10-01, decorative characters keep their look and say only what they mean, and a build guard checks part of it; About is in site search for its owner, not for the writeups' topics; the marketing pages gain a skip link, a main landmark and `color-scheme`, and About's theme toggle reports its state; the writeup badge row names each fact for a screen reader; on 2026-09-30, sidebar entries that name what each platform holds, and About's practice cards split 2 + 2).
+> Last updated: 2026-11-20 (on light the intel, defense and vuln callout labels and sudo move one step deeper, so every label clears 4.5:1 on a grain dot and every light code role clears 5:1; the light reading line takes the h2 rule's own pair, so the two read as one gradient in both themes; a HackTheBox or VulnHub writeup's lead quote opens with an `Overview` label, which tells it from the section intros; on 2026-11-19, on paper the phone strip names its section in the ink on purpose, as the owner's brief asked, and the notes that gave it the TOC's colour there now say so; on 2026-11-18, the light `open` / `Enabled` code role shares the string green, the code colour figures sit on the code frame, an upgrade checks that every code character still takes a role, and the colour passes' rejections are recorded here; on dark the TOC's current h3 entry follows the soft h3 on desktop, in the phone panel and strip and in its focus ring, while paper keeps the deeper cyan ink; code blocks share one colour system: every token takes a role from its theme colour pair, a transcript reads as prompt, commands found by position and plain output with only its evidence coloured, the privilege group keeps the vuln magenta, and the category rules leave the unlayered tail, 17 rules to 8; writeup prose lowers its energy: the h3 reads a soft cyan of its own, the lede's bar fades between two opaque greens over a lighter wash, and inline code turns ice; Expand all and Collapse all keep the reader's line in place: every toggle above the first line under the header opens or closes out of view, and on Collapse all a toggle the reader was inside lands where a TOC click lands a heading; on 2026-10-25, the glass's ramp animates one number, `--tp-frost`, so no theme value sits in its keyframes, where WebKit had left the glass transparent after a theme switch or a return to Safari on iOS, and it now holds on the owner's iPhone; the bar's glass is thinner and stronger and frosts over in 36px, its values tokens; everything on the glass but the name reads full contrast, so a screenshot under the bar no longer drowns the search, the icons or the phone strip; on 2026-10-24, the phone "On this page" is the Quiet strip: 38px, the current entry named in its heading's colour, the panel numbered on the page colour with a rail on the current entry; page titles balance their lines; the search box's key chips hide where nothing can hover; Chrome for Android's status bar takes the theme's page colour on a phone in light mode; on a phone: on iOS Safari the strip above the bar is the page colour, not the page scrolling, the bar now giving Safari a colour and the film grain lying off its top edge; the reading hairline hides under the open menu and, beside the sidebar from 50rem, spans only the strip; the bar keeps its room for the menu button after an image zoom; the flag's "Copied!" pill takes the label's row, clear of a wrapped flag; on 2026-10-23, Starlight's header is the quiet bar: the HUD's height, clear at the top and frosted once scrolled, the name in Syne at 21px, every other word in the HUD's mono capitals, the search in Starlight's own place on the article column's edge, GitHub and a one-click theme button at the right, the one replacing override; the reading hairline fills on writeups only, from a typed component; home's masthead lockup sits on the bar's centre; on 2026-10-17, writeup screenshots take the code frames' edge, the difficulty chip answers the pointer, About's bar links CONTACT, and identity links tie the site to the owner's profiles; on 2026-10-05, the landing hero's glow stays in its own pane on a desktop and shows no hard edge at any width; callouts are no longer unnamed landmarks; landing card titles sit one level under the page title; the mobile "On this page" check wears its entry's colour; site search keeps no image as a field and ranks each Bandit page first however it is typed, bar two routes and two logins that Pagefind cannot tell from other levels; on 2026-10-03, site search no longer indexes the flags and passwords the pages hide; the decode headlines give a screen reader the settled word; the current "On this page" entry keeps its colour under the pointer on desktop and mobile; Syne's fallback is one face per weight, so the headline no longer jumps when the font arrives; a captured flag's spent button and the toggle-all control announce the truth; reduced motion stops the marketing pages' smooth scroll; the pressed filter pill's focus ring stands apart; the secret terminal's dim labels reach AA; dead CSS deleted and stale counts refreshed; on 2026-10-02, tool output in the writeups no longer dates the runs; on 2026-10-01, decorative characters keep their look and say only what they mean, and a build guard checks part of it; About is in site search for its owner, not for the writeups' topics; the marketing pages gain a skip link, a main landmark and `color-scheme`, and About's theme toggle reports its state; the writeup badge row names each fact for a screen reader; on 2026-09-30, sidebar entries that name what each platform holds, and About's practice cards split 2 + 2).
 
 ---
 
@@ -661,6 +661,14 @@ is unchanged by construction rather than by exclusion. The tokens live in `token
   `details.toggle > summary` (the regular Toggle and PasswordReveal's block mode), so no toggle variant
   carries a bespoke face/weight. The gold flag toggle that once kept its own identity is gone with its
   `.toggle-flag` rules (deleted 2026-10-03; flags are FlagCapture controls).
+- **The overview label** (2026-11-20): on a HackTheBox or VulnHub writeup the lead quote opens with
+  `Overview` in the callout label's type (JetBrains Mono 11px, 700, `.14em`, uppercase), the accent on
+  dark (15.5:1) and `--tp-lime-ink` on paper (5.40:1 on the lead's opaque card), from `prose.css`, keyed
+  on the badge row's platform chip. It tells the box's thesis from the section intros, which wear the
+  same card. OverTheWire and PicoCTF leads are the "Goal:" line and carry no label. A screen reader reads
+  it as the quote's first word. See DECISIONS 2026-11-20 · Second-pass colour follow-ups: light callout
+  inks and sudo deepen, the light reading line takes the h2 rule's pair, the machine overview names
+  itself.
 
 ### Focus ring system (keyboard accessibility)
 
@@ -775,7 +783,8 @@ token is an open ROADMAP item, not a bug.
 - **Scroll-reveal** (IntersectionObserver), film **grain** overlay, atmospheric **glows**.
 - **The reading hairline** (2026-10-18): the header's hairline fills from the left as a writeup is read,
   a 1px line over the header's bottom border scaled with `transform: scaleX()`, the whole page measured,
-  no transition, lime to cyan (`#4d7c0f` to `#0b7e92` on paper), `aria-hidden`; where the phone "On this
+  no transition, lime to cyan, the h2 rule's own pair in both themes (on paper `--tp-deco-lime` `#6fae00` to
+  `--tp-deco-cyan` `#0a9ec2` since 2026-11-20), `aria-hidden`; where the phone "On this
   page" strip shows, it runs along the strip's bottom edge instead, spanning what the strip spans: from
   50rem the strip starts past the sidebar (`--sl-content-inline-start`), and so does the line, which had
   crossed the sidebar's first entry on a phone held sideways, before such a phone kept the phone layout
@@ -1767,7 +1776,8 @@ Light is art-directed on its own terms (dark is unchanged). All rules scoped to
   the old bottom atmosphere wash. Static, low contrast, prefers-reduced-motion safe.
 - **Decorative accent palette (NON-text):** vivid `--pf-accent-2`-style trio for dots, fills,
   the `#` marker, the h2 rule, the sidebar active bar, panel accents. The reading hairline's light
-  gradient: `#4d7c0f` to `#0b7e92`.
+  gradient is the h2 rule's own pair, `#6fae00` to `#0a9ec2` (2026-11-20; until then `#4d7c0f` to
+  `#0b7e92`, the paper cyan ink from before it deepened to `#08697a`).
 - **Text inks, measured where they land (2026-10-11):** coloured TEXT on paper reads an ink, never the
   accent. Cyan reads `--tp-cyan-ink` (`#08697a`, 5.22:1 on the page `#ece9e0`, model B), and the h3,
   large text, its own softer `--tp-h3-ink` (`#2a6e7b`, 4.8:1 there against the 3:1 large-text bar;
@@ -1883,13 +1893,16 @@ commands by position).
   `#565966` 5.25; ports `#7dcfff` 9.96 / `#0a6178` 5.29; comments (italic) `#8d92aa` 5.55 / `#5a5b60`
   5.11; prompt `#c0caf5` / `#3a4687` 6.58, Kali's brackets `#89ddff` 11.27, Kali's path `#a9b1d6`;
   commands (bold) `oklch(0.745 0.045 60)` 7.45 / `#6f5644` 5.12; privilege (bold) `#ff4d9d` 5.53 /
-  `#b70066` 4.94.
-  - Every light role clears 5:1 except the privilege magenta, the vuln label's own ink (DECISIONS
+  `#b00061` 5.24.
+  - Every light role clears 5:1. The privilege magenta is the vuln label's own ink (DECISIONS
     2026-10-11 · Sudo's light magenta is the vuln callout's ink, and the light command figures are
-    re-measured). One-light's own flag, argument and comment inks had read 4.39 to 4.41:1 on this frame.
+    re-measured), deepened with it on 2026-11-20 (DECISIONS 2026-11-20 · Second-pass colour follow-ups:
+    light callout inks and sudo deepen, the light reading line takes the h2 rule's pair, the machine
+    overview names itself). One-light's own flag, argument and comment inks had read 4.39 to 4.41:1 on
+    this frame.
   - Marked lines (the tint over the frame, model B: dark `#2a3228`, light `#d8d9b7`): every role that
     sits on a marked line today clears 4.5:1 (lowest: dark punctuation 5.05, light functions and URLs
-    4.64). On a dark marked line comments would read 4.30:1 and the privilege magenta 4.29:1 (4.53:1 on
+    4.64). On a dark marked line comments would read 4.30:1 and the privilege magenta 4.29:1 (4.81:1 on
     light); neither sits on one today, so a fence that marks such a line needs a marked-line ink first.
 - **Weight and style.** Commands and privilege commands are bold, comments italic, every other role
   upright: Expressive Code's own italics do not reach a classed span.
@@ -1933,17 +1946,19 @@ Starlight has no shield). Icons via Starlight's `<Icon>`. Authored as `<Callout 
   same thing there, never a platform's identity. Recon takes the site's cyan secondary (links, port
   chips, and in a softer tint the h3; the About sidebar dot inherits it too), loot the flag gold (credentials are loot), vuln the magenta
   sudo wears in code blocks (`.cx-priv`: privilege, the dangerous path; on light, since 2026-10-11, sudo
-  reads the vuln label's own ink `#b70066`, so the two are one magenta). Intel is the one new hue, a pale
-  UV lavender told apart from PicoCTF's purple by lightness and chroma (0.14 OKLab). Until 2026-09-28 intel
-  wore PicoCTF's `#d96bff` and vuln VulnHub's `#ff5c5c`, byte-identical to their sidebar dots and badge
+  reads the vuln label's own ink, `#b00061` since 2026-11-20 (`#b70066` before), so the two are one
+  magenta). Intel is the one new hue, a pale UV lavender told apart from PicoCTF's purple by lightness
+  and chroma (0.14 OKLab). Until 2026-09-28 intel wore PicoCTF's `#d96bff` and vuln VulnHub's `#ff5c5c`, byte-identical to their sidebar dots and badge
   chips. Known nearness, taken knowingly: intel sits 0.046 from the medium tier violet and 0.049 from the
   Cryptography chip violet (every slot farther from both is near white), and vuln 0.067 from the hard
   tier magenta, which no page ships yet. Defense keeps its own green.
 - **Light mode has its own border and label per type.** The tint is `--acc` at 11% over paper; the border
   reads `--cl-bar` and the icon + label `--cl-ink`, both the dark hue held and lightness dropped. The dark
   literal on paper `#ece9e0` read 1.15 to 2.49:1 as a border; `--cl-bar` reads 3.20 to 3.23:1 there. The
-  label ink reads 4.80 to 5.06:1 on its own tint (model B, measured on the build 2026-09-28; model C floor
-  on a grain dot 4.38 to 4.63, computed). Recon's ink is `--tp-cyan-ink` and loot's `--flag-gold-val`, the
+  label ink reads 5.04 to 5.10:1 on its own tint (model B, measured on the build 2026-11-20; model C floor
+  on a grain dot 4.61 to 4.64, computed). Intel, defense and vuln moved one step deeper on 2026-11-20
+  (`#6d518f`, `#006a44`, `#b00061`), so every label also clears 4.5:1 on a grain dot, the test the TOC
+  rungs meet. Recon's ink is `--tp-cyan-ink` and loot's `--flag-gold-val`, the
   same meaning on the same paper. Dark is unchanged apart from the two re-keyed hues. The recon rail's
   column rule reads the same border value (`var(--cl-bar, var(--acc))`), so the rule and the callout's
   left edge are one colour in both themes; it read `--cl-code-ink` before, a near-black line on paper.
@@ -2320,7 +2335,8 @@ against any build directory.
   import it. `platform` is NOT a frontmatter field, it is derived from the writeup's directory, and so is a
   PicoCTF writeup's `category` (a `category:` key fails the build). Set `badges: false` (unquoted boolean,
   never `no` or `off`) to opt a writeup-path page out entirely; the axis rules still run. The description
-  is still repeated as a `>` blockquote lead.
+  is still repeated as a `>` blockquote lead. On a HackTheBox or VulnHub writeup the lead shows an
+  `Overview` label from CSS; nothing to author.
   - **Writeup path** is a non-`index` `.mdx` file under one of the four platform directories
     (`hackthebox`, `vulnhub`, `picoctf`, `overthewire`). Hub and landing pages are authored as `index.*`
     files and are therefore exempt. A file outside a writeup path is never injected, even when it carries
@@ -3127,3 +3143,7 @@ whole records.
 - Full shell syntax colour on output lines, or one dim colour for all output: rejected, the first is noise and the second reads as a comment; output is plain ink with its entities coloured. See DECISIONS 2026-11-18 · Code blocks share one colour system: token roles in every language, commands by position.
 - Light prompts in `#4d5888` or `#353f66`: rejected, too tinted and too close to the body ink. See DECISIONS 2026-11-18 · Code blocks share one colour system: token roles in every language, commands by position.
 - The code role rules in the unlayered tail with `!important`: rejected, the layered rules compute identically on every code span. See DECISIONS 2026-11-18 · Code blocks share one colour system: token roles in every language, commands by position.
+- `open` and `Enabled` in the code output ink: rejected by the owner, they keep the string green. See DECISIONS 2026-11-20 · Second-pass colour follow-ups: light callout inks and sudo deepen, the light reading line takes the h2 rule's pair, the machine overview names itself.
+- Light callout tints at 7% or 9%: rejected by the owner, 11% stays. See DECISIONS 2026-11-20 · Second-pass colour follow-ups: light callout inks and sudo deepen, the light reading line takes the h2 rule's pair, the machine overview names itself.
+- The dark h2 rule's cyan stop in the h3's soft `#9de2ea`: rejected by the owner, the neon sits better with the cyan link icon. See DECISIONS 2026-11-20 · Second-pass colour follow-ups: light callout inks and sudo deepen, the light reading line takes the h2 rule's pair, the machine overview names itself.
+- Section intros told from the lead by a quiet card (a neutral bar, no wash), the lime bar alone, a wash that fades across the line, or a `>` marker in a softer ink, and a larger lead: rejected by the owner, the first reads dull, the second too slight, the fade does not hold on paper, the marker does not work as design, and a larger lead reads as a sizing bug. See DECISIONS 2026-11-20 · Second-pass colour follow-ups: light callout inks and sudo deepen, the light reading line takes the h2 rule's pair, the machine overview names itself.

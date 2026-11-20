@@ -6,6 +6,58 @@
 
 ---
 
+### 2026-11-20 · Second-pass colour follow-ups: light callout inks and sudo deepen, the light reading line takes the h2 rule's pair, the machine overview names itself
+- **Supersedes in part:** 2026-09-28 · Callouts speak in five voices, and light mode gets its own border
+  and label (the light label inks of intel, defense and vuln, `#715593`, `#006e47` and `#b70066`, and its
+  label figures, 4.80 to 5.06:1 and the 4.38 to 4.63 floor; the five voices stand); 2026-10-11 · Sudo's
+  light magenta is the vuln callout's ink, and the light command figures are re-measured (the value
+  `#b70066` and its 4.94:1; that sudo reads the vuln label's ink stands); 2026-10-18 · The reading
+  hairline fills on writeups only, from a typed component (its paper pair, `#4d7c0f` to `#0b7e92`; the
+  line stands); 2026-11-18 · Code blocks share one colour system: token roles in every language,
+  commands by position (the light magenta `#b70066` in its Decision, and in its Why that every light
+  role clears 5:1 but the magenta, at 4.94:1).
+- **Decision:** on light, the intel, defense and vuln label inks drop one step in OKLab lightness (0.012
+  to 0.015) at the same hue, to `#6d518f`, `#006a44` and `#b00061`, and light sudo moves with vuln to
+  `#b00061`. The light reading line takes the h2 rule's own pair, `--tp-deco-lime` to `--tp-deco-cyan`
+  (`#6fae00` to `#0a9ec2`); on dark the two already shared lime to `#41efff`. On a HackTheBox or VulnHub
+  writeup the lead quote carries an `Overview` label in the callout label's type (JetBrains Mono 11px,
+  700, `.14em`, uppercase), the accent on dark and the lime ink on paper, CSS only, keyed on the badge
+  row's platform chip.
+- **Why:** the three labels are 11px. On their own tint they cleared 4.5:1, but on the darkest grid dot
+  they read 4.38:1, short of the test the TOC rungs are held to; now all five read 4.61:1 or more there,
+  and sudo at 5.24:1 joins every other light code role over 5:1, with no visible change. The light
+  reading line ran `#4d7c0f` to `#0b7e92`, the paper cyan ink from before it deepened to `#08697a`, and
+  matched nothing else on the page; the line that fills as you read now matches the rule under every h2
+  in both themes. On a machine writeup the lead quote and the four section intros wore one card, so the
+  box's thesis read like every section's opener (owner); the label tells them apart with the word the
+  table of contents already uses, and leaves the intros as they are.
+- **Rejected:** `open` and `Enabled` in the output ink (owner: they keep the string green); light callout
+  tints at 7% or 9% (owner: 11% stays); the dark h2 rule's cyan stop in the h3's soft `#9de2ea` (owner:
+  the neon sits better with the cyan link icon); for the section intros, a quiet card (a neutral bar, no
+  wash), the lime bar alone, a wash that fades across the line, and a `>` marker in a softer ink (owner:
+  the first reads dull, the second too slight, the fade does not hold on paper, and the marker does not
+  work as design); a larger overview (owner: it reads as a sizing bug, not a decision).
+- **Open:** the label is the current answer, not a settled one. The owner is still exploring how the
+  overview and the section intros differ; an outlined intro and corner brackets were liked, but both
+  break the filled-surface language (callouts, flag capsules, the attack path and code frames are all
+  filled). ROADMAP tracks it.
+- **Verified:** the commit's tree, built on its own, green at 68 pages; against its parent's build only
+  the shared stylesheet changes, and every page's HTML differs only in that stylesheet's name. On the
+  preview server, Busqueda, Return, Unified, Forest, Bandit 17 to 18 and n0s4n1ty 1 in both themes at
+  1440 and 390: the only changed computed cells are, on light, the intel, defense and vuln callouts'
+  icon, label, inline code and bold, the `.cx-priv` spans and the `#tp-progress` background
+  (`linear-gradient(90deg, rgb(111, 174, 0), rgb(10, 158, 194))`), and on the four machine pages the
+  lead quote's `::before` and everything below it, 22.4px lower; Bandit and n0s4n1ty 1 on dark do not
+  change at all. The `::before` computes `none` on the 16 section intros and on all 55 OverTheWire and
+  PicoCTF pages. Painted pixels on Busqueda, model B with the film grain hidden: the light labels recon
+  5.05, loot 5.04, intel 5.10, defense 5.08, vuln 5.08; sudo 5.24 on the code frame and 4.80 on a light
+  marked line (marked for the test, since no sudo sits on one today); the overview label 15.66 on dark
+  (15.55 computed on the page colour, a gap of about one level of the wash's green) and 5.40 on paper.
+  The grain lowers each by 0.04 to 0.05, the dark label by 0.25. The model C floor on a grain dot,
+  computed: intel 4.65, defense 4.63, vuln 4.65. In Chrome's accessibility tree the lead quote reads
+  "OVERVIEW", then its text, and nothing else.
+- **Status:** Adopted 2026-11-20, chosen in a live preview of Busqueda in both themes.
+
 ### 2026-11-18 · Code blocks share one colour system: token roles in every language, commands by position
 - **Supersedes:** 2026-06-15 · Command-highlight palette rebuilt on a principled OKLCH basis (+ bold
   weight) and 2026-06-14 · Code-block command highlighting by semantic category, both moved to
@@ -31,6 +83,9 @@
   pkexec wear the vuln callout's magenta (`#ff4d9d` / `#b70066`), bold. Markup blocks read tag names as
   keywords and attribute names as flags. The nine `.ec-cmd-*` rules leave the unlayered tail (17 rules
   to 8), and Unified's LinPEAS listing becomes a `text` fence.
+  (**Partly superseded by:** 2026-11-20 · Second-pass colour follow-ups: light callout inks and sudo
+  deepen, the light reading line takes the h2 rule's pair, the machine overview names itself: the light
+  magenta is `#b00061` now.)
 - **Why:** the category palette coloured commands from name lists (curl and ssh as network, ls and cat
   as inspection), so every new tool needed a list entry and an unlisted one kept the theme's token
   colour. The themes paint one kind of token in several colours depending on the grammar (tokyo-night
@@ -41,6 +96,9 @@
   role now clears 5:1 but the magenta (4.94:1). The CSS could move into a layer because the tail's
   premise was false: in a build test the layered rules computed identically on every code span of
   Busqueda, Return and n0s4n1ty-1 in both themes, which answers the ROADMAP question.
+  (**Partly superseded by:** 2026-11-20 · Second-pass colour follow-ups: light callout inks and sudo
+  deepen, the light reading line takes the h2 rule's pair, the machine overview names itself: the
+  magenta reads 5.24:1 now, so every light role clears 5:1, the magenta included.)
 - **Rejected:** keeping the category hues inside the new system (per the owner, the names are no longer
   needed once commands are found by position); sudo in the command sand (the magenta appears a few
   times a page and ties privilege to the vuln callout, so it does not shout); the Semantic scheme (its
@@ -745,6 +803,10 @@
   `requestAnimationFrame`, recomputed on resize and whenever the page's height changes (a
   `ResizeObserver` on `body`, so a spoiler or ToggleAll moves it). The PageSidebar override renders it
   beside TocTracking.
+  (**Partly superseded by:** 2026-11-20 · Second-pass colour follow-ups: light callout inks and sudo
+  deepen, the light reading line takes the h2 rule's pair, the machine overview names itself: on paper
+  the line runs `--tp-deco-lime` to `--tp-deco-cyan`, `#6fae00` to `#0a9ec2`, the h2 rule's own pair;
+  the line stands.)
 - **Why:** the owner picked the hairline carrying the reading progress as a detail to pursue
   (2026-10-18). The old bar was a 2px strip along the top of the window on every Starlight page, a
   landing included, sized by an untyped inline `head` script in `astro.config.mjs` that set its width,
@@ -1051,11 +1113,17 @@
   **Partly superseded by:** 2026-11-18 · Code blocks share one colour system: token roles in every
   language, commands by position. The magenta stands, now on `.cx-priv` in `@layer chrome` without
   `!important`, and on su, doas, runas and pkexec as well as sudo.
+  (**Partly superseded by:** 2026-11-20 · Second-pass colour follow-ups: light callout inks and sudo
+  deepen, the light reading line takes the h2 rule's pair, the machine overview names itself: the light
+  magenta is `#b00061` now, still the vuln label's own ink.)
 - **Why:** light code frames paint `--ec-frm-edBg` `#e6dfd0` (`chrome.css`), not one-light's `#fafafa`, and
   every light figure on record was taken against `#fafafa`, which no frame shows. On the real frame the old
   sudo read 4.22:1 (model B), under AA, in the one token a reader is meant to notice before pasting the
   line. `#b70066` reads 4.94:1, and on paper sudo and the vuln callout's label become one magenta for
   privilege and the dangerous path, the meaning the callout borrowed it for (2026-09-28).
+  (**Partly superseded by:** 2026-11-20 · Second-pass colour follow-ups: light callout inks and sudo
+  deepen, the light reading line takes the h2 rule's pair, the machine overview names itself: sudo reads
+  `#b00061` now, 5.24:1 on the frame; one magenta for privilege stands.)
 - **Rejected:** keeping light sudo inside the anchor: the 5.4:1 that justified it described a background
   that does not render.
 - **Verified:** production build, green at 67 pages. On `#e6dfd0` (model B): sudo 4.94, recon 6.08, net
@@ -1064,6 +1132,9 @@
   **Partly superseded by:** 2026-11-18 · Code blocks share one colour system: token roles in every
   language, commands by position. Recon, net and inspect are gone with their figures. On the frames as
   they render today the magenta reads 4.9:1 on paper (`#e5decf`) and 5.4:1 on ink (`#1c1d28`, model B).
+  (**Partly superseded by:** 2026-11-20 · Second-pass colour follow-ups: light callout inks and sudo
+  deepen, the light reading line takes the h2 rule's pair, the machine overview names itself: light sudo
+  reads 5.24:1 on the code frame now, not 4.94 or 4.9; dark is unchanged.)
 - **Status:** Adopted; committed to `dev` on 2026-10-11 as
   `fix(highlighting): light sudo reads the vuln callout's magenta`.
 
@@ -1569,6 +1640,10 @@
   **Partly superseded by:** 2026-11-18 · Code blocks share one colour system: token roles in every
   language, commands by position. Sudo's class is `.cx-priv` now (`chrome.css`); the magenta and its
   meaning stand.
+  (**Partly superseded by:** 2026-11-20 · Second-pass colour follow-ups: light callout inks and sudo
+  deepen, the light reading line takes the h2 rule's pair, the machine overview names itself: on light,
+  intel, defense and vuln read `#6d518f`, `#006a44` and `#b00061` now, one step deeper at the same hue;
+  the five voices and the other inks stand.)
 - **Why:** intel and vuln were byte-identical to the PicoCTF and VulnHub sidebar dots and badge chips, so on
   a desktop writeup, and beside the platform chip on those platforms' own writeups, a box's colour made a
   platform claim it does not mean. Recon's and loot's matches mean the same thing, so they stay. On paper
@@ -1598,6 +1673,10 @@
   callout 4.93:1 and up in both themes, dark labels 6.06:1 and up on their tints; bold 8.0:1 and up and the
   model C floor on a grain dot, 4.38 to 4.63, are computed. The light column rule is `#008f9a`, 3.11:1 on
   the recon tint.
+  (**Partly superseded by:** 2026-11-20 · Second-pass colour follow-ups: light callout inks and sudo
+  deepen, the light reading line takes the h2 rule's pair, the machine overview names itself: the label
+  figures and the model C floor describe the old intel, defense and vuln inks; the five labels read 5.04
+  to 5.10:1 on their own tint now, and 4.61:1 or more on a grain dot.)
 - **Status:** Adopted.
 
 ### 2026-09-23 · The AttackPath dossier is one stacked label/value grid, `via` is reserved, and the goal step wears gold

@@ -428,17 +428,19 @@ html[data-theme="dark"] .port-label {
    the dark hue held and lightness dropped. The BORDER could not keep the dark literal: on paper #ece9e0
    those read 1.15 to 2.49:1, under the 3:1 a boundary needs. --cl-bar clears it, 3.20 to 3.23:1 on
    paper. The icon + label ink clears 4.5:1 on its OWN tint, the composite it sits on (--acc at 11% over
-   paper, model B): recon 5.07, intel 4.81, vuln 4.82, loot 5.06, defense 4.82. On a grain dot (model C,
-   computed) the floor is 4.38 to 4.63. Two inks rhyme with a token on purpose: recon's is
-   --tp-cyan-ink and loot's is --flag-gold-val, each the same meaning on the same paper. */
+   paper, model B): recon 5.07, intel 5.10, vuln 5.12, loot 5.06, defense 5.09. On a grain dot (model C,
+   computed) the floor is 4.61 to 4.64, so all five clear 4.5:1 there too: intel, defense and vuln moved
+   one step deeper on 2026-11-20 (OKLab lightness 0.012 to 0.015 lower, same hue), from 4.38 on the dot.
+   Two inks rhyme with a token on purpose: recon's is --tp-cyan-ink and loot's is --flag-gold-val, each
+   the same meaning on the same paper. */
 html[data-theme="light"] .sl-markdown-content .cl {
   background: color-mix(in oklab, var(--acc) 11%, transparent);
 }
 html[data-theme="light"] .sl-markdown-content .cl-recon   { --cl-bar: #008f9a; --cl-ink: #08697a; }
 html[data-theme="light"] .sl-markdown-content .cl-loot    { --cl-bar: #a67900; --cl-ink: #7a5a12; }
-html[data-theme="light"] .sl-markdown-content .cl-intel   { --cl-bar: #9174b5; --cl-ink: #715593; }
-html[data-theme="light"] .sl-markdown-content .cl-defense { --cl-bar: #009542; --cl-ink: #006e47; }
-html[data-theme="light"] .sl-markdown-content .cl-vuln    { --cl-bar: #ea368b; --cl-ink: #b70066; }
+html[data-theme="light"] .sl-markdown-content .cl-intel   { --cl-bar: #9174b5; --cl-ink: #6d518f; }
+html[data-theme="light"] .sl-markdown-content .cl-defense { --cl-bar: #009542; --cl-ink: #006a44; }
+html[data-theme="light"] .sl-markdown-content .cl-vuln    { --cl-bar: #ea368b; --cl-ink: #b00061; }
 
 /* Inline code INSIDE a colored callout harmonizes with that callout's accent instead of fighting it.
    The standalone chip's own ink (red until 2026-11-18, ice since) would be a second voice inside a
