@@ -6,6 +6,316 @@
 
 ---
 
+### 2026-11-21 · The lead quote reads Goal or Overview from the page, and the TOC's first entry follows
+- **Supersedes in part:** 2026-11-20 · Second-pass colour follow-ups: light callout inks and sudo deepen,
+  the light reading line takes the h2 rule's pair, the machine overview names itself. Only the label's
+  scope and its hook: HackTheBox and VulnHub writeups only, keyed on the badge row's platform chip. Its
+  word, type and colours stand.
+- **Supersedes in part:** 2026-11-20 · The machine overview takes the callout header and a lime edge, and
+  the section intros stay as they are. Only the scope and the hook again ("on a HackTheBox or VulnHub
+  writeup", "keyed on the badge row's platform chip, as the label is") and the icon's home: the two
+  open-book data URIs move unchanged from `prose.css` into `tokens.css`. The icon, the edge and every
+  value stand.
+- **Decision:** the lead quote, the first block of any page under the four platform directories, is a
+  goal or an overview, decided at build time by a new remark plugin, `plugins/remark-transform-lead.mjs`:
+  a goal when its text opens with `Goal:` (any case), an overview otherwise. On a goal the plugin removes
+  the `Goal:` prefix and capitalizes the letter after it. It marks the quote `data-lead="goal"` or
+  `data-lead="overview"` and records the same verdict as `leadKind` in the page's plugin frontmatter.
+  `prose.css` keys the label and the edge on `blockquote[data-lead]`: an overview keeps `Overview` and
+  the open-book icon, a goal shows `Goal` and its own icon, in the same type, colours, spacing and edge.
+  Both icons are tokens in `tokens.css` (`--lead-icon-overview`, `--lead-icon-goal`, one value per
+  theme); the goal's is a placeholder (a plain target) until the glyph pass replaces it. The existing
+  `PageSidebar` override reads the verdict through `render(entry)` and, on a goal page, names the TOC's
+  first entry (Starlight's `#_top` link) `Goal` before it renders the default. A `> Goal:` quote anywhere
+  but the first block, or an authored `leadKind`, fails the build. Today every Bandit level and PicoCTF
+  writeup reads Goal, the HackTheBox writeups and the Bandit hub read Overview, and the landings have no
+  lead.
+- **Why:** the lead's kind is already written in the page: `> Goal:` is the first line of the Bandit and
+  PicoCTF template, so the kind is derived and never declared, as platform and category already are.
+  Keyed on the content, the label needs no list of platforms and no exceptions: a future wargame's levels
+  and its hub, a VulnHub machine and any one-off page sort themselves by what their first block says. The
+  badge row's chip could not reach the Bandit hub, which has no badge row; the attribute can, and the
+  `:has()` leaves the selector. CSS cannot read text and a remark plugin cannot reach the TOC, whose
+  first entry Starlight adds itself from the `tableOfContents.overview` UI string, so the plugin decides
+  and the override applies. One verdict sets both the label and the TOC entry, so the two cannot disagree
+  or both appear, and on Bandit and PicoCTF the TOC reads Goal, Approach, Why it works: the template
+  itself.
+- **Rejected:**
+  - Rewriting the `> Goal:` lines into a frontmatter field rendered by a component: YAML prose skips
+    smartypants and the inline-code chip grouping, and the machine lead would stay markdown, so one card
+    would have two rendering paths.
+  - A `lead: goal` frontmatter flag beside the quote: the same fact stored twice, kept in agreement only
+    by a guard.
+  - Keying `Goal` on the OverTheWire and PicoCTF chips: the `Goal:` text would have to be edited out of
+    every page by hand, the hub would stay out of reach, and every one-off page would need an exception.
+  - `## Goal` as a heading: it earns a TOC entry for free, but duplicates the top link, trades the card
+    for an h2, and Approach stops opening the page.
+  - A Starlight route data middleware for the TOC entry: measured in a throwaway site on the pinned
+    versions (Astro 7.2.9, Starlight 0.41.10) to run once per page during `astro build` and never while
+    serving, with pages byte-identical to the override's, but it adds a config key, a file and an
+    extension type for what the existing override already does. It is the fallback if a Starlight upgrade
+    ever prints TOC text outside `PageSidebar`.
+  - Renaming the entry at runtime with a script: the label would change after load, and the mobile TOC's
+    summary with it.
+  - A build check that every Bandit level and PicoCTF writeup opens with a goal: a page without one falls
+    back to Overview, the default, and the check would turn every future one-off into a build error.
+- **Known:** the literal `Goal:` no longer reaches the built pages, so site search no longer indexes the
+  word on them and their excerpts open on the capitalized sentence. The TOC label holds only while
+  `PageSidebar` is the one component that prints TOC text (true in Starlight 0.41.10); CORE_SPEC's
+  upgrade path checks it. The goal icon is a placeholder (ROADMAP).
+- **Verified:** the commit's tree, built on its own, green at 68 pages, the decorative-glyph guard clean.
+  `PageSidebar.astro` has no problems under TypeScript 6.0.3 with `astro/tsconfigs/strictest` and
+  `noPropertyAccessFromIndexSignature`, checked against Astro's and Starlight's own types (a dot read of
+  `leadKind` is caught). Every built page, read by a script: 55 leads read Goal, every Bandit level (34)
+  and PicoCTF writeup (21), each the first block after the badge row, its text with no `Goal:` and
+  opening on a capital, both TOCs' first entry Goal; 5 read Overview, the Bandit hub and the four
+  machines, both TOCs Overview; the four landings, About, home, the 404 and `/secret/` carry no
+  `data-lead`, nor do the 16 section intros; no page names Goal in a TOC without a goal lead. The guard
+  fails the build on a `> Goal:` quote under PIE TIME's `## Approach` ("found one at line 14 in
+  .../pie-time.mdx") and on `leadKind: goal` in its frontmatter
+  (`"leadKind" is derived from the page's first block, never authored`). On the preview server against
+  the parent's build, Busqueda, Return, Unified, Forest, the Bandit hub, Bandit 0 to 1 and 25 to 26, PIE
+  TIME and head-dump in both themes at 1440 and 390: on the four machine pages every full-page pixel is
+  unchanged (every image loaded first), and so is every computed cell but one, the label's
+  `background-position`, which computes `0% 50%` for `0px 50%`, the same place: the minifier wrote the
+  literal's `left center` as `0`, and it leaves a shorthand that holds `var()` as written. The icon's
+  `background-image` computes the same URI it did as a literal. The Bandit hub's lead gains the label and
+  the edge, its `::before` equal to Busqueda's in every cell and its `box-shadow` too, in each theme and
+  width, and everything below it moves down 24.78px. The goal pages gain the same, their `::before` equal
+  to Busqueda's but `content` (`"Goal"`) and `background-image` (`%23b6ff3c` on dark, `%233e6700` on
+  light). The lead grows by the label, 24.78px, and everything below moves down by as much, except Bandit
+  25 to 26 at 1440, where the text without `Goal:` fits one line, not two, so the lead ends 5.81px
+  shorter and everything below moves up 5.81px. Lead heights before and after, at 1440 then 390, the same
+  in both themes: the Bandit hub 82.78px to 107.56px and 143.97px to 168.75px, Bandit 0 to 1 82.78px to
+  107.56px and 113.38px to 138.16px, Bandit 25 to 26 82.78px to 76.97px and 113.38px to 138.16px, PIE
+  TIME 113.38px to 138.16px and 205.16px to 229.94px, head-dump 82.78px to 107.56px and 143.97px to
+  168.75px. In both TOCs the first entry reads Goal and none of its cells changes but the phone entry's
+  width, which follows its word (67.20px to 33.61px). Nothing else changes: the section intros, the badge
+  rows, the headings and the code frames only move with the lead. GOAL on PIE TIME's lead reads 15.66:1
+  on dark and 5.40:1 on paper (model B, painted pixels with the grain hidden; Busqueda's OVERVIEW reads
+  the same by this method). In Chrome's accessibility tree Bandit 0 to 1's lead reads "GOAL", then its
+  text, with no `Goal:` and no node for the icon, and the first link of both TOCs is named Goal; Busqueda
+  reads "OVERVIEW", then its text, and Overview in both TOCs. At 390 the phone strip reads Goal at the
+  top of PIE TIME and follows to Approach, On the live instance and Why it works as the page scrolls. In
+  `astro dev`, Busqueda's Toggle and Callout and Bandit 25 to 26's Steps and PasswordReveal compute as on
+  the build, and each TOC's first entry reads as on the build; the one console error there, a module
+  script served as `text/css`, shows on the parent too. Site search with the shipped ranking, the same on
+  this build's index and the parent's: "bandit" lists the hub first (by 0.86% of the top score, as
+  before); "bandit N", "level N", "bandit level N", the typed title and "N N+1" 33/33 each; the route,
+  "bandit" and the route, and the login 31/33 each, the four known misses; every indexed page's own title
+  65/65. "goal" finds 7 pages, not 55.
+- **Status:** Adopted 2026-11-21, chosen against a frontmatter field, a platform-keyed rule and a route
+  data middleware; the middleware and the override were built side by side and gave identical pages.
+
+### 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per chain, one dossier vocabulary
+- **Supersedes in part:** 2026-10-11 · One lime ink for small text on paper, and About's light inks clear
+  its glows. Only "AttackPath's done run" among the lime ink's consumers in its Decision: on light the
+  ink now sets the lit run, the technique of the hop that reached the current node, while done runs keep
+  their bold in the quiet grey. The ink, its other consumers and its figures stand.
+- **Supersedes in part:** 2026-09-23 · The AttackPath dossier is one stacked label/value grid, `via` is
+  reserved, and the goal step wears gold. Only the meter bar and its gradient (in its Decision, with "as
+  the bar's end is" in its Cost), the dots' focus ring on the green-to-gold ramp, and the label names in
+  its Also, which the shared set replaces. The grid, the `via` rule, the gold goal and the dots' ramp
+  stand.
+- **Supersedes in part:** 2026-09-19 · The supported floor is a 320px viewport, and the landings' clip is
+  the one exception. Only the writeups' sideways scroll in its measured ladder (15px at 175 percent and
+  40 at 200, set by the AttackPath meter, with the table-of-contents toggle stretching to it). The floor,
+  the exception and the other rungs stand.
+- **Supersedes in part:** 2026-09-19 · The text-scaling backlog is retired: thirteen simulated findings,
+  four re-filed by width. Only the AttackPath meter and the table-of-contents toggle that stretched to it
+  in its re-filed list, and "about 3px on the HackTheBox writeups" for the wordmark in its retired list.
+  Everything else stands.
+- **Supersedes in part:** 2026-07-27 · The release hold is lifted and `dev` ships to production. Only
+  item 2 of "What ships knowingly unfixed", AttackPath internals at about 0.533 of body size: the
+  smallest AttackPath text is 11px now, 0.61 of the 18px body.
+- **Supersedes in part:** 2026-07-20 · AttackPath production-readiness audit: 8 findings fixed (2 were
+  real WCAG AA failures). Only three records of code that is gone: the dots carrying the state word in
+  their names, the `is-enter` dossier class with its `animationend` self-clear, and `centre()` with the
+  6.1ms per advance measured on it. The eight fixes stand.
+- **Supersedes in part:** 2026-07-20 · AttackPath production-polish pass (connector-label rhythm, honest
+  weight ramp, dot touch targets) + Return instance. Only its third fix, the tap target as a
+  layout-neutral `::after` on a focusable 7px dot. The label rhythm and the weight ramp stand.
+- **Supersedes in part:** 2026-07-19 · AttackPath reworked onto the site's native fabric (surfaces, prize
+  identity, computed escalation). Only "and the meter" in its third rework: there is no bar left to tint.
+- **Supersedes in part:** 2026-07-19 · AttackPath: a guided, data-driven infographic for linear
+  privilege-escalation chains. Only two claims in its A11y bullet: the dots as real `<button>`s with a
+  focus ring, and the dossier as an `aria-live="polite"` region. Nodes and the Next control stay real
+  buttons.
+- **Decision:** the component keeps what it is (one step at a time, the climb, the static dossier form)
+  and changes how it behaves. One `requestAnimationFrame` clock drives the camera, the spark and the
+  line: the spark rides the connector's own path (`getPointAtLength`) and draws the line behind it
+  (`stroke-dashoffset`); the camera holds while the spark is in view (on a narrow screen it follows the
+  spark at the leading edge), then settles in 360ms on `cameraLeft()`, a frame that keeps the current
+  node whole with as much of the way in as fits, the hop first and then the node before it, and whatever
+  the left edge cuts recedes as a whole. The old node lets go, the spark runs the hop (160 to 380ms a
+  hop; a jump plays every hop), the new node lights as the spark lands and its values roll in, then the
+  frame settles; fast input finishes the step in flight. Type grows: node kinds 11px (were 9.6), names 14
+  to 16px (12.2 to 14.4) with `text-wrap: balance`, nodes `148px + t * 56px` capped at 176px on a phone,
+  connectors 124px (116), techniques 11.5px (9.7), dossier labels 11px (9.6) and values 14px (11.8), the
+  step count 12px (11.2), Next 13px (11.5). Only the current hop's technique is lit: the accent,
+  `--tp-lime-ink` on light, gold on the goal connector. Dossier labels stand still and values roll, up
+  when climbing and down when walking back. At the goal Next becomes a gold "Compromised" state with a
+  check and no frame, still focusable and `aria-disabled`, and the progress bar is gone. The bloom plays
+  once, after the settle, skipped under reduced motion, its ripple a 12px `box-shadow` ring inside the
+  gutter. The root is a `role="group"` named by its title; a roving tabindex leaves two tab stops; the
+  arrows move the step and focus together; Home and End work on a node; Enter no longer resets to step 1;
+  the hint is tied by `aria-describedby` and shows on `:focus-visible`; one polite status sentence per
+  step replaces the `aria-live` dossier; the dots are `aria-hidden` spans 14 by 24px. Fallbacks: forced
+  colours, a `<noscript>` style that hides the meter and footer and lists every panel, a stage that stays
+  `inert` until the script wires it, and print that lists every panel. The guard admits only `role` (node
+  0), `flaw`, `how`, `gain` and `flag` as detail keys. A separate editorial pass set that list on
+  2026-11-20, after an interim six (`role`, `why`, `how`, `scope`, `gain`, `flag`) did not fit every row.
+  The four writeups move onto it (23 labels become 5, and three rows that paired a flag with a shell or a
+  command split in two), with eight edges reworded as noun phrases that read after "via" (`is member of`
+  is now `group membership`). Geometry, the climb, surfaces, tokens, the `via` rule, reduced-motion
+  gating and re-init safety are unchanged.
+- **Why:** the spark was a CSS transform moving in a straight line from node centre to node centre while
+  the same click scrolled the strip, so on screen it slid up to 153px backwards and ended on the new
+  node's name. The next technique read brighter than the current one, and the whole dossier panel faded
+  back in over 340ms. Forest had 15 tab stops and the other chains 11, and every dot failed
+  `target-size`. The bar's fixed 92px width scrolled the writeups sideways below 220px. The bloom's
+  `scale(1.5)` was cut flat at the strip's edge and widened it about 8px on desktop. Without JavaScript a
+  reader got one step and 15 buttons that did nothing. Twenty-three different labels across four writeups
+  changed the label column at every step, and an edge written as a verb read wrong after "via" ("via is
+  member of").
+- **Rejected:** an overview-first rail that shows the whole chain at once, because the whole chain at
+  once reads as dense and overwhelming and the component's point is one step at a time; a Replay control
+  that plays the chain end to end, because it runs the whole chain in about a second without opening a
+  step or letting the reader go at their own pace; and MITRE ATT&CK ids and defence notes in the dossier,
+  because they add data to every panel and make the chain harder to follow.
+- **Verified:** the production build, green at 68 pages with the decorative-glyph guard clean; the label
+  guard fails the build on a `scope` row and on `role` past the entry, each with its own message. On
+  `astro preview` in headless Chrome 157, the before figures from the pre-change build in the same
+  harness: two tab stops on every chain (before 15 on Forest, 11 on the others); Right, Right, Enter,
+  End, Left and Home walk Forest 2, 3, 3, 7, 6, 1 with focus on the current node, which settles inside
+  the strip at 1440 and 390, and Home and End do nothing on Next; the hint shows on keyboard focus only;
+  the status line reads "Step 2 of 7: User svc-alfresco, via AS-REP roast." and ends "via pass-the-hash.
+  Compromised."; the tree holds a group named by the title, nodes named by kind, name and state, no dots
+  and a silent check, and at the goal Next is "Compromised", `aria-disabled`, with focus kept; five
+  clicks on Next in 420ms land on step 6 with the spark off and every line at rest; under reduced motion
+  each step lands in one frame with no spark, glide, roll or bloom; without JavaScript all 7 steps are
+  listed and nothing in the component takes focus (before 1 step and 15 buttons); print lists all 7
+  (before 1, with the strip); forced colours give the current node a 2px `Highlight` frame and future
+  nodes a dashed one, the dots three system colours; no sideways scroll on Forest or Busqueda at 320,
+  240, 205 or 180 (before 16 and 41px at 205 and 180 in this harness, the device's 15 and 40); the
+  strip's scroll width holds through the bloom, 2012px on desktop and 1932 on a phone (before it grew 8px
+  and 20); axe 4.10.2 finds nothing in the component at the first and last step, both themes, 1440 and
+  390 (before `target-size` on every dot). The owner's hand checks: the spark runs forward along each
+  curve and draws the line behind it while the camera holds, then the camera glides; at phone width the
+  spark holds the leading edge while the path slides under it; clicking the goal from step 1 plays every
+  hop in about a second; on light only the current technique is coloured; in Windows High Contrast the
+  current node's frame is `Highlight`; a real print (Ctrl+P) lists every step; a screen reader says one
+  sentence per step.
+- **Status:** Adopted 2026-11-20. Built and measured outside the repo against a production build of
+  `bb43b30`, approved as a whole from a live before and after, and landed byte for byte with every
+  fingerprint checked. The guard's label set changed afterwards, to the editorial pass's five (role,
+  flaw, how, gain, flag); nothing else changed since.
+
+### 2026-11-20 · The machine overview takes the callout header and a lime edge, and the section intros stay as they are
+- **Supersedes in part:** 2026-11-20 · Second-pass colour follow-ups: light callout inks and sudo
+  deepen, the light reading line takes the h2 rule's pair, the machine overview names itself (its Open
+  bullet: that the label is the current answer and not a settled one, and that ROADMAP tracks the
+  question; the label's word, type, colours and scope stand).
+- **Decision:** on a HackTheBox or VulnHub writeup the lead quote's `Overview` label becomes a callout
+  header: Starlight's own `open-book` icon before the word, at the callout icon's 1rem with the header's
+  `.4rem` gap and `.45rem` below (`.3rem` before), in the label's colour, which each theme writes into
+  the icon's fill (`#b6ff3c`, `#3e6700`). The lead's card gains a 1px lime edge inside it: 30% of the
+  accent with a faint `#9fef00` glow on dark, 30% of the lime ink over the lead's own paper shadow on
+  light. The badge row stays above the card, and the section intros keep their card as it is. CSS only,
+  in `prose.css`, keyed on the badge row's platform chip, as the label is.
+  (**Partly superseded by:** 2026-11-21 · The lead quote reads Goal or Overview from the page, and the
+  TOC's first entry follows: the scope and the hook, and the icon's home, now a token; the icon, the edge
+  and every value stand.)
+- **Why:** the word alone read generic and stood apart: nothing else on the page announced itself quite
+  like it, while every callout pairs its label with a glyph (owner). With the icon, the lead's header is
+  the callout header (icon, gap, type and spacing), so the lead is named in the page's own language, and
+  the edge, the line the platform chip above it wears, makes the named card one object. Every surface
+  stays filled: the edge sits inside the wash and the bar, where an outlined card would have dropped the
+  fill. The section intros keep their card; the lead's header and edge now tell it from them.
+- **Rejected:** the dossier, the badge row taken into the lead's card under the label (owner: the card
+  without it; on a phone that card stacked the label, three rows of badges, one more than today, and four
+  lines of text); for the section intros, an outlined (ghost) card, alone or beside the dossier, and
+  corner brackets (owner: the intros stay as they are, and a ghost card breaks the visual language the
+  filled callouts set).
+- **Verified:** the commit's tree, built on its own, green at 68 pages; against its parent's build only
+  the shared stylesheet changes, and every page's HTML differs only in that stylesheet's name. On the
+  preview server, Busqueda, Return, Unified, Forest, Bandit 17 to 18 and n0s4n1ty 1 in both themes at
+  1440 and 390, the only changed computed cells are on the four machine pages: the lead's `::before`
+  (`margin-block-end` 4.8px to 7.2px, `padding-inline-start` 0 to 22.4px, the icon in
+  `background-image` with its fill `%23b6ff3c` on dark and `%233e6700` on light, `16px 16px`,
+  `no-repeat`, `0px 50%`, the minifier writing `left center` as `0`); the lead's `box-shadow`, on dark
+  `none` to `oklab(0.918743 -0.139752 0.174632 / 0.3) 0px 0px 0px 1px inset, oklab(0.866761 -0.149256
+  0.178696 / 0.35) 0px 0px 18px -8px` (the minifier mixes the glow's colour at build time), on light the
+  paper shadow to `oklab(0.465241 -0.0845822 0.0959655 / 0.3) 0px 0px 0px 1px inset, rgba(60, 50, 30,
+  0.4) 0px 6px 20px -14px`; and everything below the lead, 2.4px lower (24.8px against no label).
+  Bandit and n0s4n1ty 1 do not change in either theme. Across all 59 writeups in both themes, the 16
+  section intros and the 55 OverTheWire and PicoCTF leads keep `::before` at `none` and their shadow
+  (`none` on dark, the paper shadow on light). In Chrome's accessibility tree the lead quote still reads
+  "OVERVIEW", then its text, with no node for the icon.
+- **Status:** Adopted 2026-11-20, chosen in a live preview of Busqueda in both themes, against the
+  word-only label and the dossier.
+
+### 2026-11-20 · Second-pass colour follow-ups: light callout inks and sudo deepen, the light reading line takes the h2 rule's pair, the machine overview names itself
+- **Supersedes in part:** 2026-09-28 · Callouts speak in five voices, and light mode gets its own border
+  and label (the light label inks of intel, defense and vuln, `#715593`, `#006e47` and `#b70066`, and its
+  label figures, 4.80 to 5.06:1 and the 4.38 to 4.63 floor; the five voices stand); 2026-10-11 · Sudo's
+  light magenta is the vuln callout's ink, and the light command figures are re-measured (the value
+  `#b70066` and its 4.94:1; that sudo reads the vuln label's ink stands); 2026-10-18 · The reading
+  hairline fills on writeups only, from a typed component (its paper pair, `#4d7c0f` to `#0b7e92`; the
+  line stands); 2026-11-18 · Code blocks share one colour system: token roles in every language,
+  commands by position (the light magenta `#b70066` in its Decision, and in its Why that every light
+  role clears 5:1 but the magenta, at 4.94:1).
+- **Decision:** on light, the intel, defense and vuln label inks drop one step in OKLab lightness (0.012
+  to 0.015) at the same hue, to `#6d518f`, `#006a44` and `#b00061`, and light sudo moves with vuln to
+  `#b00061`. The light reading line takes the h2 rule's own pair, `--tp-deco-lime` to `--tp-deco-cyan`
+  (`#6fae00` to `#0a9ec2`); on dark the two already shared lime to `#41efff`. On a HackTheBox or VulnHub
+  writeup the lead quote carries an `Overview` label in the callout label's type (JetBrains Mono 11px,
+  700, `.14em`, uppercase), the accent on dark and the lime ink on paper, CSS only, keyed on the badge
+  row's platform chip.
+  (**Partly superseded by:** 2026-11-21 · The lead quote reads Goal or Overview from the page, and the
+  TOC's first entry follows: the scope and the hook; every platform page's lead is labelled now, keyed on
+  `data-lead`, and a goal reads Goal.)
+- **Why:** the three labels are 11px. On their own tint they cleared 4.5:1, but on the darkest grid dot
+  they read 4.38:1, short of the test the TOC rungs are held to; now all five read 4.61:1 or more there,
+  and sudo at 5.24:1 joins every other light code role over 5:1, with no visible change. The light
+  reading line ran `#4d7c0f` to `#0b7e92`, the paper cyan ink from before it deepened to `#08697a`, and
+  matched nothing else on the page; the line that fills as you read now matches the rule under every h2
+  in both themes. On a machine writeup the lead quote and the four section intros wore one card, so the
+  box's thesis read like every section's opener (owner); the label tells them apart with the word the
+  table of contents already uses, and leaves the intros as they are.
+- **Rejected:** `open` and `Enabled` in the output ink (owner: they keep the string green); light callout
+  tints at 7% or 9% (owner: 11% stays); the dark h2 rule's cyan stop in the h3's soft `#9de2ea` (owner:
+  the neon sits better with the cyan link icon); for the section intros, a quiet card (a neutral bar, no
+  wash), the lime bar alone, a wash that fades across the line, and a `>` marker in a softer ink (owner:
+  the first reads dull, the second too slight, the fade does not hold on paper, and the marker does not
+  work as design); a larger overview (owner: it reads as a sizing bug, not a decision).
+- **Open:** the label is the current answer, not a settled one. The owner is still exploring how the
+  overview and the section intros differ; an outlined intro and corner brackets were liked, but both
+  break the filled-surface language (callouts, flag capsules, the attack path and code frames are all
+  filled). ROADMAP tracks it.
+  (**Partly superseded by:** 2026-11-20 · The machine overview takes the callout header and a lime
+  edge, and the section intros stay as they are: the label is settled, with the icon and an edge, the
+  section intros stay as they are, and the ROADMAP item is deleted.)
+- **Verified:** the commit's tree, built on its own, green at 68 pages; against its parent's build only
+  the shared stylesheet changes, and every page's HTML differs only in that stylesheet's name. On the
+  preview server, Busqueda, Return, Unified, Forest, Bandit 17 to 18 and n0s4n1ty 1 in both themes at
+  1440 and 390: the only changed computed cells are, on light, the intel, defense and vuln callouts'
+  icon, label, inline code and bold, the `.cx-priv` spans and the `#tp-progress` background
+  (`linear-gradient(90deg, rgb(111, 174, 0), rgb(10, 158, 194))`), and on the four machine pages the
+  lead quote's `::before` and everything below it, 22.4px lower; Bandit and n0s4n1ty 1 on dark do not
+  change at all. The `::before` computes `none` on the 16 section intros and on all 55 OverTheWire and
+  PicoCTF pages. Painted pixels on Busqueda, model B with the film grain hidden: the light labels recon
+  5.05, loot 5.04, intel 5.10, defense 5.08, vuln 5.08; sudo 5.24 on the code frame and 4.80 on a light
+  marked line (marked for the test, since no sudo sits on one today); the overview label 15.66 on dark
+  (15.55 computed on the page colour, a gap of about one level of the wash's green) and 5.40 on paper.
+  The grain lowers each by 0.04 to 0.05, the dark label by 0.25. The model C floor on a grain dot,
+  computed: intel 4.65, defense 4.63, vuln 4.65. In Chrome's accessibility tree the lead quote reads
+  "OVERVIEW", then its text, and nothing else.
+  (**Partly superseded by:** 2026-11-20 · The machine overview takes the callout header and a lime
+  edge, and the section intros stay as they are: the label sits `.45rem` above the text now, not
+  `.3rem`, so everything below the lead is 24.8px lower against no label, not 22.4px.)
+- **Status:** Adopted 2026-11-20, chosen in a live preview of Busqueda in both themes.
+
 ### 2026-11-18 · Code blocks share one colour system: token roles in every language, commands by position
 - **Supersedes:** 2026-06-15 · Command-highlight palette rebuilt on a principled OKLCH basis (+ bold
   weight) and 2026-06-14 · Code-block command highlighting by semantic category, both moved to
@@ -31,6 +341,9 @@
   pkexec wear the vuln callout's magenta (`#ff4d9d` / `#b70066`), bold. Markup blocks read tag names as
   keywords and attribute names as flags. The nine `.ec-cmd-*` rules leave the unlayered tail (17 rules
   to 8), and Unified's LinPEAS listing becomes a `text` fence.
+  (**Partly superseded by:** 2026-11-20 · Second-pass colour follow-ups: light callout inks and sudo
+  deepen, the light reading line takes the h2 rule's pair, the machine overview names itself: the light
+  magenta is `#b00061` now.)
 - **Why:** the category palette coloured commands from name lists (curl and ssh as network, ls and cat
   as inspection), so every new tool needed a list entry and an unlisted one kept the theme's token
   colour. The themes paint one kind of token in several colours depending on the grammar (tokyo-night
@@ -41,6 +354,9 @@
   role now clears 5:1 but the magenta (4.94:1). The CSS could move into a layer because the tail's
   premise was false: in a build test the layered rules computed identically on every code span of
   Busqueda, Return and n0s4n1ty-1 in both themes, which answers the ROADMAP question.
+  (**Partly superseded by:** 2026-11-20 · Second-pass colour follow-ups: light callout inks and sudo
+  deepen, the light reading line takes the h2 rule's pair, the machine overview names itself: the
+  magenta reads 5.24:1 now, so every light role clears 5:1, the magenta included.)
 - **Rejected:** keeping the category hues inside the new system (per the owner, the names are no longer
   needed once commands are found by position); sudo in the command sand (the magenta appears a few
   times a page and ties privilege to the vuln callout, so it does not shout); the Semantic scheme (its
@@ -66,7 +382,8 @@
   `##` marker. On dark the TOC's current h3 entry follows it (desktop rung, phone rail and wash, phone
   strip label, focus ring); on paper the rung keeps `--tp-cyan-ink` (`#08697a`), the same hue a step
   deeper, because the heading's ink reads 4.32:1 as 13px text on the darkest grid dot (model C) and
-  4.44:1 on the phone panel's 6% wash. The lede bar
+  4.44:1 on the phone panel's 6% wash, and the strip label stays the ink there (2026-10-25 · The bar's
+  glass thins and frosts over, and what sits on it turns full contrast). The lede bar
   is a 3px vertical gradient between two opaque greens (dark `#aadf5b` to `#6eab59`, light `#81a749` to
   `#a1c88e`), painted under a transparent border over a lighter wash (dark 4% accent, light 6%
   `--tp-lime-ink` into `#f4f1e8`). Inline code turns ice: dark `#b0d9e4` on the same white lift, light
@@ -357,15 +674,21 @@
 - **Why:** the owner tuned the glass to these values (2026-10-24). The thinner tint lets a screenshot under
   the bar show through: modelled before any change, the muted grey fell from 2.75 to 2.02:1 over pure white
   on dark and from 3.58 to 2.47:1 over pure black on paper. Offered a thicker tint to hold 3:1, the owner
-  kept the glass and raised the foreground instead (2026-10-24). GitHub and the theme were first left
-  muted as sitting over the right column, which holds only from 72rem: on a writeup from 800px to about
-  1100px the article column lies under them, where muted they measured 2.08 and 2.43:1 on dark and 2.56
-  and 2.89:1 on paper. Offered ink below 72rem only, the owner chose ink at every width (2026-10-25).
+  kept the glass and raised the foreground instead (2026-10-24). That brief named the strip's section
+  name itself: on dark it keeps its rung, and "on paper it moves to ink", held to 4.5:1. GitHub and the
+  theme were first left muted as sitting over the right column, which holds only from 72rem: on a
+  writeup from 800px to about 1100px the article column lies under them, where muted they measured 2.08
+  and 2.43:1 on dark and 2.56 and 2.89:1 on paper. Offered ink below 72rem only, the owner chose ink at
+  every width (2026-10-25).
 - **Rejected:**
   - A thicker tint, 80% on dark and 73% on paper, the lowest that held the grey at 3:1 (owner, 2026-10-24).
   - Ink for GitHub and the theme below 72rem only, muted over the right column above it (owner,
     2026-10-25).
   - GitHub and the theme left muted, at 2.1 to 2.9:1 between 800 and 1100px (owner, 2026-10-25).
+  - The strip's name on paper in its TOC rung (the lime ink, cyan ink and deep gold the panel shows):
+    over a black terminal under the glass they read 2.32, 2.20 and 4.09:1 against the ink's 6.15 (owner,
+    2026-10-24). Asked again on 2026-11-19, the owner kept the ink, over the rung inks and over deeper
+    ones that hold 4.5:1 (`#1f3800`, `#013741`, `#422e00`).
 - **Known:** the name keeps its fade, a logotype: its start reads 6.39:1 or more over the worst areas, and
   its lime end on paper is held to no text bar. On dark the flag's gold is the tightest rung, 4.59:1 over
   pure white. The source writes `-webkit-backdrop-filter`, but the build's minifier drops it (lightningcss
@@ -738,6 +1061,10 @@
   `requestAnimationFrame`, recomputed on resize and whenever the page's height changes (a
   `ResizeObserver` on `body`, so a spoiler or ToggleAll moves it). The PageSidebar override renders it
   beside TocTracking.
+  (**Partly superseded by:** 2026-11-20 · Second-pass colour follow-ups: light callout inks and sudo
+  deepen, the light reading line takes the h2 rule's pair, the machine overview names itself: on paper
+  the line runs `--tp-deco-lime` to `--tp-deco-cyan`, `#6fae00` to `#0a9ec2`, the h2 rule's own pair;
+  the line stands.)
 - **Why:** the owner picked the hairline carrying the reading progress as a detail to pursue
   (2026-10-18). The old bar was a 2px strip along the top of the window on every Starlight page, a
   landing included, sized by an untyped inline `head` script in `astro.config.mjs` that set its width,
@@ -938,6 +1265,10 @@
   HUD's hover and active links and the pull quote's emphasis; its light `--cyan` becomes `#08697a`, the
   theme pass's `--tp-cyan-ink`, and its light `--muted` `#515c59`, hue held and lightness dropped. Every
   new rule is light only.
+  **Partly superseded by:** 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per
+  chain, one dossier vocabulary, specifically "AttackPath's done run": on light the lime ink now sets the
+  lit run, the technique of the hop that reached the current node, while done runs keep their bold in the
+  quiet grey. The ink, its other consumers and its figures stand, so this entry stays live.
 - **Why:** on paper the accent `#4d7c0f` reads 4.11:1 against the page as small text (model B), under AA,
   wherever it set text: the current h2 (4.11), the 404 marks (4.11), AttackPath's done run (4.27 on the
   `#f2ede0` panel, model C median), the `/secret/` chip (3.28 on its own 16% lime tint, model C median),
@@ -1044,11 +1375,17 @@
   **Partly superseded by:** 2026-11-18 · Code blocks share one colour system: token roles in every
   language, commands by position. The magenta stands, now on `.cx-priv` in `@layer chrome` without
   `!important`, and on su, doas, runas and pkexec as well as sudo.
+  (**Partly superseded by:** 2026-11-20 · Second-pass colour follow-ups: light callout inks and sudo
+  deepen, the light reading line takes the h2 rule's pair, the machine overview names itself: the light
+  magenta is `#b00061` now, still the vuln label's own ink.)
 - **Why:** light code frames paint `--ec-frm-edBg` `#e6dfd0` (`chrome.css`), not one-light's `#fafafa`, and
   every light figure on record was taken against `#fafafa`, which no frame shows. On the real frame the old
   sudo read 4.22:1 (model B), under AA, in the one token a reader is meant to notice before pasting the
   line. `#b70066` reads 4.94:1, and on paper sudo and the vuln callout's label become one magenta for
   privilege and the dangerous path, the meaning the callout borrowed it for (2026-09-28).
+  (**Partly superseded by:** 2026-11-20 · Second-pass colour follow-ups: light callout inks and sudo
+  deepen, the light reading line takes the h2 rule's pair, the machine overview names itself: sudo reads
+  `#b00061` now, 5.24:1 on the frame; one magenta for privilege stands.)
 - **Rejected:** keeping light sudo inside the anchor: the 5.4:1 that justified it described a background
   that does not render.
 - **Verified:** production build, green at 67 pages. On `#e6dfd0` (model B): sudo 4.94, recon 6.08, net
@@ -1057,6 +1394,9 @@
   **Partly superseded by:** 2026-11-18 · Code blocks share one colour system: token roles in every
   language, commands by position. Recon, net and inspect are gone with their figures. On the frames as
   they render today the magenta reads 4.9:1 on paper (`#e5decf`) and 5.4:1 on ink (`#1c1d28`, model B).
+  (**Partly superseded by:** 2026-11-20 · Second-pass colour follow-ups: light callout inks and sudo
+  deepen, the light reading line takes the h2 rule's pair, the machine overview names itself: light sudo
+  reads 5.24:1 on the code frame now, not 4.94 or 4.9; dark is unchanged.)
 - **Status:** Adopted; committed to `dev` on 2026-10-11 as
   `fix(highlighting): light sudo reads the vuln callout's magenta`.
 
@@ -1562,6 +1902,10 @@
   **Partly superseded by:** 2026-11-18 · Code blocks share one colour system: token roles in every
   language, commands by position. Sudo's class is `.cx-priv` now (`chrome.css`); the magenta and its
   meaning stand.
+  (**Partly superseded by:** 2026-11-20 · Second-pass colour follow-ups: light callout inks and sudo
+  deepen, the light reading line takes the h2 rule's pair, the machine overview names itself: on light,
+  intel, defense and vuln read `#6d518f`, `#006a44` and `#b00061` now, one step deeper at the same hue;
+  the five voices and the other inks stand.)
 - **Why:** intel and vuln were byte-identical to the PicoCTF and VulnHub sidebar dots and badge chips, so on
   a desktop writeup, and beside the platform chip on those platforms' own writeups, a box's colour made a
   platform claim it does not mean. Recon's and loot's matches mean the same thing, so they stay. On paper
@@ -1591,6 +1935,10 @@
   callout 4.93:1 and up in both themes, dark labels 6.06:1 and up on their tints; bold 8.0:1 and up and the
   model C floor on a grain dot, 4.38 to 4.63, are computed. The light column rule is `#008f9a`, 3.11:1 on
   the recon tint.
+  (**Partly superseded by:** 2026-11-20 · Second-pass colour follow-ups: light callout inks and sudo
+  deepen, the light reading line takes the h2 rule's pair, the machine overview names itself: the label
+  figures and the model C floor describe the old intel, defense and vuln inks; the five labels read 5.04
+  to 5.10:1 on their own tint now, and 4.61:1 or more on a grain dot.)
 - **Status:** Adopted.
 
 ### 2026-09-23 · The AttackPath dossier is one stacked label/value grid, `via` is reserved, and the goal step wears gold
@@ -1602,6 +1950,9 @@
 - **Supersedes in part:** 2026-07-19 · AttackPath: a guided, data-driven infographic for linear
   privilege-escalation chains. Only "accent on nodes/dots/next" in its A11y bullet, for the dots: a dot's
   focus ring now runs the green-to-gold ramp to the gold ink. Nodes and the Next control keep the accent.
+  **Partly superseded by:** 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per
+  chain, one dossier vocabulary, specifically the dot's focus ring on the ramp: the dots are
+  `aria-hidden` and take no focus now.
 - **Decision:** a dossier panel is ONE `<dl>`, every row a label/value pair: kind and name, the `via` edge,
   then the details. Every panel is laid out at once in the same grid cell, the inactive ones
   `visibility: hidden` and `user-select: none` with the `hidden` attribute kept, and each panel is a
@@ -1612,6 +1963,10 @@
   turns gold at the goal. The dots take their place on the meter bar's green-to-gold ramp from `--t`,
   mixed in sRGB (the gradient's own space), future dots stay grey, and the bar's gradient spans the whole
   track, so its leading edge is the current dot's colour and gold arrives only at the goal.
+  **Partly superseded by:** 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per
+  chain, one dossier vocabulary, specifically the meter bar and its gradient, with "as the bar's end is"
+  in Cost: there is no bar, and the dots keep the ramp on their own. The grid, the `via` rule and the
+  gold goal stand, so this entry stays live.
 - **Why:** rows read as misaligned, and the rule is that hierarchy between rows comes from colour, weight,
   size and presence, never from position. The head, the `via` line and the details were three layout
   systems that started one panel's values at up to three x positions, 12.3 to 27.1px apart, with the
@@ -1632,6 +1987,10 @@
 - **Also:** the step count and the other panels' kind labels read `--sl-color-accent-high` on light (8.22:1),
   the carve-out the Next control and the active node's kind label already carry. Content: Return's `via`
   rows are now `leak` and `trigger`, Forest's `crack` and `shell`.
+  **Partly superseded by:** 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per
+  chain, one dossier vocabulary, specifically the label names in its last sentence: every detail row now
+  takes the shared set, so Return's `leak` and `trigger` and Forest's `crack` are `how`, and Forest's
+  `shell` is `gain`, with its `user.txt` moved to a `flag` row of its own.
 - **Cost:** a short panel leaves empty space under it, since the dossier holds its tallest panel's height
   (Return's is 182px at 320). Chrome 111 to 116, inside the build's floor, lack subgrid and keep per-panel
   columns: rows still align and nothing moves vertically, only the seam can shift between steps. On light
@@ -1764,6 +2123,9 @@
   cuts the glyphs, 18px at 205 and 44 at 180 on the Bandit pages and the landings, about 3px on the
   HackTheBox writeups); the table-of-contents toggle 5.2px past the viewport and the AttackPath meter
   28.8px past it, both with simulated magnitudes (re-filed below with the measured ones).
+  **Partly superseded by:** 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per
+  chain, one dossier vocabulary, specifically "about 3px on the HackTheBox writeups" for the wordmark:
+  with no meter to widen their header, the writeups cut it as the Bandit pages do.
 - **Re-filed against the widths they fail at, in ROADMAP:** the landings' writeup cards, cut by the
   `body:has(.pi-index)` clip with no horizontal scroll, 8px at 288 (125 percent), 25 at 271, 56 at 240,
   91 at 205 and 116 at 180, the platform-name box by 5 at 271, 36 at 240, 71 at 205 and 96 at 180 while
@@ -1780,6 +2142,10 @@
   propagates to the viewport and offers no scroll; the wordmark and terminal cuts above. Only the
   landings' clip is inside scope; the rest sit below the floor of 2026-09-19 · The supported floor is a
   320px viewport, and the landings' clip is the one exception, which leaves About and home open.
+  **Partly superseded by:** 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per
+  chain, one dossier vocabulary, specifically the AttackPath meter, whose 92px bar set the writeups'
+  scroll width to 220px, and the table-of-contents toggle that stretched to it: the bar is gone and the
+  writeups no longer scroll at 205 or 180. The rest of the list stands.
 - **Why retire rather than fix:** the thirteen describe no state a Chrome reader can reach, and nothing
   in the four re-filed is caused by a unit, so the unit refactor these items were meant to justify would
   change none of it; what would is a layout for 240 to 288px or a
@@ -1809,6 +2175,10 @@
   nowrap meter, not a unit, so a floor below 320 is a design decision for the retune (a 240 to 288px
   layout for the card grids, the password row and the landings), not a correction, and it is not taken
   here.
+  **Partly superseded by:** 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per
+  chain, one dossier vocabulary, specifically the writeups' sideways scroll at 175 and 200 (15px and 40,
+  set by the AttackPath meter, with the toggle stretching to it): the bar is gone and the writeups hold
+  the viewport there, as the Bandit pages do. The other rungs stand.
 - **The exception:** `body:has(.pi-index) { overflow-x: clip }`, the pair that stops the landings'
   sideways wobble, converts a zoom overflow into lost content from 125 percent, cards cut by 8px at 288,
   25 at 271 and 56 at 240 with nothing scrolling. Silent truncation is a different category of failure
@@ -3152,6 +3522,11 @@
   2. **AttackPath internals read at about 0.533 of body size,** confirmed too small, and `.ap-panel-head`
      declares no font-size at all so the dossier's largest text inherits `--prose-size` while its siblings
      sit at 11.52px and 11.2px.
+     **Partly superseded by:** 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per
+     chain, one dossier vocabulary, specifically "about 0.533 of body size": the smallest AttackPath text
+     is 11px now (0.61 of the 18px body), its names 14 to 16px and its dossier values 14px. The
+     `.ap-panel-head` this item names went with 2026-09-23 · The AttackPath dossier is one stacked
+     label/value grid, `via` is reserved, and the goal step wears gold.
   3. **The HackTheBox and VulnHub platform-index eyebrows fail WCAG AA on paper:** 4.11:1 and 4.16:1
      measured by canvas readback on the real element, as 12.8px body text needing 4.5:1. PicoCTF passes at
      4.86:1 and OverTheWire was fixed by the amber pair. This is a real accessibility failure shipping
@@ -3641,6 +4016,9 @@
   marks only ONE node, so a screen reader heard an undifferentiated list of names. Each node and dot now
   carries the state word in its accessible name ("Web nginx, completed"), with the visible label still inside
   it so WCAG 2.5.3 Label in Name holds.
+  **Partly superseded by:** 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per
+  chain, one dossier vocabulary, specifically "Each node and dot": the dots are `aria-hidden` and carry
+  no name now; every node keeps the state word.
 - **Touch:** the track had `overscroll-behavior-x: auto`, so flicking past either end chained to the page and
   could fire the browser's back-navigation gesture, throwing a reader off the writeup. Now `contain`.
 - **Three smaller ones:** an over-long `kind` ran underneath the absolutely-positioned check glyph (now
@@ -3648,6 +4026,10 @@
   advances and would have spuriously animated if a reader enabled motion mid-session, contradicting its own
   code comment (now self-clears on `animationend`); and `--t` serialised 17 significant digits into every
   node's style attribute (now rounded to 4, far below one device pixel of the 52px it interpolates).
+  **Partly superseded by:** 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per
+  chain, one dossier vocabulary, specifically the `is-enter` dossier class and its `animationend`
+  self-clear: the values roll on `is-entering` and `is-leaving`, which a timer clears. The other two
+  fixes stand.
 - **A regression the audit caught in its own fix (worth recording):** adding `html[data-theme='light']` to the
   active-kind selector raised its specificity above the later `.is-goal[data-state='active']` gold rule, which
   silently turned the GOAL's kind label green. Caught by asserting the computed colour equals the gold token
@@ -3660,6 +4042,11 @@
   instance holding focus; `box-sizing: border-box` so the `is-start` border shifts nothing; performance is
   **6.1ms per advance** on the longest chain with no page-scroll side effect; `centre()` clamps correctly at
   both ends; zero ungated animation declarations.
+  **Partly superseded by:** 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per
+  chain, one dossier vocabulary, specifically "`centre()` clamps correctly at both ends" and the 6.1ms
+  per advance, both measured on code that is gone: the camera rests on `cameraLeft()`, clamped to the
+  strip, and an advance now runs as a `requestAnimationFrame` loop, not re-timed. The rest of the list
+  stands.
 - **Verified after the fixes, both themes:** every node state and all chrome text returns **belowAA: []**
   (light and dark), the goal keeps its gold identity in every state, focus is retained at the end of the
   chain, reduced motion still advances as a static state machine with no runner, no bloom and no stale class,
@@ -3756,6 +4143,10 @@
   siblings would steal a neighbour's overlap; the row gap was nudged 0.42rem to 0.7rem for the room. The dots
   are a redundant control (every step is also reachable by its full-size node, the Next button, and the arrow
   keys), so the cluster stays compact by design.
+  **Partly superseded by:** 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per
+  chain, one dossier vocabulary, specifically the layout-neutral `::after` on a focusable 7px dot whose
+  ring stays 7px, and the 0.7rem row gap: the target is the 14 by 24px `aria-hidden` span itself, outside
+  the tab order, in a row gapped `0 10px`. The tiling and the dots being a redundant control stand.
 - **Return instance (a deliberate different-shaped test, not just reuse):** a 5-node chain
   (`Printer Panel -> svc-printer -> Server Operators -> vss (LocalSystem) -> SYSTEM`) exercises what Forest's
   6-node chain did not: a shorter chain (escalation recomputed, rise 24, angle -12.2deg), a non-account START
@@ -3899,6 +4290,11 @@
   **Partly superseded by:** 2026-09-23 · The AttackPath dossier is one stacked label/value grid, `via` is
   reserved, and the goal step wears gold, specifically "accent on nodes/dots/next" for the dots: a dot's
   ring now runs the green-to-gold ramp to the gold ink. Nodes and the Next control keep the accent.
+  **Partly superseded by:** 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per
+  chain, one dossier vocabulary, specifically the dots as real `<button>`s with a focus ring and the
+  dossier as an `aria-live="polite"` region: the dots are `aria-hidden` spans outside the tab order, and
+  a separate polite status line says each step. Nodes and the Next control stay real buttons, and the
+  rest of this bullet stands.
 - **Reduced motion:** every one of the 11 transition/animation declarations sits inside
   `@media (prefers-reduced-motion: no-preference)` (verified programmatically: zero ungated). The JS reads
   `matchMedia` at interaction time, not once at load, so a mid-session change is honoured; under reduce there
@@ -3941,6 +4337,9 @@
   3. Node done/active fills and the meter were reworked to `color-mix` derivations off the accent into the
      panel surface (the callout / FlagCapture-hover idiom), giving a tint crescendo active 12% > done 7% >
      future none, with non-colour cues (scale, glow, the check glyph) carrying state alongside colour.
+     **Partly superseded by:** 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per
+     chain, one dossier vocabulary, specifically "and the meter": there is no bar left to tint. The node
+     fills stand.
   4. The edge fade-masks faded to `--sl-color-black`. Now they dissolve into `--ap-surface` (the alias
      flips per theme), so "there is more path" reads as content running under the panel edge, not fading
      to black. Made the dark surface a SOLID color (the opaque equivalent of the Toggle's

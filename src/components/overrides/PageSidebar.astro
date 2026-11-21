@@ -2,11 +2,13 @@
 // src/components/overrides/PageSidebar.astro
 //
 // Additive override of Starlight's right "On this page" sidebar (approved pattern, see CORE_SPEC
-// "Starlight Component Overrides"). It renders Starlight's Default PageSidebar unchanged and adds the
-// ToggleAll control AFTER it, so the control sits at the BOTTOM of the sticky right column as a
-// de-emphasized tertiary utility (below the TOC links in the reading order and visual weight). It
-// follows scroll and appears on pages with two or more content toggles; ToggleAll self-hides below that
-// (nothing on a zero- or single-toggle page, where a bulk expand/collapse adds nothing).
+// "Starlight Component Overrides"). On a page whose lead quote is a goal it first names the TOC's first
+// entry Goal (below, and DECISIONS 2026-11-21 · The lead quote reads Goal or Overview from the page, and
+// the TOC's first entry follows). Then it renders Starlight's Default PageSidebar and adds the ToggleAll
+// control AFTER it, so the control sits at the BOTTOM of the sticky right column as a de-emphasized
+// tertiary utility (below the TOC links in the reading order and visual weight). It follows scroll and
+// appears on pages with two or more content toggles; ToggleAll self-hides below that (nothing on a zero-
+// or single-toggle page, where a bulk expand/collapse adds nothing).
 //
 // Desktop only: the wrapper uses Starlight's own utilities (sl-hidden / lg:sl-block), so it is hidden
 // below the lg breakpoint where the right sidebar collapses into the mobile "On this page" dropdown.
@@ -18,6 +20,34 @@ import Default from '@astrojs/starlight/components/PageSidebar.astro';
 import ToggleAll from '@components/ToggleAll.astro';
 import TocTracking from '@components/TocTracking.astro';
 import ReadingProgress from '@components/ReadingProgress.astro';
+import { render } from 'astro:content';
+
+// The TOC's first entry is Starlight's own #_top link, labelled from the tableOfContents.overview UI
+// string, so no remark plugin can reach it. On a page whose lead quote is a goal it reads Goal: the
+// verdict comes from plugins/remark-transform-lead.mjs as leadKind, read back through render(entry),
+// Astro's documented route for plugin frontmatter. On Bandit and PicoCTF the TOC then opens Goal,
+// Approach, Why it works: the template itself.
+//
+// It is set HERE, before <Default /> renders, because Default is the one component that prints TOC
+// text: it renders both the mobile and the desktop TOC, and Page and TwoColumnContent only test that a
+// TOC exists (Starlight 0.41.10; CORE_SPEC's upgrade path re-checks this). Starlight attaches a deep
+// copy of the route data to each page, so the change cannot reach another page. The _top test means a
+// Starlight change cannot rename a different entry. The path test keeps render() off every
+// non-platform page (this site's 404 has no TOC at all) and names the same four directories as the
+// plugin: keep the two in step.
+//
+// A Starlight route data middleware gave byte-identical pages and was rejected as a new mechanism for
+// the same result (DECISIONS 2026-11-21). It is the fallback if a TOC ever renders outside this
+// component.
+const LEAD_PAGE = /\/docs\/(?:hackthebox|vulnhub|picoctf|overthewire)\//;
+const { toc: leadToc, entry: leadEntry } = Astro.locals.starlightRoute;
+const topLink = leadToc?.items[0];
+const leadFilePath: string = leadEntry.filePath ?? '';
+if (topLink !== undefined && topLink.slug === '_top' && LEAD_PAGE.test(leadFilePath)) {
+  const { remarkPluginFrontmatter } = await render(leadEntry);
+  const leadKind: unknown = remarkPluginFrontmatter['leadKind'];
+  if (leadKind === 'goal') topLink.text = 'Goal';
+}
 ---
 
 <Default><slot /></Default>

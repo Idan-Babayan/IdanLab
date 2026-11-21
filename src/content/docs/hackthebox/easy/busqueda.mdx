@@ -471,10 +471,10 @@ The whole path in one breath: Searchor 2.4.0 evaluates whatever I type into the 
 <AttackPath
   title="Attack Path · searcher.htb"
   nodes={[
-    { kind: 'Web', name: 'Searcher', detail: [ { k: 'port', v: '<code>80/tcp</code> Apache fronting a Flask app' }, { k: 'flaw', v: 'Searchor 2.4.0 passes the query to <code>eval()</code>' } ] },
-    { kind: 'User', name: 'svc', edge: '<b>eval()</b> injection', detail: [ { k: 'shell', v: 'reverse shell landing in <code>/var/www/app</code>' }, { k: 'flag', v: '<code>user.txt</code> in <code>/home/svc</code>' } ] },
-    { kind: 'Account', name: 'cody (Gitea)', edge: 'leaks <b>.git/config</b>', detail: [ { k: 'reuse', v: 'the same password logs <code>svc</code> in over SSH' }, { k: 'sees', v: 'only <code>cody/Searcher_site</code>, never <code>scripts</code>' } ] },
-    { kind: 'Account', name: 'administrator', edge: 'reuses the <b>DB password</b>', detail: [ { k: 'source', v: 'svc runs <code>docker-inspect</code> as root' }, { k: 'opens', v: 'the private <code>administrator/scripts</code> repo' } ] },
+    { kind: 'Web', name: 'Searcher', detail: [ { k: 'role', v: '<code>80/tcp</code> Apache fronting a Flask app' }, { k: 'flaw', v: 'Searchor 2.4.0 passes the query to <code>eval()</code>' } ] },
+    { kind: 'User', name: 'svc', edge: '<b>eval()</b> injection', detail: [ { k: 'gain', v: 'reverse shell landing in <code>/var/www/app</code>' }, { k: 'flag', v: '<code>user.txt</code> in <code>/home/svc</code>' } ] },
+    { kind: 'Account', name: 'cody (Gitea)', edge: '<b>.git/config</b> leak', detail: [ { k: 'how', v: 'the same password logs <code>svc</code> in over SSH' }, { k: 'gain', v: 'read of <code>cody/Searcher_site</code> only, not the <code>scripts</code> repo' } ] },
+    { kind: 'Account', name: 'administrator', edge: '<b>DB password</b> reuse', detail: [ { k: 'how', v: 'svc runs <code>docker-inspect</code> as root' }, { k: 'gain', v: 'the private <code>administrator/scripts</code> repo' } ] },
     { kind: 'Root', name: 'root', edge: '<b>relative-path hijack</b>', detail: [ { k: 'flaw', v: '<code>full-checkup</code> runs <code>./full-checkup.sh</code>' }, { k: 'flag', v: '<code>root.txt</code>' } ] },
   ]}
 />

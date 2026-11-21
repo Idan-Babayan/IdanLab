@@ -331,11 +331,21 @@ html[data-theme="dark"] {
   --tp-name-to: #9fef00;
   --tp-search-border: rgba(255, 255, 255, 0.16);
   --tp-hud-muted: #79857f;
-  /* The full-contrast ink for every word and glyph on the glass but the name, in the bar and the phone
-     strip (owner, 2026-10-24): a screenshot under the thin glass can be their backdrop. The name's start
-     colour, so #e9f1ee on dark and the editorial ink on paper. Declared once; it follows the theme
-     through --tp-name-from. */
+  /* The full-contrast ink for every word and glyph on the glass but the name (and, on dark, the strip's
+     section name, which keeps its rung), in the bar and the phone strip (owner, 2026-10-24): a
+     screenshot under the thin glass can be their backdrop. The name's start colour, so #e9f1ee on dark
+     and the editorial ink on paper. Declared once; it follows the theme through --tp-name-from. */
   --tp-hud-ink: var(--tp-name-from);
+  /* The lead label's icons (2026-11-21), one per kind and theme, read by the lead label rule in
+     prose.css as a background image. Each carries the label's colour written into it (the goal's in
+     its strokes and fills), because a background image cannot take currentColor: #b6ff3c is
+     --sl-color-accent on dark, #3e6700 is --tp-lime-ink on paper. Change either token and change every
+     colour in all four values. --lead-icon-overview is Starlight's own open-book path
+     (components-internals/Icons.ts), moved here unchanged from prose.css.
+     Goal glyph: a dart in the bullseye, from the same family as the callout glyphs (24 grid, 2-unit
+     lines, sharp joins, solid accents). The rings open where the dart enters. */
+  --lead-icon-overview: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23b6ff3c'%3E%3Cpath d='M21.17 2.06A13.1 13.1 0 0 0 19 1.87a12.94 12.94 0 0 0-7 2.05 12.94 12.94 0 0 0-7-2 13.1 13.1 0 0 0-2.17.19 1 1 0 0 0-.83 1v12a1 1 0 0 0 1.17 1 10.9 10.9 0 0 1 8.25 1.91l.12.07h.11a.91.91 0 0 0 .7 0h.11l.12-.07A10.899 10.899 0 0 1 20.83 16 1 1 0 0 0 22 15V3a1 1 0 0 0-.83-.94ZM11 15.35a12.87 12.87 0 0 0-6-1.48H4v-10c.333-.02.667-.02 1 0a10.86 10.86 0 0 1 6 1.8v9.68Zm9-1.44h-1a12.87 12.87 0 0 0-6 1.48V5.67a10.86 10.86 0 0 1 6-1.8c.333-.02.667-.02 1 0v10.04Zm1.17 4.15a13.098 13.098 0 0 0-2.17-.19 12.94 12.94 0 0 0-7 2.05 12.94 12.94 0 0 0-7-2.05c-.727.003-1.453.066-2.17.19A1 1 0 0 0 2 19.21a1 1 0 0 0 1.17.79 10.9 10.9 0 0 1 8.25 1.91 1 1 0 0 0 1.16 0A10.9 10.9 0 0 1 20.83 20a1 1 0 0 0 1.17-.79 1 1 0 0 0-.83-1.15Z'/%3E%3C/svg%3E");
+  --lead-icon-goal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b6ff3c' stroke-width='2' stroke-linejoin='miter' stroke-linecap='butt'%3E%3Cpath d='M18.825 11.337A8 8 0 1 1 12.663 5.175'/%3E%3Cpath d='M15.5 13A4.5 4.5 0 1 1 11 8.5'/%3E%3Ccircle cx='11' cy='13' r='1.75' fill='%23b6ff3c' stroke='none'/%3E%3Cpath d='M11 13 16.6 7.4'/%3E%3Cpath d='M16 5v3h3l3-3h-3V2z' fill='%23b6ff3c' stroke='none'/%3E%3C/svg%3E");
 }
 
 /* ── Accent + surfaces: LIGHT (warm paper, darkened accents) ── */
@@ -432,6 +442,9 @@ html[data-theme="dark"] {
   --tp-name-to: #62a011;
   --tp-search-border: rgba(60, 50, 30, 0.26);
   --tp-hud-muted: #515c59;
+  /* The lead label's icons on paper: the same two, with #3e6700 (--tp-lime-ink) in every colour. */
+  --lead-icon-overview: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%233e6700'%3E%3Cpath d='M21.17 2.06A13.1 13.1 0 0 0 19 1.87a12.94 12.94 0 0 0-7 2.05 12.94 12.94 0 0 0-7-2 13.1 13.1 0 0 0-2.17.19 1 1 0 0 0-.83 1v12a1 1 0 0 0 1.17 1 10.9 10.9 0 0 1 8.25 1.91l.12.07h.11a.91.91 0 0 0 .7 0h.11l.12-.07A10.899 10.899 0 0 1 20.83 16 1 1 0 0 0 22 15V3a1 1 0 0 0-.83-.94ZM11 15.35a12.87 12.87 0 0 0-6-1.48H4v-10c.333-.02.667-.02 1 0a10.86 10.86 0 0 1 6 1.8v9.68Zm9-1.44h-1a12.87 12.87 0 0 0-6 1.48V5.67a10.86 10.86 0 0 1 6-1.8c.333-.02.667-.02 1 0v10.04Zm1.17 4.15a13.098 13.098 0 0 0-2.17-.19 12.94 12.94 0 0 0-7 2.05 12.94 12.94 0 0 0-7-2.05c-.727.003-1.453.066-2.17.19A1 1 0 0 0 2 19.21a1 1 0 0 0 1.17.79 10.9 10.9 0 0 1 8.25 1.91 1 1 0 0 0 1.16 0A10.9 10.9 0 0 1 20.83 20a1 1 0 0 0 1.17-.79 1 1 0 0 0-.83-1.15Z'/%3E%3C/svg%3E");
+  --lead-icon-goal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233e6700' stroke-width='2' stroke-linejoin='miter' stroke-linecap='butt'%3E%3Cpath d='M18.825 11.337A8 8 0 1 1 12.663 5.175'/%3E%3Cpath d='M15.5 13A4.5 4.5 0 1 1 11 8.5'/%3E%3Ccircle cx='11' cy='13' r='1.75' fill='%233e6700' stroke='none'/%3E%3Cpath d='M11 13 16.6 7.4'/%3E%3Cpath d='M16 5v3h3l3-3h-3V2z' fill='%233e6700' stroke='none'/%3E%3C/svg%3E");
 }
 } /* @layer tokens (dark + light surface tokens move atomically) */
 

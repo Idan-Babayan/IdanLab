@@ -3,7 +3,7 @@
 > **Status:** living document. This is the canonical reference for the Idan.Lab project.
 > Update it whenever a durable fact changes. If something here conflicts with a chat,
 > THIS FILE WINS. Volatile work lives in `ROADMAP.md`; rationale lives in `DECISIONS.md`.
-> Last updated: 2026-11-18 (the light `open` / `Enabled` code role shares the string green, the code colour figures sit on the code frame, an upgrade checks that every code character still takes a role, and the colour passes' rejections are recorded here; on dark the TOC's current h3 entry follows the soft h3 on desktop, in the phone panel and strip and in its focus ring, while paper keeps the deeper cyan ink; code blocks share one colour system: every token takes a role from its theme colour pair, a transcript reads as prompt, commands found by position and plain output with only its evidence coloured, the privilege group keeps the vuln magenta, and the category rules leave the unlayered tail, 17 rules to 8; writeup prose lowers its energy: the h3 reads a soft cyan of its own, the lede's bar fades between two opaque greens over a lighter wash, and inline code turns ice; Expand all and Collapse all keep the reader's line in place: every toggle above the first line under the header opens or closes out of view, and on Collapse all a toggle the reader was inside lands where a TOC click lands a heading; on 2026-10-25, the glass's ramp animates one number, `--tp-frost`, so no theme value sits in its keyframes, where WebKit had left the glass transparent after a theme switch or a return to Safari on iOS, and it now holds on the owner's iPhone; the bar's glass is thinner and stronger and frosts over in 36px, its values tokens; everything on the glass but the name reads full contrast, so a screenshot under the bar no longer drowns the search, the icons or the phone strip; on 2026-10-24, the phone "On this page" is the Quiet strip: 38px, the current entry named in its heading's colour, the panel numbered on the page colour with a rail on the current entry; page titles balance their lines; the search box's key chips hide where nothing can hover; Chrome for Android's status bar takes the theme's page colour on a phone in light mode; on a phone: on iOS Safari the strip above the bar is the page colour, not the page scrolling, the bar now giving Safari a colour and the film grain lying off its top edge; the reading hairline hides under the open menu and, beside the sidebar from 50rem, spans only the strip; the bar keeps its room for the menu button after an image zoom; the flag's "Copied!" pill takes the label's row, clear of a wrapped flag; on 2026-10-23, Starlight's header is the quiet bar: the HUD's height, clear at the top and frosted once scrolled, the name in Syne at 21px, every other word in the HUD's mono capitals, the search in Starlight's own place on the article column's edge, GitHub and a one-click theme button at the right, the one replacing override; the reading hairline fills on writeups only, from a typed component; home's masthead lockup sits on the bar's centre; on 2026-10-17, writeup screenshots take the code frames' edge, the difficulty chip answers the pointer, About's bar links CONTACT, and identity links tie the site to the owner's profiles; on 2026-10-05, the landing hero's glow stays in its own pane on a desktop and shows no hard edge at any width; callouts are no longer unnamed landmarks; landing card titles sit one level under the page title; the mobile "On this page" check wears its entry's colour; site search keeps no image as a field and ranks each Bandit page first however it is typed, bar two routes and two logins that Pagefind cannot tell from other levels; on 2026-10-03, site search no longer indexes the flags and passwords the pages hide; the decode headlines give a screen reader the settled word; the current "On this page" entry keeps its colour under the pointer on desktop and mobile; Syne's fallback is one face per weight, so the headline no longer jumps when the font arrives; a captured flag's spent button and the toggle-all control announce the truth; reduced motion stops the marketing pages' smooth scroll; the pressed filter pill's focus ring stands apart; the secret terminal's dim labels reach AA; dead CSS deleted and stale counts refreshed; on 2026-10-02, tool output in the writeups no longer dates the runs; on 2026-10-01, decorative characters keep their look and say only what they mean, and a build guard checks part of it; About is in site search for its owner, not for the writeups' topics; the marketing pages gain a skip link, a main landmark and `color-scheme`, and About's theme toggle reports its state; the writeup badge row names each fact for a screen reader; on 2026-09-30, sidebar entries that name what each platform holds, and About's practice cards split 2 + 2).
+> Last updated: 2026-11-21 (one glyph family, drawn for the site, for the five callouts, two environment chips and the goal label: binoculars, a gem, an info mark, a bug and a half-filled shield replace Starlight's icons, Standalone's halo is redrawn at the family weight, an org chart replaces the Amido Active Directory mark and its credit, and the goal label shows the Dart; earlier the same day, the lead quote reads Goal or Overview from the page (a sixth remark plugin), the TOC's first entry follows (PageSidebar), and the lead icons move into tokens, the goal's a placeholder; on 2026-11-20, on light the intel, defense and vuln callout labels and sudo move one step deeper, so every label clears 4.5:1 on a grain dot and every light code role clears 5:1; the light reading line takes the h2 rule's own pair, so the two read as one gradient in both themes; a HackTheBox or VulnHub writeup's lead quote opens with an `Overview` label, which tells it from the section intros; the machine overview's label takes the callout's open-book icon and its card a lime edge, and the section intros stay as they are; on 2026-11-19, on paper the phone strip names its section in the ink on purpose, as the owner's brief asked, and the notes that gave it the TOC's colour there now say so; on 2026-11-18, the light `open` / `Enabled` code role shares the string green, the code colour figures sit on the code frame, an upgrade checks that every code character still takes a role, and the colour passes' rejections are recorded here; on dark the TOC's current h3 entry follows the soft h3 on desktop, in the phone panel and strip and in its focus ring, while paper keeps the deeper cyan ink; code blocks share one colour system: every token takes a role from its theme colour pair, a transcript reads as prompt, commands found by position and plain output with only its evidence coloured, the privilege group keeps the vuln magenta, and the category rules leave the unlayered tail, 17 rules to 8; writeup prose lowers its energy: the h3 reads a soft cyan of its own, the lede's bar fades between two opaque greens over a lighter wash, and inline code turns ice; Expand all and Collapse all keep the reader's line in place: every toggle above the first line under the header opens or closes out of view, and on Collapse all a toggle the reader was inside lands where a TOC click lands a heading; on 2026-10-25, the glass's ramp animates one number, `--tp-frost`, so no theme value sits in its keyframes, where WebKit had left the glass transparent after a theme switch or a return to Safari on iOS, and it now holds on the owner's iPhone; the bar's glass is thinner and stronger and frosts over in 36px, its values tokens; everything on the glass but the name reads full contrast, so a screenshot under the bar no longer drowns the search, the icons or the phone strip; on 2026-10-24, the phone "On this page" is the Quiet strip: 38px, the current entry named in its heading's colour, the panel numbered on the page colour with a rail on the current entry; page titles balance their lines; the search box's key chips hide where nothing can hover; Chrome for Android's status bar takes the theme's page colour on a phone in light mode; on a phone: on iOS Safari the strip above the bar is the page colour, not the page scrolling, the bar now giving Safari a colour and the film grain lying off its top edge; the reading hairline hides under the open menu and, beside the sidebar from 50rem, spans only the strip; the bar keeps its room for the menu button after an image zoom; the flag's "Copied!" pill takes the label's row, clear of a wrapped flag; on 2026-10-23, Starlight's header is the quiet bar: the HUD's height, clear at the top and frosted once scrolled, the name in Syne at 21px, every other word in the HUD's mono capitals, the search in Starlight's own place on the article column's edge, GitHub and a one-click theme button at the right, the one replacing override; the reading hairline fills on writeups only, from a typed component; home's masthead lockup sits on the bar's centre; on 2026-10-17, writeup screenshots take the code frames' edge, the difficulty chip answers the pointer, About's bar links CONTACT, and identity links tie the site to the owner's profiles; on 2026-10-05, the landing hero's glow stays in its own pane on a desktop and shows no hard edge at any width; callouts are no longer unnamed landmarks; landing card titles sit one level under the page title; the mobile "On this page" check wears its entry's colour; site search keeps no image as a field and ranks each Bandit page first however it is typed, bar two routes and two logins that Pagefind cannot tell from other levels; on 2026-10-03, site search no longer indexes the flags and passwords the pages hide; the decode headlines give a screen reader the settled word; the current "On this page" entry keeps its colour under the pointer on desktop and mobile; Syne's fallback is one face per weight, so the headline no longer jumps when the font arrives; a captured flag's spent button and the toggle-all control announce the truth; reduced motion stops the marketing pages' smooth scroll; the pressed filter pill's focus ring stands apart; the secret terminal's dim labels reach AA; dead CSS deleted and stale counts refreshed; on 2026-10-02, tool output in the writeups no longer dates the runs; on 2026-10-01, decorative characters keep their look and say only what they mean, and a build guard checks part of it; About is in site search for its owner, not for the writeups' topics; the marketing pages gain a skip link, a main landmark and `color-scheme`, and About's theme toggle reports its state; the writeup badge row names each fact for a screen reader; on 2026-09-30, sidebar entries that name what each platform holds, and About's practice cards split 2 + 2).
 
 ---
 
@@ -291,6 +291,13 @@ each Vite major; recorded, not pinned.
   `:has()` on `<body>` with another subject restyles the whole page on every table-of-contents change
   (§8 "`:has()` on `<html>` or `<body>` only as the subject"). Keep `<body>` the subject, with a custom
   property the line reads, as `pages.css` does with `--pf-landing-accent`.
+- After a Starlight upgrade, check that `PageSidebar` is still the only component that prints TOC text
+  (in 0.41.10 it renders both `MobileTableOfContents` and `TableOfContents`, and `Page` and
+  `TwoColumnContent` only test that a TOC exists) and that the TOC's first item is still the `_top` link:
+  the Goal label in the TOC depends on both. If a TOC moves out, move the rename into a Starlight route
+  data middleware (`routeMiddleware`), which runs before any component and gave identical pages when
+  measured (DECISIONS 2026-11-21 · The lead quote reads Goal or Overview from the page, and the TOC's
+  first entry follows).
 - After a zod change, rerun the negative frontmatter probe as well as the byte comparison: an identical
   build proves valid frontmatter still parses the same, not that invalid frontmatter still fails. The
   probe and its expected failure are in
@@ -330,7 +337,7 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 │  │  ├─ SecretTerminal.astro         # from-scratch, zero-dependency vanilla-TS fake terminal; its `random` target list is built at build time from the docs collection, behind the same copied-from-Starlight draft filter PlatformIndex uses
 │  │  ├─ badges/                      # WriteupMeta.astro (the injected chip row), DifficultyPips.astro (the ONE ordinal pips glyph, shared with WriteupCard), icons.ts (icon registry + the category swatch)
 │  │  └─ overrides/
-│  │     ├─ PageSidebar.astro         # additive Starlight override: renders <Default/> then <ToggleAll/> at the bottom of the right TOC, then the script-only <TocTracking/> and <ReadingProgress/> at every width
+│  │     ├─ PageSidebar.astro         # additive Starlight override: renders <Default/> then <ToggleAll/> at the bottom of the right TOC, then the script-only <TocTracking/> and <ReadingProgress/> at every width; on a page whose lead quote is a goal it names the TOC's first entry Goal (§6 "Starlight Component Overrides")
 │  │     ├─ MarkdownContent.astro     # additive Starlight override: renders <Default/> with the <Principle> coda appended inside the content wrapper on HackTheBox writeups that set principle:; the default Footer and its pager follow unchanged
 │  │     ├─ Head.astro                # additive Starlight override: renders <Default/> then appends only what Starlight omits: the social tags (author, og:image + secure_url/type/width/height/alt, twitter:title/description/image), per-page values read from frontmatter (see §2 "Social and SEO metadata"), and <ThemeColor/>
 │  │     └─ ThemeSelect.astro         # REPLACING Starlight override, the one exception (owner, 2026-10-18): Starlight's Dark/Light/Auto select becomes About's one-click theme button, in the header and the phone menu (see §6 "Starlight Component Overrides")
@@ -357,6 +364,7 @@ C:\dev\idanlab\                       # chosen to avoid Hebrew chars in the Wind
 │  ├─ remark-transform-recon-rail.mjs  # remark: builds the recon findings rail (§7 "Build-time plugins")
 │  ├─ remark-validate-content-taxonomy.mjs # remark: taxonomy build guard (§7 "Build-time plugins")
 │  ├─ remark-inject-search-meta.mjs   # remark: hidden site-search fields: an empty image on every page, level and login on OverTheWire wargame levels, wargame on hubs (§7 "Build-time plugins")
+│  ├─ remark-transform-lead.mjs       # remark: marks the lead quote as a goal or an overview and records the verdict for the TOC's first entry (§7 "Build-time plugins")
 │  └─ validate-decorative-glyphs.mjs  # integration: after the build, fails it when a decorative character on its list would be read aloud (§8 "Decoration says nothing to a screen reader")
 └─ public/
    ├─ robots.txt                      # in-repo; breadcrumb comment + Sitemap line (see §2)
@@ -661,6 +669,27 @@ is unchanged by construction rather than by exclusion. The tokens live in `token
   `details.toggle > summary` (the regular Toggle and PasswordReveal's block mode), so no toggle variant
   carries a bespoke face/weight. The gold flag toggle that once kept its own identity is gone with its
   `.toggle-flag` rules (deleted 2026-10-03; flags are FlagCapture controls).
+- **The lead label** (2026-11-20; read from the page since 2026-11-21): the lead quote, the first block
+  of a page under the four platform directories, opens with a callout header naming what it is:
+  `Overview` with Starlight's `open-book` icon, or `Goal` with the Dart (a dart in the bullseye, from the
+  callout glyph family; the rings open where the dart enters) when the quote opened with
+  `Goal:` (every Bandit level and PicoCTF writeup). The word is in the callout label's type (JetBrains
+  Mono 11px, 700, `.14em`, uppercase), the icon at 1rem with a `.4rem` gap, `.45rem` above the text, the
+  accent on dark (15.5:1) and `--tp-lime-ink` on paper (5.40:1 on the lead's opaque card). The icons are
+  background images on the label's box, one token per kind and theme in `tokens.css`
+  (`--lead-icon-overview`, `--lead-icon-goal`), each with the label's colour written into it
+  (`#b6ff3c`, `#3e6700`; the Dart in its strokes and fills), so they follow those two tokens by hand. The
+  card carries a 1px lime edge inside it: 30% of the accent with a
+  faint `#9fef00` glow on dark, 30% of the lime ink over the lead's paper shadow on light. All from
+  `prose.css`, keyed on `blockquote[data-lead]`, which `plugins/remark-transform-lead.mjs` writes on the
+  first block only (§7), so the section intros, which wear the same card, never carry it and stay as they
+  are. The same verdict names the TOC's first entry (`PageSidebar`, see "Starlight Component Overrides").
+  A screen reader reads the word as the quote's first word, and the plugin removed the literal `Goal:`,
+  so nothing is read twice; the icon stays silent. See DECISIONS 2026-11-20 · Second-pass colour
+  follow-ups: light callout inks and sudo deepen, the light reading line takes the h2 rule's pair, the
+  machine overview names itself; DECISIONS 2026-11-20 · The machine overview takes the callout header and
+  a lime edge, and the section intros stay as they are; and DECISIONS 2026-11-21 · The lead quote reads
+  Goal or Overview from the page, and the TOC's first entry follows.
 
 ### Focus ring system (keyboard accessibility)
 
@@ -775,7 +804,8 @@ token is an open ROADMAP item, not a bug.
 - **Scroll-reveal** (IntersectionObserver), film **grain** overlay, atmospheric **glows**.
 - **The reading hairline** (2026-10-18): the header's hairline fills from the left as a writeup is read,
   a 1px line over the header's bottom border scaled with `transform: scaleX()`, the whole page measured,
-  no transition, lime to cyan (`#4d7c0f` to `#0b7e92` on paper), `aria-hidden`; where the phone "On this
+  no transition, lime to cyan, the h2 rule's own pair in both themes (on paper `--tp-deco-lime` `#6fae00` to
+  `--tp-deco-cyan` `#0a9ec2` since 2026-11-20), `aria-hidden`; where the phone "On this
   page" strip shows, it runs along the strip's bottom edge instead, spanning what the strip spans: from
   50rem the strip starts past the sidebar (`--sl-content-inline-start`), and so does the line, which had
   crossed the sidebar's first entry on a phone held sideways, before such a phone kept the phone layout
@@ -975,13 +1005,14 @@ token is an open ROADMAP item, not a bug.
     content's offset, the anchor scroll padding and the panel's height, and the reading hairline and
     TocTracking follow it). It names the current entry on the left, on dark in its rung of the colour
     ladder (lime title and h2, cyan h3, gold flag, gray-2 deeper), on paper in the ink whichever entry
-    is current, since there the lime ink, cyan ink and deep gold fell under 4.5:1 on the glass (owner,
-    2026-10-24; "On the glass, full contrast" above has the figures), colour only, through `:has()` on
-    the current link (Firefox before 121 keeps Starlight's white), and keeps Starlight's "On this page"
-    on the right as one of the bar's HUD words, in the ink, before a chevron that
-    points down and turns up while the panel is open, lime then. Under a hovering pointer it is lime too,
-    but only where the pointer hovers (`hover: hover`): a tap leaves `:hover` behind, which had kept a
-    closed strip in its open colour on a phone. No bordered pill: the whole strip is the button, as before.
+    is current, on purpose, since there the lime ink, cyan ink and deep gold fell under 4.5:1 on the
+    glass (owner, 2026-10-24, kept 2026-11-19; "On the glass, full contrast" above has the figures),
+    colour only, through `:has()` on the current link (Firefox before 121 keeps Starlight's white), and
+    keeps Starlight's "On this page" on the right as one of the bar's HUD words, in the ink, before a
+    chevron that points down and turns up while the panel is open, lime then. Under a hovering pointer
+    it is lime too, but only where the pointer hovers (`hover: hover`): a tap leaves `:hover` behind,
+    which had kept a closed strip in its open colour on a phone. No bordered pill: the whole strip is the
+    button, as before.
   - **The panel** lies on the page colour, as the desktop column does: each h2 numbered from 00 (the
     page title) in the HUD's muted capitals, silent to a screen reader (empty alternative text after a
     plain fallback declaration); h3s indented on a guide line in the sidebar's nesting colour, the flags
@@ -1013,7 +1044,7 @@ token is an open ROADMAP item, not a bug.
   grid), `badges/DifficultyPips` (the one ordinal pips glyph, shared by the card and the writeup row), `Callout` (icon-based tagged callout, used in writeup bodies),
   `NotFound` (404 body), `SecretTerminal` (vanilla-TS terminal), `AttackPath` (guided infographic for a
   LINEAR privilege-escalation chain: an ascending horizontal path whose nodes escalate toward the goal,
-  structural SVG connectors that arrow into the next node with the privilege verb on the segment, a
+  structural SVG connectors that arrow into the next node with the technique on the segment, a
   "Next step" progression with past/present/future states, and a one-time gold flourish at root. Built
   entirely from the site's own fabric so it reads as a native region, not a widget: the container is the
   Toggle / FlagCapture panel surface (`#f2ede0` light, a subtle lift dark) and the gold goal is derived
@@ -1024,11 +1055,13 @@ token is an open ROADMAP item, not a bug.
   `not-content`, AA in both themes, no branching. **Escalation rides the continuous font-SIZE ramp plus a
   single derived weight step** (Medium before the chain midpoint, Bold from it on): JetBrains Mono is subset
   to 400/500/700 only, so the earlier continuous weight calc silently snapped every intermediate value to
-  700; the honest ramp uses only loaded faces. **Each connector's verb label rides PARALLEL to its segment**
+  700; the honest ramp uses only loaded faces. **Each connector's edge label rides PARALLEL to its segment**
   at a constant ~6.5px gap (tilted to the chord angle, computed from `rise`), which is the one rule that keeps
-  every label the same distance from its line regardless of slope, label width, or line count. **Step dots
-  carry a layout-neutral 24px-tall tap target** (`::after` overflow, the About-HUD convention) while the
-  visible dot and focus ring stay 7px. **The edge fade-mask overlays a GUTTER, never the endpoint nodes:**
+  every label the same distance from its line regardless of slope, label width, or line count. **Step
+  dots are a pointer shortcut, outside the tab order and the accessibility tree (2026-11-20):**
+  `aria-hidden` spans 14px wide and 24px tall, so neighbouring targets tile without overlap and the
+  row wraps on a narrow screen, each drawing a 7px dot; the nodes, Next and the arrow keys already
+  reach every step. **The edge fade-mask overlays a GUTTER, never the endpoint nodes:**
   one token `--ap-fade-w` (36px, 24px under the 50rem breakpoint) drives both the mask band AND the spine's
   inline padding, so the start and goal nodes come to rest exactly where the band ends (measured alpha 0),
   and the falloff is a smoothstep rather than an opaque plateau. This also makes the affordance self-truthing:
@@ -1039,9 +1072,25 @@ token is an open ROADMAP item, not a bug.
   pass, which erases the state). Future names read the muted grey while done/active stay full-contrast.
   **The advance control uses `aria-disabled`, never the `disabled` property**, because `disabled` removed it
   from the tab order at the moment of the final keypress and dumped focus to `<body>`; the click path is
-  guarded instead, and the hover rule is keyed off `:not([aria-disabled='true'])`. Node and dot accessible
-  names carry the progress state word, since the check glyph is `aria-hidden` and `aria-current` marks only
-  one node. **The dossier is ONE label/value grid per panel, every panel stacked in one cell (2026-09-23):**
+  guarded instead, and the hover rule is keyed off `:not([aria-disabled='true'])`. Node accessible names carry
+  the progress state word, since the check glyph is `aria-hidden` and `aria-current` marks only one node.
+  **One tab stop per chain (2026-11-20):** a roving tabindex keeps only the current node in the tab order
+  beside Next; the arrow keys move the step and focus together, Home and End jump to the first and last step
+  while a node holds focus, a hint ("Arrow keys move between steps") shows under the path on keyboard focus
+  and describes every node, and a polite status line says each step once ("Step 4 of 7: Group Exchange Windows
+  Permissions, via GenericAll.") where the dossier used to be an `aria-live` region. The root is a
+  `role="group"` named by its title. **One clock drives the climb:** a single `requestAnimationFrame` loop
+  moves the camera, the spark and the line, the spark riding the connector's own curve and drawing the line
+  behind it; the camera holds while the spark is in view (on a narrow screen it follows the spark at the
+  leading edge), then settles on a frame that keeps the current node whole with as much of the way in as fits,
+  and whatever the left edge cuts recedes as a whole. A jump plays every hop in turn, faster, and fast input
+  finishes the step in flight. The goal blooms once the frame has settled, its ripple a 12px ring inside the
+  gutter that never widens the strip, and the end of the chain reads as a state: Next becomes a gold
+  "Compromised" with a check and no frame, still focusable and `aria-disabled`. **Fallbacks:** under forced
+  colours the current node takes a `Highlight` frame and future nodes a dashed one, the dots keeping their
+  states; without JavaScript (a `<noscript>` style) and in print the dossier lists every step, the meter and
+  footer are hidden, and the stage stays `inert` until the script wires it, so nothing dead can be pressed.
+  **The dossier is ONE label/value grid per panel, every panel stacked in one cell (2026-09-23):**
   the kind and name, the `via` edge and every detail row are pairs in one `<dl>`, told apart only by colour,
   weight and size, never by position. Labels share one tracking (0.16em), sit on their values' first
   baselines (`align-items: baseline`) and are RIGHT-aligned to the seam, so each stands one gutter
@@ -1051,20 +1100,30 @@ token is an open ROADMAP item, not a bug.
   panel, so the dots and the Next button never move between steps, and each panel is a subgrid of the
   dossier's two columns (under `@supports`), so the seam holds one x across the chain. Chrome 111 to 116,
   inside the build's floor, have no subgrid and keep per-panel columns: rows still align and nothing moves
-  vertically, only the seam can shift between steps. **`via` is reserved for the edge row:** a detail row
-  keyed `via` (any case) fails the build. The goal's panel wears the goal node's gold (kind label, name,
-  inline code) and the step count turns gold at the goal; on light the count and the other kind labels
-  read `--sl-color-accent-high`, the carve-out the active node and the Next button already use (the accent
-  read 4.27:1 on the panel). A done connector's bold run reads `--tp-lime-ink` on light instead (4.27 to
+  vertically, only the seam can shift between steps. Between panels the labels stand still and only the values
+  roll, up as the chain climbs and down when it is walked back; under reduced motion it is an instant swap.
+  **`via` is reserved for the edge row:** a detail row keyed `via` (any case) fails the build. **Detail rows
+  share one vocabulary (2026-11-20):** `role` (the entry only), `flaw`, `how`, `gain` and `flag`; any
+  other key, or `role` past the entry, fails the build, so the label column reads the same from tile to tile
+  and only the values change. Edges are noun phrases that read after `via` ("group membership", never
+  "is member of"). The goal's panel wears the goal node's gold (kind label, name, inline code) and the
+  step count turns gold at the goal; on light the count and the other kind labels read
+  `--sl-color-accent-high`, the carve-out the active node and the Next button already use (the accent read
+  4.27:1 on the panel). **Only the current hop's technique is lit (2026-11-20):** the connector that reached
+  the current node draws its bold run in the accent (gold on the goal connector), while every other run,
+  behind or ahead, keeps its bold in the quiet grey. On light that lit run reads `--tp-lime-ink` (4.27 to
   5.71:1 on the `#f2ede0` panel, model C median, 2026-10-11): accent-high (OKLCH L 0.38) would sit at the
-  lightness of the caption around it (L 0.41), while the lime ink (L 0.47) stays a step lighter. The dots take their place on the meter's green-to-gold ramp from their `--t`
-  (mixed in sRGB, the gradient's own space), future dots stay grey, and the bar's gradient spans the whole
-  track, so its leading edge is the current dot's colour and gold arrives only at the goal. Every node state and all chrome text measures AA in BOTH themes. REQUIRED on every HackTheBox writeup
+  lightness of the caption around it (L 0.41), while the lime ink (L 0.47) stays a step lighter. The dots take
+  their place on a green-to-gold ramp from their `--t` (mixed in sRGB), future dots stay grey and gold arrives
+  only at the goal. **There is no progress bar (2026-11-20):** the count, the dots and the nodes already say
+  the step, and the bar's fixed 92px width was what scrolled the writeups sideways below 220px. Every node
+  state and all chrome text measures AA in BOTH themes. REQUIRED on every HackTheBox writeup
   under `## Summary` (2026-09-12), no longer an Active Directory device, see §8. Live on Forest (6 hops),
-  Return (5 hops), Busqueda (5 hops) and Unified (5 hops); Forest and Return keep their BloodHound graph
+  Return (4 hops), Busqueda (4 hops) and Unified (4 hops); Forest and Return keep their BloodHound graph
   above as evidence, Busqueda and Unified carry none, and Busqueda is the reference for that case. See
-  DECISIONS 2026-07-19 (original build + native-fabric rework) and 2026-07-20 (production-polish pass +
-  Return instance; edge-mask gutter; production-readiness audit)), `badges/WriteupMeta` (navigational
+  DECISIONS 2026-07-19 (original build + native-fabric rework), 2026-07-20 (production-polish pass +
+  Return instance; edge-mask gutter; production-readiness audit) and 2026-11-20 (polish pass)),
+  `badges/WriteupMeta` (navigational
   Platform / Category (PicoCTF, directory-derived) / OS / Environment chip row + a trailing neutral Difficulty
   chip whose filled pips take the level hue, under a writeup title;
   each nav chip is coloured via a single `--wm-c` per value, with a restrained glow (halo on dark,
@@ -1072,7 +1131,7 @@ token is an open ROADMAP item, not a bug.
   Difficulty chip in its level's `--tx` since 2026-10-17 (owner: the row reacts as one, though no chip is
   a link yet); Difficulty magnitude is filled+growing pips; chips render as non-interactive
   `<span>` today (the commented `<a>` + `data-astro-prefetch="false"` restore verbatim once the filter
-  routes ship), `.not-content`; icons live in `badges/icons.ts` on a 14px grid; runtime-validates its
+  routes ship), `.not-content`; icons live in `badges/icons.ts`, sized by hull area in the 15px box (§7); runtime-validates its
   union props. Colour model, icon sourcing, geometry and the light-mode AA palette are documented
   in the "Badge system (WriteupMeta)" blocks in §6 and §7. **THREE props are OPTIONAL, `os`, `difficulty` and `category`** (the last is PicoCTF-only, forwarded by the injector from the directory)
   (`os?: OS`, `difficulty?: Difficulty`), for the same reason: some content has no honest value on that
@@ -1101,7 +1160,11 @@ token is an open ROADMAP item, not a bug.
 ### Starlight Component Overrides
 - **There are FOUR, in `src/components/overrides/`: three additive and one replacing.**
   `PageSidebar.astro` (renders the default "On this page" TOC then appends `ToggleAll`, and the
-  script-only `TocTracking` and `ReadingProgress`), `MarkdownContent.astro`
+  script-only `TocTracking` and `ReadingProgress`; and, on a page whose lead quote is a goal, names the
+  TOC's first entry `Goal` before rendering the default: it reads `leadKind` from the lead plugin through
+  `render(entry)` and changes the `#_top` item's text in the page's route data, which Starlight attaches
+  as a per-page deep copy. It is the one override that changes route data, and it holds only while
+  `PageSidebar` prints all TOC text, see §3 "Upgrade path"), `MarkdownContent.astro`
   (renders the default content wrapper with the `Principle` coda appended inside it on HackTheBox
   writeups that set `principle:`; the default Footer and its Prev/Next pager follow unchanged), and
   `Head.astro` (appends only what Starlight omits: the Open Graph and Twitter Card tags, see §2 "Social
@@ -1555,14 +1618,13 @@ what is kept was measured at 100% or on the device (2026-09-19, Chrome 149 on th
   `overflow-x: hidden`: its contents overflow the bar by 8px at 288, 26 at 271, 56 at 240, 91 at 205
   and 116 at 180, the ONLINE badge going first and the title text from 205 (25.5px of it hidden, 51 at
   180). The header wordmark: from 205 its box shrinks below its text (`min-width: 0` allows it) and the
-  span's `overflow: hidden` with `text-overflow: clip` cuts the glyphs, with no ellipsis, 18px at 205
-  and 44 at 180 on the Bandit pages and the landings (about 3px on the HackTheBox writeups, whose header
-  widens with their scroll width; none on `/secret` above 160).
-  **Real sideways scroll, on the Starlight pages, whose `body` is `visible`.** The AttackPath meter, a
-  nowrap label beside a 92px bar, sets the writeup's scroll width to 220px, so writeups scroll by 15px
-  at 205 and 40 at 180. The mobile table-of-contents toggle spans the header and stretches to that
-  width, 15.8px past the viewport at 205 and 40.6 at 180; on the Bandit pages, which have no meter, it
-  stays within 1px until the page itself scrolls at 119 (26px).
+  span's `overflow: hidden` with `text-overflow: clip` cuts the glyphs, with no ellipsis, 18px at 205 and
+  44 at 180 on the Bandit pages, the HackTheBox writeups and the landings (none on `/secret` above 160).
+  **Real sideways scroll, on the Starlight pages, whose `body` is `visible`.** The HackTheBox writeups
+  no longer scroll at 205 or 180 and behave like the Bandit pages, measured in headless Chrome: the
+  AttackPath meter's bar that set their scroll width to 220px was removed (2026-11-20). The mobile
+  table-of-contents toggle spans the header and stays within 1px of the viewport on both until the page
+  itself scrolls at 119 (26px on the Bandit pages, 19 on Forest and 23 on Busqueda).
   **Degradation without overflow.** The inline PasswordReveal value column shrinks from 142px at 360 to
   71px at 288 (four lines), 23px at 240 (two glyphs per line) and 0 from 205 (one glyph per line, 788px
   tall), because its 55px label and 84px Reveal button are fixed.
@@ -1766,7 +1828,8 @@ Light is art-directed on its own terms (dark is unchanged). All rules scoped to
   the old bottom atmosphere wash. Static, low contrast, prefers-reduced-motion safe.
 - **Decorative accent palette (NON-text):** vivid `--pf-accent-2`-style trio for dots, fills,
   the `#` marker, the h2 rule, the sidebar active bar, panel accents. The reading hairline's light
-  gradient: `#4d7c0f` to `#0b7e92`.
+  gradient is the h2 rule's own pair, `#6fae00` to `#0a9ec2` (2026-11-20; until then `#4d7c0f` to
+  `#0b7e92`, the paper cyan ink from before it deepened to `#08697a`).
 - **Text inks, measured where they land (2026-10-11):** coloured TEXT on paper reads an ink, never the
   accent. Cyan reads `--tp-cyan-ink` (`#08697a`, 5.22:1 on the page `#ece9e0`, model B), and the h3,
   large text, its own softer `--tp-h3-ink` (`#2a6e7b`, 4.8:1 there against the 3:1 large-text bar;
@@ -1774,7 +1837,7 @@ Light is art-directed on its own terms (dark is unchanged). All rules scoped to
   `--tp-lime-ink` (`#3e6700`: 5.50:1 on the page, model B, 4.96:1 on the darkest grid dot, model C;
   6.68:1 on Starlight's white TOC dropdown, until the phone panel moved onto the page colour on
   2026-10-24), which About mirrors as its own `--lime-ink`: the current h2 in both
-  TOCs, the 404 page's two marks, AttackPath's done run, and a prose link under the pointer. That link
+  TOCs, the 404 page's two marks, AttackPath's lit run, and a prose link under the pointer. That link
   now moves from the cyan ink to the lime ink on light as it moves from cyan to lime on dark; before,
   the light rest rule outranked the shared hover rule and a light link never changed.
   `--sl-color-accent-high` (`#2f4d09`) is kept for lime text on a lime tint (the `/secret/` chip, 6.31:1
@@ -1882,13 +1945,16 @@ commands by position).
   `#565966` 5.25; ports `#7dcfff` 9.96 / `#0a6178` 5.29; comments (italic) `#8d92aa` 5.55 / `#5a5b60`
   5.11; prompt `#c0caf5` / `#3a4687` 6.58, Kali's brackets `#89ddff` 11.27, Kali's path `#a9b1d6`;
   commands (bold) `oklch(0.745 0.045 60)` 7.45 / `#6f5644` 5.12; privilege (bold) `#ff4d9d` 5.53 /
-  `#b70066` 4.94.
-  - Every light role clears 5:1 except the privilege magenta, the vuln label's own ink (DECISIONS
+  `#b00061` 5.24.
+  - Every light role clears 5:1. The privilege magenta is the vuln label's own ink (DECISIONS
     2026-10-11 · Sudo's light magenta is the vuln callout's ink, and the light command figures are
-    re-measured). One-light's own flag, argument and comment inks had read 4.39 to 4.41:1 on this frame.
+    re-measured), deepened with it on 2026-11-20 (DECISIONS 2026-11-20 · Second-pass colour follow-ups:
+    light callout inks and sudo deepen, the light reading line takes the h2 rule's pair, the machine
+    overview names itself). One-light's own flag, argument and comment inks had read 4.39 to 4.41:1 on
+    this frame.
   - Marked lines (the tint over the frame, model B: dark `#2a3228`, light `#d8d9b7`): every role that
     sits on a marked line today clears 4.5:1 (lowest: dark punctuation 5.05, light functions and URLs
-    4.64). On a dark marked line comments would read 4.30:1 and the privilege magenta 4.29:1 (4.53:1 on
+    4.64). On a dark marked line comments would read 4.30:1 and the privilege magenta 4.29:1 (4.81:1 on
     light); neither sits on one today, so a fence that marks such a line needs a marked-line ink first.
 - **Weight and style.** Commands and privilege commands are bold, comments italic, every other role
   upright: Expressive Code's own italics do not reach a classed span.
@@ -1914,9 +1980,16 @@ commands by position).
 
 ### Tagged callouts (icon-based, `Callout.astro` + `.cl*` in `components.css`)
 Five semantic writeup callouts, each a 3px accent left border + faint tint + a header (icon + UPPERCASE
-label): recon (cyan `#41efff`, magnifier), loot (gold `#ffc23d`, padlock), intel (lavender `#ceaafd`,
-information), vuln (magenta `#ff4d9d`, warning), defense (green `#22c55e`, an inline shield SVG since
-Starlight has no shield). Icons via Starlight's `<Icon>`. Authored as `<Callout type="...">` in MDX.
+label): recon (cyan `#41efff`, binoculars), loot (gold `#ffc23d`, a gem), intel (lavender `#ceaafd`, an
+info mark), vuln (magenta `#ff4d9d`, a bug), defense (green `#22c55e`, a half-filled shield). Authored as
+`<Callout type="...">` in MDX.
+- **The glyphs are the site's own family (2026-11-21),** drawn inline in `Callout.astro` from one map
+  that `as const satisfies` keeps exhaustive over the five types: a 24 grid, 2-unit lines, sharp (miter)
+  joins, butt caps and solid accents, all in `currentColor`, so `--acc` and `--cl-ink` colour them in both
+  themes with no glyph CSS. The svg is `aria-hidden`, so the label stays the accessible name, and it sits
+  in `.cl-icon`'s 1rem square. They replaced Starlight's `<Icon>` (magnifier, padlock, information,
+  warning) and the inline shield, so the component imports nothing from Starlight. The same family draws
+  the Standalone and Active Directory chips (§7) and the lead's goal Dart (§6, "The lead label").
 - **The root is a `<div>` (2026-10-04), not an `<aside>`.** An `<aside>` inside `<main>` is a
   complementary landmark, so Busqueda's six callouts each sat unnamed in a screen reader's landmarks
   list and each announced "complementary" on entry; as a div a screen reader reads the visible label
@@ -1932,17 +2005,19 @@ Starlight has no shield). Icons via Starlight's `<Icon>`. Authored as `<Callout 
   same thing there, never a platform's identity. Recon takes the site's cyan secondary (links, port
   chips, and in a softer tint the h3; the About sidebar dot inherits it too), loot the flag gold (credentials are loot), vuln the magenta
   sudo wears in code blocks (`.cx-priv`: privilege, the dangerous path; on light, since 2026-10-11, sudo
-  reads the vuln label's own ink `#b70066`, so the two are one magenta). Intel is the one new hue, a pale
-  UV lavender told apart from PicoCTF's purple by lightness and chroma (0.14 OKLab). Until 2026-09-28 intel
-  wore PicoCTF's `#d96bff` and vuln VulnHub's `#ff5c5c`, byte-identical to their sidebar dots and badge
+  reads the vuln label's own ink, `#b00061` since 2026-11-20 (`#b70066` before), so the two are one
+  magenta). Intel is the one new hue, a pale UV lavender told apart from PicoCTF's purple by lightness
+  and chroma (0.14 OKLab). Until 2026-09-28 intel wore PicoCTF's `#d96bff` and vuln VulnHub's `#ff5c5c`, byte-identical to their sidebar dots and badge
   chips. Known nearness, taken knowingly: intel sits 0.046 from the medium tier violet and 0.049 from the
   Cryptography chip violet (every slot farther from both is near white), and vuln 0.067 from the hard
   tier magenta, which no page ships yet. Defense keeps its own green.
 - **Light mode has its own border and label per type.** The tint is `--acc` at 11% over paper; the border
   reads `--cl-bar` and the icon + label `--cl-ink`, both the dark hue held and lightness dropped. The dark
   literal on paper `#ece9e0` read 1.15 to 2.49:1 as a border; `--cl-bar` reads 3.20 to 3.23:1 there. The
-  label ink reads 4.80 to 5.06:1 on its own tint (model B, measured on the build 2026-09-28; model C floor
-  on a grain dot 4.38 to 4.63, computed). Recon's ink is `--tp-cyan-ink` and loot's `--flag-gold-val`, the
+  label ink reads 5.04 to 5.10:1 on its own tint (model B, measured on the build 2026-11-20; model C floor
+  on a grain dot 4.61 to 4.64, computed). Intel, defense and vuln moved one step deeper on 2026-11-20
+  (`#6d518f`, `#006a44`, `#b00061`), so every label also clears 4.5:1 on a grain dot, the test the TOC
+  rungs meet. Recon's ink is `--tp-cyan-ink` and loot's `--flag-gold-val`, the
   same meaning on the same paper. Dark is unchanged apart from the two re-keyed hues. The recon rail's
   column rule reads the same border value (`var(--cl-bar, var(--acc))`), so the rule and the callout's
   left edge are one colour in both themes; it read `--cl-code-ink` before, a near-black line on paper.
@@ -2083,7 +2158,8 @@ ours, so a current entry keeps its colour under the pointer:
   wrapper, so it matches the inline custom property Starlight writes on every entry:
   `style="--depth: N;"`, 0 for the title and h2, 1 for h3, 2 and deeper for h4 and below (read from the
   built DOM at Starlight 0.41.10). Flags sit at depth 1 and are excluded from the h3 rule. The strip
-  above it names the current entry in the same rung, through `:has()` on the current link.
+  above it names the current entry in the same rung on dark, through `:has()` on the current link, and
+  in the ink on paper, on purpose (the Quiet strip, §6).
 
 **The light rungs, measured (2026-10-11, page `#ece9e0`, model B).** The current h2 reads
 `--tp-lime-ink`, 5.50:1 on the page (4.96:1 on the darkest grid dot, model C), where the accent had read
@@ -2205,10 +2281,10 @@ between that heading and the screen (2026-11-17, see DECISIONS).
 
 ### Build-time plugins (wired in `astro.config.mjs` `markdown.processor: unified({...})`)
 
-Five remark plugins run over the MDX source. All are zero-dependency (`unist-util-visit`, plus `acorn`
-for the injectors), and all see hand-authored markup only, never component output. Order matters in one
+Six remark plugins run over the MDX source. All are zero-dependency (`unist-util-visit`, plus `acorn` for
+the injectors), and all see hand-authored markup only, never component output. Order matters in one
 place: the taxonomy guard runs first, so the generators wired after it (the WriteupMeta injector, the
-recon-rail transform, the search-field injector) never show it their output.
+recon-rail transform, the search-field injector, the lead transform) never show it their output.
 
 They are passed to `unified()` from `@astrojs/markdown-remark`, NOT to the top-level
 `markdown.remarkPlugins` / `markdown.rehypePlugins` keys, which Astro 6.4 deprecated and Astro 8
@@ -2237,6 +2313,14 @@ unset option back to the shared top-level value and all three already sit at the
   before the Principle coda, which `overrides/MarkdownContent.astro` renders after the content; that
   changes nothing, as the coda's margins come from `@layer components`, above Starlight's sibling
   spacing. The weights and the measurements are in §5 "Search ranking and the search fields".
+- **`remark-transform-lead.mjs`** (2026-11-21) classifies the page's lead: its first block on a platform
+  page, past imports, MDX comments and the injected badge row. A quote that opens with `Goal:` (any case)
+  is a goal: the prefix is removed, the next letter capitalized, and the quote marked `data-lead="goal"`;
+  any other first-block quote is marked `data-lead="overview"`. It records the verdict as `leadKind` in
+  the plugin frontmatter, which `overrides/PageSidebar.astro` reads through `render(entry)` to name the
+  TOC's first entry. It fails the build on a `> Goal:` quote anywhere else and on an authored `leadKind`.
+  Appended last; it skips the badge row by name, so its place among the generators does not matter. Its
+  four platform directories match the override's path test: keep the two in step.
 - **`remark-validate-content-taxonomy.mjs`** FAILS the build on an unknown hand-authored class token in
   the two live families (`port-label`, `task-title`), on ANY hand-authored token in a retired badge family
   (`machine-`, `meta-`, `platform-`, `difficulty-`, `os-`: retired 2026-09-07 when the landing card moved
@@ -2318,7 +2402,10 @@ against any build directory.
   import it. `platform` is NOT a frontmatter field, it is derived from the writeup's directory, and so is a
   PicoCTF writeup's `category` (a `category:` key fails the build). Set `badges: false` (unquoted boolean,
   never `no` or `off`) to opt a writeup-path page out entirely; the axis rules still run. The description
-  is still repeated as a `>` blockquote lead.
+  is still repeated as a `>` blockquote lead. The lead quote is labelled at build time: a first block
+  that opens with `> Goal:` (the Bandit and PicoCTF template) reads Goal, in its label and as the TOC's
+  first entry, and loses the `Goal:` prefix on the page; any other first-block quote reads Overview.
+  Nothing else to author. A `> Goal:` quote anywhere but the first block fails the build.
   - **Writeup path** is a non-`index` `.mdx` file under one of the four platform directories
     (`hackthebox`, `vulnhub`, `picoctf`, `overthewire`). Hub and landing pages are authored as `index.*`
     files and are therefore exempt. A file outside a writeup path is never injected, even when it carries
@@ -2454,7 +2541,10 @@ than the challenge is worse than one without it. Reference file:
   build fails on one here (`plugins/remark-inject-writeupmeta.mjs`).
 - **Skeleton**, in this order and with nothing else:
   1. `> Goal: ...` blockquote, one or two sentences. Name what the artefacts ARE (a function, a file, a
-     service), since the reader has not seen the challenge.
+     service), since the reader has not seen the challenge. The `Goal:` prefix is load-bearing
+     (2026-11-21): it makes the quote the page's Goal, in its label and as the TOC's first entry, and the
+     build removes it from the page, so write it exactly, as the first block, and never on a later quote
+     (that fails the build).
   2. `## Approach`, opening with PROSE, never with a subheading. Fences and prose alternate.
   3. `<PasswordReveal term="Flag" password="picoCTF{...}" />`, with NO heading above it, directly under
      the fence whose flag output is masked as `<flag>`. **Where the recorded route produced no maskable
@@ -2634,13 +2724,19 @@ icon.
   + `set:html` and tinted from `--wm-c` (`currentColor`) in both themes. Sourced only from
   `src/assets/icons/` (inlining requires importing, and `public/` is not in the import graph); Standalone is
   authored inline in `icons.ts` (no file), and so is the PicoCTF category chip's swatch (`categoryGlyph`, 2026-09-07):
-  one 9px rounded square, currentColor, `aria-hidden`, deliberately smaller than the 14px pictogram ink
-  because it is a colour sample and not a picture. HackTheBox is a platform LOGO but is monochrome (one path, one
+  one 9px rounded square, currentColor, `aria-hidden`, deliberately smaller than the pictograms' 14 to 15px
+  ink because it is a colour sample and not a picture. HackTheBox is a platform LOGO but is monochrome (one path, one
   fill), so it lives here, not with the `<img>` logos.
-- **Geometry: a 14px grid.** Every glyph's larger ink dimension renders at ~14px in the 15px `.wm-ico` box,
-  measured by rasterizing each glyph alone and taking its ALPHA bounding box (not path data). Only HackTheBox
-  (letterboxed by a non-square viewBox) and Linux (a backdrop disc that defined its box) were off; the other
-  seven already clustered. Standalone and Active Directory are slated for an artwork redraw ONTO this grid.
+- **Geometry: one hull-area grid in the 15px `.wm-ico` box.** A monochrome glyph's viewBox is cropped so
+  its ink's convex-hull AREA matches a circle filling the box (176.7 px²: a circle's diameter is 1.128
+  times the side of the square of equal area, the "cap 1.128"), measured by rasterizing the glyph alone
+  (alpha, not path data). A glyph sparser than a circle clamps at 15px on its larger side. Measured
+  2026-11-21: Windows 177.1 px² at 14.26px, Standalone 177.2 at 15px (the circle at the cap), and
+  HackTheBox 149.7, Active Directory 153.6 and Progressive 131.8, each clamped at 15px.
+- **Standalone and Active Directory are drawn for the site (2026-11-21),** in the callout glyph family
+  (24 grid, 2-unit lines, sharp joins, solid accents; §6 "Tagged callouts"). Standalone is the halo, a
+  solid core in a ring at 0.4, viewBox `3 3 18 18`; Active Directory is an org chart, a solid root over
+  three children, viewBox `1 1.25 22 22`.
 - **`public/icons` copies:** the three polychrome PLATFORM logos (VulnHub, PicoCTF, OverTheWire) are ALSO
   copied under `public/icons`, consumed by `PlatformIndex.astro` and `about.astro` by literal `/icons/` path.
   The sidebar is NOT a consumer: it uses colored dots, and the commented-out logo block this note used to
@@ -2658,11 +2754,11 @@ icon.
   writeup's search entry, and `.sr-only`'s `user-select: none` keeps them off the clipboard.
   A build-time `inline()` normalizer in `icons.ts` strips comments, inter-element
   whitespace and the XML prolog from inlined glyphs (an `<?xml?>` prolog becomes a bogus comment node in an
-  HTML document), keeping chip `textContent` clean. `active-directory.svg`'s creator credit (Amido Limited /
-  Richard Slater, upstream CC0-1.0) ships as a `data-credit` attribute on the svg root (2026-09-07). It used
-  to be a `<metadata>` block, which is text content: it sat in the chip's `textContent` and in the Pagefind
-  body of every Active Directory page. An attribute survives the normalizer (which strips comments, never
-  attributes) and is neither text nor an accessible name.
+  HTML document), keeping chip `textContent` clean. No chip glyph carries a third-party credit since the
+  Amido Active Directory mark left (2026-11-21). A future third-party mark's credit goes in an attribute
+  on the svg root, never a `<metadata>` block (text content: the Amido credit once sat in the chip's
+  `textContent` and the Pagefind body of every Active Directory page) or a comment (the normalizer strips
+  it). An attribute survives the normalizer and is neither text nor an accessible name.
 - `assetsInlineLimit` stays at the Vite default (size-based inline-vs-hashed split for the `<img>` assets).
 
 ## 8. Conventions & Non-Negotiables
@@ -2682,7 +2778,9 @@ icon.
   under `## Summary` in the position Forest, Return, Busqueda and Unified use. The component's own constraint
   still binds: LINEAR chains only, one spine, no branching, at least two nodes (it throws below that).
   Where a box genuinely branches, the writeup picks the spine and says so in prose. Busqueda is the
-  reference instance for a box with no directory graph above it.
+  reference instance for a box with no directory graph above it. Its dossier rows use the shared labels
+  (`role` (the entry only), `flaw`, `how`, `gain` and `flag`; the build enforces them) and its
+  edges are noun phrases that read after `via`.
 - **Type-safe scripts:** all TS inside `.astro` `<script>` uses explicit assertions
   (`as NodeListOf<HTMLElement>`, `as HTMLElement | null`, `!`, `?? ''`) → zero VS Code problems.
 - **Code blocks:** every block has a language label; bash and python render identically; EC frames are
@@ -3090,7 +3188,7 @@ whole records.
 - An opaque header to hide the landing glow, or the glow clipped to the hero: rejected, the header stays translucent (owner) and a clip at the hero is a hard edge again. See DECISIONS 2026-10-04 · The landing glow holds its pools whole, and a landing keeps to its own pane on a desktop.
 - Search fields with the route kept hyphenated, without the wargame's name, without the one-digit next number, or with the login inside the level field, and a wider lead for the Bandit hub: rejected, each, measured on the built index, loses levels or hands the hub "bandit <word>" queries. See DECISIONS 2026-10-05 · Site search keeps no image as a field, and each wargame level carries level and login fields.
 - Image alt text in site search, indexed on its own through Pagefind's `data-pagefind-index-attrs`: rejected, the owner's call (2026-10-07); an alt text is what gave Forest its lead for "bloodhound" over Return, whose own text names the tool more often. See DECISIONS 2026-10-05 · Site search keeps no image as a field, and each wargame level carries level and login fields.
-- Accent-high (`#2f4d09`) for all small lime text on paper: rejected, the highlight words go near-black and AttackPath's done run sinks to its own caption's lightness; accent-high stays for lime text on a lime tint. See DECISIONS 2026-10-11 · One lime ink for small text on paper, and About's light inks clear its glows.
+- Accent-high (`#2f4d09`) for all small lime text on paper: rejected, the highlight words go near-black and AttackPath's lit run sinks to its own caption's lightness; accent-high stays for lime text on a lime tint. See DECISIONS 2026-10-11 · One lime ink for small text on paper, and About's light inks clear its glows.
 - `#447000` or `#426d00` as the light lime ink: rejected, the first reads 4.35:1 on the darkest grid dot and the second sits 0.020 OKLab from `#3e6700`, a near-duplicate. See DECISIONS 2026-10-11 · One lime ink for small text on paper, and About's light inks clear its glows.
 - The small-text gold ink on the flag headings, the 70% gray mix on a light TOC flag at rest, and a gilded fill on the current flag entry: rejected. See DECISIONS 2026-10-11 · Flag golds: a display gold for the headings, the AA golds for small words, and the glyph in the TOC.
 - A cyan bar on a marked code line, or the line's own border kept beside Expressive Code's: rejected, cyan puts a second hue back on a lime-tinted line and already means a port in code, and the line's border is what pushed the marked line's text 2px right. See DECISIONS 2026-10-11 · A marked code line shows one lime bar: Expressive Code's own, recoloured.
@@ -3110,6 +3208,7 @@ whole records.
 - For Safari's strip above the bar: the film grain as one element over the whole screen, the grain left off the bar, and an opaque bar: rejected, the grain lies in two layers and the bar carries a 1% wash. See DECISIONS 2026-10-24 · Safari's strip above the bar takes the bar's colour.
 - Two `theme-color` metas keyed to `prefers-color-scheme`: rejected, they follow the phone's scheme, not the theme the site shows. See DECISIONS 2026-10-24 · The browser's own colour follows the theme.
 - A thicker glass tint (80% on dark, 73% on paper) to keep the bar's muted grey at 3:1, and GitHub and the theme left muted or inked only below 72rem: rejected, the glass stays thin and everything on it but the name reads the ink at every width. See DECISIONS 2026-10-25 · The bar's glass thins and frosts over, and what sits on it turns full contrast.
+- The phone strip's section name on paper in its TOC rung (the lime ink, cyan ink and deep gold the panel shows), or in deeper inks that hold 4.5:1 there (`#1f3800`, `#013741`, `#422e00`): rejected (owner, 2026-10-24, kept 2026-11-19), on paper it reads the ink; with a black terminal under the glass the rung inks read 2.20 to 4.09:1. See DECISIONS 2026-10-25 · The bar's glass thins and frosts over, and what sits on it turns full contrast.
 - `--tp-frost` set once on `:root` for everything to inherit, or written there by a scroll script: rejected (owner, 2026-10-31); each surface that wears the glass runs the same scroll-timeline ramp itself, so nothing inherits an animated value and no script runs. §6 "Starlight's header is the quiet bar", "Adaptive glass", carries the readings.
 - A series of glows repeating down the page's left edge, under the sidebar: shipped and removed the same day (owner, 2026-10-31), for a calmer page. §6 "Sidebar (chrome)".
 - The sidebar lit by the article's coloured blocks beside it (callouts, quote boxes, flags and images, each in its own colour): built and turned down before it shipped (owner, 2026-11-01); it lagged the scroll, broke under fast scrolling and does not fit the site's design, and the sidebar keeps its plain tint. See DECISIONS 2026-11-01 · The sidebar keeps its plain tint: no light from the content.
@@ -3124,3 +3223,16 @@ whole records.
 - Full shell syntax colour on output lines, or one dim colour for all output: rejected, the first is noise and the second reads as a comment; output is plain ink with its entities coloured. See DECISIONS 2026-11-18 · Code blocks share one colour system: token roles in every language, commands by position.
 - Light prompts in `#4d5888` or `#353f66`: rejected, too tinted and too close to the body ink. See DECISIONS 2026-11-18 · Code blocks share one colour system: token roles in every language, commands by position.
 - The code role rules in the unlayered tail with `!important`: rejected, the layered rules compute identically on every code span. See DECISIONS 2026-11-18 · Code blocks share one colour system: token roles in every language, commands by position.
+- `open` and `Enabled` in the code output ink: rejected by the owner, they keep the string green. See DECISIONS 2026-11-20 · Second-pass colour follow-ups: light callout inks and sudo deepen, the light reading line takes the h2 rule's pair, the machine overview names itself.
+- Light callout tints at 7% or 9%: rejected by the owner, 11% stays. See DECISIONS 2026-11-20 · Second-pass colour follow-ups: light callout inks and sudo deepen, the light reading line takes the h2 rule's pair, the machine overview names itself.
+- The dark h2 rule's cyan stop in the h3's soft `#9de2ea`: rejected by the owner, the neon sits better with the cyan link icon. See DECISIONS 2026-11-20 · Second-pass colour follow-ups: light callout inks and sudo deepen, the light reading line takes the h2 rule's pair, the machine overview names itself.
+- Section intros told from the lead by a quiet card (a neutral bar, no wash), the lime bar alone, a wash that fades across the line, or a `>` marker in a softer ink, and a larger lead: rejected by the owner, the first reads dull, the second too slight, the fade does not hold on paper, the marker does not work as design, and a larger lead reads as a sizing bug. See DECISIONS 2026-11-20 · Second-pass colour follow-ups: light callout inks and sudo deepen, the light reading line takes the h2 rule's pair, the machine overview names itself.
+- The lead's card taking in the badge row (the dossier), the badges under the `Overview` label: rejected by the owner, the badge row stays above the card; on a phone that card stacked the label, three rows of badges and four lines of text. See DECISIONS 2026-11-20 · The machine overview takes the callout header and a lime edge, and the section intros stay as they are.
+- Section intros told from the lead by an outlined (ghost) card or by corner brackets: rejected by the owner, the intros stay as they are, and a ghost card breaks the visual language the filled callouts set. See DECISIONS 2026-11-20 · The machine overview takes the callout header and a lime edge, and the section intros stay as they are.
+- An overview-first AttackPath that shows the whole chain at once: rejected (owner, 2026-11-20); the whole chain at once reads as dense and overwhelming, and the component's point is one step at a time. See DECISIONS 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per chain, one dossier vocabulary.
+- A Replay control that plays the AttackPath chain end to end: rejected (owner, 2026-11-20); it runs the whole chain in about a second without opening a step or letting the reader go at their own pace. See DECISIONS 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per chain, one dossier vocabulary.
+- MITRE ATT&CK ids and defence notes in the AttackPath dossier: rejected (owner, 2026-11-20); they add data to every panel and make the chain harder to follow. See DECISIONS 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per chain, one dossier vocabulary.
+- The lead's kind declared in frontmatter (the goal text as a field rendered by a component, or a `lead: goal` flag beside the quote): rejected, the kind is derived from the page's first block. See DECISIONS 2026-11-21 · The lead quote reads Goal or Overview from the page, and the TOC's first entry follows.
+- A Starlight route data middleware for the TOC's first entry: rejected while `PageSidebar` prints all TOC text, since the existing override gives identical pages; it is the fallback (Upgrade path). See DECISIONS 2026-11-21 · The lead quote reads Goal or Overview from the page, and the TOC's first entry follows.
+- `## Goal` as a heading: rejected, it duplicates the TOC's top link and Approach stops opening the page. See DECISIONS 2026-11-21 · The lead quote reads Goal or Overview from the page, and the TOC's first entry follows.
+- A build check that every Bandit level and PicoCTF writeup opens with a goal: rejected, a page without one reads Overview, the default. See DECISIONS 2026-11-21 · The lead quote reads Goal or Overview from the page, and the TOC's first entry follows.

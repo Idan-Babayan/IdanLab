@@ -4,7 +4,7 @@
 // AttackPath: a guided, interactive infographic that tells the story of a LINEAR privilege-escalation
 // chain. Reusable across multi-hop writeups (Forest is instance one). It renders an ascending
 // horizontal path whose nodes ESCALATE in width and type scale toward the goal, with STRUCTURAL
-// directional connectors (each departs one node and arrows INTO the next, the privilege verb riding on
+// directional connectors (each departs one node and arrows INTO the next, the technique riding on
 // the segment), a guided "Next step" progression (past = established, present = focal, future = quiet),
 // motion that communicates the change and then settles calm, and a one-time gold flourish on reaching
 // the goal. Linear chains only: one spine, no branching.
@@ -24,11 +24,16 @@
 // scopes with :where() at specificity 0, which is safe precisely BECAUSE not-content makes every
 // .sl-markdown-content prose rule skip this subtree; nothing here needs to out-rank a global rule.
 
+// The dossier's detail labels are one small shared vocabulary, so the label column reads the same from
+// tile to tile and only the values change as the reader climbs. `role` describes the entry and belongs
+// to it alone; the rest go anywhere. The runtime guard below enforces the set.
+type RowLabel = 'role' | 'flaw' | 'how' | 'gain' | 'flag';
+
 interface AttackNode {
   kind: string;                          // short category, e.g. "User", "Group", "Domain", "Root"
   name: string;                          // the principal/object, e.g. "svc-alfresco", "SYSTEM"
-  edge?: string;                         // privilege verb from the PREVIOUS node; may contain <b>. Omit on the first.
-  detail?: { k: string; v: string }[];   // dossier rows; v may contain inline <code>
+  edge?: string;                         // the hop INTO this node, a noun phrase that reads after "via"; may contain <b>. Omit on the first.
+  detail?: { k: RowLabel; v: string }[]; // dossier rows; v may contain inline <code>
 }
 
 interface Props {
@@ -40,6 +45,8 @@ const { title = 'Attack Path', nodes } = Astro.props;
 
 // The dossier's label for the edge row, the one label the component writes itself.
 const EDGE_LABEL = 'via';
+// The detail rows' shared vocabulary (see RowLabel above), in the order a tile usually reads.
+const ROW_LABELS: readonly RowLabel[] = ['role', 'flaw', 'how', 'gain', 'flag'];
 
 // Runtime guard, matching how WriteupMeta guards its props: `astro build` does not type-check .astro
 // props and this repo deliberately has no `astro check`, so the interface above is editor-only. A
@@ -60,6 +67,17 @@ nodes.forEach((n, i) => {
   if (n.detail?.some((r) => typeof r?.k === 'string' && r.k.trim().toLowerCase() === EDGE_LABEL)) {
     throw new Error(`AttackPath: node ${i} has a detail row keyed "${EDGE_LABEL}", which is reserved for the edge row. Key the row by what it holds.`);
   }
+  // One vocabulary for every panel, so the label column stands still while the values change. `role` is
+  // the entry's alone: every later node is already introduced by its kind, its name and its `via` row.
+  n.detail?.forEach((r) => {
+    const k = typeof r?.k === 'string' ? r.k.trim().toLowerCase() : '';
+    if (!(ROW_LABELS as readonly string[]).includes(k)) {
+      throw new Error(`AttackPath: node ${i} has a detail row keyed "${String(r?.k)}". Key every row from the shared set: ${ROW_LABELS.join(', ')}.`);
+    }
+    if (k === 'role' && i !== 0) {
+      throw new Error(`AttackPath: node ${i} has a "role" row, which belongs to the entry (node 0) alone. Use flaw, how or gain.`);
+    }
+  });
 });
 
 const lastIndex = nodes.length - 1;
@@ -83,7 +101,7 @@ const climb = rise * lastIndex;
 
 // Connector box geometry, in px. CONN_H comfortably fits the steepest allowed rise (RISE_MAX): the curve
 // climbs from y0 = 38 to y1 = 38 - rise, so at the max the arrowhead sits near y 8, still inside the box.
-const CONN_W = 116;
+const CONN_W = 124;
 const CONN_H = 76;
 
 // One shared path shape for every connector: the box's vertical centre is aligned to the LEFT node's
@@ -102,7 +120,7 @@ const ARROW = `M ${CONN_W - 10} ${y1 - 5.5} L ${CONN_W - 2} ${y1} L ${CONN_W - 1
 // dashoffset:0 reveals it. A constant avoids a getTotalLength() measurement pass in JS.
 const DASH = 260;
 
-// Edge-label tilt. The verb label rides PARALLEL to its connector's chord, at a constant gap above it,
+// Edge-label tilt. The edge label rides PARALLEL to its connector's chord, at a constant gap above it,
 // so its distance to the line stops depending on the three things that made a horizontally-centred label
 // read unevenly across the path: the segment's slope, the label's width, and how many lines it wraps to.
 // (Measured on the old rule: a 110px horizontal label cleared the line by +17px on the low-left but
@@ -117,26 +135,35 @@ const EDGE_ANGLE = -(Math.atan2(rise, CONN_W - 5) * 180 / Math.PI);
 // digits into every node's style attribute (--t:0.1111111111111111), and 4 decimals is already far below
 // one device pixel on the widest thing it drives (0.0001 * 52px of width interpolation).
 const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastIndex) * 1e4) / 1e4);
+
+// Ids for the title and the keyboard hint, derived from the chain itself, so the build is reproducible and two
+// chains on one page never collide.
+let hash = 5381;
+for (const ch of title + nodes.map((n) => n.name).join('|')) hash = ((hash << 5) + hash + ch.charCodeAt(0)) >>> 0;
+const uid = `ap-${hash.toString(36)}`;
 ---
 
 <div
   class="apath not-content"
   data-attack-path
+  role="group"
+  aria-labelledby={`${uid}-title`}
   style={`--ap-rise:${rise}px; --ap-climb:${climb}px; --ap-cw:${CONN_W}px; --ap-ch:${CONN_H}px; --ap-dash:${DASH}; --ap-edge-angle:${EDGE_ANGLE}deg;`}
 >
   <div class="ap-head">
     {/* A " · " in the title is a visual separator: the dot is aria-hidden and kept out of site search,
         and the words around it are read (CORE_SPEC §8). */}
-    <p class="ap-title">{title.split(' · ').map((part, i) => (i === 0 ? part : [' ', <span aria-hidden="true" data-pagefind-ignore>·</span>, ` ${part}`]))}</p>
+    <p class="ap-title" id={`${uid}-title`}>{title.split(' · ').map((part, i) => (i === 0 ? part : [' ', <span aria-hidden="true" data-pagefind-ignore>·</span>, ` ${part}`]))}</p>
     <div class="ap-meter">
       {/* The step count is real TEXT, so the position is available to assistive tech without a
-          role=progressbar dance. The bar beside it is decoration and is hidden from the a11y tree. */}
+          role=progressbar dance. The dots below already draw progress, so there is no bar beside it. */}
       <p class="ap-meter-text">Step <span data-ap-step>1</span> of {nodes.length}</p>
-      <div class="ap-bar" aria-hidden="true"><i data-ap-fill></i></div>
     </div>
   </div>
 
-  <div class="ap-stage">
+  {/* Inert until the script wires it: without JavaScript the strip is a picture, not seven
+      buttons that do nothing, and the dossier below lists every hop instead. */}
+  <div class="ap-stage" data-ap-stage inert>
     <div class="ap-track" data-ap-track>
       <div class="ap-spine" data-ap-spine>
         {nodes.map((node, i) => (
@@ -164,6 +191,7 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
               data-ap-node
               data-state={i === 0 ? 'active' : 'future'}
               aria-current={i === 0 ? 'step' : undefined}
+              aria-describedby={`${uid}-hint`}
               style={`--i:${i}; --t:${t(i)}; --ap-nw:${t(i) >= 0.5 ? 700 : 500}`}
             >
               <span class="ap-node-kind">{node.kind}</span>
@@ -183,9 +211,10 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
         dissolve the past on the left while the next node peeks in under the right fade. */}
     <div class="ap-fade ap-fade-l" aria-hidden="true"></div>
     <div class="ap-fade ap-fade-r" aria-hidden="true"></div>
+    <p class="ap-hint" id={`${uid}-hint`}>Arrow keys move between steps</p>
   </div>
 
-  <div class="ap-dossier" data-ap-dossier aria-live="polite">
+  <div class="ap-dossier" data-ap-dossier>
     {/* Every panel is one list, head and edge included, so every value in it sits in the same column, and
         all the panels share that column and one stacked cell (see the dossier rules). What tells the rows
         apart is how they look, never where they start. */}
@@ -210,20 +239,18 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
   </div>
 
   <div class="ap-foot">
-    <div class="ap-dots">
-      {nodes.map((node, i) => (
-        <button
-          type="button"
-          class="ap-dot"
-          data-ap-dot
-          data-state={i === 0 ? 'active' : 'future'}
-          aria-current={i === 0 ? 'step' : undefined}
-          aria-label={`Step ${i + 1}: ${node.name}`}
-          style={`--t:${t(i)}`}
-        ></button>
+    {/* A pointer shortcut and a picture of progress. Keyboard and screen-reader users have the same thing in
+        the nodes themselves, so the row stays out of the tab order and the accessibility tree. */}
+    <div class="ap-dots" aria-hidden="true">
+      {nodes.map((_, i) => (
+        <span class="ap-dot" data-ap-dot data-state={i === 0 ? 'active' : 'future'} style={`--t:${t(i)}`}></span>
       ))}
     </div>
     <button type="button" class="ap-next" data-ap-next>
+      <svg class="ap-done-ico" viewBox="0 0 24 24" width="14" height="14" fill="none"
+        stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 13l4 4L19 7" />
+      </svg>
       <span data-ap-next-label>Next step</span>
       <svg class="ap-next-ico" viewBox="0 0 24 24" width="14" height="14" fill="none"
         stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -231,14 +258,70 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
       </svg>
     </button>
   </div>
+  {/* One composed sentence per step, instead of the whole dossier read as a run-on string. */}
+  <p class="sr-only" data-ap-status aria-live="polite"></p>
+  {/* Without JavaScript the stepper cannot run, so the dossier lists every hop instead and the controls step
+      aside. Inline, so it only exists when scripting is off. */}
+  <noscript>
+    <style is:inline>
+      .apath .ap-meter, .apath .ap-foot { display: none; }
+      .apath .ap-panel { grid-area: auto; grid-column: 1 / -1; }
+      .apath .ap-panel[hidden] { visibility: visible; user-select: auto; -webkit-user-select: auto; }
+      .apath .ap-panel + .ap-panel { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--ap-line); }
+    </style>
+  </noscript>
 </div>
 
 <script>
+  // The site's motion curve, cubic-bezier(0.4, 0.05, 0.2, 1), evaluated in script so the camera, the spark
+  // and the line it draws all run on one clock and one curve. Solves x(s) = p for the curve parameter by
+  // Newton's method, with bisection as the fallback, then returns y(s), as CSS does.
+  function bezier(x1: number, y1: number, x2: number, y2: number): (p: number) => number {
+    const cx = 3 * x1;
+    const bx = 3 * (x2 - x1) - cx;
+    const ax = 1 - cx - bx;
+    const cy = 3 * y1;
+    const by = 3 * (y2 - y1) - cy;
+    const ay = 1 - cy - by;
+    const xAt = (s: number): number => ((ax * s + bx) * s + cx) * s;
+    const yAt = (s: number): number => ((ay * s + by) * s + cy) * s;
+    const slope = (s: number): number => (3 * ax * s + 2 * bx) * s + cx;
+    return (p: number): number => {
+      if (p <= 0) return 0;
+      if (p >= 1) return 1;
+      let s = p;
+      for (let i = 0; i < 8; i++) {
+        const d = slope(s);
+        if (Math.abs(d) < 1e-6) break;
+        s -= (xAt(s) - p) / d;
+      }
+      if (!(s >= 0 && s <= 1) || Math.abs(xAt(s) - p) > 1e-5) {
+        let lo = 0;
+        let hi = 1;
+        s = p;
+        for (let i = 0; i < 40; i++) {
+          if (xAt(s) < p) lo = s;
+          else hi = s;
+          s = (lo + hi) / 2;
+        }
+      }
+      return yAt(s);
+    };
+  }
+  const ease = bezier(0.4, 0.05, 0.2, 1);
+  const clamp01 = (v: number): number => Math.max(0, Math.min(1, v));
+  const smoothstep = (a: number, b: number, v: number): number => {
+    const x = clamp01((v - a) / (b - a));
+    return x * x * (3 - 2 * x);
+  };
+
   // Every instance is wired independently, so a page may carry more than one chain.
   function setupAttackPath(root: HTMLElement): void {
+    if (root.dataset.enhanced === 'true') return;
     const nodes = Array.from(root.querySelectorAll('[data-ap-node]')) as HTMLButtonElement[];
     const conns = Array.from(root.querySelectorAll('[data-ap-conn]')) as HTMLElement[];
-    const dots = Array.from(root.querySelectorAll('[data-ap-dot]')) as HTMLButtonElement[];
+    const lines = conns.map((c) => c.querySelector('.ap-conn-live') as SVGPathElement | null);
+    const dots = Array.from(root.querySelectorAll('[data-ap-dot]')) as HTMLElement[];
     const panels = Array.from(root.querySelectorAll('[data-ap-panel]')) as HTMLElement[];
     const track = root.querySelector('[data-ap-track]') as HTMLElement | null;
     const spine = root.querySelector('[data-ap-spine]') as HTMLElement | null;
@@ -246,121 +329,163 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
     const nextBtn = root.querySelector('[data-ap-next]') as HTMLButtonElement | null;
     const nextLabel = root.querySelector('[data-ap-next-label]') as HTMLElement | null;
     const stepEl = root.querySelector('[data-ap-step]') as HTMLElement | null;
-    const fill = root.querySelector('[data-ap-fill]') as HTMLElement | null;
-    if (!nodes.length || !track || !spine || !nextBtn) return;
+    const status = root.querySelector('[data-ap-status]') as HTMLElement | null;
+    if (!nodes.length || !track || !spine || !runner || !nextBtn || lines.some((l) => !l)) return;
+    const paths = lines as SVGPathElement[];
+    const lens = paths.map((l) => l.getTotalLength());
+    const dash = parseFloat(getComputedStyle(root).getPropertyValue('--ap-dash')) || 260;
+    root.dataset.enhanced = 'true';
+    root.querySelector('[data-ap-stage]')?.removeAttribute('inert');
 
     const last = nodes.length - 1;
     let pos = 0;
     let bloomed = false; // the goal flourish is one-time; revisiting must never replay it
+    let anim: { raf: number; finish: () => void } | null = null;
+    let panelTimer = 0;
 
     // Captured once from the rendered markup, so the accessible names below stay in step with the visible
     // labels without the data being threaded through a second time.
-    const labels = nodes.map((n) => {
-      const kind = (n.querySelector('.ap-node-kind') as HTMLElement | null)?.textContent?.trim() ?? '';
-      const name = (n.querySelector('.ap-node-name') as HTMLElement | null)?.textContent?.trim() ?? '';
-      return `${kind} ${name}`.trim();
-    });
+    const text = (el: Element | null): string => (el?.textContent ?? '').replace(/\s+/g, ' ').trim();
+    const labels = nodes.map((n) => `${text(n.querySelector('.ap-node-kind'))} ${text(n.querySelector('.ap-node-name'))}`.trim());
+    const edges = panels.map((p) => text(p.querySelector('.ap-panel-edge')));
 
     // Read at interaction time, not once at load, so a mid-session OS change is honoured (the same
     // approach FlagCapture takes).
     const reduced = (): boolean => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     // Progress state is carried visually by tint, scale and the check glyph, none of which reach assistive
-    // tech (the check is aria-hidden, and aria-current only ever marks ONE node). Without this a screen
-    // reader hears an undifferentiated list of names and cannot tell taken hops from untaken ones, so the
-    // word is appended to each control's accessible name. The visible label stays inside the accessible
-    // name, keeping WCAG 2.5.3 Label in Name satisfied.
-    function stateWord(i: number): string {
-      return i < pos ? 'completed' : i === pos ? 'current step' : 'not yet reached';
+    // tech, so the word is appended to each node's accessible name, after its visible label (WCAG 2.5.3).
+    function stateWord(i: number, at: number): string {
+      return i < at ? 'completed' : i === at ? 'current step' : 'not yet reached';
     }
 
-    function paint(): void {
+    // ── Painting, in two layers: what the reader acts on changes at once (count, dots, names, focus order);
+    //    what the strip shows changes as the climb plays (paintStrip). ──
+    function paintChrome(at: number): void {
       nodes.forEach((n, i) => {
-        n.dataset.state = i < pos ? 'done' : i === pos ? 'active' : 'future';
-        if (i === pos) n.setAttribute('aria-current', 'step');
+        if (i === at) n.setAttribute('aria-current', 'step');
         else n.removeAttribute('aria-current');
-        n.setAttribute('aria-label', `${labels[i]}, ${stateWord(i)}`);
-      });
-      // Connector k sits between node k and node k+1, so it is `done` once we have moved past node k.
-      conns.forEach((c, k) => {
-        c.dataset.state = k + 1 <= pos ? 'done' : 'future';
+        n.setAttribute('aria-label', `${labels[i]}, ${stateWord(i, at)}`);
+        // One tab stop for the whole chain: the current node. The arrow keys walk the rest.
+        n.tabIndex = i === at ? 0 : -1;
       });
       dots.forEach((d, i) => {
-        d.dataset.state = i < pos ? 'done' : i === pos ? 'active' : 'future';
-        if (i === pos) d.setAttribute('aria-current', 'step');
-        else d.removeAttribute('aria-current');
-        d.setAttribute('aria-label', `Step ${i + 1}: ${labels[i]}, ${stateWord(i)}`);
+        d.dataset.state = i < at ? 'done' : i === at ? 'active' : 'future';
       });
-      panels.forEach((p, i) => {
-        p.hidden = i !== pos;
-      });
-      if (stepEl) stepEl.textContent = String(pos + 1);
-      if (fill) fill.style.width = `${(pos / last) * 100}%`;
+      if (stepEl) stepEl.textContent = String(at + 1);
       // aria-disabled, NOT the `disabled` property: a disabled element is not focusable, so reaching the
       // goal by pressing Enter on this very button destroyed the keyboard user's focus (verified: focus
       // fell to <body>, and the next Tab restarted from the top of the document). Keeping it focusable and
       // marking it disabled to AT preserves the focus position; the click/advance path is guarded instead.
-      nextBtn.setAttribute('aria-disabled', pos >= last ? 'true' : 'false');
-      root.dataset.done = pos >= last ? 'true' : 'false';
-      if (nextLabel) nextLabel.textContent = pos >= last ? 'Compromised' : 'Next step';
+      nextBtn!.setAttribute('aria-disabled', at >= last ? 'true' : 'false');
+      root.dataset.done = at >= last ? 'true' : 'false';
+      if (nextLabel) nextLabel.textContent = at >= last ? 'Compromised' : 'Next step';
     }
 
-    // Re-trigger the dossier's fade-up. Reflow between remove and add restarts the animation.
-    // The class is cleared off every panel first, including under reduced motion: the keyframes are
-    // gated in CSS so a stale class cannot animate, but leaving one behind would mean the DOM claims a
-    // transition that is not happening, and it would light up the moment the user turned motion back on.
-    function fadeDossier(): void {
-      panels.forEach((p) => p.classList.remove('is-enter'));
-      const panel = panels[pos];
-      if (!panel || reduced()) return;
-      void panel.offsetWidth;
-      panel.classList.add('is-enter');
-      // Drop the class as soon as it has served its purpose. Clearing it only on the NEXT advance left it
-      // sitting on the current panel indefinitely, so a reader who turned motion back on mid-session would
-      // see that panel animate the moment the media query started matching, with nothing having changed.
-      panel.addEventListener('animationend', () => panel.classList.remove('is-enter'), { once: true });
+    // Connector k sits between node k and node k+1. The one that reached the current node is `current`,
+    // the ones behind it `done`.
+    function paintStrip(at: number): void {
+      nodes.forEach((n, i) => {
+        n.dataset.state = i < at ? 'done' : i === at ? 'active' : 'future';
+      });
+      conns.forEach((c, k) => {
+        c.dataset.state = k + 1 < at ? 'done' : k + 1 === at ? 'current' : 'future';
+      });
     }
 
-    // Centre the active node in the viewport of the track.
-    function centre(): void {
-      const node = nodes[pos];
-      if (!node) return;
-      const nr = node.getBoundingClientRect();
-      const tr = track!.getBoundingClientRect();
-      const delta = nr.left + nr.width / 2 - (tr.left + tr.width / 2);
-      track!.scrollTo({ left: track!.scrollLeft + delta, behavior: reduced() ? 'auto' : 'smooth' });
+    function announce(at: number): void {
+      if (!status) return;
+      const via = edges[at] ? `, via ${edges[at]}` : '';
+      status.textContent = `Step ${at + 1} of ${last + 1}: ${labels[at]}${via}.${at >= last ? ' Compromised.' : ''}`;
     }
 
-    // The gold runner travelling from the previous node to the new one. Coordinates are measured
-    // against the spine (not offsetLeft/offsetTop), because the nodes are relatively positioned to
-    // create the ascent and rects are unambiguous about where they actually ended up.
-    function runFromTo(from: number, to: number): void {
-      if (!runner || !spine) return;
-      // Under reduced motion the runner never travels, and any inline transform/transition left over
-      // from an earlier advance is cleared so nothing stale can play if the preference changes.
-      if (reduced() || from === to) {
-        runner.style.transition = 'none';
-        runner.style.opacity = '0';
+    // ── The dossier: its labels stand still and only the values change, rolling up as the chain climbs
+    //    and down when it is walked back. ──
+    function showPanel(from: number, to: number, dir: number): void {
+      window.clearTimeout(panelTimer);
+      panels.forEach((p, i) => {
+        p.classList.remove('is-leaving', 'is-entering', 'is-down');
+        p.removeAttribute('aria-hidden');
+        p.hidden = i !== to;
+      });
+      if (reduced() || from === to || dir === 0) return;
+      const old = panels[from];
+      const cur = panels[to];
+      old.hidden = false;
+      old.setAttribute('aria-hidden', 'true');
+      old.classList.add('is-leaving');
+      cur.classList.add('is-entering');
+      old.classList.toggle('is-down', dir < 0);
+      cur.classList.toggle('is-down', dir < 0);
+      panelTimer = window.setTimeout(() => {
+        old.hidden = true;
+        old.classList.remove('is-leaving', 'is-down');
+        old.removeAttribute('aria-hidden');
+        cur.classList.remove('is-entering', 'is-down');
+      }, 420);
+    }
+
+    // ── Camera ──
+    const maxScroll = (): number => Math.max(0, track!.scrollWidth - track!.clientWidth);
+    const gutter = (): number => parseFloat(getComputedStyle(root).getPropertyValue('--ap-fade-w')) || 0;
+    // Where the camera rests for step i. The current node is always whole; then as much of how it was reached
+    // as fits, the hop first and the node before it second, so the frame reads from where you came from to
+    // where you are, and the next node only peeks in. With nothing behind (the entry) it centres.
+    function cameraLeft(i: number): number {
+      const n = nodes[i];
+      const w = track!.clientWidth;
+      const g = gutter();
+      // Further left than this, the current node's right edge would slide under the right-hand band.
+      const floor = n.offsetLeft + n.offsetWidth - (w - g);
+      let left = n.offsetLeft + n.offsetWidth / 2 - w / 2;
+      if (i > 0) {
+        for (const el of [conns[i - 1], nodes[i - 1]]) {
+          const whole = el.offsetLeft - g;
+          if (whole < left) left = Math.max(whole, floor);
+        }
+      }
+      return Math.max(0, Math.min(maxScroll(), left));
+    }
+
+    // The past recedes: a node or connector that has slid mostly off the left edge fades out as a whole,
+    // instead of leaving its border and check glyph behind without its name. Ahead, the next node keeps
+    // peeking in under the right-hand fade, which is the "there is more path" cue.
+    const recedable: HTMLElement[] = [...conns, ...nodes];
+    function recede(): void {
+      const left = track!.scrollLeft;
+      recedable.forEach((el) => {
+        const cut = left - el.offsetLeft;
+        const o = cut <= 0 ? 1 : smoothstep(0.5, 0.9, 1 - cut / el.offsetWidth);
+        if (o >= 0.999) el.style.removeProperty('opacity');
+        else el.style.opacity = o.toFixed(3);
+      });
+    }
+
+    // ── The spark ──
+    // A point on connector k, `frac` of the way along its curve, in the spine's (= the scroll area's) pixels.
+    function sparkPoint(k: number, frac: number): { x: number; y: number } {
+      const c = conns[k];
+      const pt = paths[k].getPointAtLength(lens[k] * frac);
+      return { x: c.offsetLeft + pt.x, y: c.offsetTop + pt.y };
+    }
+    function sparkOff(fade: boolean): void {
+      runner!.style.transition = fade ? 'opacity 0.1s ease' : 'none';
+      runner!.style.opacity = '0';
+    }
+    // The connector under the spark draws behind it; null hands the stroke back to the stylesheet.
+    function drawn(k: number, frac: number | null): void {
+      const line = paths[k];
+      if (frac === null) {
+        line.style.removeProperty('stroke-dashoffset');
+        line.style.removeProperty('transition');
         return;
       }
-      const sp = spine.getBoundingClientRect();
-      const a = nodes[from].getBoundingClientRect();
-      const b = nodes[to].getBoundingClientRect();
-      const ax = a.left - sp.left + a.width / 2;
-      const ay = a.top - sp.top + a.height / 2;
-      const bx = b.left - sp.left + b.width / 2;
-      const by = b.top - sp.top + b.height / 2;
-      runner.style.transition = 'none';
-      runner.style.opacity = '1';
-      runner.style.transform = `translate(${ax}px, ${ay}px)`;
-      void runner.offsetWidth;
-      runner.style.transition = 'transform 0.5s cubic-bezier(0.4, 0.05, 0.2, 1), opacity 0.24s ease 0.34s';
-      runner.style.opacity = '0';
-      runner.style.transform = `translate(${bx}px, ${by}px)`;
+      line.style.transition = 'none';
+      line.style.strokeDashoffset = String(dash - lens[k] * frac);
     }
 
-    // One-time gold bloom on first arrival at the goal. Guarded, so clicking back and forward again
-    // never replays it, and skipped entirely under reduced motion.
+    // One-time gold bloom on first arrival at the goal. Guarded, so clicking back and forward again never
+    // replays it, and skipped entirely under reduced motion.
     function bloom(): void {
       if (bloomed || reduced()) return;
       bloomed = true;
@@ -369,45 +494,206 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
       window.setTimeout(() => goal.classList.remove('is-bloom'), 1400);
     }
 
-    function go(to: number): void {
+    // A step still playing finishes at once, so a new one always starts from rest.
+    function stop(): void {
+      if (!anim) return;
+      const a = anim;
+      anim = null;
+      window.cancelAnimationFrame(a.raf);
+      a.finish();
+    }
+
+    // Climbing, in two beats. First the spark leaves the node and runs the connector, drawing it as it goes,
+    // and lands on the next node, which lights as it arrives; the camera holds still while the spark is on
+    // screen and only follows it past the right-hand edge, so the spark never drifts backwards. Then the camera
+    // settles on the new frame, carrying the lit node into place. A jump runs every hop in turn, faster.
+    function climb(from: number, to: number): void {
+      const hops = to - from;
+      const per = Math.max(160, Math.min(380, 900 / hops));
+      const travel = per * hops;
+      const hold = 70;
+      const settle = 360;
+      const s0 = track!.scrollLeft;
+      const s1 = cameraLeft(to);
+      // The screen x the spark may not pass in flight: where it sets off, or the band's inner edge.
+      const lead = Math.max(sparkPoint(from, 0).x - s0, track!.clientWidth - gutter() - 24);
+      const swapAt = travel - Math.min(140, per * 0.35);
+      let reached = from;
+      let swapped = false;
+      let arrived = false;
+      let sArrive = s0;
+      let end = travel + hold + settle;
+
+      nodes[from].dataset.state = 'done';
+      if (from > 0) conns[from - 1].dataset.state = 'done';
+      for (let k = from; k < to; k++) drawn(k, 0);
+      const p0 = sparkPoint(from, 0);
+      runner!.style.transition = 'none';
+      runner!.style.transform = `translate(${p0.x}px, ${p0.y}px)`;
+      runner!.style.opacity = '1';
+
+      const swap = (): void => {
+        swapped = true;
+        showPanel(from, to, 1);
+      };
+      const arrive = (): void => {
+        arrived = true;
+        sArrive = track!.scrollLeft;
+        // Nothing left to settle: the step ends with the arrival.
+        if (Math.abs(s1 - sArrive) < 1) end = travel;
+        for (let k = from; k < to; k++) drawn(k, null);
+        paintStrip(to);
+        sparkOff(true);
+      };
+      const finish = (): void => {
+        if (!swapped) {
+          swapped = true;
+          showPanel(from, to, 0);
+        }
+        if (!arrived) {
+          arrived = true;
+          for (let k = from; k < to; k++) drawn(k, null);
+          paintStrip(to);
+          sparkOff(false);
+        }
+        track!.scrollLeft = s1;
+        recede();
+      };
+      const t0 = performance.now();
+      const frame = (now: number): void => {
+        const el = now - t0;
+        if (!arrived) {
+          const run = ease(clamp01(el / travel)) * hops;
+          const h = Math.min(hops - 1, Math.floor(run));
+          const frac = Math.min(1, run - h);
+          for (let k = from; k < to; k++) drawn(k, k < from + h ? 1 : k === from + h ? frac : 0);
+          while (reached < from + h) {
+            reached += 1;
+            nodes[reached].dataset.state = 'done';
+            conns[reached - 1].dataset.state = 'done';
+          }
+          const pt = sparkPoint(from + h, frac);
+          track!.scrollLeft = Math.max(s0, pt.x - lead);
+          runner!.style.transform = `translate(${pt.x}px, ${pt.y}px)`;
+          if (!swapped && el >= swapAt) swap();
+          if (el >= travel) arrive();
+        } else {
+          const p = clamp01((el - travel - hold) / settle);
+          track!.scrollLeft = sArrive + (s1 - sArrive) * ease(p);
+        }
+        recede();
+        if (el < end) {
+          anim = { raf: window.requestAnimationFrame(frame), finish };
+          return;
+        }
+        anim = null;
+        // The flourish waits for the frame to settle, so the goal blooms where it comes to rest.
+        if (to === last) bloom();
+      };
+      anim = { raf: window.requestAnimationFrame(frame), finish };
+    }
+
+    // Walking back: no spark. The strip returns to that step (the lines retract on their own transition)
+    // and the camera pans back on the same curve.
+    function descend(from: number, to: number): void {
+      sparkOff(false);
+      paintStrip(to);
+      showPanel(from, to, -1);
+      const s0 = track!.scrollLeft;
+      const s1 = cameraLeft(to);
+      const dur = 420;
+      const t0 = performance.now();
+      const finish = (): void => {
+        track!.scrollLeft = s1;
+        recede();
+      };
+      const frame = (now: number): void => {
+        const p = clamp01((now - t0) / dur);
+        track!.scrollLeft = s0 + (s1 - s0) * ease(p);
+        recede();
+        if (p < 1) anim = { raf: window.requestAnimationFrame(frame), finish };
+        else anim = null;
+      };
+      anim = { raf: window.requestAnimationFrame(frame), finish };
+    }
+
+    function go(to: number, focusNode: boolean): void {
       const target = Math.max(0, Math.min(last, to));
       if (target === pos) return;
+      stop();
       const from = pos;
       pos = target;
-      paint();
-      runFromTo(from, target);
-      fadeDossier();
-      centre();
-      if (target === last) bloom();
+      paintChrome(target);
+      announce(target);
+      if (focusNode) nodes[target].focus({ preventScroll: true });
+      if (reduced()) {
+        sparkOff(false);
+        paintStrip(target);
+        showPanel(from, target, 0);
+        track!.scrollLeft = cameraLeft(target);
+        recede();
+        return;
+      }
+      if (target > from) climb(from, target);
+      else descend(from, target);
     }
 
     // Guarded rather than relying on the `disabled` property, which would take the button out of the tab
     // order at exactly the moment the user pressed it. `go()` clamps anyway; this keeps the intent explicit.
     nextBtn.addEventListener('click', () => {
       if (pos >= last) return;
-      go(pos + 1);
+      go(pos + 1, false);
     });
-    nodes.forEach((n, i) => n.addEventListener('click', () => go(i)));
-    dots.forEach((d, i) => d.addEventListener('click', () => go(i)));
+    nodes.forEach((n, i) => n.addEventListener('click', () => go(i, false)));
+    dots.forEach((d, i) => d.addEventListener('click', () => go(i, false)));
 
-    // Arrow keys are scoped to the component, so they only act while focus is inside it and never
-    // hijack the page's own arrow-key scrolling.
+    // Arrow keys are scoped to the component, so they only act while focus is inside it and never hijack
+    // the page's own scrolling. On a node they carry focus along with the step, so the focused node is
+    // always the current one and always on screen; Home and End jump to the ends of the chain.
     root.addEventListener('keydown', (ev: KeyboardEvent) => {
-      if (ev.key === 'ArrowRight') {
-        ev.preventDefault();
-        go(pos + 1);
-      } else if (ev.key === 'ArrowLeft') {
-        ev.preventDefault();
-        go(pos - 1);
-      }
+      const onNode = nodes.includes(ev.target as HTMLButtonElement);
+      let to = -1;
+      if (ev.key === 'ArrowRight') to = pos + 1;
+      else if (ev.key === 'ArrowLeft') to = pos - 1;
+      else if (onNode && ev.key === 'Home') to = 0;
+      else if (onNode && ev.key === 'End') to = last;
+      else return;
+      ev.preventDefault();
+      go(to, onNode);
     });
 
-    paint();
+    // A swipe moves the camera by hand; the past still recedes as it goes.
+    let pending = 0;
+    track.addEventListener('scroll', () => {
+      if (pending || anim) return;
+      pending = window.requestAnimationFrame(() => {
+        pending = 0;
+        recede();
+      });
+    }, { passive: true });
+    // When the strip's width or its fonts change, the current node is re-centred and the edges re-read.
+    let settle = 0;
+    new ResizeObserver(() => {
+      window.cancelAnimationFrame(settle);
+      settle = window.requestAnimationFrame(() => {
+        if (anim) return;
+        track!.scrollLeft = cameraLeft(pos);
+        recede();
+      });
+    }).observe(track);
+
+    paintChrome(pos);
+    paintStrip(pos);
+    recede();
   }
 
-  document
-    .querySelectorAll('[data-attack-path]')
-    .forEach((el) => setupAttackPath(el as HTMLElement));
+  function initAttackPaths(): void {
+    document.querySelectorAll('[data-attack-path]').forEach((el) => setupAttackPath(el as HTMLElement));
+  }
+  initAttackPaths();
+  // Idempotent, so it also holds if the site ever adopts Astro's client router, which fires this after each
+  // navigation.
+  document.addEventListener('astro:page-load', initAttackPaths);
 </script>
 
 <style>
@@ -482,7 +768,7 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
   .ap-meter-text {
     margin: 0;
     font-family: var(--sl-font-mono);
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--ap-quiet);
@@ -498,30 +784,6 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
   /* At the goal the count turns gold with the rest of the end state: the Compromised control, the goal's
      dossier panel and the last dot. A green count beside them was the odd one out. */
   .apath[data-done='true'] .ap-meter-text span { color: var(--ap-gold-ink); }
-  .ap-bar {
-    --ap-bar-w: 92px;
-    width: var(--ap-bar-w);
-    height: 3px;
-    border-radius: 999px;
-    background: color-mix(in oklab, var(--ap-quiet) 34%, transparent);
-    overflow: hidden;
-  }
-  /* The ramp is painted across the whole TRACK (sized by the same --ap-bar-w) and the fill only uncovers
-     it, so the fill's leading edge is the colour of the step it has reached: green at the start, gold only
-     at the goal, and the same colour as the current step's dot (the dots mix the same two colours by the
-     same position). Sized to the fill instead, the gradient squeezed the whole green-to-gold ramp into
-     whatever width the fill had, so the bar read gold from the second step. */
-  .ap-bar i {
-    display: block;
-    height: 100%;
-    width: 0%;
-    border-radius: inherit;
-    background: linear-gradient(90deg, var(--ap-accent), var(--ap-gold)) 0 0 / var(--ap-bar-w) 100% no-repeat;
-  }
-  @media (prefers-reduced-motion: no-preference) {
-    .ap-bar i { transition: width 0.45s cubic-bezier(0.4, 0.05, 0.2, 1); }
-  }
-
   /* ── Stage: the masked window onto the scrolling track ── */
   .ap-stage { position: relative; }
   .ap-track {
@@ -594,7 +856,7 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
     flex: none;
     /* Escalation: --t runs 0 to 1 across the chain, so width and type scale grow toward the goal
        regardless of how many hops the chain has. */
-    width: calc(132px + var(--t) * 52px);
+    width: calc(148px + var(--t) * 56px);
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -610,7 +872,7 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
   }
   .ap-node-kind {
     font-family: var(--sl-font-mono);
-    font-size: 0.6rem;
+    font-size: 0.6875rem;
     font-weight: 500;
     letter-spacing: 0.16em;
     text-transform: uppercase;
@@ -622,7 +884,7 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
   }
   .ap-node-name {
     font-family: var(--sl-font-mono);
-    font-size: calc(0.76rem + var(--t) * 0.14rem);
+    font-size: calc(0.875rem + var(--t) * 0.125rem);
     /* Escalation weight uses ONLY the loaded JetBrains Mono faces (400/500/700). A continuous
        calc(500 + --t*200) requested 540/580/620/660, none of which exist, so the browser snapped every
        one to Bold 700 (measured: identical ink to 700) and the "ramp" was really a step at node 0. The
@@ -632,6 +894,7 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
     line-height: 1.28;
     color: var(--sl-color-white);
     overflow-wrap: anywhere;
+    text-wrap: balance;               /* a two-line name splits evenly instead of leaving one word behind */
   }
   .ap-check {
     position: absolute;
@@ -642,7 +905,8 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    .ap-node { transition: transform 0.34s cubic-bezier(0.4, 0.05, 0.2, 1), border-color 0.3s ease, box-shadow 0.34s ease, opacity 0.3s ease; }
+    /* No opacity here: the script fades the receding past frame by frame with the camera. */
+    .ap-node { transition: transform 0.34s cubic-bezier(0.4, 0.05, 0.2, 1), border-color 0.3s ease, box-shadow 0.34s ease, background-color 0.3s ease; }
     .ap-check { transition: opacity 0.3s ease 0.12s; }
   }
 
@@ -682,7 +946,7 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
   }
   .ap-node[data-state='active'] .ap-node-kind { color: var(--ap-accent); }
   /* Same carve-out the primary "Next step" control already needed, for the same reason: on paper the
-     ambient accent sitting ON its own 12% accent tint measures only 3.94:1 as a 9.6px label, under AA.
+     ambient accent sitting ON its own 12% accent tint measures only 3.94:1 as an 11px label, under AA.
      The site's text-legible accent variant clears it at 7.59:1. Light only, dark accent is already 13.3:1.
      The :not(.is-goal) is load-bearing: adding html[data-theme] to the selector out-specifies the later
      .is-goal[data-state='active'] gold rule, which silently turned the GOAL's kind label green (verified:
@@ -720,6 +984,11 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
   .ap-node.is-goal[data-state='done'] .ap-node-kind { color: var(--ap-gold-ink); }
   /* The entry point gets a quiet accent tick so the chain has a visible beginning as well as an end. */
   .ap-node.is-start { border-left: 2px solid color-mix(in oklab, var(--ap-accent) 55%, var(--ap-line)); }
+  /* A node is a control, so it answers the pointer: the border warms toward the accent (gold on the goal). */
+  @media (hover: hover) {
+    .apath[data-enhanced] .ap-node:not([data-state='active']):hover { border-color: color-mix(in oklab, var(--ap-accent) 70%, var(--ap-line)); }
+    .apath[data-enhanced] .ap-node.is-goal:not([data-state='active']):hover { border-color: var(--ap-gold); }
+  }
 
   /* ── Connector ── */
   .ap-conn {
@@ -753,20 +1022,21 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
     stroke-dashoffset: var(--ap-dash);
   }
   .ap-conn-head { opacity: 0; }
-  .ap-conn[data-state='done'] .ap-conn-live { stroke-dashoffset: 0; }
-  .ap-conn[data-state='done'] .ap-conn-head { opacity: 1; }
-  .ap-conn[data-state='done'] .ap-conn-base { opacity: 0; }
+  .ap-conn:is([data-state='done'], [data-state='current']) .ap-conn-live { stroke-dashoffset: 0; }
+  .ap-conn:is([data-state='done'], [data-state='current']) .ap-conn-head { opacity: 1; }
+  .ap-conn:is([data-state='done'], [data-state='current']) .ap-conn-base { opacity: 0; }
   /* The last hop lands in gold, matching the goal it arrives at. */
   .ap-conn.is-goal-conn .ap-conn-live,
   .ap-conn.is-goal-conn .ap-conn-head { stroke: var(--ap-gold); }
 
   @media (prefers-reduced-motion: no-preference) {
-    .ap-conn-live { transition: stroke-dashoffset 0.55s cubic-bezier(0.4, 0.05, 0.2, 1); }
-    .ap-conn-head { transition: opacity 0.2s ease 0.42s; }
+    /* Forward, the script draws the line with the spark; this transition only retracts it on the way back. */
+    .ap-conn-live { transition: stroke-dashoffset 0.4s cubic-bezier(0.4, 0.05, 0.2, 1); }
+    .ap-conn-head { transition: opacity 0.18s ease; }
     .ap-conn-base { transition: opacity 0.3s ease; }
   }
 
-  /* The privilege verb rides ON the segment, parallel to it. Anchor: the label's BOTTOM edge sits a
+  /* The technique rides ON the segment, parallel to it. Anchor: the label's BOTTOM edge sits a
      constant gap above the connector's mid-line (translateY(-100%) lands the bottom edge on the anchor
      no matter how many lines the label wraps to, so one- and two-line labels keep the same distance to
      the line); then a rotation about that bottom-centre point tilts the label to the chord's angle, which
@@ -782,23 +1052,27 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
     width: calc(var(--ap-cw) - 6px);
     text-align: center;
     font-family: var(--sl-font-mono);
-    font-size: 0.605rem;
+    font-size: 0.72rem;
     line-height: 1.35;
     letter-spacing: 0.02em;
     color: var(--ap-quiet);
     pointer-events: none;
   }
-  .ap-edge :global(b) { font-weight: 700; color: color-mix(in oklab, var(--sl-color-white) 72%, var(--ap-quiet)); }
-  .ap-conn[data-state='done'] .ap-edge { color: color-mix(in oklab, var(--ap-accent) 62%, var(--sl-color-text)); }
-  .ap-conn[data-state='done'] .ap-edge :global(b) { color: var(--ap-accent); }
-  /* Light only: on the #f2ede0 panel the accent reads 4.27:1 as this 9.68px bold run (model C
+  /* One technique is lit at a time: the hop that reached the current node. The way ahead and the hops
+     behind stay quiet (AA grey, bold kept), so the eye lands on how this step was won, not on the next. */
+  .ap-edge :global(b) { font-weight: 700; color: var(--ap-quiet); }
+  .ap-conn[data-state='current'] .ap-edge { color: color-mix(in oklab, var(--ap-accent) 62%, var(--sl-color-text)); }
+  .ap-conn[data-state='current'] .ap-edge :global(b) { color: var(--ap-accent); }
+  /* Light only: on the #f2ede0 panel the accent reads 4.27:1 as this 11.5px bold run (model C
      median), under AA. The lime ink reads 5.71:1 there (model C median) and stays lighter than the
      caption's own text (OKLCH L 0.47 against 0.41); accent-high (L 0.38) would sink the run into it.
      The goal's run keeps its gold ink. */
-  :global(html[data-theme='light']) .ap-conn[data-state='done']:not(.is-goal-conn) .ap-edge :global(b) { color: var(--tp-lime-ink); }
-  .ap-conn.is-goal-conn[data-state='done'] .ap-edge :global(b) { color: var(--ap-gold-ink); }
+  :global(html[data-theme='light']) .ap-conn[data-state='current']:not(.is-goal-conn) .ap-edge :global(b) { color: var(--tp-lime-ink); }
+  .ap-conn.is-goal-conn[data-state='current'] .ap-edge :global(b) { color: var(--ap-gold-ink); }
 
-  /* ── Runner: the gold spark that carries the eye from the old node to the new one ── */
+  /* ── Runner: the gold spark that runs each connector, from the node it leaves to the node it reaches.
+     The script places it on the curve every frame, in the spine's own coordinates, while it scrolls the
+     track on the same clock, so the two can no longer pull against each other. ── */
   .ap-runner {
     position: absolute;
     top: 0;
@@ -832,9 +1106,11 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
     38%  { box-shadow: 0 0 0 2px var(--ap-gold), 0 0 42px 6px color-mix(in oklab, var(--ap-gold) 78%, transparent); }
     100% { box-shadow: 0 0 0 1px color-mix(in oklab, var(--ap-gold) 42%, transparent), 0 10px 30px -12px color-mix(in oklab, var(--ap-gold) 66%, transparent); }
   }
+  /* The ring spreads as a shadow, not a scale: a shadow is painted overflow, so it never adds scroll width,
+     and at 12px it stays inside the gutter the goal rests in. */
   @keyframes ap-ripple {
-    0%   { opacity: 0.85; transform: scale(1); }
-    100% { opacity: 0; transform: scale(1.5); }
+    0%   { opacity: 0.85; box-shadow: 0 0 0 0 color-mix(in oklab, var(--ap-gold) 70%, transparent); }
+    100% { opacity: 0; box-shadow: 0 0 0 12px color-mix(in oklab, var(--ap-gold) 0%, transparent); }
   }
 
   /* ── Dossier ── */
@@ -858,7 +1134,7 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
      detail rows. It used to be three layout systems, a flex head, an inline "via" line and a grid, and each
      started its values at its own x, so one panel showed its values at up to three x positions, 12 to 27px
      apart (measured on every writeup that carries one). The rows are told apart only by how they look: the head by its
-     coloured kind label and the large bold name, the edge by its quiet ink with the verb in bold, the
+     coloured kind label and the large bold name, the edge by its quiet ink with the technique in bold, the
      details by body text. Hierarchy is colour, weight and size, never position.
      align-items: baseline sets every label on its value's first baseline. That replaced a padding-top nudge
      on the labels, which was a declared relationship and measured 0.65px off. */
@@ -873,7 +1149,7 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
     row-gap: var(--ap-row-gap);
     column-gap: var(--ap-col-gap);     /* a subgrid inherits the dossier's gap, a fallback grid does not */
     font-family: var(--sl-font-mono);
-    font-size: 0.735rem;
+    font-size: 0.875rem;
   }
   /* Where subgrid exists (Chrome 117, Safari 16, Firefox 71) the panels share the dossier's two columns.
      The build's browser floor reaches back to Chrome 111, which lacks it; there each panel keeps the two
@@ -900,11 +1176,12 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
     text-align: right;
     text-transform: uppercase;
     letter-spacing: 0.16em;
-    font-size: 0.6rem;
+    font-size: 0.6875rem;
     color: var(--ap-quiet);
   }
   .ap-panel dd {
     margin: 0;
+    line-height: 1.5;                  /* a value that wraps on a phone reads as one block, not two rows */
     color: var(--sl-color-text);
     overflow-wrap: anywhere;
   }
@@ -915,19 +1192,20 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
     color: var(--ap-accent);
   }
   /* Light only, the carve-out the active node's kind label and the Next button already carry, for the same
-     reason: on paper the ambient accent reads 4.27:1 as this 9.6px label (#4d7c0f on the #f2ede0 panel,
+     reason: on paper the ambient accent reads 4.27:1 as this 11px label (#4d7c0f on the #f2ede0 panel,
      which is opaque, so that pair is the composite), under AA. The text-legible accent variant clears it.
      The dark accent is already 16.1:1 on the dark panel. :not(.is-goal) so the theme prefix cannot
      out-specify the goal's gold below, the trap the node's own kind label already documents. */
   :global(html[data-theme='light']) .ap-panel:not(.is-goal) .ap-panel-kind { color: var(--sl-color-accent-high); }
   .ap-panel .ap-panel-name {
-    font-size: 0.92rem;
+    font-size: 1rem;
+    line-height: 1.3;
     font-weight: 700;
     color: var(--sl-color-white);
   }
   .ap-panel.is-goal .ap-panel-kind,
   .ap-panel.is-goal .ap-panel-name { color: var(--ap-gold-ink); }
-  /* The edge row reads a step quieter than the details; the verb itself is carried by the bold. */
+  /* The edge row reads a step quieter than the details; the technique itself is carried by the bold. */
   .ap-panel .ap-panel-edge { color: var(--ap-quiet); }
   .ap-panel .ap-panel-edge :global(b) { color: var(--sl-color-text); font-weight: 700; }
   /* The head and the edge each stand a little clear of the row below (0.4rem and 0.5rem, their spacing
@@ -960,13 +1238,21 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
     color: color-mix(in oklab, var(--ap-gold-ink) 78%, var(--sl-color-white));
   }
 
+  /* A step changes the answers, not the form: the labels swap in place (most panels share them, so they
+     read as standing still), and only the values roll, up as the chain climbs and down when it is walked
+     back. The old values are gone before the new ones settle, so the two never sit on top of each other. */
+  .ap-panel.is-leaving { visibility: visible; }
+  .ap-panel.is-leaving dt { visibility: hidden; }
   @media (prefers-reduced-motion: no-preference) {
-    .ap-panel.is-enter { animation: ap-rise-in 0.34s cubic-bezier(0.4, 0.05, 0.2, 1) 1; }
+    .ap-panel.is-leaving dd { animation: ap-val-out 0.13s ease-in 1 forwards; }
+    .ap-panel.is-entering dd { animation: ap-val-in 0.26s cubic-bezier(0.4, 0.05, 0.2, 1) 0.09s 1 backwards; }
+    .ap-panel.is-leaving.is-down dd { animation-name: ap-val-out-down; }
+    .ap-panel.is-entering.is-down dd { animation-name: ap-val-in-down; }
   }
-  @keyframes ap-rise-in {
-    from { opacity: 0; transform: translateY(5px); }
-    to   { opacity: 1; transform: none; }
-  }
+  @keyframes ap-val-out { to { opacity: 0; transform: translateY(-4px); } }
+  @keyframes ap-val-out-down { to { opacity: 0; transform: translateY(4px); } }
+  @keyframes ap-val-in { from { opacity: 0; transform: translateY(5px); } }
+  @keyframes ap-val-in-down { from { opacity: 0; transform: translateY(-5px); } }
 
   /* ── Footer ── */
   .ap-foot {
@@ -978,7 +1264,7 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
     padding-top: 0.8rem;
     border-top: 1px solid var(--ap-line);
   }
-  .ap-dots { display: flex; align-items: center; gap: 0.7rem; }
+  .ap-dots { display: flex; flex-wrap: wrap; align-items: center; gap: 0 10px; }
   .ap-dot {
     /* This dot's colour on the chain's green-to-gold ramp, the one the meter bar draws: the same two
        colours, mixed by the dot's position (--t, 0 at the entry and 1 at the goal) in sRGB, the space a
@@ -989,40 +1275,51 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
     --ap-dot-c: color-mix(in srgb, var(--ap-accent), var(--ap-gold) calc(var(--t, 0) * 100%));
     --focus-ring: color-mix(in srgb, var(--ap-accent), var(--ap-gold-ink) calc(var(--t, 0) * 100%));
     position: relative;
-    width: 7px;
-    height: 7px;
-    padding: 0;
-    border: 0;
-    border-radius: 50%;
-    background: color-mix(in oklab, var(--ap-quiet) 45%, transparent);
+    display: grid;
+    place-items: center;
+    width: 14px;                       /* with the row's gap, each dot owns a 24px square of the row */
+    height: 24px;
     cursor: pointer;
   }
-  /* Layout-neutral pointer target (WCAG 2.2 SC 2.5.8), the site's own hit-area convention (the About HUD
-     controls grow the target, not the layout): the visible dot and its focus ring stay the 7px border box,
-     while this absolutely positioned overflow grows only the invisible tap area, so nothing reflows. It is
-     24px tall (the standard) and one dot-plus-gap wide, so adjacent targets TILE the row edge to edge (no
-     overlap, no dead zone, symmetric per dot) instead of a fixed 24px box where later siblings would steal
-     a neighbour's overlap. The dots are a redundant control as well (every step is also reachable by its
-     full-size node, the Next button, and the arrow keys), so the row stays compact by design. */
-  .ap-dot::after {
+  /* The visible dot is drawn inside the target, so tools measure the target and readers see the dot. */
+  .ap-dot::before {
     content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: calc(100% + 0.7rem);
-    height: 24px;
-    transform: translate(-50%, -50%);
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: color-mix(in oklab, var(--ap-quiet) 45%, transparent);
   }
   /* A future dot stays the quiet grey, as the bar's unfilled track does; a reached dot takes its own place
      on the ramp, softer once passed and full on the current step. */
-  .ap-dot[data-state='done'] { background: color-mix(in oklab, var(--ap-dot-c) 60%, transparent); }
-  .ap-dot[data-state='active'] {
+  .ap-dot[data-state='done']::before { background: color-mix(in oklab, var(--ap-dot-c) 60%, transparent); }
+  .ap-dot[data-state='active']::before {
     background: var(--ap-dot-c);
     transform: scale(1.5);
   }
-  @media (prefers-reduced-motion: no-preference) {
-    .ap-dot { transition: background-color 0.25s ease, transform 0.25s ease; }
+  @media (hover: hover) {
+    .ap-dot:not([data-state='active']):hover::before { background: color-mix(in oklab, var(--ap-dot-c) 80%, transparent); }
   }
+  @media (prefers-reduced-motion: no-preference) {
+    .ap-dot::before { transition: background-color 0.25s ease, transform 0.25s ease; }
+  }
+  /* Shown only while a node holds keyboard focus, where the arrow keys are what moves the climb on. It sits
+     in the stage's bottom padding, so it never moves anything. The nodes point at it with aria-describedby,
+     so a screen reader hears it too. */
+  .ap-hint {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0.3rem;
+    z-index: 3;
+    margin: 0;
+    font-family: var(--sl-font-mono);
+    font-size: 0.6875rem;
+    text-align: center;
+    color: var(--ap-quiet);
+    pointer-events: none;
+    visibility: hidden;
+  }
+  .apath:has(.ap-node:focus-visible) .ap-hint { visibility: visible; }
 
   /* The advance control follows the site's own accent-button pattern (PasswordReveal's .pw-action):
      a TRANSPARENT rest fill with a coloured border and label, filling only on hover. That is not just
@@ -1035,7 +1332,7 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
     gap: 0.5rem;
     padding: 0.42rem 0.85rem;
     font-family: var(--sl-font-mono);
-    font-size: 0.72rem;
+    font-size: 0.8125rem;
     font-weight: 700;
     letter-spacing: 0.06em;
     color: var(--ap-accent);
@@ -1056,17 +1353,52 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
     background: color-mix(in oklab, var(--ap-accent) 12%, transparent);
     border-color: var(--ap-accent);
   }
-  /* At the end the control stops being an instruction and becomes a state: gold ink + gold border on the
-     bare panel (same transparent-rest reasoning, so the gold label stays AA on paper). */
+  /* At the end the control stops being an instruction and becomes a state, and now it looks like one: gold
+     ink and a check, no frame to suggest there is anything left to press. Same box, so nothing moves, and it
+     keeps focus (see the script). */
+  .ap-done-ico { display: none; }
   .apath[data-done='true'] .ap-next {
     color: var(--ap-gold-ink);
     background: transparent;
-    border-color: color-mix(in oklab, var(--ap-gold) 55%, transparent);
+    border-color: transparent;
     cursor: default;
   }
   .apath[data-done='true'] .ap-next-ico { display: none; }
+  .apath[data-done='true'] .ap-done-ico { display: block; }
   @media (prefers-reduced-motion: no-preference) {
     .ap-next { transition: background-color 0.22s ease, border-color 0.22s ease, color 0.22s ease; }
+  }
+
+  /* Windows High Contrast flattens tints and glows, so state is carried by system colours and shape: the
+     current node takes a 2px Highlight frame, the dots keep their states, and the lines stay drawn. */
+  @media (forced-colors: active) {
+    .ap-node[data-state='active'] {
+      border: 2px solid Highlight;
+      padding: calc(0.62rem - 1px) calc(0.72rem - 1px);
+    }
+    .ap-node[data-state='future'] { border-style: dashed; }
+    .ap-dot::before { forced-color-adjust: none; background: GrayText; }
+    .ap-dot[data-state='done']::before { background: CanvasText; }
+    .ap-dot[data-state='active']::before { background: Highlight; }
+    .ap-conn-svg { forced-color-adjust: none; }
+    .ap-conn-base { stroke: GrayText; opacity: 1; }
+    .ap-conn-live, .ap-conn-head { stroke: CanvasText; }
+    .ap-conn[data-state='current'] :is(.ap-conn-live, .ap-conn-head) { stroke: Highlight; }
+    .ap-fade, .ap-runner { display: none; }
+  }
+
+  /* On paper the stepper cannot be stepped: the dossier lists every hop and the strip and controls step
+     aside, whatever step the page was on. */
+  @media print {
+    .apath { box-shadow: none; }
+    .ap-meter, .ap-stage, .ap-foot { display: none; }
+    .ap-panel {
+      grid-area: auto;
+      grid-column: 1 / -1;
+      break-inside: avoid;
+    }
+    .ap-panel[hidden] { visibility: visible; }
+    .ap-panel + .ap-panel { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--ap-line); }
   }
 
   /* Narrow screens: scrolling the path is the deliberate gesture, matching how code blocks scroll. A
@@ -1075,6 +1407,9 @@ const t = (i: number): number => (lastIndex === 0 ? 0 : Math.round((i / lastInde
     /* The band narrows on small screens (less of a scarce 318px stage spent on mask), and because the
        gutter reads the same token it narrows with it, so the endpoints stay exactly as clear as on desktop. */
     .apath { padding-inline: 0.75rem; --ap-fade-w: 24px; }
+    /* The width crescendo tops out earlier, so on a phone the current node and the hop that reached it fit
+       in one frame together, the goal included. */
+    .ap-node { width: min(calc(148px + var(--t) * 56px), 176px); }
     .ap-foot { flex-wrap: wrap; }
   }
 </style>

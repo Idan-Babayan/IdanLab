@@ -11,6 +11,7 @@ import remarkInjectWriteupMeta from './plugins/remark-inject-writeupmeta.mjs';
 import remarkValidateContentTaxonomy from './plugins/remark-validate-content-taxonomy.mjs';
 import remarkTransformReconRail from './plugins/remark-transform-recon-rail.mjs';
 import remarkInjectSearchMeta from './plugins/remark-inject-search-meta.mjs';
+import remarkTransformLead from './plugins/remark-transform-lead.mjs';
 import validateDecorativeGlyphs from './plugins/validate-decorative-glyphs.mjs';
 
 export default defineConfig({
@@ -61,6 +62,15 @@ export default defineConfig({
   // OverTheWire wargame level and a `wargame` field on each hub, weighted by pagefind.ranking below.
   // After the guard for the same reason; it only appends, so its place among the generators does not
   // matter.
+  // remarkTransformLead: finds the page's LEAD, its first block on a platform page (past imports, MDX
+  // comments and the injected badge row). When that block is a quote it marks it data-lead="goal" if it
+  // opens with "Goal:" (removing the prefix and capitalizing what follows) and data-lead="overview"
+  // otherwise, for the label in prose.css, and records the same verdict as leadKind in the plugin
+  // frontmatter, which the PageSidebar override reads to name the TOC's first entry. It fails the build
+  // on a "> Goal:" quote anywhere but the first block, and on an authored leadKind. Appended LAST, after
+  // the guard, for the same reason as the other generators: it rewrites authored text the taxonomy guard
+  // must see untouched. It skips the injected badge row by name, so its place among the generators does
+  // not matter.
   // rehypeGroupInlineChips: wraps each inline-code chip, with every character glued to it, in
   // <span class="chip-unit">, so a chip only splits across lines when its group is longer than the
   // line (the rule is src/lib/chip-units.mjs, shared with Toggle.astro's label). REHYPE, not remark,
@@ -70,7 +80,7 @@ export default defineConfig({
   // neither reorders nodes nor reads an image's attributes.
   markdown: {
     processor: unified({
-      remarkPlugins: [remarkValidateContentTaxonomy, remarkInjectPasswordReveal, remarkInjectWriteupMeta, remarkTransformReconRail, remarkInjectSearchMeta],
+      remarkPlugins: [remarkValidateContentTaxonomy, remarkInjectPasswordReveal, remarkInjectWriteupMeta, remarkTransformReconRail, remarkInjectSearchMeta, remarkTransformLead],
       rehypePlugins: [rehypeContentImageLoading, rehypeGroupInlineChips],
     }),
   },

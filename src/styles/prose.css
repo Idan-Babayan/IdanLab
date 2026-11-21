@@ -495,6 +495,66 @@ html[data-theme="light"] .sl-markdown-content details {
   box-shadow: 0 6px 20px -14px rgba(60, 50, 30, 0.4);
 }
 } /* @layer prose */
+
+/* The lead label (2026-11-20; every lead, read from the page, since 2026-11-21): the lead quote names
+   itself the way a callout does: an icon, then a word, in the callout label's type (JetBrains Mono 11px,
+   700, .14em, uppercase), with the callout icon's 1rem, the header's .4rem gap and its .45rem below. The
+   word is Overview, or Goal when the quote opened with "Goal:" (every Bandit level and PicoCTF writeup).
+   plugins/remark-transform-lead.mjs decides at build time and marks only the page's first block, so a
+   section intro never carries data-lead and stays as it is; the same verdict names the TOC's first entry
+   (overrides/PageSidebar.astro). No :has() any more: the hook is on the quote itself, which also reaches
+   the Bandit hub, a page with no badge row. The word is a word, not decoration, so a screen reader reads
+   it as the quote's first word, and the plugin removed the literal "Goal:", so nothing is read twice. The
+   icon is a background image, so it stays silent. It is not a mask like --flag-glyph, because the word
+   shares this box and a mask would cut the word too, so each icon token carries the label's colour
+   written into it (tokens.css, --lead-icon-*). img-src allows data: (public/_headers), as the grain and the flag glyph
+   already need. Dark: the accent, 15.5:1 on the lead's wash. Light: the lime ink, 5.40:1 on the lead's
+   paper card, which is opaque, so no grain dot reaches it (model B). The goal rule ties the base rule's
+   specificity and wins on source order: keep it after the base rule. */
+@layer prose {
+.sl-markdown-content blockquote[data-lead]::before {
+  content: "Overview";
+  display: block;
+  margin-block-end: 0.45rem;
+  padding-inline-start: 1.4rem;
+  font-family: var(--sl-font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  line-height: 1.6;
+  text-transform: uppercase;
+  color: var(--sl-color-accent);
+  background: var(--lead-icon-overview) no-repeat left center / 1rem 1rem;
+}
+.sl-markdown-content blockquote[data-lead='goal']::before {
+  content: "Goal";
+  background-image: var(--lead-icon-goal);
+}
+:root[data-theme='light'] .sl-markdown-content blockquote[data-lead]::before {
+  color: var(--tp-lime-ink);
+}
+} /* @layer prose */
+
+/* The lead's edge (2026-11-20; every lead since 2026-11-21): a 1px lime line inside the lead's card, as
+   the platform chip above it wears one, so the named card reads as one object. Inset, so the box, its
+   padding and its text stay where they were, and the card stays filled (its wash and its bar): no surface
+   turns into an outline. Dark: 30% of the accent, with a faint glow in #9fef00, the brand green of the
+   HackTheBox chip's glow, kept on every platform because the card is one design. Light: 30% of the lime
+   ink, over the lead's paper shadow, restated here because box-shadow is one list; keep it in step with
+   the "Lead blockquote on paper" rule. Decorative. Every lead wears it, goal or overview; section intros
+   do not. */
+@layer prose {
+.sl-markdown-content blockquote[data-lead] {
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklab, var(--sl-color-accent) 30%, transparent),
+    0 0 18px -8px color-mix(in oklab, #9fef00 35%, transparent);
+}
+:root[data-theme='light'] .sl-markdown-content blockquote[data-lead] {
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklab, var(--tp-lime-ink) 30%, transparent),
+    0 6px 20px -14px rgba(60, 50, 30, 0.4);
+}
+} /* @layer prose */
 /* Open content Toggle keeps the closed divider color on paper (no green edge): opening a Toggle must
    not change its border, and lime/green must not appear here. Uses --tp-divider, the same token the
    closed Toggle border and the structural hairlines use. */
