@@ -116,6 +116,10 @@
   and an email address is not a credential. Track the outcome; if declined, the residual is permanent and
   should be recorded as accepted rather than re-attempted. See DECISIONS 2026-08-01 · One identity across
   all history: the repository is rewritten and force-pushed.
+- [DESIGN] **The goal glyph is a placeholder.** `--lead-icon-goal` in `tokens.css` (a dark and a light
+  value) holds a plain target until the glyph pass replaces it. Swap both values, each with the label's
+  colour in its fill (`#b6ff3c`, `#3e6700`); no rule changes. See DECISIONS 2026-11-21 · The lead quote
+  reads Goal or Overview from the page, and the TOC's first entry follows.
 
 ## Next (committed)
 - [ENG/DESIGN] Unify the two marketing pages (home, about) under the `--focus-ring` token established for

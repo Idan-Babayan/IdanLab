@@ -6,6 +6,107 @@
 
 ---
 
+### 2026-11-21 · The lead quote reads Goal or Overview from the page, and the TOC's first entry follows
+- **Supersedes in part:** 2026-11-20 · Second-pass colour follow-ups: light callout inks and sudo deepen,
+  the light reading line takes the h2 rule's pair, the machine overview names itself. Only the label's
+  scope and its hook: HackTheBox and VulnHub writeups only, keyed on the badge row's platform chip. Its
+  word, type and colours stand.
+- **Supersedes in part:** 2026-11-20 · The machine overview takes the callout header and a lime edge, and
+  the section intros stay as they are. Only the scope and the hook again ("on a HackTheBox or VulnHub
+  writeup", "keyed on the badge row's platform chip, as the label is") and the icon's home: the two
+  open-book data URIs move unchanged from `prose.css` into `tokens.css`. The icon, the edge and every
+  value stand.
+- **Decision:** the lead quote, the first block of any page under the four platform directories, is a
+  goal or an overview, decided at build time by a new remark plugin, `plugins/remark-transform-lead.mjs`:
+  a goal when its text opens with `Goal:` (any case), an overview otherwise. On a goal the plugin removes
+  the `Goal:` prefix and capitalizes the letter after it. It marks the quote `data-lead="goal"` or
+  `data-lead="overview"` and records the same verdict as `leadKind` in the page's plugin frontmatter.
+  `prose.css` keys the label and the edge on `blockquote[data-lead]`: an overview keeps `Overview` and
+  the open-book icon, a goal shows `Goal` and its own icon, in the same type, colours, spacing and edge.
+  Both icons are tokens in `tokens.css` (`--lead-icon-overview`, `--lead-icon-goal`, one value per
+  theme); the goal's is a placeholder (a plain target) until the glyph pass replaces it. The existing
+  `PageSidebar` override reads the verdict through `render(entry)` and, on a goal page, names the TOC's
+  first entry (Starlight's `#_top` link) `Goal` before it renders the default. A `> Goal:` quote anywhere
+  but the first block, or an authored `leadKind`, fails the build. Today every Bandit level and PicoCTF
+  writeup reads Goal, the HackTheBox writeups and the Bandit hub read Overview, and the landings have no
+  lead.
+- **Why:** the lead's kind is already written in the page: `> Goal:` is the first line of the Bandit and
+  PicoCTF template, so the kind is derived and never declared, as platform and category already are.
+  Keyed on the content, the label needs no list of platforms and no exceptions: a future wargame's levels
+  and its hub, a VulnHub machine and any one-off page sort themselves by what their first block says. The
+  badge row's chip could not reach the Bandit hub, which has no badge row; the attribute can, and the
+  `:has()` leaves the selector. CSS cannot read text and a remark plugin cannot reach the TOC, whose
+  first entry Starlight adds itself from the `tableOfContents.overview` UI string, so the plugin decides
+  and the override applies. One verdict sets both the label and the TOC entry, so the two cannot disagree
+  or both appear, and on Bandit and PicoCTF the TOC reads Goal, Approach, Why it works: the template
+  itself.
+- **Rejected:**
+  - Rewriting the `> Goal:` lines into a frontmatter field rendered by a component: YAML prose skips
+    smartypants and the inline-code chip grouping, and the machine lead would stay markdown, so one card
+    would have two rendering paths.
+  - A `lead: goal` frontmatter flag beside the quote: the same fact stored twice, kept in agreement only
+    by a guard.
+  - Keying `Goal` on the OverTheWire and PicoCTF chips: the `Goal:` text would have to be edited out of
+    every page by hand, the hub would stay out of reach, and every one-off page would need an exception.
+  - `## Goal` as a heading: it earns a TOC entry for free, but duplicates the top link, trades the card
+    for an h2, and Approach stops opening the page.
+  - A Starlight route data middleware for the TOC entry: measured in a throwaway site on the pinned
+    versions (Astro 7.2.9, Starlight 0.41.10) to run once per page during `astro build` and never while
+    serving, with pages byte-identical to the override's, but it adds a config key, a file and an
+    extension type for what the existing override already does. It is the fallback if a Starlight upgrade
+    ever prints TOC text outside `PageSidebar`.
+  - Renaming the entry at runtime with a script: the label would change after load, and the mobile TOC's
+    summary with it.
+  - A build check that every Bandit level and PicoCTF writeup opens with a goal: a page without one falls
+    back to Overview, the default, and the check would turn every future one-off into a build error.
+- **Known:** the literal `Goal:` no longer reaches the built pages, so site search no longer indexes the
+  word on them and their excerpts open on the capitalized sentence. The TOC label holds only while
+  `PageSidebar` is the one component that prints TOC text (true in Starlight 0.41.10); CORE_SPEC's
+  upgrade path checks it. The goal icon is a placeholder (ROADMAP).
+- **Verified:** the commit's tree, built on its own, green at 68 pages, the decorative-glyph guard clean.
+  `PageSidebar.astro` has no problems under TypeScript 6.0.3 with `astro/tsconfigs/strictest` and
+  `noPropertyAccessFromIndexSignature`, checked against Astro's and Starlight's own types (a dot read of
+  `leadKind` is caught). Every built page, read by a script: 55 leads read Goal, every Bandit level (34)
+  and PicoCTF writeup (21), each the first block after the badge row, its text with no `Goal:` and
+  opening on a capital, both TOCs' first entry Goal; 5 read Overview, the Bandit hub and the four
+  machines, both TOCs Overview; the four landings, About, home, the 404 and `/secret/` carry no
+  `data-lead`, nor do the 16 section intros; no page names Goal in a TOC without a goal lead. The guard
+  fails the build on a `> Goal:` quote under PIE TIME's `## Approach` ("found one at line 14 in
+  .../pie-time.mdx") and on `leadKind: goal` in its frontmatter
+  (`"leadKind" is derived from the page's first block, never authored`). On the preview server against
+  the parent's build, Busqueda, Return, Unified, Forest, the Bandit hub, Bandit 0 to 1 and 25 to 26, PIE
+  TIME and head-dump in both themes at 1440 and 390: on the four machine pages every full-page pixel is
+  unchanged (every image loaded first), and so is every computed cell but one, the label's
+  `background-position`, which computes `0% 50%` for `0px 50%`, the same place: the minifier wrote the
+  literal's `left center` as `0`, and it leaves a shorthand that holds `var()` as written. The icon's
+  `background-image` computes the same URI it did as a literal. The Bandit hub's lead gains the label and
+  the edge, its `::before` equal to Busqueda's in every cell and its `box-shadow` too, in each theme and
+  width, and everything below it moves down 24.78px. The goal pages gain the same, their `::before` equal
+  to Busqueda's but `content` (`"Goal"`) and `background-image` (`%23b6ff3c` on dark, `%233e6700` on
+  light). The lead grows by the label, 24.78px, and everything below moves down by as much, except Bandit
+  25 to 26 at 1440, where the text without `Goal:` fits one line, not two, so the lead ends 5.81px
+  shorter and everything below moves up 5.81px. Lead heights before and after, at 1440 then 390, the same
+  in both themes: the Bandit hub 82.78px to 107.56px and 143.97px to 168.75px, Bandit 0 to 1 82.78px to
+  107.56px and 113.38px to 138.16px, Bandit 25 to 26 82.78px to 76.97px and 113.38px to 138.16px, PIE
+  TIME 113.38px to 138.16px and 205.16px to 229.94px, head-dump 82.78px to 107.56px and 143.97px to
+  168.75px. In both TOCs the first entry reads Goal and none of its cells changes but the phone entry's
+  width, which follows its word (67.20px to 33.61px). Nothing else changes: the section intros, the badge
+  rows, the headings and the code frames only move with the lead. GOAL on PIE TIME's lead reads 15.66:1
+  on dark and 5.40:1 on paper (model B, painted pixels with the grain hidden; Busqueda's OVERVIEW reads
+  the same by this method). In Chrome's accessibility tree Bandit 0 to 1's lead reads "GOAL", then its
+  text, with no `Goal:` and no node for the icon, and the first link of both TOCs is named Goal; Busqueda
+  reads "OVERVIEW", then its text, and Overview in both TOCs. At 390 the phone strip reads Goal at the
+  top of PIE TIME and follows to Approach, On the live instance and Why it works as the page scrolls. In
+  `astro dev`, Busqueda's Toggle and Callout and Bandit 25 to 26's Steps and PasswordReveal compute as on
+  the build, and each TOC's first entry reads as on the build; the one console error there, a module
+  script served as `text/css`, shows on the parent too. Site search with the shipped ranking, the same on
+  this build's index and the parent's: "bandit" lists the hub first (by 0.86% of the top score, as
+  before); "bandit N", "level N", "bandit level N", the typed title and "N N+1" 33/33 each; the route,
+  "bandit" and the route, and the login 31/33 each, the four known misses; every indexed page's own title
+  65/65. "goal" finds 7 pages, not 55.
+- **Status:** Adopted 2026-11-21, chosen against a frontmatter field, a platform-keyed rule and a route
+  data middleware; the middleware and the override were built side by side and gave identical pages.
+
 ### 2026-11-20 · AttackPath polish: one clock for the climb, one tab stop per chain, one dossier vocabulary
 - **Supersedes in part:** 2026-10-11 · One lime ink for small text on paper, and About's light inks clear
   its glows. Only "AttackPath's done run" among the lime ink's consumers in its Decision: on light the
@@ -122,6 +223,9 @@
   accent with a faint `#9fef00` glow on dark, 30% of the lime ink over the lead's own paper shadow on
   light. The badge row stays above the card, and the section intros keep their card as it is. CSS only,
   in `prose.css`, keyed on the badge row's platform chip, as the label is.
+  (**Partly superseded by:** 2026-11-21 · The lead quote reads Goal or Overview from the page, and the
+  TOC's first entry follows: the scope and the hook, and the icon's home, now a token; the icon, the edge
+  and every value stand.)
 - **Why:** the word alone read generic and stood apart: nothing else on the page announced itself quite
   like it, while every callout pairs its label with a glyph (owner). With the icon, the lead's header is
   the callout header (icon, gap, type and spacing), so the lead is named in the page's own language, and
@@ -168,6 +272,9 @@
   writeup the lead quote carries an `Overview` label in the callout label's type (JetBrains Mono 11px,
   700, `.14em`, uppercase), the accent on dark and the lime ink on paper, CSS only, keyed on the badge
   row's platform chip.
+  (**Partly superseded by:** 2026-11-21 · The lead quote reads Goal or Overview from the page, and the
+  TOC's first entry follows: the scope and the hook; every platform page's lead is labelled now, keyed on
+  `data-lead`, and a goal reads Goal.)
 - **Why:** the three labels are 11px. On their own tint they cleared 4.5:1, but on the darkest grid dot
   they read 4.38:1, short of the test the TOC rungs are held to; now all five read 4.61:1 or more there,
   and sudo at 5.24:1 joins every other light code role over 5:1, with no visible change. The light

@@ -496,22 +496,23 @@ html[data-theme="light"] .sl-markdown-content details {
 }
 } /* @layer prose */
 
-/* The overview label (2026-11-20): on a machine writeup the lead quote and the section intros wear the
-   same card, so the lead names itself the way a callout does: Starlight's own open-book icon, then the
-   word the table of contents already uses for it, in the callout label's type (JetBrains Mono 11px,
-   700, .14em, uppercase), with the callout icon's 1rem, the header's .4rem gap and its .45rem below.
-   Machine writeups only, keyed on the badge row's platform chip: on OverTheWire and PicoCTF the lead is
-   the "Goal:" line and no section intro follows. The :has() sits on the badge row, not on <html> or
-   <body> (CORE_SPEC section 8). The word is a word, not decoration, so a screen reader reads it as the
-   quote's first word; the icon is a background image, so it stays silent. It is not a mask like
-   --flag-glyph, because the word shares this box and a mask would cut the word too, so each theme
-   writes the label's colour into the icon's fill: #b6ff3c is --sl-color-accent on dark, #3e6700 is
-   --tp-lime-ink on paper. Change either token and change its fill. img-src allows data:
-   (public/_headers), as the grain and the flag glyph already need. Dark: the accent, 15.5:1 on the
-   lead's wash. Light: the lime ink, 5.40:1 on the lead's paper card, which is opaque, so no grain dot
-   reaches it (model B). */
+/* The lead label (2026-11-20; every lead, read from the page, since 2026-11-21): the lead quote names
+   itself the way a callout does: an icon, then a word, in the callout label's type (JetBrains Mono 11px,
+   700, .14em, uppercase), with the callout icon's 1rem, the header's .4rem gap and its .45rem below. The
+   word is Overview, or Goal when the quote opened with "Goal:" (every Bandit level and PicoCTF writeup).
+   plugins/remark-transform-lead.mjs decides at build time and marks only the page's first block, so a
+   section intro never carries data-lead and stays as it is; the same verdict names the TOC's first entry
+   (overrides/PageSidebar.astro). No :has() any more: the hook is on the quote itself, which also reaches
+   the Bandit hub, a page with no badge row. The word is a word, not decoration, so a screen reader reads
+   it as the quote's first word, and the plugin removed the literal "Goal:", so nothing is read twice. The
+   icon is a background image, so it stays silent. It is not a mask like --flag-glyph, because the word
+   shares this box and a mask would cut the word too, so each icon token carries the label's colour in its
+   fill (tokens.css, --lead-icon-*). img-src allows data: (public/_headers), as the grain and the flag glyph
+   already need. Dark: the accent, 15.5:1 on the lead's wash. Light: the lime ink, 5.40:1 on the lead's
+   paper card, which is opaque, so no grain dot reaches it (model B). The goal rule ties the base rule's
+   specificity and wins on source order: keep it after the base rule. */
 @layer prose {
-.sl-markdown-content .writeup-meta:has(.pf-htb, .pf-vh) + blockquote::before {
+.sl-markdown-content blockquote[data-lead]::before {
   content: "Overview";
   display: block;
   margin-block-end: 0.45rem;
@@ -523,28 +524,32 @@ html[data-theme="light"] .sl-markdown-content details {
   line-height: 1.6;
   text-transform: uppercase;
   color: var(--sl-color-accent);
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23b6ff3c'%3E%3Cpath d='M21.17 2.06A13.1 13.1 0 0 0 19 1.87a12.94 12.94 0 0 0-7 2.05 12.94 12.94 0 0 0-7-2 13.1 13.1 0 0 0-2.17.19 1 1 0 0 0-.83 1v12a1 1 0 0 0 1.17 1 10.9 10.9 0 0 1 8.25 1.91l.12.07h.11a.91.91 0 0 0 .7 0h.11l.12-.07A10.899 10.899 0 0 1 20.83 16 1 1 0 0 0 22 15V3a1 1 0 0 0-.83-.94ZM11 15.35a12.87 12.87 0 0 0-6-1.48H4v-10c.333-.02.667-.02 1 0a10.86 10.86 0 0 1 6 1.8v9.68Zm9-1.44h-1a12.87 12.87 0 0 0-6 1.48V5.67a10.86 10.86 0 0 1 6-1.8c.333-.02.667-.02 1 0v10.04Zm1.17 4.15a13.098 13.098 0 0 0-2.17-.19 12.94 12.94 0 0 0-7 2.05 12.94 12.94 0 0 0-7-2.05c-.727.003-1.453.066-2.17.19A1 1 0 0 0 2 19.21a1 1 0 0 0 1.17.79 10.9 10.9 0 0 1 8.25 1.91 1 1 0 0 0 1.16 0A10.9 10.9 0 0 1 20.83 20a1 1 0 0 0 1.17-.79 1 1 0 0 0-.83-1.15Z'/%3E%3C/svg%3E") no-repeat left center / 1rem 1rem;
+  background: var(--lead-icon-overview) no-repeat left center / 1rem 1rem;
 }
-:root[data-theme='light'] .sl-markdown-content .writeup-meta:has(.pf-htb, .pf-vh) + blockquote::before {
+.sl-markdown-content blockquote[data-lead='goal']::before {
+  content: "Goal";
+  background-image: var(--lead-icon-goal);
+}
+:root[data-theme='light'] .sl-markdown-content blockquote[data-lead]::before {
   color: var(--tp-lime-ink);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%233e6700'%3E%3Cpath d='M21.17 2.06A13.1 13.1 0 0 0 19 1.87a12.94 12.94 0 0 0-7 2.05 12.94 12.94 0 0 0-7-2 13.1 13.1 0 0 0-2.17.19 1 1 0 0 0-.83 1v12a1 1 0 0 0 1.17 1 10.9 10.9 0 0 1 8.25 1.91l.12.07h.11a.91.91 0 0 0 .7 0h.11l.12-.07A10.899 10.899 0 0 1 20.83 16 1 1 0 0 0 22 15V3a1 1 0 0 0-.83-.94ZM11 15.35a12.87 12.87 0 0 0-6-1.48H4v-10c.333-.02.667-.02 1 0a10.86 10.86 0 0 1 6 1.8v9.68Zm9-1.44h-1a12.87 12.87 0 0 0-6 1.48V5.67a10.86 10.86 0 0 1 6-1.8c.333-.02.667-.02 1 0v10.04Zm1.17 4.15a13.098 13.098 0 0 0-2.17-.19 12.94 12.94 0 0 0-7 2.05 12.94 12.94 0 0 0-7-2.05c-.727.003-1.453.066-2.17.19A1 1 0 0 0 2 19.21a1 1 0 0 0 1.17.79 10.9 10.9 0 0 1 8.25 1.91 1 1 0 0 0 1.16 0A10.9 10.9 0 0 1 20.83 20a1 1 0 0 0 1.17-.79 1 1 0 0 0-.83-1.15Z'/%3E%3C/svg%3E");
 }
 } /* @layer prose */
 
-/* The overview's edge (2026-11-20): a 1px lime line inside the lead's card, as the platform chip above
-   it wears one, so the named card reads as one object. Inset, so the box, its padding and its text stay
-   where they were, and the card stays filled (its wash and its bar): no surface turns into an outline.
-   Dark: 30% of the accent, with a faint glow in #9fef00, the brand green of the HackTheBox chip's glow.
-   Light: 30% of the lime ink, over the lead's paper shadow, restated here because box-shadow is one
-   list; keep it in step with the "Lead blockquote on paper" rule. Decorative. Machine writeups only, as
-   the label is. */
+/* The lead's edge (2026-11-20; every lead since 2026-11-21): a 1px lime line inside the lead's card, as
+   the platform chip above it wears one, so the named card reads as one object. Inset, so the box, its
+   padding and its text stay where they were, and the card stays filled (its wash and its bar): no surface
+   turns into an outline. Dark: 30% of the accent, with a faint glow in #9fef00, the brand green of the
+   HackTheBox chip's glow, kept on every platform because the card is one design. Light: 30% of the lime
+   ink, over the lead's paper shadow, restated here because box-shadow is one list; keep it in step with
+   the "Lead blockquote on paper" rule. Decorative. Every lead wears it, goal or overview; section intros
+   do not. */
 @layer prose {
-.sl-markdown-content .writeup-meta:has(.pf-htb, .pf-vh) + blockquote {
+.sl-markdown-content blockquote[data-lead] {
   box-shadow:
     inset 0 0 0 1px color-mix(in oklab, var(--sl-color-accent) 30%, transparent),
     0 0 18px -8px color-mix(in oklab, #9fef00 35%, transparent);
 }
-:root[data-theme='light'] .sl-markdown-content .writeup-meta:has(.pf-htb, .pf-vh) + blockquote {
+:root[data-theme='light'] .sl-markdown-content blockquote[data-lead] {
   box-shadow:
     inset 0 0 0 1px color-mix(in oklab, var(--tp-lime-ink) 30%, transparent),
     0 6px 20px -14px rgba(60, 50, 30, 0.4);
