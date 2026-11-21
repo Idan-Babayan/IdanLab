@@ -2,11 +2,13 @@
 // src/components/overrides/PageSidebar.astro
 //
 // Additive override of Starlight's right "On this page" sidebar (approved pattern, see CORE_SPEC
-// "Starlight Component Overrides"). It renders Starlight's Default PageSidebar unchanged and adds the
-// ToggleAll control AFTER it, so the control sits at the BOTTOM of the sticky right column as a
-// de-emphasized tertiary utility (below the TOC links in the reading order and visual weight). It
-// follows scroll and appears on pages with two or more content toggles; ToggleAll self-hides below that
-// (nothing on a zero- or single-toggle page, where a bulk expand/collapse adds nothing).
+// "Starlight Component Overrides"). On a page whose lead quote is a goal it first names the TOC's first
+// entry Goal (below, and DECISIONS 2026-11-21 · The lead quote reads Goal or Overview from the page, and
+// the TOC's first entry follows). Then it renders Starlight's Default PageSidebar and adds the ToggleAll
+// control AFTER it, so the control sits at the BOTTOM of the sticky right column as a de-emphasized
+// tertiary utility (below the TOC links in the reading order and visual weight). It follows scroll and
+// appears on pages with two or more content toggles; ToggleAll self-hides below that (nothing on a zero-
+// or single-toggle page, where a bulk expand/collapse adds nothing).
 //
 // Desktop only: the wrapper uses Starlight's own utilities (sl-hidden / lg:sl-block), so it is hidden
 // below the lg breakpoint where the right sidebar collapses into the mobile "On this page" dropdown.
@@ -30,8 +32,8 @@ import { render } from 'astro:content';
 // text: it renders both the mobile and the desktop TOC, and Page and TwoColumnContent only test that a
 // TOC exists (Starlight 0.41.10; CORE_SPEC's upgrade path re-checks this). Starlight attaches a deep
 // copy of the route data to each page, so the change cannot reach another page. The _top test means a
-// Starlight change cannot rename a different entry. The path test keeps render() off non-platform
-// pages, including Starlight's 404 (which has a TOC), and names the same four directories as the
+// Starlight change cannot rename a different entry. The path test keeps render() off every
+// non-platform page (this site's 404 has no TOC at all) and names the same four directories as the
 // plugin: keep the two in step.
 //
 // A Starlight route data middleware gave byte-identical pages and was rejected as a new mechanism for
