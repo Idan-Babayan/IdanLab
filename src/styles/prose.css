@@ -506,8 +506,8 @@ html[data-theme="light"] .sl-markdown-content details {
    the Bandit hub, a page with no badge row. The word is a word, not decoration, so a screen reader reads
    it as the quote's first word, and the plugin removed the literal "Goal:", so nothing is read twice. The
    icon is a background image, so it stays silent. It is not a mask like --flag-glyph, because the word
-   shares this box and a mask would cut the word too, so each icon token carries the label's colour in its
-   fill (tokens.css, --lead-icon-*). img-src allows data: (public/_headers), as the grain and the flag glyph
+   shares this box and a mask would cut the word too, so each icon token carries the label's colour
+   written into it (tokens.css, --lead-icon-*). img-src allows data: (public/_headers), as the grain and the flag glyph
    already need. Dark: the accent, 15.5:1 on the lead's wash. Light: the lime ink, 5.40:1 on the lead's
    paper card, which is opaque, so no grain dot reaches it (model B). The goal rule ties the base rule's
    specificity and wins on source order: keep it after the base rule. */

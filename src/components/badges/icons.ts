@@ -61,9 +61,12 @@ export const platformIcons: Record<Extract<Platform, 'HackTheBox'>, string> = { 
 export const osLogos: Record<Extract<OS, 'Linux'>, string> = { Linux: linuxUrl };
 export const osIcons: Record<Extract<OS, 'Windows'>, string> = { Windows: inline(windowsRaw) };
 
-// Environment marks are all tinting currentColor glyphs (set:html).
+// Environment marks are all tinting currentColor glyphs (set:html). Standalone is the halo at the
+// callout glyph family's weight (a solid core, a 2-unit ring at 0.4). Its viewBox crops to the ring's
+// ink, so the ring fills the 15px box: a circle sits exactly at the chip grid's hull-area cap (1.128),
+// level with Windows by hull area.
 export const environmentIcons: Record<Environment, string> = {
-  Standalone: `<svg viewBox="3 3 18 18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="8" opacity="0.35"/></svg>`,
+  Standalone: `<svg viewBox="3 3 18 18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3.25" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="8" opacity="0.4"/></svg>`,
   'Active Directory': inline(activeDirectoryRaw),
   Progressive: inline(progressiveRaw),
 };
@@ -72,7 +75,7 @@ export const environmentIcons: Record<Environment, string> = {
 // square in the 15px box, currentColor, aria-hidden, so it tints from the chip's --wm-c like every
 // other monochrome mark. Square on purpose: the sidebar's platform markers are round dots and the
 // difficulty glyph is round pips, so a square can never read as either. It is deliberately smaller
-// than the 14px pictogram grid the other glyphs sit on, because it is a colour swatch and not a
+// than the 14 to 15px pictograms the other glyphs draw, because it is a colour swatch and not a
 // picture, and a 14px solid square outweighs its own label. Six drawn category glyphs are an owner
 // option later; until then one shape says "a category" and the hue says which. The same swatch is
 // drawn as a plain span on the landing card (WriteupCard .wc-swatch); this is the chip copy.

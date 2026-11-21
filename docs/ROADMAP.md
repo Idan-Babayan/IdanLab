@@ -116,10 +116,6 @@
   and an email address is not a credential. Track the outcome; if declined, the residual is permanent and
   should be recorded as accepted rather than re-attempted. See DECISIONS 2026-08-01 · One identity across
   all history: the repository is rewritten and force-pushed.
-- [DESIGN] **The goal glyph is a placeholder.** `--lead-icon-goal` in `tokens.css` (a dark and a light
-  value) holds a plain target until the glyph pass replaces it. Swap both values, each with the label's
-  colour in its fill (`#b6ff3c`, `#3e6700`); no rule changes. See DECISIONS 2026-11-21 · The lead quote
-  reads Goal or Overview from the page, and the TOC's first entry follows.
 
 ## Next (committed)
 - [ENG/DESIGN] Unify the two marketing pages (home, about) under the `--focus-ring` token established for
@@ -194,22 +190,6 @@
 - [ENG] ToggleAll on mobile: currently desktop-only (hidden below the lg breakpoint). To put it inside
   the collapsed "On this page" dropdown would need a second override (`MobileTableOfContents`); deferred
   (owner judged the bulk control a poor fit for narrow screens; individual toggles still work on mobile).
-- [DESIGN] Revisit the Active Directory topology glyph (low priority, no urgency). The diamond is not
-  broken and ships as-is: it passes the silhouette test (its outline reads at 15px with the interior
-  contributing nothing, which is exactly why it works). Parked only because Idan may want to move off it
-  later, not because anything is wrong. Context for whoever picks it up, so the dead ends are not re-walked:
-  - Concept A ("one node vs three linked nodes") is REJECTED, do not retry it. Two independently fatal
-    reasons: three ~4px nodes fuse into a Λ letterform at 15px, and Active Directory and Standalone occupy
-    the same scalar `environment` slot so they never co-occur, meaning a node-count contrast has no on-page
-    reference to read against.
-  - The design bar for any replacement: the silhouette carries the meaning, the interior does nothing (at
-    15px, part-count is not a legible channel). Starting directions that fit the bar: folder-tree bracket,
-    nested/concentric forms, hierarchy fork.
-  - Standalone's ring stays regardless. It beat every candidate by resolving its hole at 15px and dodging
-    the prospective PicoCTF two-disc collision. This item is AD only.
-  - Any redraw inherits the current 15px hull-area grid (model B, cap 1.128) and, being a we-authored
-    geometric glyph, should size by hull area rather than clamp. It also retires the Amido credit the
-    diamond asset carries (a `data-credit` attribute on the svg root since 2026-09-07, CORE_SPEC §7).
 
 ## Open bugs / known issues
 
